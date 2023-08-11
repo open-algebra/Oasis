@@ -35,7 +35,7 @@ public:
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Add>;
 
     EXPRESSION_TYPE(Add)
-    EXPRESSION_CATEGORY(Expression::Associative | Expression::Commutative)
+    EXPRESSION_CATEGORY(Associative | Commutative)
 };
 
 template <IExpression AugendT = Expression, IExpression AddendT = AugendT>
@@ -93,11 +93,11 @@ public:
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Add<AugendT, AddendT>>
     {
-        Add<AugendT, AddendT> add;
-
-        if (!add.StructurallyEquivalent(other)) {
+        if (!other.Is<Add>()) {
             return nullptr;
         }
+
+        Add<AugendT, AddendT> add;
 
         std::unique_ptr<Expression> otherNormalized = other.Generalize();
         const auto& otherBinaryExpression = dynamic_cast<const Add<Expression>&>(*otherNormalized);
@@ -115,11 +115,11 @@ public:
 
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Add<AugendT, AddendT>>
     {
-        Add<AugendT, AddendT> add;
-
-        if (!add.StructurallyEquivalent(other)) {
+        if (!other.Is<Add>()) {
             return nullptr;
         }
+
+        Add<AugendT, AddendT> add;
 
         std::unique_ptr<Expression> otherGeneralized;
 
@@ -153,7 +153,7 @@ public:
     auto operator=(const Add& other) -> Add& = default;
 
     EXPRESSION_TYPE(Add)
-    EXPRESSION_CATEGORY(Expression::Associative | Expression::Commutative)
+    EXPRESSION_CATEGORY(Associative | Commutative)
 };
 
 } // namespace Oasis

@@ -25,12 +25,12 @@ auto Real::ToString() const -> std::string
 
 auto Real::Specialize(const Expression& other) -> std::unique_ptr<Real>
 {
-    return other.GetType() == Type::Real ? std::make_unique<Real>(dynamic_cast<const Real&>(other)) : nullptr;
+    return other.Is<Real>() ? std::make_unique<Real>(dynamic_cast<const Real&>(other)) : nullptr;
 }
 
 auto Real::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Real>
 {
-    return other.GetType() == Type::Real ? std::make_unique<Real>(dynamic_cast<const Real&>(other)) : nullptr;
+    return other.Is<Real>() ? std::make_unique<Real>(dynamic_cast<const Real&>(other)) : nullptr;
 }
 
 } // namespace Oasis

@@ -51,12 +51,8 @@ auto Add<Expression>::Generalize(tf::Subflow& subflow) const -> std::unique_ptr<
 
 auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
-    if (mostSigOp == nullptr || leastSigOp == nullptr) {
-        return Copy();
-    }
-
-    auto simplifiedAugend = mostSigOp->Simplify();
-    auto simplifiedAddend = leastSigOp->Simplify();
+    auto simplifiedAugend = mostSigOp ? mostSigOp->Simplify() : nullptr;
+    auto simplifiedAddend = leastSigOp ? leastSigOp->Simplify() : nullptr;
 
     Add simplifiedAdd { *simplifiedAugend, *simplifiedAddend };
 
@@ -67,7 +63,7 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return std::make_unique<Real>(firstReal.GetValue() + secondReal.GetValue());
     }
 
-    return Copy();
+    return simplifiedAdd.Copy();
 }
 
 auto Add<Expression>::ToString() const -> std::string
@@ -77,20 +73,14 @@ auto Add<Expression>::ToString() const -> std::string
 
 auto Add<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
 {
-    if (mostSigOp == nullptr || leastSigOp == nullptr) {
-        return Copy();
-    }
-
     std::unique_ptr<Expression> simplifiedAugend, simplifiedAddend;
 
     tf::Task leftSimplifyTask = subflow.emplace([this, &simplifiedAugend](tf::Subflow& sbf) {
-        assert(simplifiedAugend == nullptr);
-        simplifiedAugend = mostSigOp->Simplify(sbf);
+        simplifiedAugend = mostSigOp ? mostSigOp->Simplify(sbf) : nullptr;
     });
 
     tf::Task rightSimplifyTask = subflow.emplace([this, &simplifiedAddend](tf::Subflow& sbf) {
-        assert(simplifiedAddend == nullptr);
-        simplifiedAddend = leastSigOp->Simplify(sbf);
+        simplifiedAddend = leastSigOp ? leastSigOp->Simplify(sbf) : nullptr;
     });
 
     Add simplifiedAdd;
@@ -119,38 +109,38 @@ auto Add<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Ex
         return std::make_unique<Real>(firstReal.GetValue() + secondReal.GetValue());
     }
 
-    return Copy();
+    return simplifiedAdd.Copy();
 }
 
 auto Add<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Add<Expression, Expression>>
 {
-    auto add = std::make_unique<Add<Expression, Expression>>();
-
-    if (!add->StructurallyEquivalent(other)) {
+    if (!other.Is<Add>()) {
         return nullptr;
     }
+
+    Add add;
 
     const std::unique_ptr<Expression> otherGeneralized = other.Generalize();
     const auto& otherAdd = dynamic_cast<const Add<Expression>&>(*otherGeneralized);
 
     if (otherAdd.mostSigOp) {
-        add->SetMostSigOp(otherAdd.GetMostSigOp());
+        add.SetMostSigOp(otherAdd.GetMostSigOp());
     }
 
     if (otherAdd.leastSigOp) {
-        add->SetLeastSigOp(otherAdd.GetLeastSigOp());
+        add.SetLeastSigOp(otherAdd.GetLeastSigOp());
     }
 
-    return add;
+    return std::make_unique<Add>(add);
 }
 
 auto Add<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Add>
 {
-    Add add;
-
-    if (!add.StructurallyEquivalent(other)) {
+    if (!other.Is<Add>()) {
         return nullptr;
     }
+
+    Add add;
 
     std::unique_ptr<Expression> otherGeneralized;
 
@@ -178,7 +168,7 @@ auto Add<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
 
     subflow.join();
 
-    return std::make_unique<Add<Expression>>(add);
+    return std::make_unique<Add>(add);
 }
 
 } // Oasis
