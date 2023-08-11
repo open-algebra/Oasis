@@ -12,7 +12,7 @@
 
 namespace Oasis {
 
-template <IExpression FirstAddendT, IExpression SecondAddendT>
+template <IExpression AugendT, IExpression AddendT>
 class Add;
 
 template <>
@@ -38,52 +38,52 @@ public:
     EXPRESSION_CATEGORY(Expression::Associative | Expression::Commutative)
 };
 
-template <IExpression FirstAddendT = Expression, IExpression SecondAddendT = FirstAddendT>
-class Add : public BinaryExpression<Add<FirstAddendT, SecondAddendT>, FirstAddendT, SecondAddendT> {
+template <IExpression AugendT = Expression, IExpression AddendT = AugendT>
+class Add : public BinaryExpression<Add<AugendT, AddendT>, AugendT, AddendT> {
 public:
     Add() = default;
-    Add(const Add<FirstAddendT, SecondAddendT>& other)
-        : BinaryExpression<Add<FirstAddendT, SecondAddendT>, FirstAddendT, SecondAddendT>(other)
+    Add(const Add<AugendT, AddendT>& other)
+        : BinaryExpression<Add<AugendT, AddendT>, AugendT, AddendT>(other)
     { }
 
-    Add(const FirstAddendT& addend1, const SecondAddendT& addend2)
-        : BinaryExpression<Add<FirstAddendT, SecondAddendT>, FirstAddendT, SecondAddendT>(addend1, addend2)
+    Add(const AugendT& addend1, const AddendT& addend2)
+        : BinaryExpression<Add<AugendT, AddendT>, AugendT, AddendT>(addend1, addend2)
     { }
 
     [[nodiscard]] auto Generalize() const -> std::unique_ptr<Expression> final
     {
-        Add<Expression> normalizedAdd;
+        Add<Expression> generalizedAdd;
 
         if (this->mostSigOp) {
-            normalizedAdd.SetMostSigOp(*this->mostSigOp->Copy());
+            generalizedAdd.SetMostSigOp(*this->mostSigOp->Copy());
         }
 
         if (this->leastSigOp) {
-            normalizedAdd.SetLeastSigOp(*this->leastSigOp->Copy());
+            generalizedAdd.SetLeastSigOp(*this->leastSigOp->Copy());
         }
 
-        return std::make_unique<Add<Expression>>(normalizedAdd);
+        return std::make_unique<Add<Expression>>(generalizedAdd);
     }
 
     auto Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final
     {
-        Add<Expression> normalizedAdd;
+        Add<Expression> generalizedAdd;
 
         if (this->mostSigOp) {
-            subflow.emplace([this, &normalizedAdd](tf::Subflow& sbf) {
-                normalizedAdd.SetMostSigOp(*this->mostSigOp->Copy(sbf));
+            subflow.emplace([this, &generalizedAdd](tf::Subflow& sbf) {
+                generalizedAdd.SetMostSigOp(*this->mostSigOp->Copy(sbf));
             });
         }
 
         if (this->leastSigOp) {
-            subflow.emplace([this, &normalizedAdd](tf::Subflow& sbf) {
-                normalizedAdd.SetLeastSigOp(*this->leastSigOp->Copy(sbf));
+            subflow.emplace([this, &generalizedAdd](tf::Subflow& sbf) {
+                generalizedAdd.SetLeastSigOp(*this->leastSigOp->Copy(sbf));
             });
         }
 
         subflow.join();
 
-        return std::make_unique<Add<Expression>>(normalizedAdd);
+        return std::make_unique<Add<Expression>>(generalizedAdd);
     }
 
     [[nodiscard]] auto ToString() const -> std::string final
@@ -91,9 +91,9 @@ public:
         return fmt::format("({} + {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
     }
 
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Add<FirstAddendT, SecondAddendT>>
+    static auto Specialize(const Expression& other) -> std::unique_ptr<Add<AugendT, AddendT>>
     {
-        Add<FirstAddendT, SecondAddendT> add;
+        Add<AugendT, AddendT> add;
 
         if (!add.StructurallyEquivalent(other)) {
             return nullptr;
@@ -103,43 +103,43 @@ public:
         const auto& otherBinaryExpression = dynamic_cast<const Add<Expression>&>(*otherNormalized);
 
         if (otherBinaryExpression.HasMostSigOp()) {
-            add.SetMostSigOp(*FirstAddendT::Specialize(otherBinaryExpression.GetMostSigOp()));
+            add.SetMostSigOp(*AugendT::Specialize(otherBinaryExpression.GetMostSigOp()));
         }
 
         if (otherBinaryExpression.HasLeastSigOp()) {
-            add.SetLeastSigOp(*SecondAddendT::Specialize(otherBinaryExpression.GetLeastSigOp()));
+            add.SetLeastSigOp(*AddendT::Specialize(otherBinaryExpression.GetLeastSigOp()));
         }
 
-        return std::make_unique<Add<FirstAddendT, SecondAddendT>>(add);
+        return std::make_unique<Add<AugendT, AddendT>>(add);
     }
 
-    static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Add<FirstAddendT, SecondAddendT>>
+    static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Add<AugendT, AddendT>>
     {
-        Add<FirstAddendT, SecondAddendT> add;
+        Add<AugendT, AddendT> add;
 
         if (!add.StructurallyEquivalent(other)) {
             return nullptr;
         }
 
-        std::unique_ptr<Expression> otherNormalized;
+        std::unique_ptr<Expression> otherGeneralized;
 
-        tf::Task generalizeTask = subflow.emplace([&other, &otherNormalized](tf::Subflow& sbf) {
-            otherNormalized = other.Generalize(sbf);
+        tf::Task generalizeTask = subflow.emplace([&other, &otherGeneralized](tf::Subflow& sbf) {
+            otherGeneralized = other.Generalize(sbf);
         });
 
-        tf::Task mostSigOpTask = subflow.emplace([&add, &otherNormalized](tf::Subflow& sbf) {
-            const auto& otherBinaryExpression = dynamic_cast<const Add<Expression>&>(*otherNormalized);
+        tf::Task mostSigOpTask = subflow.emplace([&add, &otherGeneralized](tf::Subflow& sbf) {
+            const auto& otherBinaryExpression = dynamic_cast<const Add<Expression>&>(*otherGeneralized);
             if (otherBinaryExpression.HasMostSigOp()) {
-                add.SetMostSigOp(*FirstAddendT::Specialize(otherBinaryExpression.GetMostSigOp(), sbf));
+                add.SetMostSigOp(*AugendT::Specialize(otherBinaryExpression.GetMostSigOp(), sbf));
             }
         });
 
         mostSigOpTask.succeed(generalizeTask);
 
-        tf::Task leastSigOpTask = subflow.emplace([&add, &otherNormalized](tf::Subflow& sbf) {
-            const auto& otherBinaryExpression = dynamic_cast<const Add<Expression>&>(*otherNormalized);
+        tf::Task leastSigOpTask = subflow.emplace([&add, &otherGeneralized](tf::Subflow& sbf) {
+            const auto& otherBinaryExpression = dynamic_cast<const Add<Expression>&>(*otherGeneralized);
             if (otherBinaryExpression.HasLeastSigOp()) {
-                add.SetLeastSigOp(*SecondAddendT::Specialize(otherBinaryExpression.GetLeastSigOp(), sbf));
+                add.SetLeastSigOp(*AddendT::Specialize(otherBinaryExpression.GetLeastSigOp(), sbf));
             }
         });
 
@@ -147,7 +147,7 @@ public:
 
         subflow.join();
 
-        return std::make_unique<Add<FirstAddendT, SecondAddendT>>(add);
+        return std::make_unique<Add<AugendT, AddendT>>(add);
     }
 
     auto operator=(const Add& other) -> Add& = default;
