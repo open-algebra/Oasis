@@ -60,9 +60,9 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     Add simplifiedAdd { *simplifiedFirstAddend, *simplifiedSecondAddend };
 
-    if (simplifiedAdd.StructurallyEquivalent(Add<Real> { Real {}, Real {} })) {
-        const auto& firstReal = dynamic_cast<const Real&>(*simplifiedFirstAddend);
-        const auto& secondReal = dynamic_cast<const Real&>(*simplifiedSecondAddend);
+    if (auto realCase = Add<Real>::Specialize(simplifiedAdd); realCase != nullptr) {
+        const Real& firstReal = realCase->GetMostSigOp();
+        const Real& secondReal = realCase->GetLeastSigOp();
 
         return std::make_unique<Real>(firstReal.GetValue() + secondReal.GetValue());
     }
@@ -95,6 +95,7 @@ auto Add<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Ex
 
     Add simplifiedAdd;
 
+    // While this task isn't actually parallelized, it exists as a prerequisite for check possible cases in parallel
     tf::Task simplifyTask = subflow.emplace([&simplifiedAdd, &simplifiedFirstAddend, &simplifiedSecondAddend](tf::Subflow& sbf) {
         simplifiedAdd = Add { *simplifiedFirstAddend, *simplifiedSecondAddend };
     });
@@ -107,7 +108,7 @@ auto Add<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Ex
         realCase = Add<Real>::Specialize(simplifiedAdd, sbf);
     });
 
-    realCaseTask.succeed(simplifyTask);
+    simplifyTask.precede(realCaseTask);
 
     subflow.join();
 
