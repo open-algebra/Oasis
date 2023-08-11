@@ -9,9 +9,9 @@ auto Expression::GetCategory() const -> uint32_t
     return 0;
 }
 
-auto Expression::GetType() const -> Expression::Type
+auto Expression::GetType() const -> ExpressionType
 {
-    return Type::None;
+    return ExpressionType::None;
 }
 
 auto Expression::Generalize() const -> std::unique_ptr<Expression>

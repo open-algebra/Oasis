@@ -16,7 +16,7 @@ TEST_CASE("Addition", "[Add]")
     };
 
     auto simplified = add.Simplify();
-    REQUIRE(simplified->GetType() == Oasis::Expression::Type::Real);
+    REQUIRE(simplified->Is<Oasis::Real>());
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
     REQUIRE(simplifiedReal.GetValue() == 6.0);
@@ -32,7 +32,7 @@ TEST_CASE("Generalized Addition", "[Add][Generalized]")
     };
 
     auto simplified = add.Simplify();
-    REQUIRE(simplified->GetType() == Oasis::Expression::Type::Real);
+    REQUIRE(simplified->Is<Oasis::Real>());
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
     REQUIRE(simplifiedReal.GetValue() == 6.0);
@@ -48,7 +48,7 @@ TEST_CASE("Addition Async", "[Add][Async]")
     };
 
     std::unique_ptr<Oasis::Expression> simplified = add.SimplifyAsync();
-    REQUIRE(simplified->GetType() == Oasis::Expression::Type::Real);
+    REQUIRE(simplified->Is<Oasis::Real>());
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
     REQUIRE(simplifiedReal.GetValue() == 6.0);
@@ -64,7 +64,7 @@ TEST_CASE("Generalized Addition Async", "[Add][Generalized][Async]")
     };
 
     auto simplified = add.SimplifyAsync();
-    REQUIRE(simplified->GetType() == Oasis::Expression::Type::Real);
+    REQUIRE(simplified->Is<Oasis::Real>());
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
     REQUIRE(simplifiedReal.GetValue() == 6.0);
