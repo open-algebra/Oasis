@@ -38,6 +38,8 @@ auto BinaryExpressionBase<Expression>::StructurallyEquivalent(const Expression& 
                 return false;
             }
         }
+    } else {
+        return false;
     }
 
     if ((leastSigOp == nullptr) == (otherBinary.leastSigOp == nullptr)) {
@@ -46,6 +48,8 @@ auto BinaryExpressionBase<Expression>::StructurallyEquivalent(const Expression& 
                 return false;
             }
         }
+    } else {
+        return false;
     }
 
     return true;
@@ -57,35 +61,39 @@ auto BinaryExpressionBase<Expression>::StructurallyEquivalent(const Expression& 
         return false;
     }
 
-    std::unique_ptr<Expression> otherNormalized;
+    std::unique_ptr<Expression> otherGeneralized;
 
-    tf::Task normalizeTask = subflow.emplace([&](tf::Subflow& sbf) {
-        otherNormalized = other.Generalize(sbf);
+    tf::Task generalizeTask = subflow.emplace([&](tf::Subflow& sbf) {
+        otherGeneralized = other.Generalize(sbf);
     });
 
     bool mostSigOpEquivalent = false, leastSigOpEquivalent = false;
 
-    if (mostSigOp) {
-        tf::Task compMostSigOp = subflow.emplace([this, &otherNormalized, &mostSigOpEquivalent](tf::Subflow& sbf) {
-            const auto& otherBinary = dynamic_cast<const BinaryExpressionBase&>(*otherNormalized);
-            if (otherBinary.mostSigOp) {
+    tf::Task compMostSigOp = subflow.emplace([this, &otherGeneralized, &mostSigOpEquivalent](tf::Subflow& sbf) {
+        const auto& otherBinary = dynamic_cast<const BinaryExpressionBase&>(*otherGeneralized);
+        if ((mostSigOp == nullptr) == (otherBinary.mostSigOp == nullptr)) {
+            if (mostSigOp && otherBinary.mostSigOp) {
                 mostSigOpEquivalent = mostSigOp->StructurallyEquivalent(*otherBinary.mostSigOp, sbf);
             }
-        });
+        } else {
+            mostSigOpEquivalent = false;
+        }
+    });
 
-        compMostSigOp.succeed(normalizeTask);
-    }
+    compMostSigOp.succeed(generalizeTask);
 
-    if (leastSigOp) {
-        tf::Task compMostSigOp = subflow.emplace([this, &otherNormalized, &leastSigOpEquivalent](tf::Subflow& sbf) {
-            const auto& otherBinary = dynamic_cast<const BinaryExpressionBase&>(*otherNormalized);
-            if (otherBinary.leastSigOp) {
+    tf::Task compLeastSigOp = subflow.emplace([this, &otherGeneralized, &leastSigOpEquivalent](tf::Subflow& sbf) {
+        const auto& otherBinary = dynamic_cast<const BinaryExpressionBase&>(*otherGeneralized);
+        if ((leastSigOp == nullptr) == (otherBinary.leastSigOp == nullptr)) {
+            if (leastSigOp && otherBinary.leastSigOp) {
                 leastSigOpEquivalent = leastSigOp->StructurallyEquivalent(*otherBinary.leastSigOp, sbf);
             }
-        });
+        } else {
+            leastSigOpEquivalent = false;
+        }
+    });
 
-        compMostSigOp.succeed(normalizeTask);
-    }
+    compLeastSigOp.succeed(generalizeTask);
 
     subflow.join();
 
