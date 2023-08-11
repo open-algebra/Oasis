@@ -18,11 +18,11 @@ auto Add<Expression>::Generalize() const -> std::unique_ptr<Expression>
     Add generalized;
 
     if (mostSigOp) {
-        generalized.SetMostSigOp(*mostSigOp->Copy());
+        generalized.SetMostSigOp(*mostSigOp);
     }
 
     if (leastSigOp) {
-        generalized.SetLeastSigOp(*leastSigOp->Copy());
+        generalized.SetLeastSigOp(*leastSigOp);
     }
 
     return generalized.Copy();
