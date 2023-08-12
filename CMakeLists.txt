@@ -33,7 +33,13 @@ endif()
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_library(Oasis src/Add.cpp src/BinaryExpression.cpp src/Expression.cpp src/Real.cpp)
+add_library(Oasis src/Add.cpp src/BinaryExpression.cpp src/Expression.cpp src/Real.cpp
+        src/Subtract.cpp
+        include/Oasis/Subtract.hpp
+        src/Multiply.cpp
+        include/Oasis/Multiply.hpp
+        src/Divide.cpp
+        include/Oasis/Divide.hpp)
 target_include_directories(Oasis PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(Oasis PUBLIC fmt::fmt Taskflow)
 
@@ -42,7 +48,10 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${Oasis_SOURCES})
 
 add_library(Oasis::Oasis ALIAS Oasis)
 
-add_executable(OasisTests tests/test.cpp)
+add_executable(OasisTests tests/AddTests.cpp
+        tests/SubtractTests.cpp
+        tests/MultiplyTests.cpp
+        tests/DivideTests.cpp)
 target_link_libraries(OasisTests PRIVATE Oasis::Oasis Catch2::Catch2 Catch2::Catch2WithMain)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)

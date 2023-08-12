@@ -2,8 +2,6 @@
 // Created by Matthew McCall on 7/2/23.
 //
 
-#include "taskflow/taskflow.hpp"
-
 #include "Oasis/Add.hpp"
 
 namespace Oasis {
@@ -76,15 +74,19 @@ auto Add<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Ex
     std::unique_ptr<Expression> simplifiedAugend, simplifiedAddend;
 
     tf::Task leftSimplifyTask = subflow.emplace([this, &simplifiedAugend](tf::Subflow& sbf) {
-        if (mostSigOp) {
-            simplifiedAugend = mostSigOp->Simplify(sbf);
+        if (!mostSigOp) {
+            return;
         }
+
+        simplifiedAugend = mostSigOp->Simplify(sbf);
     });
 
     tf::Task rightSimplifyTask = subflow.emplace([this, &simplifiedAddend](tf::Subflow& sbf) {
-        if (leastSigOp) {
-            simplifiedAddend = leastSigOp->Simplify(sbf);
+        if (!leastSigOp) {
+            return;
         }
+
+        simplifiedAddend = leastSigOp->Simplify(sbf);
     });
 
     Add simplifiedAdd;
