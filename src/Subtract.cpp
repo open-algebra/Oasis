@@ -11,42 +11,6 @@ Subtract<Expression>::Subtract(const Expression& minuend, const Expression& subt
 {
 }
 
-auto Subtract<Expression>::Generalize() const -> std::unique_ptr<Expression>
-{
-    Subtract generalized;
-
-    if (mostSigOp) {
-        generalized.SetMostSigOp(*mostSigOp->Copy());
-    }
-
-    if (leastSigOp) {
-        generalized.SetLeastSigOp(*leastSigOp->Copy());
-    }
-
-    return generalized.Copy();
-}
-
-auto Subtract<Expression>::Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
-{
-    Subtract generalized;
-
-    if (mostSigOp) {
-        subflow.emplace([this, &generalized](tf::Subflow& sbf) {
-            generalized.SetMostSigOp(*mostSigOp->Copy(sbf));
-        });
-    }
-
-    if (leastSigOp) {
-        subflow.emplace([this, &generalized](tf::Subflow& sbf) {
-            generalized.SetLeastSigOp(*leastSigOp->Copy(sbf));
-        });
-    }
-
-    subflow.join();
-
-    return generalized.Copy();
-}
-
 auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedMinuend = mostSigOp ? mostSigOp->Simplify() : nullptr;

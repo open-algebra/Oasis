@@ -11,42 +11,6 @@ Multiply<Expression>::Multiply(const Expression& minuend, const Expression& subt
 {
 }
 
-auto Multiply<Expression>::Generalize() const -> std::unique_ptr<Expression>
-{
-    Multiply generalized;
-
-    if (mostSigOp) {
-        generalized.SetMostSigOp(*mostSigOp->Copy());
-    }
-
-    if (leastSigOp) {
-        generalized.SetLeastSigOp(*leastSigOp->Copy());
-    }
-
-    return generalized.Copy();
-}
-
-auto Multiply<Expression>::Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
-{
-    Multiply generalized;
-
-    if (mostSigOp) {
-        subflow.emplace([this, &generalized](tf::Subflow& sbf) {
-            generalized.SetMostSigOp(*mostSigOp->Copy(sbf));
-        });
-    }
-
-    if (leastSigOp) {
-        subflow.emplace([this, &generalized](tf::Subflow& sbf) {
-            generalized.SetLeastSigOp(*leastSigOp->Copy(sbf));
-        });
-    }
-
-    subflow.join();
-
-    return generalized.Copy();
-}
-
 auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedMultiplicand = mostSigOp->Simplify();

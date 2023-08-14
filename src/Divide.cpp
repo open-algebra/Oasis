@@ -11,42 +11,6 @@ Divide<Expression>::Divide(const Expression& dividend, const Expression& divisor
 {
 }
 
-auto Divide<Expression>::Generalize() const -> std::unique_ptr<Expression>
-{
-    Divide generalized;
-
-    if (mostSigOp) {
-        generalized.SetMostSigOp(*mostSigOp->Copy());
-    }
-
-    if (leastSigOp) {
-        generalized.SetLeastSigOp(*leastSigOp->Copy());
-    }
-
-    return generalized.Copy();
-}
-
-auto Divide<Expression>::Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
-{
-    Divide generalized;
-
-    if (mostSigOp) {
-        subflow.emplace([this, &generalized](tf::Subflow& sbf) {
-            generalized.SetMostSigOp(*mostSigOp->Copy(sbf));
-        });
-    }
-
-    if (leastSigOp) {
-        subflow.emplace([this, &generalized](tf::Subflow& sbf) {
-            generalized.SetLeastSigOp(*leastSigOp->Copy(sbf));
-        });
-    }
-
-    subflow.join();
-
-    return generalized.Copy();
-}
-
 auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedDividend = mostSigOp->Simplify();

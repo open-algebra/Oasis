@@ -295,6 +295,42 @@ public:
         return copy;
     }
 
+    [[nodiscard]] auto Generalize() const -> std::unique_ptr<Expression> final
+    {
+        Derived generalized;
+
+        if (this->mostSigOp) {
+            generalized.SetMostSigOp(*this->mostSigOp->Copy());
+        }
+
+        if (this->leastSigOp) {
+            generalized.SetLeastSigOp(*this->leastSigOp->Copy());
+        }
+
+        return std::make_unique<Derived>(generalized);
+    }
+
+    auto Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final
+    {
+        Derived generalizedAdd;
+
+        if (this->mostSigOp) {
+            subflow.emplace([this, &generalizedAdd](tf::Subflow& sbf) {
+                generalizedAdd.SetMostSigOp(*this->mostSigOp->Copy(sbf));
+            });
+        }
+
+        if (this->leastSigOp) {
+            subflow.emplace([this, &generalizedAdd](tf::Subflow& sbf) {
+                generalizedAdd.SetLeastSigOp(*this->leastSigOp->Copy(sbf));
+            });
+        }
+
+        subflow.join();
+
+        return std::make_unique<Derived>(generalizedAdd);
+    }
+
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 };
 

@@ -23,9 +23,6 @@ public:
 
     Divide(const Expression& dividend, const Expression& divisor);
 
-    [[nodiscard]] auto Generalize() const -> std::unique_ptr<Expression> final;
-    auto Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
-
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 

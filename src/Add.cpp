@@ -11,42 +11,6 @@ Add<Expression>::Add(const Expression& addend1, const Expression& addend2)
 {
 }
 
-auto Add<Expression>::Generalize() const -> std::unique_ptr<Expression>
-{
-    Add generalized;
-
-    if (mostSigOp) {
-        generalized.SetMostSigOp(*mostSigOp);
-    }
-
-    if (leastSigOp) {
-        generalized.SetLeastSigOp(*leastSigOp);
-    }
-
-    return generalized.Copy();
-}
-
-auto Add<Expression>::Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
-{
-    Add generalized;
-
-    if (mostSigOp) {
-        subflow.emplace([this, &generalized](tf::Subflow& sbf) {
-            generalized.SetMostSigOp(*mostSigOp);
-        });
-    }
-
-    if (leastSigOp) {
-        subflow.emplace([this, &generalized](tf::Subflow& sbf) {
-            generalized.SetLeastSigOp(*leastSigOp);
-        });
-    }
-
-    subflow.join();
-
-    return generalized.Copy();
-}
-
 auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedAugend = mostSigOp ? mostSigOp->Simplify() : nullptr;
