@@ -16,7 +16,7 @@ template <IExpression DividendT, IExpression DivisorT>
 class Divide;
 
 template <>
-class Divide<Expression, Expression> : public BinaryExpression<Divide<Expression, Expression>> {
+class Divide<Expression, Expression> : public BinaryExpression<Divide> {
 public:
     Divide() = default;
     Divide(const Divide<Expression, Expression>& other) = default;
@@ -36,52 +36,16 @@ public:
 };
 
 template <IExpression DividendT = Expression, IExpression DivisorT = DividendT>
-class Divide : public BinaryExpression<Divide<DividendT, DivisorT>, DividendT, DivisorT> {
+class Divide : public BinaryExpression<Divide, DividendT, DivisorT> {
 public:
     Divide() = default;
     Divide(const Divide<DividendT, DivisorT>& other)
-        : BinaryExpression<Divide<DividendT, DivisorT>, DividendT, DivisorT>(other)
+        : BinaryExpression<Divide, DividendT, DivisorT>(other)
     { }
 
     Divide(const DividendT& addend1, const DivisorT& addend2)
-        : BinaryExpression<Divide<DividendT, DivisorT>, DividendT, DivisorT>(addend1, addend2)
+        : BinaryExpression<Divide, DividendT, DivisorT>(addend1, addend2)
     { }
-
-    [[nodiscard]] auto Generalize() const -> std::unique_ptr<Expression> final
-    {
-        Divide<Expression> generalizedAdd;
-
-        if (this->mostSigOp) {
-            generalizedAdd.SetMostSigOp(*this->mostSigOp->Copy());
-        }
-
-        if (this->leastSigOp) {
-            generalizedAdd.SetLeastSigOp(*this->leastSigOp->Copy());
-        }
-
-        return std::make_unique<Divide<Expression>>(generalizedAdd);
-    }
-
-    auto Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final
-    {
-        Divide<Expression> generalizedAdd;
-
-        if (this->mostSigOp) {
-            subflow.emplace([this, &generalizedAdd](tf::Subflow& sbf) {
-                generalizedAdd.SetMostSigOp(*this->mostSigOp->Copy(sbf));
-            });
-        }
-
-        if (this->leastSigOp) {
-            subflow.emplace([this, &generalizedAdd](tf::Subflow& sbf) {
-                generalizedAdd.SetLeastSigOp(*this->leastSigOp->Copy(sbf));
-            });
-        }
-
-        subflow.join();
-
-        return std::make_unique<Divide<Expression>>(generalizedAdd);
-    }
 
     [[nodiscard]] auto ToString() const -> std::string final
     {

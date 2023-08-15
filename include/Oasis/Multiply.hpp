@@ -16,7 +16,7 @@ template <IExpression MultiplicandT, IExpression MultiplierT>
 class Multiply;
 
 template <>
-class Multiply<Expression, Expression> : public BinaryExpression<Multiply<Expression, Expression>> {
+class Multiply<Expression, Expression> : public BinaryExpression<Multiply> {
 public:
     Multiply() = default;
     Multiply(const Multiply<Expression, Expression>& other) = default;
@@ -36,52 +36,16 @@ public:
 };
 
 template <IExpression MultiplicandT = Expression, IExpression MultiplierT = MultiplicandT>
-class Multiply : public BinaryExpression<Multiply<MultiplicandT, MultiplierT>, MultiplicandT, MultiplierT> {
+class Multiply : public BinaryExpression<Multiply, MultiplicandT, MultiplierT> {
 public:
     Multiply() = default;
     Multiply(const Multiply<MultiplicandT, MultiplierT>& other)
-        : BinaryExpression<Multiply<MultiplicandT, MultiplierT>, MultiplicandT, MultiplierT>(other)
+        : BinaryExpression<Multiply, MultiplicandT, MultiplierT>(other)
     { }
     
     Multiply(const MultiplicandT& addend1, const MultiplierT& addend2)
-        : BinaryExpression<Multiply<MultiplicandT, MultiplierT>, MultiplicandT, MultiplierT>(addend1, addend2)
+        : BinaryExpression<Multiply, MultiplicandT, MultiplierT>(addend1, addend2)
     { }
-
-    [[nodiscard]] auto Generalize() const -> std::unique_ptr<Expression> final
-    {
-        Multiply<Expression> generalizedSubtract;
-
-        if (this->mostSigOp) {
-            generalizedSubtract.SetMostSigOp(*this->mostSigOp->Copy());
-        }
-
-        if (this->leastSigOp) {
-            generalizedSubtract.SetLeastSigOp(*this->leastSigOp->Copy());
-        }
-
-        return std::make_unique<Multiply<Expression>>(generalizedSubtract);
-    }
-
-    auto Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final
-    {
-        Multiply<Expression> generalizedSubtract;
-
-        if (this->mostSigOp) {
-            subflow.emplace([this, &generalizedSubtract](tf::Subflow& sbf) {
-                generalizedSubtract.SetMostSigOp(*this->mostSigOp->Copy(sbf));
-            });
-        }
-
-        if (this->leastSigOp) {
-            subflow.emplace([this, &generalizedSubtract](tf::Subflow& sbf) {
-                generalizedSubtract.SetLeastSigOp(*this->leastSigOp->Copy(sbf));
-            });
-        }
-
-        subflow.join();
-
-        return std::make_unique<Multiply<Expression>>(generalizedSubtract);
-    }
 
     [[nodiscard]] auto ToString() const -> std::string final
     {

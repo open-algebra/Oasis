@@ -16,7 +16,7 @@ template <IExpression AugendT, IExpression AddendT>
 class Add;
 
 template <>
-class Add<Expression, Expression> : public BinaryExpression<Add<Expression, Expression>> {
+class Add<Expression, Expression> : public BinaryExpression<Add> {
 public:
     Add() = default;
     Add(const Add<Expression, Expression>& other) = default;
@@ -36,52 +36,16 @@ public:
 };
 
 template <IExpression AugendT = Expression, IExpression AddendT = AugendT>
-class Add : public BinaryExpression<Add<AugendT, AddendT>, AugendT, AddendT> {
+class Add : public BinaryExpression<Add, AugendT, AddendT> {
 public:
     Add() = default;
     Add(const Add<AugendT, AddendT>& other)
-        : BinaryExpression<Add<AugendT, AddendT>, AugendT, AddendT>(other)
+        : BinaryExpression<Add, AugendT, AddendT>(other)
     { }
 
     Add(const AugendT& addend1, const AddendT& addend2)
-        : BinaryExpression<Add<AugendT, AddendT>, AugendT, AddendT>(addend1, addend2)
+        : BinaryExpression<Add, AugendT, AddendT>(addend1, addend2)
     { }
-
-    [[nodiscard]] auto Generalize() const -> std::unique_ptr<Expression> final
-    {
-        Add<Expression> generalizedAdd;
-
-        if (this->mostSigOp) {
-            generalizedAdd.SetMostSigOp(*this->mostSigOp->Copy());
-        }
-
-        if (this->leastSigOp) {
-            generalizedAdd.SetLeastSigOp(*this->leastSigOp->Copy());
-        }
-
-        return std::make_unique<Add<Expression>>(generalizedAdd);
-    }
-
-    auto Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final
-    {
-        Add<Expression> generalizedAdd;
-
-        if (this->mostSigOp) {
-            subflow.emplace([this, &generalizedAdd](tf::Subflow& sbf) {
-                generalizedAdd.SetMostSigOp(*this->mostSigOp->Copy(sbf));
-            });
-        }
-
-        if (this->leastSigOp) {
-            subflow.emplace([this, &generalizedAdd](tf::Subflow& sbf) {
-                generalizedAdd.SetLeastSigOp(*this->leastSigOp->Copy(sbf));
-            });
-        }
-
-        subflow.join();
-
-        return std::make_unique<Add<Expression>>(generalizedAdd);
-    }
 
     [[nodiscard]] auto ToString() const -> std::string final
     {

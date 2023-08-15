@@ -216,8 +216,12 @@ protected:
     std::unique_ptr<LeastSigOpT> leastSigOp;
 };
 
-template <typename Derived, IExpression MostSigOpT = Expression, IExpression LeastSigOpT = MostSigOpT>
+template <template <IExpression, IExpression> class Derived, IExpression MostSigOpT = Expression, IExpression LeastSigOpT = MostSigOpT>
 class BinaryExpression : public BinaryExpressionBase<MostSigOpT, LeastSigOpT> {
+
+    using DerivedSpecialized = Derived<MostSigOpT, LeastSigOpT>;
+    using DerivedGeneralized = Derived<Expression, Expression>;
+
 public:
     BinaryExpression() = default;
     BinaryExpression(const BinaryExpression<Derived, MostSigOpT, LeastSigOpT>& other)
@@ -230,35 +234,74 @@ public:
 
     [[nodiscard]] auto Copy() const -> std::unique_ptr<Expression> final
     {
-        return std::make_unique<Derived>(*static_cast<const Derived*>(this));
+        return std::make_unique<DerivedSpecialized>(*static_cast<const DerivedSpecialized*>(this));
     }
 
     auto Copy(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final
     {
-        std::unique_ptr<Derived> copy = std::make_unique<Derived>();
+        DerivedSpecialized copy;
 
         if (this->mostSigOp) {
             subflow.emplace([this, &copy](tf::Subflow& sbf) {
-                copy->SetMostSigOp(*this->mostSigOp);
+                copy.SetMostSigOp(*this->mostSigOp);
             });
         }
 
         if (this->leastSigOp) {
             subflow.emplace([this, &copy](tf::Subflow& sbf) {
-                copy->SetLeastSigOp(*this->leastSigOp);
+                copy.SetLeastSigOp(*this->leastSigOp);
             });
         }
 
         subflow.join();
 
-        return copy;
+        return std::make_unique<DerivedSpecialized>(copy);
+    }
+
+    [[nodiscard]] auto Generalize() const -> std::unique_ptr<Expression> final
+    {
+        DerivedGeneralized generalized;
+
+        if (this->mostSigOp) {
+            generalized.SetMostSigOp(*this->mostSigOp->Copy());
+        }
+
+        if (this->leastSigOp) {
+            generalized.SetLeastSigOp(*this->leastSigOp->Copy());
+        }
+
+        return std::make_unique<DerivedGeneralized>(generalized);
+    }
+
+    auto Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final
+    {
+        DerivedGeneralized generalized;
+
+        if (this->mostSigOp) {
+            subflow.emplace([this, &generalized](tf::Subflow& sbf) {
+                generalized.SetMostSigOp(*this->mostSigOp->Copy(sbf));
+            });
+        }
+
+        if (this->leastSigOp) {
+            subflow.emplace([this, &generalized](tf::Subflow& sbf) {
+                generalized.SetLeastSigOp(*this->leastSigOp->Copy(sbf));
+            });
+        }
+
+        subflow.join();
+
+        return std::make_unique<DerivedGeneralized>(generalized);
     }
 
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 };
 
-template <typename Derived>
+template <template <IExpression, IExpression> class Derived>
 class BinaryExpression<Derived, Expression, Expression> : public BinaryExpressionBase<Expression, Expression> {
+
+    using DerivedGeneralized = Derived<Expression, Expression>;
+
 public:
     BinaryExpression() = default;
     BinaryExpression(const BinaryExpression& other)
@@ -271,12 +314,12 @@ public:
 
     [[nodiscard]] auto Copy() const -> std::unique_ptr<Expression> override
     {
-        return std::make_unique<Derived>(*static_cast<const Derived*>(this));
+        return std::make_unique<DerivedGeneralized>(*static_cast<const DerivedGeneralized*>(this));
     }
 
     auto Copy(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final
     {
-        std::unique_ptr<Derived> copy = std::make_unique<Derived>();
+        std::unique_ptr<DerivedGeneralized> copy = std::make_unique<DerivedGeneralized>();
 
         if (mostSigOp) {
             subflow.emplace([this, &copy](tf::Subflow& sbf) {
@@ -297,7 +340,7 @@ public:
 
     [[nodiscard]] auto Generalize() const -> std::unique_ptr<Expression> final
     {
-        Derived generalized;
+        DerivedGeneralized generalized;
 
         if (this->mostSigOp) {
             generalized.SetMostSigOp(*this->mostSigOp->Copy());
@@ -307,28 +350,28 @@ public:
             generalized.SetLeastSigOp(*this->leastSigOp->Copy());
         }
 
-        return std::make_unique<Derived>(generalized);
+        return std::make_unique<DerivedGeneralized>(generalized);
     }
 
     auto Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final
     {
-        Derived generalizedAdd;
+        DerivedGeneralized generalized;
 
         if (this->mostSigOp) {
-            subflow.emplace([this, &generalizedAdd](tf::Subflow& sbf) {
-                generalizedAdd.SetMostSigOp(*this->mostSigOp->Copy(sbf));
+            subflow.emplace([this, &generalized](tf::Subflow& sbf) {
+                generalized.SetMostSigOp(*this->mostSigOp->Copy(sbf));
             });
         }
 
         if (this->leastSigOp) {
-            subflow.emplace([this, &generalizedAdd](tf::Subflow& sbf) {
-                generalizedAdd.SetLeastSigOp(*this->leastSigOp->Copy(sbf));
+            subflow.emplace([this, &generalized](tf::Subflow& sbf) {
+                generalized.SetLeastSigOp(*this->leastSigOp->Copy(sbf));
             });
         }
 
         subflow.join();
 
-        return std::make_unique<Derived>(generalizedAdd);
+        return std::make_unique<DerivedGeneralized>(generalized);
     }
 
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
