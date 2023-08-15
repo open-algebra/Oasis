@@ -5,31 +5,31 @@ include(FetchContent)
 
 FetchContent_Declare(
         Catch2
-        GIT_REPOSITORY  https://github.com/catchorg/Catch2.git
-        GIT_TAG         v3.4.0
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v3.4.0
 )
 
 FetchContent_Declare(
         fmt
-        GIT_REPOSITORY  https://github.com/fmtlib/fmt.git
-        GIT_TAG         10.0.0
+        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+        GIT_TAG 10.0.0
 )
 
 FetchContent_MakeAvailable(Catch2 fmt)
 
 FetchContent_Declare(
         taskflow
-        GIT_REPOSITORY  https://github.com/taskflow/taskflow.git
-        GIT_TAG         v3.6.0
+        GIT_REPOSITORY https://github.com/taskflow/taskflow.git
+        GIT_TAG v3.6.0
 )
 
 set(TF_BUILD_TESTS OFF)
 
 FetchContent_GetProperties(taskflow)
-if(NOT taskflow_POPULATED)
+if (NOT taskflow_POPULATED)
     FetchContent_Populate(taskflow)
     add_subdirectory(${taskflow_SOURCE_DIR} ${taskflow_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
+endif ()
 
 set(CMAKE_CXX_STANDARD 20)
 

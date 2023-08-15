@@ -4,7 +4,9 @@
 #include "catch2/catch_test_macros.hpp"
 
 #include "Oasis/Add.hpp"
+#include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/Variable.hpp"
 
 TEST_CASE("Addition", "[Add]")
 {
@@ -20,6 +22,25 @@ TEST_CASE("Addition", "[Add]")
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
     REQUIRE(simplifiedReal.GetValue() == 6.0);
+}
+
+TEST_CASE("Symbolic Addition", "[Add][Symbolic]")
+{
+    Oasis::Add add {
+        Oasis::Multiply {
+            Oasis::Real { 1.0 },
+            Oasis::Variable { "x"} },
+        Oasis::Multiply {
+                Oasis::Real { 2.0 },
+                Oasis::Variable { "x" } }
+        };
+
+    auto simplified = add.Simplify();
+    REQUIRE(simplified->Is<Oasis::Multiply<Oasis::Expression>>());
+
+    REQUIRE(Oasis::Multiply {
+        Oasis::Real { 3.0 },
+        Oasis::Variable { "x" } }.Equals(*simplified));
 }
 
 TEST_CASE("Generalized Addition", "[Add][Generalized]")

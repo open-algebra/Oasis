@@ -22,7 +22,7 @@ public:
 
     BinaryExpressionBase(const Expression& mostSigOp, const Expression& leastSigOp);
 
-    [[nodiscard]] virtual auto Equals(const Expression& other) const -> bool final;
+    [[nodiscard]] auto Equals(const Expression& other) const -> bool final;
 
     [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool override;
     auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool override;
@@ -56,11 +56,11 @@ public:
     BinaryExpressionBase(const BinaryExpressionBase<MostSigOpT, LeastSigOpT>& other)
     {
         if (other.mostSigOp) {
-            mostSigOp = std::make_unique<MostSigOpT>(*other.mostSigOp);
+            SetMostSigOp(*other.mostSigOp);
         }
 
         if (other.leastSigOp) {
-            leastSigOp = std::make_unique<LeastSigOpT>(*other.leastSigOp);
+            SetLeastSigOp(*other.leastSigOp);
         }
     }
 
@@ -213,12 +213,20 @@ public:
 
     auto SetMostSigOp(const MostSigOpT& op) -> void
     {
-        mostSigOp = std::make_unique<MostSigOpT>(op);
+        if constexpr (std::is_same_v<MostSigOpT, Expression>) {
+            mostSigOp = op.Copy();
+        } else {
+            mostSigOp = std::make_unique<MostSigOpT>(op);
+        }
     }
 
     auto SetLeastSigOp(const LeastSigOpT& op) -> void
     {
-        leastSigOp = std::make_unique<LeastSigOpT>(op);
+        if constexpr (std::is_same_v<LeastSigOpT, Expression>) {
+            leastSigOp = op.Copy();
+        } else {
+            leastSigOp = std::make_unique<LeastSigOpT>(op);
+        }
     }
 
     [[nodiscard]] auto HasMostSigOp() const -> bool
@@ -418,21 +426,29 @@ public:
 #define IMPL_SPECIALIZE(Derived, FirstOp, SecondOp)                                                                      \
     static auto Specialize(const Expression& other) -> std::unique_ptr<Derived<FirstOp, SecondOp>>                       \
     {                                                                                                                    \
-        Derived<FirstOp, SecondOp> specialized;                                                                          \
-                                                                                                                         \
-        if (!specialized.StructurallyEquivalent(other)) {                                                                \
+        if (!other.Is<Derived<Expression>>()) {                                                                          \
             return nullptr;                                                                                              \
         }                                                                                                                \
+                                                                                                                         \
+        Derived<FirstOp, SecondOp> specialized;                                                                          \
                                                                                                                          \
         std::unique_ptr<Expression> otherGeneralized = other.Generalize();                                               \
         const auto& otherBinaryExpression = dynamic_cast<const Derived<Expression>&>(*otherGeneralized);                 \
                                                                                                                          \
         if (otherBinaryExpression.HasMostSigOp()) {                                                                      \
-            specialized.SetMostSigOp(*FirstOp::Specialize(otherBinaryExpression.GetMostSigOp()));                        \
+            auto specializedMostSigOp = FirstOp::Specialize(otherBinaryExpression.GetMostSigOp());                       \
+            if (!specializedMostSigOp) {                                                                                 \
+                return nullptr;                                                                                          \
+            }                                                                                                            \
+            specialized.SetMostSigOp(*specializedMostSigOp);                                                             \
         }                                                                                                                \
                                                                                                                          \
         if (otherBinaryExpression.HasLeastSigOp()) {                                                                     \
-            specialized.SetLeastSigOp(*SecondOp::Specialize(otherBinaryExpression.GetLeastSigOp()));                     \
+            auto specializedLeastSigOp = SecondOp::Specialize(otherBinaryExpression.GetLeastSigOp());                    \
+            if (!specializedLeastSigOp) {                                                                                \
+                return nullptr;                                                                                          \
+            }                                                                                                            \
+            specialized.SetLeastSigOp(*specializedLeastSigOp);                                                           \
         }                                                                                                                \
                                                                                                                          \
         return std::make_unique<Derived<FirstOp, SecondOp>>(specialized);                                                \

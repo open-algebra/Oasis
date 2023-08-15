@@ -3,6 +3,7 @@
 //
 
 #include "Oasis/Add.hpp"
+#include "Oasis/Multiply.hpp"
 
 namespace Oasis {
 
@@ -23,6 +24,18 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         const Real& secondReal = realCase->GetLeastSigOp();
 
         return std::make_unique<Real>(firstReal.GetValue() + secondReal.GetValue());
+    }
+
+    if (auto likeTermsCase = Add<Multiply<Real, Expression>>::Specialize(simplifiedAdd); likeTermsCase != nullptr) {
+        const Oasis::IExpression auto& leftTerm = likeTermsCase->GetMostSigOp().GetLeastSigOp();
+        const Oasis::IExpression auto& rightTerm = likeTermsCase->GetLeastSigOp().GetLeastSigOp();
+
+        if (leftTerm.Equals(rightTerm)) {
+            const Real& coefficient1 = likeTermsCase->GetMostSigOp().GetMostSigOp();
+            const Real& coefficient2 = likeTermsCase->GetLeastSigOp().GetMostSigOp();
+
+            return std::make_unique<Multiply<Expression>>(Real(coefficient1.GetValue() + coefficient2.GetValue()), leftTerm);
+        }
     }
 
     return simplifiedAdd.Copy();
