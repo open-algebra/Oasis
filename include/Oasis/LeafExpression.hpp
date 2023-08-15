@@ -22,12 +22,12 @@ public:
         return std::make_unique<DerivedT>(*static_cast<const DerivedT*>(this));
     }
 
-    [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool override
+    [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool final
     {
         return this->GetType() == other.GetType();
     }
 
-    auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool override
+    auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool final
     {
         return this->GetType() == other.GetType();
     }

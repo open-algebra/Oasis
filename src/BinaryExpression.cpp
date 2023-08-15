@@ -23,6 +23,37 @@ BinaryExpressionBase<Expression>::BinaryExpressionBase(const Expression& mostSig
 {
 }
 
+auto BinaryExpressionBase<Expression>::Equals(const Oasis::Expression& other) const -> bool
+{
+    if (this->GetType() != other.GetType()) {
+        return false;
+    }
+
+    const auto& otherBinary = dynamic_cast<const BinaryExpressionBase&>(other);
+
+    if ((mostSigOp == nullptr) == (otherBinary.mostSigOp == nullptr)) {
+        if (mostSigOp && otherBinary.mostSigOp) {
+            if (!mostSigOp->Equals(*otherBinary.mostSigOp)) {
+                return false;
+            }
+        }
+    } else {
+        return false;
+    }
+
+    if ((leastSigOp == nullptr) == (otherBinary.leastSigOp == nullptr)) {
+        if (leastSigOp && otherBinary.leastSigOp) {
+            if (!leastSigOp->Equals(*otherBinary.leastSigOp)) {
+                return false;
+            }
+        }
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
 auto BinaryExpressionBase<Expression>::StructurallyEquivalent(const Expression& other) const -> bool
 {
     if (this->GetType() != other.GetType()) {

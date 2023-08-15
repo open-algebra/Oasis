@@ -22,6 +22,8 @@ public:
 
     BinaryExpressionBase(const Expression& mostSigOp, const Expression& leastSigOp);
 
+    [[nodiscard]] virtual auto Equals(const Expression& other) const -> bool final;
+
     [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool override;
     auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool override;
 
@@ -66,6 +68,37 @@ public:
         : mostSigOp(std::make_unique<MostSigOpT>(mostSigOp))
         , leastSigOp(std::make_unique<LeastSigOpT>(leastSigOp))
     {
+    }
+
+    [[nodiscard]] auto Equals(const Expression& other) const -> bool final
+    {
+        if (this->GetType() != other.GetType()) {
+            return false;
+        }
+
+        const auto& otherBinary = static_cast<const BinaryExpressionBase&>(other);
+
+        if ((mostSigOp == nullptr) == (otherBinary.mostSigOp == nullptr)) {
+            if (mostSigOp && otherBinary.mostSigOp) {
+                if (!mostSigOp->Equals(*otherBinary.mostSigOp)) {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+
+        if ((leastSigOp == nullptr) == (otherBinary.leastSigOp == nullptr)) {
+            if (leastSigOp && otherBinary.leastSigOp) {
+                if (!leastSigOp->Equals(*otherBinary.leastSigOp)) {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+
+        return true;
     }
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final

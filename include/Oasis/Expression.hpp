@@ -42,6 +42,8 @@ public:
     [[nodiscard]] virtual auto Copy() const -> std::unique_ptr<Expression> = 0;
     virtual auto Copy(tf::Subflow& subflow) const -> std::unique_ptr<Expression> = 0;
 
+    [[nodiscard]] virtual auto Equals(const Expression& other) const -> bool = 0;
+
     [[nodiscard]] virtual auto GetCategory() const -> uint32_t;
     [[nodiscard]] virtual auto GetType() const -> ExpressionType;
 

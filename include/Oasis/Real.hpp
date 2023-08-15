@@ -16,6 +16,8 @@ public:
 
     explicit Real(double value);
 
+    [[nodiscard]] virtual auto Equals(const Expression& other) const -> bool final;
+
     EXPRESSION_TYPE(Real)
     EXPRESSION_CATEGORY(0)
 

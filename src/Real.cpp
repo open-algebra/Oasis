@@ -13,6 +13,11 @@ Real::Real(double value)
 {
 }
 
+auto Real::Equals(const Expression& other) const -> bool
+{
+    return other.Is<Real>() && value == dynamic_cast<const Real&>(other).value;
+}
+
 auto Real::GetValue() const -> double
 {
     return value;

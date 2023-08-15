@@ -10,6 +10,11 @@ Variable::Variable(std::string name) : name(std::move(name))
 {
 }
 
+auto Variable::Equals(const Expression& other) const -> bool
+{
+    return other.Is<Variable>() && name == dynamic_cast<const Variable&>(other).name;
+}
+
 auto Variable::GetName() const -> std::string
 {
     return name;
