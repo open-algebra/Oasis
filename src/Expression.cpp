@@ -24,6 +24,16 @@ auto Expression::Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expre
     return Copy(subflow);
 }
 
+auto Expression::Specialize(const Expression& other) -> std::unique_ptr<Expression>
+{
+    return other.Copy();
+}
+
+auto Expression::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Expression>
+{
+    return other.Copy(subflow);
+}
+
 auto Expression::Simplify() const -> std::unique_ptr<Expression>
 {
     return Copy();

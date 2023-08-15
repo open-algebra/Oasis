@@ -15,6 +15,7 @@ class Expression;
 enum class ExpressionType {
     None,
     Real,
+    Variable,
     Add,
     Subtract,
     Multiply,
@@ -46,6 +47,9 @@ public:
 
     [[nodiscard]] virtual auto Generalize() const -> std::unique_ptr<Expression>;
     virtual auto Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression>;
+
+    static auto Specialize(const Expression& other) -> std::unique_ptr<Expression>;
+    static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Expression>;
 
     template <IExpression T>
     [[nodiscard]] bool Is() const
