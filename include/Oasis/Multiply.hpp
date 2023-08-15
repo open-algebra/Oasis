@@ -52,64 +52,7 @@ public:
         return fmt::format("({} + {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
     }
 
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Multiply<MultiplicandT, MultiplierT>>
-    {
-        Multiply<MultiplicandT, MultiplierT> subtract;
-
-        if (!subtract.StructurallyEquivalent(other)) {
-            return nullptr;
-        }
-
-        std::unique_ptr<Expression> otherNormalized = other.Generalize();
-        const auto& otherBinaryExpression = dynamic_cast<const Multiply<Expression>&>(*otherNormalized);
-
-        if (otherBinaryExpression.HasMostSigOp()) {
-            subtract.SetMostSigOp(*MultiplicandT::Specialize(otherBinaryExpression.GetMostSigOp()));
-        }
-
-        if (otherBinaryExpression.HasLeastSigOp()) {
-            subtract.SetLeastSigOp(*MultiplierT::Specialize(otherBinaryExpression.GetLeastSigOp()));
-        }
-
-        return std::make_unique<Multiply<MultiplicandT, MultiplierT>>(subtract);
-    }
-
-    static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Multiply<MultiplicandT, MultiplierT>>
-    {
-        if (!other.Is<Multiply>()) {
-            return nullptr;
-        }
-
-        Multiply<MultiplicandT, MultiplierT> multiply;
-
-        std::unique_ptr<Expression> otherNormalized;
-
-        tf::Task generalizeTask = subflow.emplace([&other, &otherNormalized](tf::Subflow& sbf) {
-            otherNormalized = other.Generalize(sbf);
-        });
-
-        tf::Task mostSigOpTask = subflow.emplace([&multiply, &otherNormalized](tf::Subflow& sbf) {
-            const auto& otherBinaryExpression = dynamic_cast<const Multiply<Expression>&>(*otherNormalized);
-            if (otherBinaryExpression.HasMostSigOp()) {
-                multiply.SetMostSigOp(*MultiplicandT::Specialize(otherBinaryExpression.GetMostSigOp(), sbf));
-            }
-        });
-
-        mostSigOpTask.succeed(generalizeTask);
-
-        tf::Task leastSigOpTask = subflow.emplace([&multiply, &otherNormalized](tf::Subflow& sbf) {
-            const auto& otherBinaryExpression = dynamic_cast<const Multiply<Expression>&>(*otherNormalized);
-            if (otherBinaryExpression.HasLeastSigOp()) {
-                multiply.SetLeastSigOp(*MultiplierT::Specialize(otherBinaryExpression.GetLeastSigOp(), sbf));
-            }
-        });
-
-        leastSigOpTask.succeed(generalizeTask);
-
-        subflow.join();
-
-        return std::make_unique<Multiply<MultiplicandT, MultiplierT>>(multiply);
-    }
+    IMPL_SPECIALIZE(Multiply, MultiplicandT, MultiplierT)
 
     auto operator=(const Multiply& other) -> Multiply& = default;
 

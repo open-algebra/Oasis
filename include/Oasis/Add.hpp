@@ -52,64 +52,7 @@ public:
         return fmt::format("({} + {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
     }
 
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Add<AugendT, AddendT>>
-    {
-        if (!other.Is<Add>()) {
-            return nullptr;
-        }
-
-        Add<AugendT, AddendT> add;
-
-        std::unique_ptr<Expression> otherNormalized = other.Generalize();
-        const auto& otherBinaryExpression = dynamic_cast<const Add<Expression>&>(*otherNormalized);
-
-        if (otherBinaryExpression.HasMostSigOp()) {
-            add.SetMostSigOp(*AugendT::Specialize(otherBinaryExpression.GetMostSigOp()));
-        }
-
-        if (otherBinaryExpression.HasLeastSigOp()) {
-            add.SetLeastSigOp(*AddendT::Specialize(otherBinaryExpression.GetLeastSigOp()));
-        }
-
-        return std::make_unique<Add<AugendT, AddendT>>(add);
-    }
-
-    static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Add<AugendT, AddendT>>
-    {
-        if (!other.Is<Add>()) {
-            return nullptr;
-        }
-
-        Add<AugendT, AddendT> add;
-
-        std::unique_ptr<Expression> otherGeneralized;
-
-        tf::Task generalizeTask = subflow.emplace([&other, &otherGeneralized](tf::Subflow& sbf) {
-            otherGeneralized = other.Generalize(sbf);
-        });
-
-        tf::Task mostSigOpTask = subflow.emplace([&add, &otherGeneralized](tf::Subflow& sbf) {
-            const auto& otherBinaryExpression = dynamic_cast<const Add<Expression>&>(*otherGeneralized);
-            if (otherBinaryExpression.HasMostSigOp()) {
-                add.SetMostSigOp(*AugendT::Specialize(otherBinaryExpression.GetMostSigOp(), sbf));
-            }
-        });
-
-        mostSigOpTask.succeed(generalizeTask);
-
-        tf::Task leastSigOpTask = subflow.emplace([&add, &otherGeneralized](tf::Subflow& sbf) {
-            const auto& otherBinaryExpression = dynamic_cast<const Add<Expression>&>(*otherGeneralized);
-            if (otherBinaryExpression.HasLeastSigOp()) {
-                add.SetLeastSigOp(*AddendT::Specialize(otherBinaryExpression.GetLeastSigOp(), sbf));
-            }
-        });
-
-        leastSigOpTask.succeed(generalizeTask);
-
-        subflow.join();
-
-        return std::make_unique<Add<AugendT, AddendT>>(add);
-    }
+    IMPL_SPECIALIZE(Add, AugendT, AddendT)
 
     auto operator=(const Add& other) -> Add& = default;
 

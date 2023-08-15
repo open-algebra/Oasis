@@ -52,64 +52,7 @@ public:
         return fmt::format("({} + {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
     }
 
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Divide<DividendT, DivisorT>>
-    {
-        if (!other.Is<Divide>()) {
-            return nullptr;
-        }
-
-        Divide<DividendT, DivisorT> add;
-
-        std::unique_ptr<Expression> otherNormalized = other.Generalize();
-        const auto& otherBinaryExpression = dynamic_cast<const Divide<Expression>&>(*otherNormalized);
-
-        if (otherBinaryExpression.HasMostSigOp()) {
-            add.SetMostSigOp(*DividendT::Specialize(otherBinaryExpression.GetMostSigOp()));
-        }
-
-        if (otherBinaryExpression.HasLeastSigOp()) {
-            add.SetLeastSigOp(*DivisorT::Specialize(otherBinaryExpression.GetLeastSigOp()));
-        }
-
-        return std::make_unique<Divide<DividendT, DivisorT>>(add);
-    }
-
-    static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Divide<DividendT, DivisorT>>
-    {
-        if (!other.Is<Divide>()) {
-            return nullptr;
-        }
-
-        Divide<DividendT, DivisorT> add;
-
-        std::unique_ptr<Expression> otherGeneralized;
-
-        tf::Task generalizeTask = subflow.emplace([&other, &otherGeneralized](tf::Subflow& sbf) {
-            otherGeneralized = other.Generalize(sbf);
-        });
-
-        tf::Task mostSigOpTask = subflow.emplace([&add, &otherGeneralized](tf::Subflow& sbf) {
-            const auto& otherBinaryExpression = dynamic_cast<const Divide<Expression>&>(*otherGeneralized);
-            if (otherBinaryExpression.HasMostSigOp()) {
-                add.SetMostSigOp(*DividendT::Specialize(otherBinaryExpression.GetMostSigOp(), sbf));
-            }
-        });
-
-        mostSigOpTask.succeed(generalizeTask);
-
-        tf::Task leastSigOpTask = subflow.emplace([&add, &otherGeneralized](tf::Subflow& sbf) {
-            const auto& otherBinaryExpression = dynamic_cast<const Divide<Expression>&>(*otherGeneralized);
-            if (otherBinaryExpression.HasLeastSigOp()) {
-                add.SetLeastSigOp(*DivisorT::Specialize(otherBinaryExpression.GetLeastSigOp(), sbf));
-            }
-        });
-
-        leastSigOpTask.succeed(generalizeTask);
-
-        subflow.join();
-
-        return std::make_unique<Divide<DividendT, DivisorT>>(add);
-    }
+    IMPL_SPECIALIZE(Divide, DividendT, DivisorT)
 
     auto operator=(const Divide& other) -> Divide& = default;
 

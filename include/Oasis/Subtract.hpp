@@ -52,64 +52,7 @@ public:
         return fmt::format("({} - {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
     }
 
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Subtract<MinuendT, SubtrahendT>>
-    {
-        if (!other.Is<Subtract>()) {
-            return nullptr;
-        }
-
-        Subtract<MinuendT, SubtrahendT> subtract;
-
-        std::unique_ptr<Expression> otherGeneralized = other.Generalize();
-        const auto& otherBinaryExpression = dynamic_cast<const Subtract<Expression>&>(*otherGeneralized);
-
-        if (otherBinaryExpression.HasMostSigOp()) {
-            subtract.SetMostSigOp(*MinuendT::Specialize(otherBinaryExpression.GetMostSigOp()));
-        }
-
-        if (otherBinaryExpression.HasLeastSigOp()) {
-            subtract.SetLeastSigOp(*SubtrahendT::Specialize(otherBinaryExpression.GetLeastSigOp()));
-        }
-
-        return std::make_unique<Subtract<MinuendT, SubtrahendT>>(subtract);
-    }
-
-    static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Subtract<MinuendT, SubtrahendT>>
-    {
-        if (!other.Is<Subtract>()) {
-            return nullptr;
-        }
-
-        Subtract<MinuendT, SubtrahendT> subtract;
-
-        std::unique_ptr<Expression> otherNormalized;
-
-        tf::Task normalizeTask = subflow.emplace([&other, &otherNormalized](tf::Subflow& sbf) {
-            otherNormalized = other.Generalize(sbf);
-        });
-
-        tf::Task mostSigOpTask = subflow.emplace([&subtract, &otherNormalized](tf::Subflow& sbf) {
-            const auto& otherBinaryExpression = dynamic_cast<const Subtract<Expression>&>(*otherNormalized);
-            if (otherBinaryExpression.HasMostSigOp()) {
-                subtract.SetMostSigOp(*MinuendT::Specialize(otherBinaryExpression.GetMostSigOp(), sbf));
-            }
-        });
-
-        mostSigOpTask.succeed(normalizeTask);
-
-        tf::Task leastSigOpTask = subflow.emplace([&subtract, &otherNormalized](tf::Subflow& sbf) {
-            const auto& otherBinaryExpression = dynamic_cast<const Subtract<Expression>&>(*otherNormalized);
-            if (otherBinaryExpression.HasLeastSigOp()) {
-                subtract.SetLeastSigOp(*SubtrahendT::Specialize(otherBinaryExpression.GetLeastSigOp(), sbf));
-            }
-        });
-
-        leastSigOpTask.succeed(normalizeTask);
-
-        subflow.join();
-
-        return std::make_unique<Subtract<MinuendT, SubtrahendT>>(subtract);
-    }
+    IMPL_SPECIALIZE(Subtract, MinuendT, SubtrahendT)
 
     auto operator=(const Subtract& other) -> Subtract& = default;
 
