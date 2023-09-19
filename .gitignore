@@ -46,6 +46,7 @@
 
 # CMake
 cmake-build-*/
+./build/
 
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
@@ -121,7 +122,8 @@ fabric.properties
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
