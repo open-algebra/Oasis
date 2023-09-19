@@ -20,6 +20,7 @@ enum class ExpressionType {
     Subtract,
     Multiply,
     Divide,
+    Exponent
 };
 
 enum ExpressionCategory : uint32_t {
