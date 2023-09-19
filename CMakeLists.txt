@@ -32,6 +32,7 @@ if (NOT taskflow_POPULATED)
 endif ()
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_library(Oasis src/Add.cpp src/BinaryExpression.cpp src/Expression.cpp src/Real.cpp
         src/Subtract.cpp
