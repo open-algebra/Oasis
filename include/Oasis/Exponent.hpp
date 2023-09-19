@@ -13,11 +13,12 @@
 
 namespace Oasis {
 
-template <IExpression baseT, IExpression powerT>
+template <IExpression BaseT, IExpression PowerT>
 class Exponent;
 
 template <>
 class Exponent<Expression, Expression> : public BinaryExpression<Exponent> {
+public:
     Exponent() = default;
     Exponent(const Exponent<Expression, Expression>& other) = default;
 
@@ -37,6 +38,7 @@ class Exponent<Expression, Expression> : public BinaryExpression<Exponent> {
 
 template<IExpression BaseT = Expression, IExpression PowerT = BaseT>
 class Exponent : public BinaryExpression<Exponent, BaseT, PowerT>{
+public:
     Exponent() = default;
     Exponent(const Exponent<BaseT, PowerT>& other)
         : BinaryExpression<Exponent, BaseT, PowerT>(other)
@@ -55,8 +57,8 @@ class Exponent : public BinaryExpression<Exponent, BaseT, PowerT>{
 
     auto operator=(const Exponent& other) -> Exponent& = default;
 
-    EXPRESSION_TYPE(Add)
-    EXPRESSION_CATEGORY(Associative | Commutative)
+    EXPRESSION_TYPE(Exponent)
+    EXPRESSION_CATEGORY(0)
 };
 
 }
