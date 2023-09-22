@@ -55,7 +55,8 @@ add_library(Oasis::Oasis ALIAS Oasis)
 add_executable(OasisTests tests/AddTests.cpp
         tests/SubtractTests.cpp
         tests/MultiplyTests.cpp
-        tests/DivideTests.cpp)
+        tests/DivideTests.cpp
+        tests/ExponentTests.cpp)
 target_link_libraries(OasisTests PRIVATE Oasis::Oasis Catch2::Catch2 Catch2::Catch2WithMain)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)

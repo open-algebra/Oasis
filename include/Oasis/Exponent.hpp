@@ -50,7 +50,7 @@ public:
 
     [[nodiscard]] auto ToString() const -> std::string final
     {
-        return fmt::format("({} + {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
+        return fmt::format("({}^{})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
     }
 
     IMPL_SPECIALIZE(Exponent, BaseT, PowerT)
