@@ -41,7 +41,8 @@ add_library(Oasis src/Add.cpp src/BinaryExpression.cpp src/Expression.cpp src/Re
         src/Divide.cpp
         include/Oasis/Divide.hpp
         src/Variable.cpp
-        include/Oasis/Variable.hpp)
+        include/Oasis/Variable.hpp
+)
 target_include_directories(Oasis PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(Oasis PUBLIC fmt::fmt Taskflow)
 
