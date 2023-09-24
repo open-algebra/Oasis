@@ -40,13 +40,13 @@ jobs:
           - os: windows-latest
             c_compiler: gcc
           - os: windows-latest
-            c_compiler: clang
+            c_compiler: clang-15
           - os: ubuntu-latest
             c_compiler: cl
 
     steps:
     - name: Install Clang 15
-      run: sudo apt-get update && sudo apt-get install -y clang-15
+      run: bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
       if: ${{ matrix.os == 'ubuntu-latest' }}
     - uses: actions/checkout@v3
       with:
