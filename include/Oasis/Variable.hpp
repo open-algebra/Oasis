@@ -11,7 +11,7 @@
 
 namespace Oasis {
 
-/*
+/**
  * An algebraic variable.
  *
  * Variables are used to represent unknown values in an expression. Variables
