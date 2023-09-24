@@ -46,7 +46,7 @@ jobs:
 
     steps:
     - name: Install Clang 15
-      run: bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+      run: sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
       if: ${{ matrix.os == 'ubuntu-latest' }}
     - uses: actions/checkout@v3
       with:
