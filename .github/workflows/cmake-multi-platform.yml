@@ -25,7 +25,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
-        c_compiler: [gcc, clang, cl]
+        c_compiler: [clang-15, cl]
         include:
           - os: windows-latest
             c_compiler: cl
@@ -45,7 +45,12 @@ jobs:
             c_compiler: cl
 
     steps:
+    - name: Install Clang 15
+      run: sudo apt-get update && sudo apt-get install -y clang-15
+      if: ${{ matrix.os == 'ubuntu-latest' }}
     - uses: actions/checkout@v3
+      with:
+        submodules: recursive
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
