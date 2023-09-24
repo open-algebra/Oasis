@@ -15,6 +15,11 @@ namespace Oasis {
 template <IExpression AugendT, IExpression AddendT>
 class Add;
 
+/**
+ * Template specialization for Add with two Expressions.
+ *
+ * @note See Add
+ */
 template <>
 class Add<Expression, Expression> : public BinaryExpression<Add> {
 public:
@@ -35,6 +40,12 @@ public:
     EXPRESSION_CATEGORY(Associative | Commutative)
 };
 
+/**
+ * The Add expression adds two expressions together.
+ *
+ * @tparam AugendT The expression to add be added to.
+ * @tparam AddendT The expression to add to the augend.
+ */
 template <IExpression AugendT = Expression, IExpression AddendT = AugendT>
 class Add : public BinaryExpression<Add, AugendT, AddendT> {
 public:

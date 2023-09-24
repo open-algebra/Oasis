@@ -15,6 +15,9 @@ namespace Oasis {
 template <IExpression MultiplicandT, IExpression MultiplierT>
 class Multiply;
 
+/**
+ * Template specialization for Multiply with two Expressions.
+ */
 template <>
 class Multiply<Expression, Expression> : public BinaryExpression<Multiply> {
 public:
@@ -35,6 +38,12 @@ public:
     EXPRESSION_CATEGORY(Associative | Commutative)
 };
 
+/**
+ * The Multiply expression multiplies two expressions.
+ *
+ * @tparam MultiplicandT The expression to be multiplied by.
+ * @tparam MultiplierT The expression to multiply the multiplicand by.
+ */
 template <IExpression MultiplicandT = Expression, IExpression MultiplierT = MultiplicandT>
 class Multiply : public BinaryExpression<Multiply, MultiplicandT, MultiplierT> {
 public:
