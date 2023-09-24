@@ -11,6 +11,12 @@
 
 namespace Oasis {
 
+/*
+ * An algebraic variable.
+ *
+ * Variables are used to represent unknown values in an expression. Variables
+ * can have names such as "x" or "y" or "x_1" and so on.
+ */
 class Variable : public LeafExpression<Variable> {
 public:
     Variable() = default;
@@ -23,6 +29,11 @@ public:
     EXPRESSION_TYPE(Variable)
     EXPRESSION_CATEGORY(0)
 
+    /**
+     * Gets the name of the variable.
+     *
+     * @return The name of the variable.
+     */
     [[nodiscard]] auto GetName() const -> std::string;
 
     [[nodiscard]] auto ToString() const -> std::string final;

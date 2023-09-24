@@ -9,6 +9,13 @@
 
 namespace Oasis {
 
+/**
+ * A leaf expression.
+ *
+ * A leaf expression is an expression that has no children.
+ *
+ * @tparam DerivedT The type of the derived class.
+ */
 template <typename DerivedT>
 class LeafExpression : public Expression {
 public:
