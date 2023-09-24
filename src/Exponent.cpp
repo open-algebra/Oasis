@@ -19,6 +19,15 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     Exponent simplifiedExponent { *simplifiedBase, *simplifiedPower };
 
+    if (auto zeroCase = Exponent<Expression, Real>::Specialize(simplifiedExponent); zeroCase != nullptr) {
+        const Expression& base = zeroCase->GetMostSigOp();
+        const Real& power = zeroCase->GetLeastSigOp();
+
+        if (power.GetValue() == 0.0) {
+            return std::make_unique<Real>(1.0);
+        }
+    }
+
     if (auto realCase = Exponent<Real>::Specialize(simplifiedExponent); realCase != nullptr) {
         const Real& base = realCase->GetMostSigOp();
         const Real& power = realCase->GetLeastSigOp();

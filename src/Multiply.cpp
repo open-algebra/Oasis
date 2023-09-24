@@ -3,6 +3,7 @@
 //
 
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Exponent.hpp"
 
 namespace Oasis {
 
@@ -24,6 +25,51 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
         return std::make_unique<Real>(multiplicand.GetValue() * multiplier.GetValue());
     }
+
+#pragma region replace_variable_with_expression
+    // x*x
+    if (auto variableCase = Multiply<Variable>::Specialize(simplifiedMultiply); variableCase != nullptr) {
+        if (variableCase->GetMostSigOp().Equals(variableCase->GetLeastSigOp())) {
+            return std::make_unique<Oasis::Exponent<Variable, Real>>(variableCase->GetMostSigOp(), Oasis::Real { 2.0 });
+            // return std::make_unique<Oasis::Exponent<Expression>>(variableCase->GetMostSigOp(), Oasis::Real{ 2.0 } );
+        }
+    }
+
+    // x*x^n
+    if (auto variableCase = Multiply<Variable, Exponent<Variable, Real>>::Specialize(simplifiedMultiply); variableCase != nullptr) {
+        if (variableCase->GetMostSigOp().Equals(variableCase->GetLeastSigOp().GetMostSigOp())) {
+            return std::make_unique<Oasis::Exponent<Variable, Real>>(variableCase->GetMostSigOp(),
+                Oasis::Real { variableCase->GetLeastSigOp().GetLeastSigOp().GetValue() + 1.0 });
+        }
+    }
+
+    // x^n*x
+    if (auto variableCase = Multiply<Exponent<Variable, Real>, Variable>::Specialize(simplifiedMultiply); variableCase != nullptr) {
+        if (variableCase->GetMostSigOp().GetMostSigOp().Equals(variableCase->GetLeastSigOp())) {
+            return std::make_unique<Oasis::Exponent<Variable, Real>>(variableCase->GetMostSigOp().GetMostSigOp(),
+                Oasis::Real { variableCase->GetMostSigOp().GetLeastSigOp().GetValue() + 1.0 });
+        }
+    }
+
+    // x^n*x^m
+    if (auto variableCase = Multiply<Exponent<Variable, Real>, Exponent<Variable, Real>>::Specialize(simplifiedMultiply); variableCase != nullptr) {
+        if (variableCase->GetMostSigOp().GetMostSigOp().Equals(variableCase->GetLeastSigOp().GetMostSigOp())) {
+            return std::make_unique<Oasis::Exponent<Variable, Real>>(variableCase->GetMostSigOp().GetMostSigOp(),
+                Oasis::Real { variableCase->GetMostSigOp().GetLeastSigOp().GetValue() + variableCase->GetLeastSigOp().GetLeastSigOp().GetValue() });
+        }
+    }
+
+    // a*x*x
+
+    // x*a*x
+
+    // a*x*b*x
+
+    // a*x^n*x
+
+    // x^n*a*x
+
+#pragma endregion
 
     return simplifiedMultiply.Copy();
 }
