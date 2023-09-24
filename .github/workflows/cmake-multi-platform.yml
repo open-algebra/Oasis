@@ -25,7 +25,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
-        c_compiler: [clang-15, cl]
+        c_compiler: [clang-17, cl]
         include:
           - os: windows-latest
             c_compiler: cl
@@ -34,19 +34,22 @@ jobs:
           #   c_compiler: gcc
           #   cpp_compiler: g++
           - os: ubuntu-latest
-            c_compiler: clang-15
-            cpp_compiler: clang++-15
+            c_compiler: clang-17
+            cpp_compiler: clang++-17
         exclude:
           - os: windows-latest
             c_compiler: gcc
           - os: windows-latest
-            c_compiler: clang-15
+            c_compiler: clang-17
           - os: ubuntu-latest
             c_compiler: cl
 
     steps:
-    - name: Install Clang 15
-      run: sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+    - name: Install Clang 17
+      run: |
+        wget https://apt.llvm.org/llvm.sh
+        chmod +x llvm.sh
+        sudo ./llvm.sh 17
       if: ${{ matrix.os == 'ubuntu-latest' }}
     - uses: actions/checkout@v3
       with:
