@@ -44,12 +44,12 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     // x^n*x
-    if (auto variableCase = Multiply<Exponent<Variable, Real>, Variable>::Specialize(simplifiedMultiply); variableCase != nullptr) {
+    /*if (auto variableCase = Multiply<Exponent<Variable, Real>, Variable>::Specialize(simplifiedMultiply); variableCase != nullptr) {
         if (variableCase->GetMostSigOp().GetMostSigOp().Equals(variableCase->GetLeastSigOp())) {
             return std::make_unique<Oasis::Exponent<Variable, Real>>(variableCase->GetMostSigOp().GetMostSigOp(),
                 Oasis::Real { variableCase->GetMostSigOp().GetLeastSigOp().GetValue() + 1.0 });
         }
-    }
+    }*/
 
     // x^n*x^m
     if (auto variableCase = Multiply<Exponent<Variable, Real>, Exponent<Variable, Real>>::Specialize(simplifiedMultiply); variableCase != nullptr) {
@@ -60,14 +60,32 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     // a*x*x
-
-    // x*a*x
+    if (auto variableCase = Multiply<Multiply<Real, Variable>, Variable>::Specialize(simplifiedMultiply); variableCase != nullptr) {
+        if (variableCase->GetMostSigOp().GetLeastSigOp().Equals(variableCase->GetLeastSigOp())) {
+            return std::make_unique<Oasis::Multiply<Oasis::Real, Oasis::Exponent<Variable, Real>>>(
+                Oasis::Real { variableCase->GetMostSigOp().GetMostSigOp().GetValue() },
+                Oasis::Exponent { variableCase->GetMostSigOp().GetLeastSigOp(), Oasis::Real { 2.0 } });
+        }
+    }
 
     // a*x*b*x
+    if (auto variableCase = Multiply<Multiply<Real, Variable>, Multiply<Real, Variable>>::Specialize(simplifiedMultiply); variableCase != nullptr) {
+        if (variableCase->GetMostSigOp().GetLeastSigOp().Equals(variableCase->GetLeastSigOp().GetLeastSigOp())) {
+            return std::make_unique<Oasis::Multiply<Oasis::Real, Oasis::Exponent<Variable, Real>>>(
+                Oasis::Real { variableCase->GetMostSigOp().GetMostSigOp().GetValue() * variableCase->GetLeastSigOp().GetMostSigOp().GetValue() },
+                Oasis::Exponent { variableCase->GetMostSigOp().GetLeastSigOp(), Oasis::Real { 2.0 } });
+        }
+    }
 
     // a*x^n*x
 
     // x^n*a*x
+
+    // a*x^n*b*
+
+    // a*x^n*x^m
+
+    // a*x^n*b*x^m
 
 #pragma endregion
 

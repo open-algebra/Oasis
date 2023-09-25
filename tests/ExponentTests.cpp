@@ -87,7 +87,7 @@ TEST_CASE("Equivalence", "[Exponent][Equivalence]")
 
 TEST_CASE("Addition of Exponents", "[Add][Exponent][Symbolic]")
 {
-    Oasis::Add add {
+    Oasis::Add add1 {
         Oasis::Exponent {
             Oasis::Variable { "x" },
             Oasis::Real { 2.0 } },
@@ -96,8 +96,47 @@ TEST_CASE("Addition of Exponents", "[Add][Exponent][Symbolic]")
             Oasis::Real { 2.0 } }
     };
 
-    auto simplified = add.Simplify();
+    Oasis::Add add2 {
+        Oasis::Multiply {
+            Oasis::Real { 2.0 },
+            Oasis::Exponent {
+                Oasis::Variable { "x" },
+                Oasis::Real { 2.0 } } },
+        Oasis::Exponent {
+            Oasis::Variable { "x" },
+            Oasis::Real { 2.0 } }
+    };
+
+    Oasis::Add add3 {
+        Oasis::Exponent {
+            Oasis::Variable { "x" },
+            Oasis::Real { 2.0 } },
+        Oasis::Multiply {
+            Oasis::Real { 2.0 },
+            Oasis::Exponent {
+                Oasis::Variable { "x" },
+                Oasis::Real { 2.0 } } }
+    };
+
+    Oasis::Add add4 {
+        Oasis::Multiply {
+            Oasis::Real { 2.0 },
+            Oasis::Exponent {
+                Oasis::Variable { "x" },
+                Oasis::Real { 2.0 } } },
+        Oasis::Multiply {
+            Oasis::Real { 2.0 },
+            Oasis::Exponent {
+                Oasis::Variable { "x" },
+                Oasis::Real { 2.0 } } }
+    };
+
+    auto simplified = add1.Simplify();
     REQUIRE(simplified->Is<Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>>>());
+
+    auto simplified2 = add2.Simplify();
+    auto simplified3 = add3.Simplify();
+    auto simplified4 = add4.Simplify();
 
     REQUIRE(Oasis::Multiply {
         Oasis::Real { 2.0 },
@@ -105,6 +144,24 @@ TEST_CASE("Addition of Exponents", "[Add][Exponent][Symbolic]")
             Oasis::Variable { "x" },
             Oasis::Real { 2.0 } } }
                 .Equals(*simplified));
+    REQUIRE(Oasis::Multiply {
+        Oasis::Real { 3.0 },
+        Oasis::Exponent {
+            Oasis::Variable { "x" },
+            Oasis::Real { 2.0 } } }
+                .Equals(*simplified2));
+    REQUIRE(Oasis::Multiply {
+        Oasis::Real { 3.0 },
+        Oasis::Exponent {
+            Oasis::Variable { "x" },
+            Oasis::Real { 2.0 } } }
+                .Equals(*simplified3));
+    REQUIRE(Oasis::Multiply {
+        Oasis::Real { 4.0 },
+        Oasis::Exponent {
+            Oasis::Variable { "x" },
+            Oasis::Real { 2.0 } } }
+                .Equals(*simplified4));
 }
 
 TEST_CASE("Variable Multiplication", "[Exponent][Variable][Multiplication]")
@@ -114,10 +171,42 @@ TEST_CASE("Variable Multiplication", "[Exponent][Variable][Multiplication]")
         Oasis::Variable { "x" }
     };
 
+    Oasis::Multiply expr2 = Oasis::Multiply {
+        Oasis::Multiply {
+            Oasis::Real { 5.0 },
+            Oasis::Variable { "x" } },
+        Oasis::Variable { "x" }
+    };
+
+    Oasis::Multiply expr3 = Oasis::Multiply {
+        Oasis::Variable { "x" },
+        Oasis::Multiply {
+            Oasis::Real { 5.0 },
+            Oasis::Variable { "x" } }
+    };
+
+    Oasis::Multiply expr4 = Oasis::Multiply {
+        Oasis::Multiply {
+            Oasis::Real { 4.0 },
+            Oasis::Variable { "x" } },
+        Oasis::Multiply {
+            Oasis::Real { 6.0 },
+            Oasis::Variable { "x" } }
+    };
+
     auto simplified = expr.Simplify();
+    auto simplified2 = expr2.Simplify();
+    auto simplified3 = expr3.Simplify();
+    auto simplified4 = expr4.Simplify();
 
     REQUIRE(simplified->Is<Oasis::Exponent<Oasis::Variable, Oasis::Real>>());
     REQUIRE(simplified->Equals(Oasis::Exponent<Oasis::Variable, Oasis::Real> { Oasis::Variable { "x" }, Oasis::Real { 2.0 } }));
+    REQUIRE(simplified2->Equals(Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>> {
+        Oasis::Real { 5.0 }, Oasis::Exponent { Oasis::Variable { "x" }, Oasis::Real { 2.0 } } }));
+    REQUIRE(simplified3->Equals(Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>> {
+        Oasis::Real { 5.0 }, Oasis::Exponent { Oasis::Variable { "x" }, Oasis::Real { 2.0 } } }));
+    REQUIRE(simplified4->Equals(Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>> {
+        Oasis::Real { 24.0 }, Oasis::Exponent { Oasis::Variable { "x" }, Oasis::Real { 2.0 } } }));
 }
 
 TEST_CASE("Variable with power Multiplication", "[Exponent][Variable][Multiplication]")

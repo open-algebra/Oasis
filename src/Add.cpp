@@ -48,42 +48,13 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     // a*exponent + exponent
-    /*if (auto exponentCase = Add<Multiply<Real, Exponent<Variable, Real>>, Exponent<Variable, Real>>::Specialize(simplifiedAdd); exponentCase != nullptr){
+    if (auto exponentCase = Add<Multiply<Real, Exponent<Variable, Real>>, Exponent<Variable, Real>>::Specialize(simplifiedAdd); exponentCase != nullptr) {
         if (exponentCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(exponentCase->GetLeastSigOp().GetMostSigOp())){
             return std::make_unique<Multiply<Real, Exponent<Variable,Real>>>(Real{ exponentCase->GetMostSigOp().GetMostSigOp().GetValue() + 1.0 },
-                exponentCase->GetMostSigOp());
+                exponentCase->GetLeastSigOp());
         }
-    }*/
+    }
 
-    // exponent + b*exponent
-
-    // a*exponent + b*exponent
-
-    /*if (auto exponentCase = Add<Expression, Expression>::Specialize(simplifiedAdd); exponentCase != nullptr) {
-        const Oasis::IExpression auto& leftExpr = exponentCase->GetMostSigOp();
-        const Oasis::IExpression auto& rightExpr = exponentCase->GetLeastSigOp();
-        // default multipliers
-        Real c1 = Real { 1.0 };
-        Real c2 = Real { 1.0 };
-
-        if (leftExpr.Is<Multiply<Real, Expression>>()){
-            const auto leftMultiply = Multiply<Real, Expression>::Specialize(leftExpr);
-            c1 = Real { leftMultiply->GetMostSigOp().GetValue() };
-        }
-
-        if (rightExpr.Is<Multiply<Real, Expression>>()){
-            const auto rightMultiply = Multiply<Real, Expression>::Specialize(rightExpr);
-            c2 = Real { rightMultiply->GetMostSigOp().GetValue() };
-        }
-
-        */
-    /*Oasis::Expression leftExpression = leftExpr.Is<Multiply<Real, Expression>>() ?
-      Multiply<Real, Expression>::Specialize(leftExpr)->GetLeastSigOp() : leftExpr;*/
-    /*
-
-
-}
-*/
 #pragma endregion
 
     return simplifiedAdd.Copy();
