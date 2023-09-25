@@ -1,0 +1,18 @@
+digraph {
+    Variable1 [label="x"];
+    Variable2 [label="x"];
+    Real1 [label="2"];
+    Real2 [label="2"];
+
+    Subtract -> Add;
+    Subtract -> 1;
+
+    Add -> Multiply;
+    Add -> Variable1;
+
+    Multiply -> Real1
+    Multiply -> Exponent
+
+    Exponent -> Variable2
+    Exponent -> Real2
+}
