@@ -7,8 +7,8 @@ digraph {
     Subtract -> Add;
     Subtract -> 1;
 
-    Add -> Variable1;
     Add -> Multiply;
+    Add -> Variable1;
 
     Multiply -> Real1
     Multiply -> Exponent
