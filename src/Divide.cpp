@@ -3,6 +3,7 @@
 //
 
 #include "Oasis/Divide.hpp"
+#include "Oasis/Multiply.hpp"
 
 namespace Oasis {
 
@@ -24,6 +25,55 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
         return std::make_unique<Real>(dividend.GetValue() / divisor.GetValue());
     }
+
+    if (auto likeTermsCase = Divide<Multiply<Real, Expression>>::Specialize(simplifiedDivide); likeTermsCase != nullptr) {
+        const Oasis::IExpression auto& leftTerm = likeTermsCase->GetMostSigOp().GetLeastSigOp();
+        const Oasis::IExpression auto& rightTerm = likeTermsCase->GetLeastSigOp().GetLeastSigOp();
+        
+        if (leftTerm.Equals(rightTerm)) {
+            const Real& coefficient1 = likeTermsCase->GetMostSigOp().GetMostSigOp();
+            const Real& coefficient2 = likeTermsCase->GetLeastSigOp().GetMostSigOp();
+
+            return std::make_unique<Real>(coefficient1.GetValue() / coefficient2.GetValue());
+        }
+    }
+
+    /*Check cases
+    Cases to look at right now
+    1 variable one real
+    return
+
+    if (onevar)
+    return
+
+    2 variables
+    if differnt
+    return
+    if same
+    return real value (1)
+
+    if (twovar)
+        if (divident==divisor)
+            reutnr real(1);
+        else
+            return;
+
+    1 variable with coefficient
+    divide coefficients and return a real and variable
+    2 variables with coefficients
+    if different
+    divide coefficients (if both have, and set first to result)
+    if same
+    divide coefficients and return
+
+
+    case with addition
+    factor if you can
+    then look at the coefficient of factors and divide those (also check the factored item to see if its equal)
+
+
+    case with exponents and dividing
+    */
 
     return simplifiedDivide.Copy();
 }
