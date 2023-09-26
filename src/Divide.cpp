@@ -19,6 +19,10 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     Divide simplifiedDivide { *simplifiedDividend, *simplifiedDivider };
 
+
+    //Factor the expression here
+    //Rest is written assuming factor function is complete
+
     if (auto realCase = Divide<Real>::Specialize(simplifiedDivide); realCase != nullptr) {
         const Real& dividend = realCase->GetMostSigOp();
         const Real& divisor = realCase->GetLeastSigOp();
@@ -36,7 +40,15 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
             return std::make_unique<Real>(coefficient1.GetValue() / coefficient2.GetValue());
         }
+        else{
+            const Real& coefficient1 = likeTermsCase->GetMostSigOp().GetMostSigOp();
+            const Real& coefficient2 = likeTermsCase->GetLeastSigOp().GetMostSigOp();
+
+            return std::make_unique<Divide<Expression>>(Multiply<Expression>(Real(coefficient1.GetValue()/coefficient2.GetValue()), leftTerm),(Multiply<Expression>(Real(1.0), rightTerm)));
+        }
     }
+
+    //Think about cases such as 2x(5y+2z)/2xy
 
     /*Check cases
     Cases to look at right now
