@@ -78,14 +78,54 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     // a*x^n*x
+    if (auto variableCase = Multiply<Multiply<Real, Exponent<Variable, Real>>, Variable>::Specialize(simplifiedMultiply); variableCase != nullptr) {
+        if (variableCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(variableCase->GetLeastSigOp())) {
+            return std::make_unique<Oasis::Multiply<Oasis::Real, Oasis::Exponent<Variable, Real>>>(
+                Oasis::Real { variableCase->GetMostSigOp().GetMostSigOp().GetValue() },
+                Oasis::Exponent { variableCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
+                    Oasis::Real { variableCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp().GetValue() + 1.0 } });
+        }
+    }
 
     // x^n*a*x
+    if (auto variableCase = Multiply<Multiply<Real, Variable>, Exponent<Variable, Real>>::Specialize(simplifiedMultiply); variableCase != nullptr) {
+        if (variableCase->GetMostSigOp().GetLeastSigOp().Equals(variableCase->GetLeastSigOp().GetMostSigOp())) {
+            return std::make_unique<Oasis::Multiply<Oasis::Real, Oasis::Exponent<Variable, Real>>>(
+                Oasis::Real { variableCase->GetMostSigOp().GetMostSigOp().GetValue() },
+                Oasis::Exponent { variableCase->GetMostSigOp().GetLeastSigOp(),
+                    Oasis::Real { variableCase->GetLeastSigOp().GetLeastSigOp().GetValue() + 1.0 } });
+        }
+    }
 
-    // a*x^n*b*
+    // a*x^n*b*x
+    if (auto variableCase = Multiply<Multiply<Real, Variable>, Multiply<Real, Exponent<Variable, Real>>>::Specialize(simplifiedMultiply); variableCase != nullptr) {
+        if (variableCase->GetMostSigOp().GetLeastSigOp().Equals(variableCase->GetLeastSigOp().GetLeastSigOp().GetMostSigOp())) {
+            return std::make_unique<Oasis::Multiply<Oasis::Real, Oasis::Exponent<Variable, Real>>>(
+                Oasis::Real { variableCase->GetMostSigOp().GetMostSigOp().GetValue() * variableCase->GetLeastSigOp().GetMostSigOp().GetValue() },
+                Oasis::Exponent { variableCase->GetMostSigOp().GetLeastSigOp(),
+                    Oasis::Real { variableCase->GetLeastSigOp().GetLeastSigOp().GetLeastSigOp().GetValue() + 1.0 } });
+        }
+    }
 
     // a*x^n*x^m
+    if (auto variableCase = Multiply<Multiply<Real, Exponent<Variable, Real>>, Exponent<Variable, Real>>::Specialize(simplifiedMultiply); variableCase != nullptr) {
+        if (variableCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(variableCase->GetLeastSigOp().GetMostSigOp())) {
+            return std::make_unique<Oasis::Multiply<Oasis::Real, Oasis::Exponent<Variable, Real>>>(
+                variableCase->GetMostSigOp().GetMostSigOp(),
+                Oasis::Exponent { variableCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
+                    Oasis::Real { variableCase->GetLeastSigOp().GetLeastSigOp().GetValue() + variableCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp().GetValue() } });
+        }
+    }
 
     // a*x^n*b*x^m
+    if (auto variableCase = Multiply<Multiply<Real, Exponent<Variable, Real>>, Multiply<Real, Exponent<Variable, Real>>>::Specialize(simplifiedMultiply); variableCase != nullptr) {
+        if (variableCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp().Equals(variableCase->GetLeastSigOp().GetMostSigOp())) {
+            return std::make_unique<Oasis::Multiply<Oasis::Real, Oasis::Exponent<Variable, Real>>>(
+                Oasis::Real { variableCase->GetMostSigOp().GetMostSigOp().GetValue() * variableCase->GetLeastSigOp().GetMostSigOp().GetValue() },
+                Oasis::Exponent { variableCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
+                    Oasis::Real { variableCase->GetLeastSigOp().GetLeastSigOp().GetLeastSigOp().GetValue() + variableCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp().GetValue() } });
+        }
+    }
 
 #pragma endregion
 

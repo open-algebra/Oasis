@@ -35,6 +35,13 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return std::make_unique<Real>(pow(base.GetValue(), power.GetValue()));
     }
 
+    if (auto oneCase = Exponent<Variable, Real>::Specialize(simplifiedExponent); oneCase != nullptr) {
+        const Real& power = oneCase->GetLeastSigOp();
+        if (power.GetValue() == 1.0) {
+            return std::make_unique<Variable>(oneCase->GetMostSigOp());
+        }
+    }
+
     return simplifiedExponent.Copy();
 }
 
