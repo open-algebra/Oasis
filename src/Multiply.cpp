@@ -43,14 +43,6 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    // x^n*x
-    /*if (auto variableCase = Multiply<Exponent<Variable, Real>, Variable>::Specialize(simplifiedMultiply); variableCase != nullptr) {
-        if (variableCase->GetMostSigOp().GetMostSigOp().Equals(variableCase->GetLeastSigOp())) {
-            return std::make_unique<Oasis::Exponent<Variable, Real>>(variableCase->GetMostSigOp().GetMostSigOp(),
-                Oasis::Real { variableCase->GetMostSigOp().GetLeastSigOp().GetValue() + 1.0 });
-        }
-    }*/
-
     // x^n*x^m
     if (auto variableCase = Multiply<Exponent<Variable, Real>, Exponent<Variable, Real>>::Specialize(simplifiedMultiply); variableCase != nullptr) {
         if (variableCase->GetMostSigOp().GetMostSigOp().Equals(variableCase->GetLeastSigOp().GetMostSigOp())) {

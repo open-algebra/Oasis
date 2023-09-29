@@ -39,17 +39,17 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-#pragma region Replace_variable_with_expression
+#pragma region Replace_with_expression
     // exponent + exponent
     if (auto exponentCase = Add<Exponent<Variable, Real>, Exponent<Variable, Real>>::Specialize(simplifiedAdd); exponentCase != nullptr) {
-        if (exponentCase->GetMostSigOp().GetMostSigOp().Equals(exponentCase->GetLeastSigOp().GetMostSigOp())) {
+        if (exponentCase->GetMostSigOp().GetMostSigOp().Equals(exponentCase->GetLeastSigOp().GetMostSigOp()) && exponentCase->GetMostSigOp().GetLeastSigOp().Equals(exponentCase->GetLeastSigOp().GetLeastSigOp())) {
             return std::make_unique<Multiply<Real, Exponent<Variable, Real>>>(Real { 2.0 }, exponentCase->GetMostSigOp());
         }
     }
 
     // a*exponent + exponent
     if (auto exponentCase = Add<Multiply<Real, Exponent<Variable, Real>>, Exponent<Variable, Real>>::Specialize(simplifiedAdd); exponentCase != nullptr) {
-        if (exponentCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(exponentCase->GetLeastSigOp().GetMostSigOp())){
+        if (exponentCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(exponentCase->GetLeastSigOp().GetMostSigOp()) && exponentCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp().Equals(exponentCase->GetLeastSigOp().GetLeastSigOp())) {
             return std::make_unique<Multiply<Real, Exponent<Variable,Real>>>(Real{ exponentCase->GetMostSigOp().GetMostSigOp().GetValue() + 1.0 },
                 exponentCase->GetLeastSigOp());
         }
