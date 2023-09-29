@@ -1,9 +1,11 @@
 //
 // Created by Matthew McCall on 8/10/23.
 //
-
+#include <map>
+#include <vector>
 #include "Oasis/Divide.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Variable.hpp"
 
 namespace Oasis {
 
@@ -33,23 +35,43 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (auto likeTermsCase = Divide<Multiply<Real, Expression>>::Specialize(simplifiedDivide); likeTermsCase != nullptr) {
         const Oasis::IExpression auto& leftTerm = likeTermsCase->GetMostSigOp().GetLeastSigOp();
         const Oasis::IExpression auto& rightTerm = likeTermsCase->GetLeastSigOp().GetLeastSigOp();
+        const Real& coefficient1 = likeTermsCase->GetMostSigOp().GetMostSigOp();
+        const Real& coefficient2 = likeTermsCase->GetLeastSigOp().GetMostSigOp();
         
         if (leftTerm.Equals(rightTerm)) {
-            const Real& coefficient1 = likeTermsCase->GetMostSigOp().GetMostSigOp();
-            const Real& coefficient2 = likeTermsCase->GetLeastSigOp().GetMostSigOp();
-
             return std::make_unique<Real>(coefficient1.GetValue() / coefficient2.GetValue());
         }
-        else{
-            const Real& coefficient1 = likeTermsCase->GetMostSigOp().GetMostSigOp();
-            const Real& coefficient2 = likeTermsCase->GetLeastSigOp().GetMostSigOp();
-
-            return std::make_unique<Divide<Expression>>(Multiply<Expression>(Real(coefficient1.GetValue()/coefficient2.GetValue()), leftTerm),(Multiply<Expression>(Real(1.0), rightTerm)));
+        std::unordered_map<std::string, int> variables;
+        auto holderLeft=leftTerm; 
+        auto holderRight=rightTerm;
+        for(auto sortingLeft = Multiply<Variable, Expression>::Specialize(holderLeft); sortingLeft != nullptr;){
+            holderLeft=sortingLeft->GetLeastSigOp();
+            if (auto it=variables.find(sortingLeft->GetMostSigOp().GetName()); it==variables.end())
+                variables.insert(std::make_pair(sortingLeft->GetMostSigOp().GetName(),0));
+            variables[sortingLeft->GetMostSigOp().GetName()]++;
         }
+        for(auto sortingRight = Multiply<Variable, Expression>::Specialize(holderRight); sortingRight != nullptr;){
+            holderRight=sortingRight->GetLeastSigOp();
+            if (auto it=variables.find(sortingRight->GetMostSigOp().GetName()); it==variables.end())
+                variables.insert(std::make_pair(sortingRight->GetMostSigOp().GetName(),0));
+            variables[sortingRight->GetMostSigOp().GetName()]--;
+        }
+        std::vector<std::pair<std::string, int>> top;
+        std::vector<std::pair<std::string, int>> bot;
+        for (auto it=variables.begin(); it!=variables.end(); it++){
+            if (it->second==0)
+                continue;
+            if (it->second>0)
+                top.push_back(std::make_pair(it->first, it->second));
+            if (it->second<0)
+                bot.push_back(std::make_pair(it->first, it->second));
+        }
+        
+        return std::make_unique<Divide<Expression>>(Multiply<Expression>(Real(coefficient1.GetValue()/coefficient2.GetValue()), leftTerm),(rightTerm));
     }
 
     //Think about cases such as 2x(5y+2z)/2xy
-
+    //Divide by zero case
     /*Check cases
     Cases to look at right now
     1 variable one real
@@ -79,12 +101,14 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     divide coefficients and return
 
 
-    case with addition
-    factor if you can
-    then look at the coefficient of factors and divide those (also check the factored item to see if its equal)
+    Looking at a factored case 
 
+    Going to start with a coefficient, the some number of variables or expressions.
+    Then look at the expressions and variables seperately
+    How to recurse through this. Recurse so that you are peeling a variable (or expression) off of the 
+    division, compare it, and if it divides then divide them, if not then keep.
 
-    case with exponents and dividing
+    Put everything into a map from both sides, from multiplication add one, division subtract, output is the map.
     */
 
     return simplifiedDivide.Copy();
