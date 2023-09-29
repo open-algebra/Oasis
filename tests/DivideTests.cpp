@@ -6,6 +6,8 @@
 
 #include "Oasis/Divide.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/Variable.hpp"
+#include "Oasis/Multiply.hpp"
 
 TEST_CASE("Division", "[Divide]")
 {
@@ -22,6 +24,83 @@ TEST_CASE("Division", "[Divide]")
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
     REQUIRE(simplifiedReal.GetValue() == 1.0);
 }
+
+
+TEST_CASE("Symbolic Division", "[Division][Symbolic]")
+{
+    Oasis::Divide div {
+        Oasis::Multiply {
+            Oasis::Real { 2.0 },
+            Oasis::Variable { "x"} },
+        Oasis::Multiply {
+                Oasis::Real { 1.0 },
+                Oasis::Variable { "x" } }
+        };
+
+
+    Oasis::Divide div2 {
+        Oasis::Multiply {
+            Oasis::Real { 2.0 },
+            Oasis::Multiply{
+                Oasis::Variable{ "x" },
+                Oasis::Variable{ "y" }
+            } },
+        Oasis::Multiply {
+                Oasis::Real { 1.0 },
+                Oasis::Multiply{
+                    Oasis::Variable{ "x" },
+                    Oasis::Variable{ "y" }
+            } }
+        };
+
+    auto simplified = div.Simplify();
+    REQUIRE(simplified->Is<Oasis::Real>());
+    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
+    REQUIRE(simplifiedReal.GetValue() == 2.0);
+
+    auto simplified2 = div2.Simplify();
+    REQUIRE(simplified2->Is<Oasis::Real>());
+    auto simplifiedReal2 = dynamic_cast<Oasis::Real&>(*simplified2);
+    REQUIRE(simplifiedReal2.GetValue() == 2.0);
+}
+
+TEST_CASE("Symbolic Division, variables dont equal", "[Division][Symbolic]")
+{
+    Oasis::Divide div {
+        Oasis::Multiply {
+            Oasis::Real { 4.0 },
+            Oasis::Variable { "x"} },
+        Oasis::Multiply {
+                Oasis::Real { 2.0 },
+                Oasis::Variable { "y" } }
+        };
+
+    auto simplified = div.Simplify();
+
+    REQUIRE(Oasis::Divide {
+        Oasis::Multiply {
+            Oasis::Real { 2.0 },
+            Oasis::Variable { "x"} },
+        Oasis::Multiply {
+                Oasis::Real { 1.0 },
+                Oasis::Variable { "y" } }}.Equals(*simplified));
+}
+
+
+/*
+TEST_CASE("DivisionTest", "[Divide]")
+{
+    Oasis::Divide test {
+        Oasis::Real { 2.0 },
+        Oasis::Variable { "x" } 
+    };
+
+    auto simplified = test.Simplify();
+    //REQUIRE(simplified->Is<Oasis::Real>());
+
+    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
+    REQUIRE(simplifiedReal.GetValue() == 1.0);
+}*/
 
 TEST_CASE("Generalized Division", "[Divide][Generalized]")
 {
