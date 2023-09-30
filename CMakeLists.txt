@@ -10,12 +10,18 @@ FetchContent_Declare(
 )
 
 FetchContent_Declare(
+        eigen
+        GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+        GIT_TAG 3.4.0
+)
+
+FetchContent_Declare(
         fmt
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
         GIT_TAG 10.0.0
 )
 
-FetchContent_MakeAvailable(Catch2 fmt)
+FetchContent_MakeAvailable(Catch2 eigen fmt)
 
 FetchContent_Declare(
         taskflow
@@ -44,7 +50,7 @@ add_library(Oasis src/Add.cpp src/BinaryExpression.cpp src/Expression.cpp src/Re
         include/Oasis/Variable.hpp
 )
 target_include_directories(Oasis PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(Oasis PUBLIC fmt::fmt Taskflow)
+target_link_libraries(Oasis PUBLIC fmt::fmt Eigen3::Eigen Taskflow)
 
 get_target_property(Oasis_SOURCES Oasis SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${Oasis_SOURCES})
