@@ -526,38 +526,38 @@ public:
         std::unique_ptr<Expression> otherGeneralized = other.Generalize();                                               \
         const auto& otherBinaryExpression = dynamic_cast<const Derived<Expression>&>(*otherGeneralized);                 \
                                                                                                                          \
-        bool swappedOperands = false;                                                                                                                 \
+        bool swappedOperands = false;                                                                                    \
                                                                                                                          \
         if (otherBinaryExpression.HasMostSigOp()) {                                                                      \
             auto specializedMostSigOp = FirstOp::Specialize(otherBinaryExpression.GetMostSigOp());                       \
             if (!specializedMostSigOp) {                                                                                 \
-                if (!(Derived::GetStaticCategory() & Commutative)) {                                                        \
-                    return nullptr;                                                                                          \
-                }\
+                if (!(Derived::GetStaticCategory() & Commutative)) {                                                     \
+                    return nullptr;                                                                                      \
+                }                                                                                                        \
                 specializedMostSigOp = FirstOp::Specialize(otherBinaryExpression.GetLeastSigOp());                       \
                 if (specializedMostSigOp) {                                                                              \
-                    swappedOperands = true;\
+                    swappedOperands = true;                                                                              \
                 } else {                                                                                                 \
-                    return nullptr;\
-                }\
+                    return nullptr;                                                                                      \
+                }                                                                                                        \
             }                                                                                                            \
             specialized.SetMostSigOp(*specializedMostSigOp);                                                             \
         }                                                                                                                \
                                                                                                                          \
         if (otherBinaryExpression.HasLeastSigOp()) {                                                                     \
-            if (swappedOperands && otherBinaryExpression.HasMostSigOp()) {                                                                                       \
-                auto specializedLeastSigOp = SecondOp::Specialize(otherBinaryExpression.GetMostSigOp());                    \
-                if (!specializedLeastSigOp) {                                                                                \
-                    return nullptr;                                                                                          \
-                }                                                                                                            \
-                specialized.SetLeastSigOp(*specializedLeastSigOp);     \
+            if (swappedOperands && otherBinaryExpression.HasMostSigOp()) {                                               \
+                auto specializedLeastSigOp = SecondOp::Specialize(otherBinaryExpression.GetMostSigOp());                 \
+                if (!specializedLeastSigOp) {                                                                            \
+                    return nullptr;                                                                                      \
+                }                                                                                                        \
+                specialized.SetLeastSigOp(*specializedLeastSigOp);                                                       \
             } else {                                                                                                     \
-                auto specializedLeastSigOp = SecondOp::Specialize(otherBinaryExpression.GetLeastSigOp());                    \
-                if (!specializedLeastSigOp) {                                                                                \
-                    return nullptr;                                                                                          \
-                }                                                                                                            \
-                specialized.SetLeastSigOp(*specializedLeastSigOp);                                                           \
-            }\
+                auto specializedLeastSigOp = SecondOp::Specialize(otherBinaryExpression.GetLeastSigOp());                \
+                if (!specializedLeastSigOp) {                                                                            \
+                    return nullptr;                                                                                      \
+                }                                                                                                        \
+                specialized.SetLeastSigOp(*specializedLeastSigOp);                                                       \
+            }                                                                                                            \
         }                                                                                                                \
                                                                                                                          \
         return std::make_unique<Derived<FirstOp, SecondOp>>(specialized);                                                \

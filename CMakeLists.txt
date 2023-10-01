@@ -17,19 +17,8 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2 fmt)
 
-FetchContent_Declare(
-        taskflow
-        GIT_REPOSITORY https://github.com/taskflow/taskflow.git
-        GIT_TAG v3.6.0
-)
-
-set(TF_BUILD_TESTS OFF)
-
-FetchContent_GetProperties(taskflow)
-if (NOT taskflow_POPULATED)
-    FetchContent_Populate(taskflow)
-    add_subdirectory(${taskflow_SOURCE_DIR} ${taskflow_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif ()
+add_subdirectory(cmake/FetchEigen)
+add_subdirectory(cmake/FetchTaskflow)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -45,7 +34,7 @@ add_library(Oasis src/Add.cpp src/BinaryExpression.cpp src/Expression.cpp src/Re
         src/Exponent.cpp
         include/Oasis/Exponent.hpp)
 target_include_directories(Oasis PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(Oasis PUBLIC fmt::fmt Taskflow)
+target_link_libraries(Oasis PUBLIC fmt::fmt Eigen3::Eigen Taskflow)
 
 get_target_property(Oasis_SOURCES Oasis SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${Oasis_SOURCES})
