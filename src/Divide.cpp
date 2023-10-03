@@ -42,20 +42,40 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return std::make_unique<Real>(coefficient1.GetValue() / coefficient2.GetValue());
         }
         std::unordered_map<std::string, int> variables;
-        auto holderLeft=leftTerm; 
-        auto holderRight=rightTerm;
+
+
+        const Oasis::IExpression auto& holderLeft=likeTermsCase->GetMostSigOp().GetLeastSigOp(); 
+        const Oasis::IExpression auto& holderRight=likeTermsCase->GetLeastSigOp().GetLeastSigOp();
+
+        auto leftover=(Multiply<Variable, Expression>::Specialize(holderLeft))->GetMostSigOp();
+
         for(auto sortingLeft = Multiply<Variable, Expression>::Specialize(holderLeft); sortingLeft != nullptr;){
-            holderLeft=sortingLeft->GetLeastSigOp();
             if (auto it=variables.find(sortingLeft->GetMostSigOp().GetName()); it==variables.end())
                 variables.insert(std::make_pair(sortingLeft->GetMostSigOp().GetName(),0));
             variables[sortingLeft->GetMostSigOp().GetName()]++;
+            sortingLeft = Multiply<Variable, Expression>::Specialize(sortingLeft->GetLeastSigOp());
+            if (sortingLeft==nullptr)
+                leftover = *(Variable::Specialize(sortingLeft->GetLeastSigOp()));
         }
+        if (auto it=variables.find(leftover.GetName()); it==variables.end())
+            variables.insert(std::make_pair(leftover.GetName(),0));
+        variables[leftover.GetName()]++;
+
+        leftover=(Multiply<Variable, Expression>::Specialize(holderRight))->GetMostSigOp();
+
         for(auto sortingRight = Multiply<Variable, Expression>::Specialize(holderRight); sortingRight != nullptr;){
-            holderRight=sortingRight->GetLeastSigOp();
             if (auto it=variables.find(sortingRight->GetMostSigOp().GetName()); it==variables.end())
                 variables.insert(std::make_pair(sortingRight->GetMostSigOp().GetName(),0));
             variables[sortingRight->GetMostSigOp().GetName()]--;
+            sortingRight = Multiply<Variable, Expression>::Specialize(sortingRight->GetLeastSigOp());
+            if (sortingRight==nullptr)
+                leftover = *(Variable::Specialize(sortingRight->GetLeastSigOp()));
         }
+        if (auto it=variables.find(leftover.GetName()); it==variables.end())
+            variables.insert(std::make_pair(leftover.GetName(),0));
+        variables[leftover.GetName()]--;
+
+
         std::vector<std::pair<std::string, int>> top;
         std::vector<std::pair<std::string, int>> bot;
         for (auto it=variables.begin(); it!=variables.end(); it++){
@@ -64,55 +84,57 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             if (it->second>0)
                 top.push_back(std::make_pair(it->first, it->second));
             if (it->second<0)
-                bot.push_back(std::make_pair(it->first, it->second));
+                bot.push_back(std::make_pair(it->first, -(it->second)));
         }
-        
-        return std::make_unique<Divide<Expression>>(Multiply<Expression>(Real(coefficient1.GetValue()/coefficient2.GetValue()), leftTerm),(rightTerm));
+    
+        if (bot.size()!=0 && top.size()!=0){
+            return std::make_unique<Divide<Expression>>(Multiply<Expression>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(Recurse(top, 0, top.size()-1))),*(Recurse(bot, 0, bot.size()-1)));
+        }
+        if (top.size()!=0){
+            return std::make_unique<Multiply<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(Recurse(top, 0, top.size()-1)));
+        }
+        if (bot.size()!=0){
+            return std::make_unique<Divide<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()),*(Recurse(bot, 0, bot.size()-1)));   
+        }
+        else{
+            return std::make_unique<Real>(coefficient1.GetValue() / coefficient2.GetValue());
+        }
     }
-
-    //Think about cases such as 2x(5y+2z)/2xy
-    //Divide by zero case
-    /*Check cases
-    Cases to look at right now
-    1 variable one real
-    return
-
-    if (onevar)
-    return
-
-    2 variables
-    if differnt
-    return
-    if same
-    return real value (1)
-
-    if (twovar)
-        if (divident==divisor)
-            reutnr real(1);
-        else
-            return;
-
-    1 variable with coefficient
-    divide coefficients and return a real and variable
-    2 variables with coefficients
-    if different
-    divide coefficients (if both have, and set first to result)
-    if same
-    divide coefficients and return
-
-
-    Looking at a factored case 
-
-    Going to start with a coefficient, the some number of variables or expressions.
-    Then look at the expressions and variables seperately
-    How to recurse through this. Recurse so that you are peeling a variable (or expression) off of the 
-    division, compare it, and if it divides then divide them, if not then keep.
-
-    Put everything into a map from both sides, from multiplication add one, division subtract, output is the map.
-    */
-
     return simplifiedDivide.Copy();
 }
+
+
+
+
+auto Divide<Expression>::Recurse(std::vector<std::pair<std::string, int>> varList, int front, int end) const -> std::unique_ptr<Expression>{
+    if (front=end){
+        if (varList[front].second==1)
+            return std::make_unique<Variable>(varList[front].first);
+        else
+            return std::make_unique<Variable>(varList[front].first);
+    }
+    return std::make_unique<Multiply<Expression>>(*(Recurse(varList, front, (end+front)/2)), *(Recurse(varList,(end+front+1)/2, end)));
+}
+/*
+auto Recurse(std::vector<std::pair<std::string, int>> varList, int front, int end) const -> std::unique_ptr<Expression>{
+    if (front-end==1){
+        if (varList[front].second==1)
+            return std::make_unique<Multiply<Expression>>(Variable(varList[front].first), Variable(varList[end].first));
+        else
+            return std::make_unique<Multiply<Expression>>(Variable(varList[front].first), Variable(varList[end].first));
+    }
+    if (front-end==2){
+        if (varList[front].second==1)
+            return std::make_unique<Multiply<Expression>>(Multiply<Expression>(Variable(varList[front].first), Variable(varList[front+1].first)), Variable(varList[end].first));
+        else
+            return std::make_unique<Multiply<Expression>>(Multiply<Expression>(Variable(varList[front].first), Variable(varList[front+1].first)), Variable(varList[end].first));
+    }
+    return std::make_unique<Multiply<Expression>>(Recurse(varList, front, (end+front)/2), Recurse(varList,(end+front+1)/2, end));
+    return std::make_unique<Variable>(varList[front].first);
+}*/
+
+
+
 
 auto Divide<Expression>::ToString() const -> std::string
 {
