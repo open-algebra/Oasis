@@ -1,9 +1,9 @@
 # Fetches the "taskflow" dependency and integrates it into Oasis.
 # Disables some of taskflow's build options.
 FetchContent_Declare(
-        taskflow
-        GIT_REPOSITORY https://github.com/taskflow/taskflow.git
-        GIT_TAG v3.6.0
+    taskflow
+    GIT_REPOSITORY https://github.com/taskflow/taskflow.git
+    GIT_TAG v3.6.0
 )
 
 set(TF_BUILD_TESTS OFF)
