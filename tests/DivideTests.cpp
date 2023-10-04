@@ -41,15 +41,21 @@ TEST_CASE("Symbolic Division", "[Division][Symbolic]")
     Oasis::Divide div2 {
         Oasis::Multiply {
             Oasis::Real { 2.0 },
-            Oasis::Multiply{
-                Oasis::Variable{ "x" },
-                Oasis::Variable{ "y" }
+            Oasis::Multiply {
+                Oasis::Multiply{
+                    Oasis::Variable{ "y" },
+                    Oasis::Variable{ "z" }
+                },
+                Oasis::Variable{ "x" }
             } },
         Oasis::Multiply {
                 Oasis::Real { 1.0 },
+                Oasis::Multiply {
                 Oasis::Multiply{
-                    Oasis::Variable{ "x" },
-                    Oasis::Variable{ "y" }
+                    Oasis::Variable{ "y" },
+                    Oasis::Variable{ "z" }
+                },
+                Oasis::Variable{ "x" }
             } }
         };
 
@@ -77,13 +83,12 @@ TEST_CASE("Symbolic Division, variables dont equal", "[Division][Symbolic]")
 
     auto simplified = div.Simplify();
 
+    CAPTURE(simplified->ToString());
     REQUIRE(Oasis::Divide {
         Oasis::Multiply {
             Oasis::Real { 2.0 },
             Oasis::Variable { "x"} },
-        Oasis::Multiply {
-                Oasis::Real { 1.0 },
-                Oasis::Variable { "y" } }}.Equals(*simplified));
+        Oasis::Variable { "y" } }.Equals(*simplified));
 }
 
 
