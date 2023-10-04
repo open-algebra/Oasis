@@ -47,7 +47,8 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         const Oasis::IExpression auto& holderLeft=likeTermsCase->GetMostSigOp().GetLeastSigOp(); 
         const Oasis::IExpression auto& holderRight=likeTermsCase->GetLeastSigOp().GetLeastSigOp();
 
-        auto leftover=(Multiply<Variable, Expression>::Specialize(holderLeft))->GetMostSigOp();
+        auto leftover=Variable("err");
+        leftover=*(Variable::Specialize(holderLeft));
 
         for(auto sortingLeft = Multiply<Variable, Expression>::Specialize(holderLeft); sortingLeft != nullptr;){
             if (auto it=variables.find(sortingLeft->GetMostSigOp().GetName()); it==variables.end())
@@ -61,7 +62,8 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             variables.insert(std::make_pair(leftover.GetName(),0));
         variables[leftover.GetName()]++;
 
-        leftover=(Multiply<Variable, Expression>::Specialize(holderRight))->GetMostSigOp();
+        
+        leftover=*(Variable::Specialize(holderRight));
 
         for(auto sortingRight = Multiply<Variable, Expression>::Specialize(holderRight); sortingRight != nullptr;){
             if (auto it=variables.find(sortingRight->GetMostSigOp().GetName()); it==variables.end())
@@ -88,7 +90,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     
         if (bot.size()!=0 && top.size()!=0){
-            return std::make_unique<Divide<Expression>>(Multiply<Expression>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(Recurse(top, 0, top.size()-1))),*(Recurse(bot, 0, bot.size()-1)));
+            return std::make_unique<Divide<Expression>>(Multiply<Expression>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(Recurse(top, 0, top.size()-1))), *(Recurse(bot, 0, bot.size()-1)));
         }
         if (top.size()!=0){
             return std::make_unique<Multiply<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(Recurse(top, 0, top.size()-1)));
@@ -107,7 +109,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
 
 auto Divide<Expression>::Recurse(std::vector<std::pair<std::string, int>> varList, int front, int end) const -> std::unique_ptr<Expression>{
-    if (front=end){
+    if (front==end){
         if (varList[front].second==1)
             return std::make_unique<Variable>(varList[front].first);
         else
@@ -115,23 +117,6 @@ auto Divide<Expression>::Recurse(std::vector<std::pair<std::string, int>> varLis
     }
     return std::make_unique<Multiply<Expression>>(*(Recurse(varList, front, (end+front)/2)), *(Recurse(varList,(end+front+1)/2, end)));
 }
-/*
-auto Recurse(std::vector<std::pair<std::string, int>> varList, int front, int end) const -> std::unique_ptr<Expression>{
-    if (front-end==1){
-        if (varList[front].second==1)
-            return std::make_unique<Multiply<Expression>>(Variable(varList[front].first), Variable(varList[end].first));
-        else
-            return std::make_unique<Multiply<Expression>>(Variable(varList[front].first), Variable(varList[end].first));
-    }
-    if (front-end==2){
-        if (varList[front].second==1)
-            return std::make_unique<Multiply<Expression>>(Multiply<Expression>(Variable(varList[front].first), Variable(varList[front+1].first)), Variable(varList[end].first));
-        else
-            return std::make_unique<Multiply<Expression>>(Multiply<Expression>(Variable(varList[front].first), Variable(varList[front+1].first)), Variable(varList[end].first));
-    }
-    return std::make_unique<Multiply<Expression>>(Recurse(varList, front, (end+front)/2), Recurse(varList,(end+front+1)/2, end));
-    return std::make_unique<Variable>(varList[front].first);
-}*/
 
 
 
