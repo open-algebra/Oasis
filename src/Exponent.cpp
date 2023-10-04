@@ -3,6 +3,7 @@
 //
 
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Multiply.hpp"
 #include <cmath>
 
 namespace Oasis {
@@ -40,6 +41,11 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (power.GetValue() == 1.0) {
             return std::make_unique<Variable>(oneCase->GetMostSigOp());
         }
+    }
+
+    if (auto expExpCase = Exponent<Exponent<Expression, Expression>, Expression>::Specialize(simplifiedExponent); expExpCase != nullptr) {
+        return std::make_unique<Exponent<Expression>>(expExpCase->GetMostSigOp().GetMostSigOp(),
+            *(Multiply { expExpCase->GetMostSigOp().GetLeastSigOp(), expExpCase->GetLeastSigOp() }.Simplify()));
     }
 
     return simplifiedExponent.Copy();
