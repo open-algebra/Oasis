@@ -27,7 +27,6 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return std::make_unique<Real>(multiplicand.GetValue() * multiplier.GetValue());
     }
 
-#pragma region replace_variable_with_expression
     if (auto exprCase = Multiply<Expression>::Specialize(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp())) {
             return std::make_unique<Exponent<Expression, Expression>>(exprCase->GetMostSigOp(), Real { 2.0 });
@@ -152,7 +151,6 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-#pragma endregion
 
     return simplifiedMultiply.Copy();
 }
