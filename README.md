@@ -11,8 +11,11 @@ The library is written in C++20 and is built with CMake. All dependencies are ma
 * Clang ≥ 15 (≥ 16 for Ubuntu)
 * MSVC
 
-(There is [a bug in GCC](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111485) that prevents the library from compiling,
-a fix is in the master branch of GCC but has not been released yet.)
+#### Unsupported Tools
+* There is [a bug in GCC](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111485) that prevents the library from compiling,
+a fix is in the master branch of GCC but has not been released yet.
+  * Nautrally, MinGW does not work. If you're using CLion on Windows, you'll need to use the Visual Studio toolchain in CLion.
+* NMake seems to have problems. We recommend [Ninja](https://ninja-build.org) or Makefiles.
 
 ### Example Build Commands
 
