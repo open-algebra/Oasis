@@ -151,3 +151,6 @@ Temporary Items
 
 docs/html/
 docs/latex/
+
+# Visual Studio Files
+.vs/
