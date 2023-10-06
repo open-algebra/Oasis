@@ -36,6 +36,7 @@ set(Oasis_HEADERS
 
 set(Oasis_TESTS 
     tests/AddTests.cpp tests/DivideTests.cpp tests/MultiplyTests.cpp tests/SubtractTests.cpp
+        tests/BinaryExpressionTests.cpp
 )
 
 # Adds a library target called "Oasis" to be built from source files.
