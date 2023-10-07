@@ -11,6 +11,32 @@
 
 namespace Oasis {
 
+template <IExpression BaseT, IExpression ArgumentT>
+class Log;
+
+/**
+ * Template specialization for Log with two Expressions.
+ */
+template <>
+class Log<Expression, Expression> : public BinaryExpression<Log> {
+public:
+    Log() = default;
+    Log(const Log<Expression, Expression>& other) = default;
+
+    Log(const Expression& base, const Expression& argument);
+
+    [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
+    auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
+
+    [[nodiscard]] auto ToString() const -> std::string final;
+
+    static auto Specialize(const Expression& other) -> std::unique_ptr<Log>;
+    static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Log>;
+
+    EXPRESSION_TYPE(Log)
+    EXPRESSION_CATEGORY(None)
+};
+
 /**
  * The Log expression represents the logarithm of a base and an argument.
  *

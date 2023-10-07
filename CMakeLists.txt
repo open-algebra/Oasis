@@ -24,14 +24,15 @@ add_subdirectory(cmake/FetchTaskflow)
 
 # These variables MUST be modified accordingly whenever a new source (.cpp/.hpp) file is added.
 set(Oasis_SOURCES 
-    src/Add.cpp src/BinaryExpression.cpp src/Divide.cpp src/Expression.cpp src/Multiply.cpp 
-    src/Real.cpp src/Subtract.cpp src/Variable.cpp src/Log.cpp
+    src/Add.cpp src/BinaryExpression.cpp src/Divide.cpp src/Expression.cpp src/Multiply.cpp
+        src/Real.cpp src/Subtract.cpp src/Variable.cpp src/Log.cpp src/Exponent.cpp
 )
 
 set(Oasis_HEADERS 
     include/Oasis/Add.hpp include/Oasis/BinaryExpression.hpp include/Oasis/Divide.hpp 
     include/Oasis/Expression.hpp include/Oasis/LeafExpression.hpp include/Oasis/Multiply.hpp 
     include/Oasis/Real.hpp include/Oasis/Subtract.hpp include/Oasis/Variable.hpp include/Oasis/Log.hpp
+        include/Oasis/Exponent.hpp
 )
 
 set(Oasis_TESTS 
