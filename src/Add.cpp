@@ -3,6 +3,7 @@
 //
 
 #include "Oasis/Add.hpp"
+#include "Oasis/Exponent.hpp"
 #include "Oasis/Multiply.hpp"
 
 namespace Oasis {
@@ -35,6 +36,36 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
             const Real& coefficient2 = likeTermsCase->GetLeastSigOp().GetMostSigOp();
 
             return std::make_unique<Multiply<Expression>>(Real(coefficient1.GetValue() + coefficient2.GetValue()), leftTerm);
+        }
+    }
+
+    // exponent + exponent
+    if (auto exponentCase = Add<Exponent<Expression>, Exponent<Expression>>::Specialize(simplifiedAdd); exponentCase != nullptr) {
+        if (exponentCase->GetMostSigOp().GetMostSigOp().Equals(exponentCase->GetLeastSigOp().GetMostSigOp()) && exponentCase->GetMostSigOp().GetLeastSigOp().Equals(exponentCase->GetLeastSigOp().GetLeastSigOp())) {
+            return std::make_unique<Multiply<Expression>>(Real { 2.0 }, exponentCase->GetMostSigOp());
+        }
+    }
+
+    // a*exponent + exponent
+    if (auto exponentCase = Add<Multiply<Expression, Exponent<Expression>>, Exponent<Expression>>::Specialize(simplifiedAdd); exponentCase != nullptr) {
+        if (exponentCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(exponentCase->GetLeastSigOp().GetMostSigOp()) && exponentCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp().Equals(exponentCase->GetLeastSigOp().GetLeastSigOp())) {
+            return std::make_unique<Multiply<Expression>>(*(Add<Expression> { exponentCase->GetMostSigOp().GetMostSigOp(), Real { 1.0 } }.Simplify()),
+                exponentCase->GetLeastSigOp());
+        }
+    }
+
+    if (auto exponentCase = Add<Exponent<Expression>, Multiply<Expression, Exponent<Expression>>>::Specialize(simplifiedAdd); exponentCase != nullptr) {
+        if (exponentCase->GetLeastSigOp().GetLeastSigOp().GetMostSigOp().Equals(exponentCase->GetMostSigOp().GetMostSigOp()) && exponentCase->GetLeastSigOp().GetLeastSigOp().GetLeastSigOp().Equals(exponentCase->GetMostSigOp().GetLeastSigOp())) {
+            return std::make_unique<Multiply<Expression>>(*(Add<Expression> { exponentCase->GetMostSigOp().GetMostSigOp(), Real { 1.0 } }.Simplify()),
+                exponentCase->GetLeastSigOp());
+        }
+    }
+
+    // a*exponent+b*exponent
+    if (auto exponentCase = Add<Multiply<Expression, Exponent<Expression>>, Multiply<Expression, Exponent<Expression>>>::Specialize(simplifiedAdd); exponentCase != nullptr) {
+        if (exponentCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(exponentCase->GetLeastSigOp().GetLeastSigOp().GetMostSigOp()) && exponentCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp().Equals(exponentCase->GetLeastSigOp().GetLeastSigOp().GetLeastSigOp())) {
+            return std::make_unique<Multiply<Expression>>(*(Add<Expression> { exponentCase->GetMostSigOp().GetMostSigOp(), exponentCase->GetLeastSigOp().GetMostSigOp() }.Simplify()),
+                exponentCase->GetLeastSigOp());
         }
     }
 

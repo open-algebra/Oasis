@@ -23,6 +23,7 @@ enum class ExpressionType {
     Subtract,
     Multiply,
     Divide,
+    Exponent,
     Log,
 };
 

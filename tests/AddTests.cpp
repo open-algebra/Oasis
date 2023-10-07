@@ -4,6 +4,7 @@
 #include "catch2/catch_test_macros.hpp"
 
 #include "Oasis/Add.hpp"
+#include "Oasis/Exponent.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Variable.hpp"
