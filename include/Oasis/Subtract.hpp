@@ -66,7 +66,7 @@ public:
     auto operator=(const Subtract& other) -> Subtract& = default;
 
     EXPRESSION_TYPE(Subtract)
-    EXPRESSION_CATEGORY(0)
+    EXPRESSION_CATEGORY(None)
 };
 
 } // Oasis

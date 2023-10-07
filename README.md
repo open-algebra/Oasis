@@ -1,6 +1,6 @@
 # OASIS ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/matthew-mccall/oasis/cmake-multi-platform.yml)
 
-Open Algebra Software for Inferring Solutions is a C++ for embedding computer algebra and symbolic manipulation.
+Open Algebra Software for Inferring Solutions is a C++ library for embedding computer algebra and symbolic manipulation.
 
 ## Building
 The library is written in C++20 and is built with CMake. All dependencies are managed by CMake itself in an effort to be highly portable. As, such all you need is CMake and a modern C++ compiler. 

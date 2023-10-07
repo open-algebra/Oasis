@@ -23,13 +23,15 @@ enum class ExpressionType {
     Subtract,
     Multiply,
     Divide,
-    Exponent
+    Exponent,
+    Log,
 };
 
 /**
  * The category of an expression.
  */
 enum ExpressionCategory : uint32_t {
+    None = 0,
     Associative = 1,
     Commutative = 1 << 1,
 };

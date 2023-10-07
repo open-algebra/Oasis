@@ -66,7 +66,7 @@ public:
     auto operator=(const Divide& other) -> Divide& = default;
 
     EXPRESSION_TYPE(Divide)
-    EXPRESSION_CATEGORY(Associative | Commutative)
+    EXPRESSION_CATEGORY(None)
 };
 
 } // Oasis
