@@ -43,8 +43,8 @@ public:
 /**
  * The Add expression adds two expressions together.
  *
- * @tparam AugendT The expression to add be added to.
- * @tparam AddendT The expression to add to the augend.
+ * @tparam AugendT The type of the expression to add be added to.
+ * @tparam AddendT The type of the expression to add to the augend.
  */
 template <IExpression AugendT = Expression, IExpression AddendT = AugendT>
 class Add : public BinaryExpression<Add, AugendT, AddendT> {
