@@ -26,6 +26,7 @@ add_subdirectory(cmake/FetchTaskflow)
 set(Oasis_SOURCES 
     src/Add.cpp src/BinaryExpression.cpp src/Divide.cpp src/Expression.cpp src/Multiply.cpp
         src/Real.cpp src/Subtract.cpp src/Variable.cpp src/Log.cpp src/Exponent.cpp
+        src/Imaginary.cpp
 )
 
 set(Oasis_HEADERS 
@@ -33,11 +34,12 @@ set(Oasis_HEADERS
     include/Oasis/Expression.hpp include/Oasis/LeafExpression.hpp include/Oasis/Multiply.hpp 
     include/Oasis/Real.hpp include/Oasis/Subtract.hpp include/Oasis/Variable.hpp include/Oasis/Log.hpp
         include/Oasis/Exponent.hpp
+        include/Oasis/Imaginary.hpp
 )
 
 set(Oasis_TESTS 
     tests/AddTests.cpp tests/DivideTests.cpp tests/MultiplyTests.cpp tests/SubtractTests.cpp
-        tests/BinaryExpressionTests.cpp
+        tests/BinaryExpressionTests.cpp tests/ExponentTests.cpp
 )
 
 # Adds a library target called "Oasis" to be built from source files.

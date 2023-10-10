@@ -5,6 +5,7 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Imaginary.hpp"
 
 namespace Oasis {
 
@@ -25,6 +26,10 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         const Real& multiplier = realCase->GetLeastSigOp();
 
         return std::make_unique<Real>(multiplicand.GetValue() * multiplier.GetValue());
+    }
+
+    if (auto ImgCase = Multiply<Imaginary>::Specialize(simplifiedMultiply); ImgCase != nullptr) {
+        return std::make_unique<Real>(-1.0);
     }
 
     if (auto exprCase = Multiply<Expression>::Specialize(simplifiedMultiply); exprCase != nullptr) {
