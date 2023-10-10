@@ -9,6 +9,9 @@
 
 namespace Oasis {
 
+/**
+ * A real number.
+ */
 class Real : public LeafExpression<Real> {
 public:
     Real() = default;
@@ -16,11 +19,15 @@ public:
 
     explicit Real(double value);
 
-    [[nodiscard]] virtual auto Equals(const Expression& other) const -> bool final;
+    [[nodiscard]] auto Equals(const Expression& other) const -> bool final;
 
     EXPRESSION_TYPE(Real)
     EXPRESSION_CATEGORY(0)
 
+    /**
+     * Gets the value of the real number.
+     * @return The value of the real number.
+     */
     [[nodiscard]] auto GetValue() const -> double;
 
     [[nodiscard]] auto ToString() const -> std::string final;

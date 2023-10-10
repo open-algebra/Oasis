@@ -150,3 +150,8 @@ Temporary Items
 
 # End of https://www.toptal.com/developers/gitignore/api/jetbrains,macos
 
+docs/html/
+docs/latex/
+
+# Visual Studio Files
+.vs/

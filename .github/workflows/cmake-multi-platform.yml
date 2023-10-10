@@ -1,0 +1,79 @@
+# Adapted from https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml.
+
+name: CMake on multiple platforms
+
+on:
+    push:
+        branches: [ "master" ]
+    pull_request:
+        branches: [ "master" ]
+
+jobs:
+    build_and_test:
+        runs-on: ${{ matrix.os }}
+
+        strategy:
+            # Sets fail-fast to false to ensure that feedback is delivered for all platforms.
+            fail-fast: false
+
+            # Due to a bug in GCC (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111485), building with GCC is disabled.
+            matrix:
+                os: [ ubuntu-latest, windows-latest ]
+                build_type: [ Release ]
+                # c_compiler: [ gcc, clang-17, cl ]
+                c_compiler: [ clang-17, cl ]
+
+                include:
+                  # - os: ubuntu-latest
+                  #   c_compiler: gcc
+                  #   cpp_compiler: g++
+                  - os: ubuntu-latest
+                    c_compiler: clang-17
+                    cpp_compiler: clang++-17
+                  # - os: windows-latest
+                  #   c_comiler: gcc
+                  #   cpp_compiler: g++
+                  - os: windows-latest
+                    c_compiler: cl
+                    cpp_compiler: cl
+                exclude:
+                  - os: ubuntu-latest
+                    c_compiler: cl
+                  - os: windows-latest
+                    c_compiler: clang-17
+        steps:
+          - uses: actions/checkout@v3
+            with:
+                submodules: recursive
+
+            # Turns repeated input strings into step outputs.
+          - name: Set reusable strings
+            id: strings
+            shell: bash
+            run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+            # Installs clang-17 on the Ubuntu runner (Ubuntu 22.04 LTS comes with Clang 14).
+          - name: Install Clang 17
+            if: ${{ matrix.os == 'ubuntu-latest' }}
+            run: |
+                wget https://apt.llvm.org/llvm.sh
+                chmod +x llvm.sh
+                sudo ./llvm.sh 17
+
+            # Configures CMake in a subdirectory.
+          - name: Configure CMake
+            run: >
+                cmake -B ${{ steps.strings.outputs.build-output-dir }} 
+                -S ${{ github.workspace }}
+                -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} 
+                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} 
+                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+            # Builds Oasis with the given configuration.
+          - name: Build
+            run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+            # Runs the tests registered to CTest by CMake.
+          - name: Test
+            working-directory: ${{ steps.strings.outputs.build-output-dir }}
+            run: ctest --build-config ${{ matrix.build_type }}

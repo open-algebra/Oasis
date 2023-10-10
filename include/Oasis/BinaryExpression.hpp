@@ -14,6 +14,13 @@ namespace Oasis {
 template <IExpression MostSigOpT, IExpression LeastSigOpT>
 class BinaryExpressionBase;
 
+/**
+ * Template specialization for binary expressions with two Expression operands.
+ *
+ * This is a "Generalized" binary expression, meaning that it accepts any expression as an operand.
+ *
+ * @note See the documentation for BinaryExpressionBase for more information.
+ */
 template <>
 class BinaryExpressionBase<Expression, Expression> : public Expression {
 public:
@@ -45,10 +52,27 @@ protected:
     std::unique_ptr<Expression> leastSigOp;
 };
 
-// concept to check if type is one of two operand types
-template <typename FirstOpT, typename SecondOpT, typename T>
-concept IOperand = std::is_same_v<T, FirstOpT> || std::is_same_v<T, SecondOpT>;
+/**
+ * A concept for an operand of a binary expression.
+ * @tparam MostSigOpT The type of the most significant operand.
+ * @tparam LeastSigOpT The type of the least significant operand.
+ * @tparam T The type to check.
+ */
+template <typename MostSigOpT, typename LeastSigOpT, typename T>
+concept IOperand = std::is_same_v<T, MostSigOpT> || std::is_same_v<T, LeastSigOpT>;
 
+/**
+ * The base class for all binary expressions.
+ *
+ * The BinaryExpressionBase class is a base class for all binary expressions. It provides a common
+ * interface for all binary expressions, and implements common functionality. Specifically, it provides
+ * functionality not dependent on the Derived class.
+ *
+ * @note This class is not intended to be used directly by end users.
+ *
+ * @tparam MostSigOpT The type of the most significant operand.
+ * @tparam LeastSigOpT The type of the least significant operand.
+ */
 template <IExpression MostSigOpT = Expression, IExpression LeastSigOpT = MostSigOpT>
 class BinaryExpressionBase : public Expression {
 public:
@@ -193,6 +217,16 @@ public:
         return mostSigOpEquivalent && leastSigOpEquivalent;
     }
 
+    /**
+     * Adds an operand to this expression.
+     *
+     * If this expression already has two operands, this function returns false. If this expression
+     * does not have its most significant operance set, this function sets it. Otherwise, it sets the
+     * least significant operand if it is not already set.
+     * @tparam T The type of the operand to add.
+     * @param operand The operand to add.
+     * @return true if the operand was added, false otherwise.
+     */
     template <IOperand<MostSigOpT, LeastSigOpT> T>
     auto AddOperand(const std::unique_ptr<T>& operand) -> bool
     {
@@ -207,10 +241,18 @@ public:
             return true;
         }
 
-        leastSigOp = operand->Copy();
-        return true;
+        if (leastSigOp == nullptr) {
+            leastSigOp = operand->Copy();
+            return true;
+        }
+
+        return false;
     }
 
+    /**
+     * Sets the most significant operand of this expression.
+     * @param op The operand to set.
+     */
     auto SetMostSigOp(const MostSigOpT& op) -> void
     {
         if constexpr (std::is_same_v<MostSigOpT, Expression>) {
@@ -220,6 +262,10 @@ public:
         }
     }
 
+    /**
+     * Sets the least significant operand of this expression.
+     * @param op The operand to set.
+     */
     auto SetLeastSigOp(const LeastSigOpT& op) -> void
     {
         if constexpr (std::is_same_v<LeastSigOpT, Expression>) {
@@ -229,28 +275,49 @@ public:
         }
     }
 
+    /**
+     * Gets whether this expression has a most significant operand.
+     * @return True if this expression has a most significant operand, false otherwise.
+     */
     [[nodiscard]] auto HasMostSigOp() const -> bool
     {
         return mostSigOp != nullptr;
     }
 
+    /**
+     * Gets whether this expression has a least significant operand.
+     * @return True if this expression has a least significant operand, false otherwise.
+     */
     [[nodiscard]] auto HasLeastSigOp() const -> bool
     {
         return leastSigOp != nullptr;
     }
 
+    /**
+     * Gets the most significant operand of this expression.
+     * @return The most significant operand of this expression.
+     */
     auto GetMostSigOp() const -> const MostSigOpT&
     {
         assert(mostSigOp != nullptr);
         return *mostSigOp;
     }
 
+    /**
+     * Gets the least significant operand of this expression.
+     * @return The least significant operand of this expression.
+     */
     auto GetLeastSigOp() const -> const LeastSigOpT&
     {
         assert(leastSigOp != nullptr);
         return *leastSigOp;
     }
 
+    /**
+     * Assignment operator.
+     * @param other The other expression to assign to this expression.
+     * @return This expression.
+     */
     auto operator=(const BinaryExpressionBase<MostSigOpT, LeastSigOpT>& other) -> BinaryExpressionBase<MostSigOpT, LeastSigOpT>& = default;
 
 protected:
@@ -258,15 +325,30 @@ protected:
     std::unique_ptr<LeastSigOpT> leastSigOp;
 };
 
-template <template <IExpression, IExpression> class Derived, IExpression MostSigOpT = Expression, IExpression LeastSigOpT = MostSigOpT>
+/**
+ * A binary expression.
+ *
+ * The BinaryExpression class is a base class for all binary expressions. It provides a common
+ * interface for all binary expressions, and implements common functionality. Specifically, it provides
+ * functionality dependent on the Derived class. The Derived class must be a template class that takes
+ * two template parameters, the types of the most significant and least significant operands, respectively.
+ * This class uses a [Curiously Recurring Template Pattern](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern)
+ *
+ * @note This class is not intended to be used directly by end users.
+ *
+ * @tparam DerivedT The derived class.
+ * @tparam MostSigOpT The type of the most significant operand.
+ * @tparam LeastSigOpT The type of the least significant operand.
+ */
+template <template <IExpression, IExpression> class DerivedT, IExpression MostSigOpT = Expression, IExpression LeastSigOpT = MostSigOpT>
 class BinaryExpression : public BinaryExpressionBase<MostSigOpT, LeastSigOpT> {
 
-    using DerivedSpecialized = Derived<MostSigOpT, LeastSigOpT>;
-    using DerivedGeneralized = Derived<Expression, Expression>;
+    using DerivedSpecialized = DerivedT<MostSigOpT, LeastSigOpT>;
+    using DerivedGeneralized = DerivedT<Expression, Expression>;
 
 public:
     BinaryExpression() = default;
-    BinaryExpression(const BinaryExpression<Derived, MostSigOpT, LeastSigOpT>& other)
+    BinaryExpression(const BinaryExpression<DerivedT, MostSigOpT, LeastSigOpT>& other)
         : BinaryExpressionBase<MostSigOpT, LeastSigOpT>(other)
     {
     }
@@ -341,6 +423,15 @@ public:
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 };
 
+/**
+ * Template specialization for binary expressions with two Expression operands.
+ *
+ * This is a "Generalized" binary expression, meaning that it accepts any expression as an operand.
+ *
+ * @note See the documentation for BinaryExpression for more information.
+ *
+ * @tparam Derived The derived class.
+ */
 template <template <IExpression, IExpression> class Derived>
 class BinaryExpression<Derived, Expression, Expression> : public BinaryExpressionBase<Expression, Expression> {
 
@@ -435,20 +526,38 @@ public:
         std::unique_ptr<Expression> otherGeneralized = other.Generalize();                                               \
         const auto& otherBinaryExpression = dynamic_cast<const Derived<Expression>&>(*otherGeneralized);                 \
                                                                                                                          \
+        bool swappedOperands = false;                                                                                    \
+                                                                                                                         \
         if (otherBinaryExpression.HasMostSigOp()) {                                                                      \
             auto specializedMostSigOp = FirstOp::Specialize(otherBinaryExpression.GetMostSigOp());                       \
             if (!specializedMostSigOp) {                                                                                 \
-                return nullptr;                                                                                          \
+                if (!(Derived::GetStaticCategory() & Commutative)) {                                                     \
+                    return nullptr;                                                                                      \
+                }                                                                                                        \
+                specializedMostSigOp = FirstOp::Specialize(otherBinaryExpression.GetLeastSigOp());                       \
+                if (specializedMostSigOp) {                                                                              \
+                    swappedOperands = true;                                                                              \
+                } else {                                                                                                 \
+                    return nullptr;                                                                                      \
+                }                                                                                                        \
             }                                                                                                            \
             specialized.SetMostSigOp(*specializedMostSigOp);                                                             \
         }                                                                                                                \
                                                                                                                          \
         if (otherBinaryExpression.HasLeastSigOp()) {                                                                     \
-            auto specializedLeastSigOp = SecondOp::Specialize(otherBinaryExpression.GetLeastSigOp());                    \
-            if (!specializedLeastSigOp) {                                                                                \
-                return nullptr;                                                                                          \
+            if (swappedOperands && otherBinaryExpression.HasMostSigOp()) {                                               \
+                auto specializedLeastSigOp = SecondOp::Specialize(otherBinaryExpression.GetMostSigOp());                 \
+                if (!specializedLeastSigOp) {                                                                            \
+                    return nullptr;                                                                                      \
+                }                                                                                                        \
+                specialized.SetLeastSigOp(*specializedLeastSigOp);                                                       \
+            } else {                                                                                                     \
+                auto specializedLeastSigOp = SecondOp::Specialize(otherBinaryExpression.GetLeastSigOp());                \
+                if (!specializedLeastSigOp) {                                                                            \
+                    return nullptr;                                                                                      \
+                }                                                                                                        \
+                specialized.SetLeastSigOp(*specializedLeastSigOp);                                                       \
             }                                                                                                            \
-            specialized.SetLeastSigOp(*specializedLeastSigOp);                                                           \
         }                                                                                                                \
                                                                                                                          \
         return std::make_unique<Derived<FirstOp, SecondOp>>(specialized);                                                \

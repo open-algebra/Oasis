@@ -15,6 +15,9 @@ namespace Oasis {
 template <IExpression DividendT, IExpression DivisorT>
 class Divide;
 
+/**
+ * Template specialization for Divide with two Expressions.
+ */
 template <>
 class Divide<Expression, Expression> : public BinaryExpression<Divide> {
 public:
@@ -37,6 +40,12 @@ public:
     EXPRESSION_CATEGORY(Associative | Commutative)
 };
 
+/**
+ * The Divide expression divides two expressions.
+ *
+ * @tparam DividendT The expression to be divided into.
+ * @tparam DivisorT The expression to divide the dividend by.
+ */
 template <IExpression DividendT = Expression, IExpression DivisorT = DividendT>
 class Divide : public BinaryExpression<Divide, DividendT, DivisorT> {
 public:
@@ -59,7 +68,7 @@ public:
     auto operator=(const Divide& other) -> Divide& = default;
 
     EXPRESSION_TYPE(Divide)
-    EXPRESSION_CATEGORY(Associative | Commutative)
+    EXPRESSION_CATEGORY(None)
 };
 
 } // Oasis
