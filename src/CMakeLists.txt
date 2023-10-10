@@ -1,15 +1,18 @@
 ############################################################
 # OASIS: Open Algebra Software for Inferring Solutions
+#
 # CMakeLists.txt - OASIS library
 ############################################################
 
-# These variables MUST be modified accordingly whenever a new source (.cpp/.hpp) file is added.
+# These variables MUST be modified whenever a new source file is added.
 set(Oasis_SOURCES 
+    # cmake-format: sortable
     Add.cpp BinaryExpression.cpp Divide.cpp Exponent.cpp Expression.cpp Log.cpp Multiply.cpp 
     Real.cpp Subtract.cpp Variable.cpp
 )
 
-set(Oasis_HEADERS 
+set(Oasis_HEADERS
+    # cmake-format: sortable
     ../include/Oasis/Add.hpp ../include/Oasis/BinaryExpression.hpp ../include/Oasis/Divide.hpp 
     ../include/Oasis/Exponent.hpp ../include/Oasis/Expression.hpp 
     ../include/Oasis/LeafExpression.hpp ../include/Oasis/Log.hpp ../include/Oasis/Multiply.hpp 

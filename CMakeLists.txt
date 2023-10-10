@@ -1,5 +1,6 @@
 ############################################################
 # OASIS: Open Algebra Software for Inferring Solutions
+#
 # CMakeLists.txt - Top-level
 ############################################################
 
@@ -23,7 +24,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2 fmt)
 
-# Processes the CMakeLists.txt for other external dependencies that need special handling.
+# Processes the CMakeLists.txt for dependencies that need special handling.
 add_subdirectory(cmake/FetchEigen)
 add_subdirectory(cmake/FetchTaskflow)
 
