@@ -3,6 +3,7 @@
 //
 
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Imaginary.hpp"
 #include "Oasis/Multiply.hpp"
 #include <cmath>
 
@@ -40,6 +41,19 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
         const Real& power = oneCase->GetLeastSigOp();
         if (power.GetValue() == 1.0) {
             return std::make_unique<Variable>(oneCase->GetMostSigOp());
+        }
+    }
+
+    if (auto ImgCase = Exponent<Imaginary, Real>::Specialize(simplifiedExponent); ImgCase != nullptr) {
+        const auto power = std::fmod((ImgCase->GetLeastSigOp()).GetValue(), 4);
+        if (power == 1) {
+            return std::make_unique<Imaginary>();
+        } else if (power == 2) {
+            return std::make_unique<Real>(-1);
+        } else if (power == 0) {
+            return std::make_unique<Real>(1);
+        } else if (power == 3) {
+            return std::make_unique<Multiply<Real, Imaginary>>(Real { -1 }, Imaginary {});
         }
     }
 
