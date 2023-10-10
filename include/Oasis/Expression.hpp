@@ -18,6 +18,7 @@ class Expression;
 enum class ExpressionType {
     None,
     Real,
+    Imaginary,
     Variable,
     Add,
     Subtract,
