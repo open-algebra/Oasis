@@ -1,3 +1,8 @@
+############################################################
+# OASIS: Open Algebra Software for Inferring Solutions
+# CMakeLists.txt - Top-level
+############################################################
+
 cmake_minimum_required(VERSION 3.26)
 project(Oasis)
 

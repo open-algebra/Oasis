@@ -1,3 +1,8 @@
+############################################################
+# OASIS: Open Algebra Software for Inferring Solutions
+# CMakeLists.txt - OASIS tests
+############################################################
+
 # This variable MUST be modified accordingly whenever a new source (.cpp) file is added.
 set(Oasis_TESTS 
     AddTests.cpp BinaryExpressionTests.cpp DivideTests.cpp ExponentTests.cpp MultiplyTests.cpp 

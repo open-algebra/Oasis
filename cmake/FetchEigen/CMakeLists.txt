@@ -1,4 +1,9 @@
-# https://stackoverflow.com/a/65899078
+############################################################
+# OASIS: Open Algebra Software for Inferring Solutions
+# CMakeLists.txt - Eigen
+############################################################
+
+# See https://stackoverflow.com/a/65899078.
 
 # Fetches the "eigen" dependency and integrates it into the project.
 # Also, disables some of eigen's build options.
