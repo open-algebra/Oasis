@@ -3,6 +3,7 @@
 
 #include <concepts>
 #include <memory>
+#include <string>
 
 namespace tf {
 class Subflow;
