@@ -17,7 +17,10 @@ jobs:
         steps:
             # Checks out the repository.
           - name: Checkout repository
-            uses: actions/checkout@v3
+            uses: actions/checkout@v4
+            with:
+                repository: ${{ github.event.pull_request.head.repo.full_name }}
+                ref: ${{ github.head_ref }}
 
             # Installs cmakelang.
           - name: Install cmakelang
@@ -35,10 +38,7 @@ jobs:
             # Commits and pushes changes.
           - name: Commit and push
             if: steps.check-file-modified.outputs.files-modified != 0
-            env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             run: |
-                gh pr checkout ${{ github.event.pull_request.number }}
                 git config user.name "github-actions"
                 git config user.email "github-actions@github.com"
                 git commit -am "[Actions] Format CMakeLists.txt"
