@@ -1,0 +1,38 @@
+# ##############################################################################
+# OASIS: Open Algebra Software for Inferring Solutions
+#
+# format-cmake.yml
+# ##############################################################################
+
+name: Format CMake
+
+on:
+    push:
+        branches: [ "master" ]
+    pull_request:
+        branches: [ "master" ]
+
+jobs:
+    format:
+        runs-on: ubuntu-latest
+
+        steps:
+            # Checks out the repository.
+          - name: Checkout repository
+            uses: actions/checkout@v3
+
+            # Installs cmakelang.
+          - name: Install cmakelang
+            run: pip install cmakelang
+
+            # Runs cmake-format on all CMakeLists.txt files.
+          - name: Run cmake-format
+            run: find . -name CMakeLists.txt -type f -execdir bash -c "cmake-format -i {}" \;
+
+            # Commits and pushes changes.
+          - name: Commit and push
+            run: |
+                git config user.name "github-actions"
+                git config user.email "github-actions@github.com"
+                git commit -am "[Actions] Format CMakeLists.txt"
+                git push
