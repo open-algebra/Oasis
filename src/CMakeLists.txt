@@ -16,7 +16,8 @@ set(Oasis_SOURCES
     Multiply.cpp
     Real.cpp
     Subtract.cpp
-    Variable.cpp)
+    Variable.cpp
+    Imaginary.cpp)
 
 set(Oasis_HEADERS
     # cmake-format: sortable
@@ -30,7 +31,8 @@ set(Oasis_HEADERS
     ../include/Oasis/Multiply.hpp
     ../include/Oasis/Real.hpp
     ../include/Oasis/Subtract.hpp
-    ../include/Oasis/Variable.hpp)
+    ../include/Oasis/Variable.hpp
+    ../include/Oasis/Imaginary.hpp)
 
 # Adds a library target called "Oasis" to be built from source files.
 add_library(Oasis ${Oasis_SOURCES} ${Oasis_HEADERS})
