@@ -8,7 +8,7 @@ name: Format CMake
 
 on:
     push:
-        branches: [ "master" ]
+        branches: [ "master", "feature-cmake-format" ]
     pull_request:
         branches: [ "master" ]
 
