@@ -1,23 +1,36 @@
-############################################################
+# ##############################################################################
 # OASIS: Open Algebra Software for Inferring Solutions
 #
 # CMakeLists.txt - OASIS library
-############################################################
+# ##############################################################################
 
 # These variables MUST be modified whenever a new source file is added.
-set(Oasis_SOURCES 
+set(Oasis_SOURCES
     # cmake-format: sortable
-    Add.cpp BinaryExpression.cpp Divide.cpp Exponent.cpp Expression.cpp Log.cpp Multiply.cpp 
-    Real.cpp Subtract.cpp Variable.cpp
-)
+    Add.cpp
+    BinaryExpression.cpp
+    Divide.cpp
+    Exponent.cpp
+    Expression.cpp
+    Log.cpp
+    Multiply.cpp
+    Real.cpp
+    Subtract.cpp
+    Variable.cpp)
 
 set(Oasis_HEADERS
     # cmake-format: sortable
-    ../include/Oasis/Add.hpp ../include/Oasis/BinaryExpression.hpp ../include/Oasis/Divide.hpp 
-    ../include/Oasis/Exponent.hpp ../include/Oasis/Expression.hpp 
-    ../include/Oasis/LeafExpression.hpp ../include/Oasis/Log.hpp ../include/Oasis/Multiply.hpp 
-    ../include/Oasis/Real.hpp ../include/Oasis/Subtract.hpp ../include/Oasis/Variable.hpp
-)
+    ../include/Oasis/Add.hpp
+    ../include/Oasis/BinaryExpression.hpp
+    ../include/Oasis/Divide.hpp
+    ../include/Oasis/Exponent.hpp
+    ../include/Oasis/Expression.hpp
+    ../include/Oasis/LeafExpression.hpp
+    ../include/Oasis/Log.hpp
+    ../include/Oasis/Multiply.hpp
+    ../include/Oasis/Real.hpp
+    ../include/Oasis/Subtract.hpp
+    ../include/Oasis/Variable.hpp)
 
 # Adds a library target called "Oasis" to be built from source files.
 add_library(Oasis ${Oasis_SOURCES} ${Oasis_HEADERS})

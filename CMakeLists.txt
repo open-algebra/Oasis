@@ -1,8 +1,8 @@
-############################################################
+# ##############################################################################
 # OASIS: Open Algebra Software for Inferring Solutions
 #
 # CMakeLists.txt - Top-level
-############################################################
+# ##############################################################################
 
 cmake_minimum_required(VERSION 3.26)
 project(Oasis)
@@ -13,14 +13,12 @@ include(FetchContent)
 FetchContent_Declare(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v3.4.0
-)
+    GIT_TAG v3.4.0)
 
 FetchContent_Declare(
     fmt
     GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-    GIT_TAG 10.0.0
-)
+    GIT_TAG 10.0.0)
 
 FetchContent_MakeAvailable(Catch2 fmt)
 
