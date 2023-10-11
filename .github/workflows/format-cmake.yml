@@ -9,6 +9,7 @@ name: Format CMake
 on:
     pull_request:
         branches: [ "master" ]
+    workflow_dispatch:
 
 jobs:
     format:
@@ -34,9 +35,19 @@ jobs:
 
             # Commits and pushes changes.
           - name: Commit and push
-            if: steps.check-file-modified.outputs.files-modified != 0
+            if: |
+                github.event_name == 'workflow_dispatch' &&
+                steps.check-file-modified.outputs.files-modified != 0
             run: |
                 git config user.name "github-actions"
                 git config user.email "github-actions@github.com"
                 git commit -am "[Actions] Format CMakeLists.txt"
                 git push
+
+            # Fails if the workflow hasn't been run in the contributor's fork.
+          - name: Reject on edits
+            if: github.event_name == 'pull_request' &&
+                steps.check-file-modified.outputs.files-modified != 0
+            uses: actions/github-script@v6
+            with:
+                script: core.setFailed('The workflow must be run on your fork before merging a PR.')

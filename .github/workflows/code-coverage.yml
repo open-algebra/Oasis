@@ -1,0 +1,51 @@
+name: Code coverage
+
+on:
+    push:
+        branches: [ "master" ]
+    pull_request:
+        branches: [ "master" ]
+
+jobs:
+    collect_coverage:
+        runs-on: ubuntu-latest
+
+        env:
+            c_compiler: clang-17
+            cpp_compiler: clang++-17
+
+        steps:
+          - uses: actions/checkout@v3
+            with:
+                submodules: recursive
+
+          #   # Turns repeated input strings into step outputs.
+          # - name: Set reusable strings
+          #   id: strings
+          #   shell: bash
+          #   run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+            # Installs clang-17 (Ubuntu 22.04 LTS comes with Clang 14).
+          - name: Install Clang 17
+            run: |
+                wget https://apt.llvm.org/llvm.sh
+                chmod +x llvm.sh
+                sudo ./llvm.sh 17
+
+            # Configures CMake in a subdirectory.
+          - name: Configure CMake
+            run: >
+                cmake -B ${{ steps.strings.outputs.build-output-dir }} 
+                -S ${{ github.workspace }}
+                -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} 
+                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} 
+                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+            # Builds Oasis with the given configuration.
+          - name: Build
+            run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+            # Runs the tests registered to CTest by CMake.
+          - name: Test
+            working-directory: ${{ steps.strings.outputs.build-output-dir }}
+            run: ctest --build-config ${{ matrix.build_type }}
