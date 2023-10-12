@@ -1,0 +1,53 @@
+# ##############################################################################
+# OASIS: Open Algebra Software for Inferring Solutions
+#
+# format-cmake.yml
+# ##############################################################################
+
+name: Format CMake
+
+on:
+    pull_request:
+        branches: [ "master" ]
+    workflow_dispatch:
+
+jobs:
+    format:
+        runs-on: ubuntu-latest
+
+        steps:
+            # Checks out the repository.
+          - name: Checkout repository
+            uses: actions/checkout@v4
+
+            # Installs cmakelang.
+          - name: Install cmakelang
+            run: pip install cmakelang
+
+            # Runs cmake-format on all CMakeLists.txt files.
+          - name: Run cmake-format
+            run: find . -name CMakeLists.txt -type f -execdir bash -c "cmake-format -i {}" \;
+
+            # Checks for modified files.
+          - name: Check for modified files
+            id: check-file-modified
+            run: echo "files-modified=$(git diff --name-only | wc -l)" >> "$GITHUB_OUTPUT"
+
+            # Commits and pushes changes.
+          - name: Commit and push
+            if: |
+                github.event_name == 'workflow_dispatch' &&
+                steps.check-file-modified.outputs.files-modified != 0
+            run: |
+                git config user.name "github-actions"
+                git config user.email "github-actions@github.com"
+                git commit -am "[Actions] Format CMakeLists.txt"
+                git push
+
+            # Fails if the workflow hasn't been run in the contributor's fork.
+          - name: Reject on edits
+            if: github.event_name == 'pull_request' &&
+                steps.check-file-modified.outputs.files-modified != 0
+            uses: actions/github-script@v6
+            with:
+                script: core.setFailed('The workflow must be run on your fork before merging a PR.')
