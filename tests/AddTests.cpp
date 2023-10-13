@@ -5,6 +5,7 @@
 
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Imaginary.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Variable.hpp"
@@ -147,4 +148,16 @@ TEST_CASE("Specialization", "[Specialization]")
             Oasis::Real {},
             Oasis::Real {} }
         ));
+}
+
+TEST_CASE("Imaginary Addition", "[Imaginary][Add]")
+{
+    Oasis::Add a1 {
+        Oasis::Imaginary {},
+        Oasis::Imaginary {}
+    };
+
+    auto spec1 = a1.Simplify();
+
+    REQUIRE(Oasis::Multiply { Oasis::Real { 2.0 }, Oasis::Imaginary {} }.Equals(*spec1));
 }
