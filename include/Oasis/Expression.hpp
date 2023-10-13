@@ -3,6 +3,7 @@
 
 #include <concepts>
 #include <memory>
+#include <string>
 
 namespace tf {
 class Subflow;
@@ -18,6 +19,7 @@ class Expression;
 enum class ExpressionType {
     None,
     Real,
+    Imaginary,
     Variable,
     Add,
     Subtract,
