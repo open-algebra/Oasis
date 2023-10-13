@@ -8,6 +8,7 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/Variable.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Exponent.hpp"
 
 TEST_CASE("Division", "[Divide]")
 {
@@ -26,7 +27,7 @@ TEST_CASE("Division", "[Divide]")
 }
 
 
-TEST_CASE("Symbolic Division", "[Division][Symbolic]")
+TEST_CASE("Symbolic Division, equal variables", "[Division][Symbolic]")
 {
     Oasis::Divide div {
         Oasis::Multiply {
@@ -73,7 +74,7 @@ TEST_CASE("Symbolic Division", "[Division][Symbolic]")
 }
 
 
-TEST_CASE("Symbolic Division, variables dont equal", "[Division][Symbolic]")
+TEST_CASE("Symbolic Division, unequal variables", "[Division][Symbolic]")
 {
     Oasis::Divide div {
         Oasis::Multiply {
@@ -98,8 +99,58 @@ TEST_CASE("Symbolic Division, variables dont equal", "[Division][Symbolic]")
         Oasis::Variable { "y" } }.Equals(*simplified));
 }
 
+TEST_CASE("Symbolic Division, unequal exponents", "[Division][Symbolic]")
+{
+    Oasis::Divide div {
+        Oasis::Multiply {
+            Oasis::Real { 4.0 },
+            Oasis::Exponent {
+                Oasis::Variable { "z" },
+                Oasis::Real { 2 } }},
+        Oasis::Multiply {
+                Oasis::Real { 2.0 },
+                Oasis::Multiply {
+                    Oasis::Variable { "y" },
+                    Oasis::Variable { "z" } }}
+        };
+
+    auto simplified = div.Simplify();
+
+    CAPTURE(simplified->ToString());
+    REQUIRE(Oasis::Divide {
+        Oasis::Multiply {
+            Oasis::Real { 2.0 },
+            Oasis::Variable { "z"} },
+        Oasis::Variable { "y" } }.Equals(*simplified));
+}
 
 
+TEST_CASE("Symbolic Division, equal exponents", "[Division][Symbolic]")
+{
+    Oasis::Divide div {
+        Oasis::Multiply {
+            Oasis::Real { 4.0 },
+            Oasis::Exponent {
+                Oasis::Variable { "z" },
+                Oasis::Real { 3 } }},
+        Oasis::Multiply {
+                Oasis::Real { 2.0 },
+                Oasis::Multiply {
+                    Oasis::Variable { "y" },
+                    Oasis::Variable { "z" } }}
+        };
+
+    auto simplified = div.Simplify();
+
+    CAPTURE(simplified->ToString());
+    REQUIRE(Oasis::Divide {
+        Oasis::Multiply {
+            Oasis::Real { 2.0 },
+            Oasis::Exponent {
+                Oasis::Variable { "z" },
+                Oasis::Real { 2 } } },
+        Oasis::Variable { "y" } }.Equals(*simplified));
+}
 
 
 TEST_CASE("Generalized Division", "[Divide][Generalized]")
