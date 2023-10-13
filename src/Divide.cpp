@@ -6,6 +6,7 @@
 #include "Oasis/Divide.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/Exponent.hpp"
 
 namespace Oasis {
 
@@ -59,14 +60,14 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             sortingLeft = Multiply<Variable, Expression>::Specialize(sortingLeft->GetLeastSigOp());
         }
 
-        /*Exponents
-        for (auto sortingLeft=Multiply<Exponent, Expression>::Specialize(leftover); sortingLeft != nullptr;){
-            if (auto it=variables.find(sortingLeft->GetMostSigOp()->GetMostSigOp().GetName()); it==variables.end())
-                variables.insert(std::make_pair(sortingLeft->GetMostSigOp()->GetMostSigOp().GetName(),0));
-            variables[sortingLeft->GetMostSigOp()->GetMostSigOp().GetName()]+=sortingLeft->GetMostSigOp()->GetLeastSigOp();
+        //Exponents
+        for (auto sortingLeft=Multiply<Exponent<Variable, Real>, Expression>::Specialize(*leftover); sortingLeft != nullptr;){
+            if (auto it=variables.find(sortingLeft->GetMostSigOp().GetMostSigOp().GetName()); it==variables.end())
+                variables.insert(std::make_pair(sortingLeft->GetMostSigOp().GetMostSigOp().GetName(),0));
+            variables[sortingLeft->GetMostSigOp().GetMostSigOp().GetName()]+=sortingLeft->GetMostSigOp().GetLeastSigOp().GetValue();
             leftover = sortingLeft->GetLeastSigOp().Generalize();
-            sortingLeft = Multiply<Exponent, Expression>::Specialize(sortingLeft->GetLeastSigOp());
-        }*/
+            sortingLeft = Multiply<Exponent<Variable, Real>, Expression>::Specialize(sortingLeft->GetLeastSigOp());
+        }
 
         if (leftover->GetType()==ExpressionType::Variable){
             auto temp=Variable::Specialize(*leftover);
@@ -74,12 +75,12 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 variables.insert(std::make_pair(temp->GetName(),0));
             variables[temp->GetName()]++;
         }
-        /*if (leftover->GetType()==ExpressionType::Exponent){
-            auto temp=Exponent::Specialize(*leftover);
-            if (auto it=variables.find((*temp)->GetMostSigOp().GetName()); it==variables.end())
-                variables.insert(std::make_pair((*temp)->GetMostSigOp().GetName(),0));
-            variables[(*temp)->GetMostSigOp().GetName()]+=(*temp)->GetLeastSigOp();
-        }*/
+        if (leftover->GetType()==ExpressionType::Exponent){
+            auto temp=Exponent<Variable, Real>::Specialize(*leftover);
+            if (auto it=variables.find(temp->GetMostSigOp().GetName()); it==variables.end())
+                variables.insert(std::make_pair(temp->GetMostSigOp().GetName(),0));
+            variables[temp->GetMostSigOp().GetName()]+=temp->GetLeastSigOp().GetValue();
+        }
 
         
 
@@ -95,25 +96,25 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             leftover = Variable::Specialize(sortingRight->GetLeastSigOp());
             sortingRight = Multiply<Variable, Expression>::Specialize(sortingRight->GetLeastSigOp());
         }
-        /*for (auto sortingRight=Multiply<Exponent, Expression>::Specialize(leftover); sortingRight != nullptr;){
-            if (auto it=variables.find(sortingRight->GetMostSigOp()->GetMostSigOp().GetName()); it==variables.end())
-                variables.insert(std::make_pair(sortingRight->GetMostSigOp()->GetMostSigOp().GetName(),0));
-            variables[sortingRight->GetMostSigOp()->GetMostSigOp().GetName()]+=sortingRight->GetMostSigOp()->GetLeastSigOp();
+        for (auto sortingRight=Multiply<Exponent<Variable, Real>, Expression>::Specialize(*leftover); sortingRight != nullptr;){
+            if (auto it=variables.find(sortingRight->GetMostSigOp().GetMostSigOp().GetName()); it==variables.end())
+                variables.insert(std::make_pair(sortingRight->GetMostSigOp().GetMostSigOp().GetName(),0));
+            variables[sortingRight->GetMostSigOp().GetMostSigOp().GetName()]+=sortingRight->GetMostSigOp().GetLeastSigOp().GetValue();
             leftover = sortingRight->GetLeastSigOp().Generalize();
-            sortingRight = Multiply<Exponent, Expression>::Specialize(sortingRight->GetLeastSigOp());
-        }*/
+            sortingRight = Multiply<Exponent<Variable, Real>, Expression>::Specialize(sortingRight->GetLeastSigOp());
+        }
         if (leftover->GetType()==ExpressionType::Variable){
             auto temp=Variable::Specialize(*leftover);
             if (auto it=variables.find(temp->GetName()); it==variables.end())
                 variables.insert(std::make_pair(temp->GetName(),0));
             variables[temp->GetName()]--;
         }
-        /*if (leftover->GetType()==ExpressionType::Exponent){
-            auto temp=Exponent::Specialize(*leftover);
-            if (auto it=variables.find((*temp)->GetMostSigOp().GetName()); it==variables.end())
-                variables.insert(std::make_pair((*temp)->GetMostSigOp().GetName(),0));
-            variables[(*temp)->GetMostSigOp().GetName()]+=(*temp)->GetLeastSigOp();
-        }*/
+        if (leftover->GetType()==ExpressionType::Exponent){
+            auto temp=Exponent<Variable, Real>::Specialize(*leftover);
+            if (auto it=variables.find(temp->GetMostSigOp().GetName()); it==variables.end())
+                variables.insert(std::make_pair(temp->GetMostSigOp().GetName(),0));
+            variables[temp->GetMostSigOp().GetName()]+=temp->GetLeastSigOp().GetValue();
+        }
 
 
 
@@ -173,8 +174,7 @@ auto Divide<Expression>::Recurse(std::vector<std::pair<std::string, int>> varLis
         if (varList[front].second==1)
             return std::make_unique<Variable>(varList[front].first);
         if (varList[front].second>1)
-            return std::make_unique<Variable>(varList[front].first);
-            //return std::make_unique<Exponent>(varList[front].first, varList[front].second);
+            return std::make_unique<Exponent<Variable,Real>>(Variable(varList[front].first), Real(varList[front].second));
     }
     return std::make_unique<Multiply<Expression>>(*(Recurse(varList, front, (end+front)/2)), *(Recurse(varList,(end+front+1)/2, end)));
 }
