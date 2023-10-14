@@ -7,6 +7,7 @@
 cmake_minimum_required(VERSION 3.26)
 project(Oasis)
 
+include(CTest)
 include(FetchContent)
 
 # Fetches dependencies and integrates them into the project.
@@ -29,5 +30,6 @@ add_subdirectory(cmake/FetchTaskflow)
 # Processes the CMakeLists.txt for each target.
 add_subdirectory(src)
 
-include(CTest)
-add_subdirectory(tests)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
