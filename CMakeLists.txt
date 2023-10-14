@@ -28,4 +28,6 @@ add_subdirectory(cmake/FetchTaskflow)
 
 # Processes the CMakeLists.txt for each target.
 add_subdirectory(src)
+
+include(CTest)
 add_subdirectory(tests)
