@@ -420,6 +420,30 @@ public:
         return std::make_unique<DerivedGeneralized>(generalized);
     }
 
+    auto SwapOperands() -> DerivedT<LeastSigOpT, MostSigOpT>
+    {
+        return DerivedT { *this->leastSigOp, *this->mostSigOp };
+    }
+
+    auto Flatten(std::vector<std::unique_ptr<Expression>>& out) const -> void
+    {
+        if (this->mostSigOp->template Is<DerivedGeneralized>()) {
+            auto generalizedMostSigOp = this->mostSigOp->Generalize();
+            const auto& mostSigOp = static_cast<const DerivedGeneralized&>(*generalizedMostSigOp);
+            mostSigOp.Flatten(out);
+        } else {
+            out.push_back(this->mostSigOp->Copy());
+        }
+
+        if (this->leastSigOp->template Is<DerivedGeneralized>()) {
+            auto generalizedLeastSigOp = this->leastSigOp->Generalize();
+            const auto& leastSigOp = static_cast<const DerivedGeneralized&>(*generalizedLeastSigOp);
+            leastSigOp.Flatten(out);
+        } else {
+            out.push_back(this->leastSigOp->Copy());
+        }
+    }
+
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 };
 
@@ -509,6 +533,30 @@ public:
         subflow.join();
 
         return std::make_unique<DerivedGeneralized>(generalized);
+    }
+
+    auto SwapOperands() -> DerivedGeneralized
+    {
+        return DerivedGeneralized { *this->leastSigOp, *this->mostSigOp };
+    }
+
+    auto Flatten(std::vector<std::unique_ptr<Expression>>& out) const -> void
+    {
+        if (this->mostSigOp->template Is<DerivedGeneralized>()) {
+            auto generalizedMostSigOp = this->mostSigOp->Generalize();
+            const auto& mostSigOp = static_cast<const DerivedGeneralized&>(*generalizedMostSigOp);
+            mostSigOp.Flatten(out);
+        } else {
+            out.push_back(this->mostSigOp->Copy());
+        }
+
+        if (this->leastSigOp->template Is<DerivedGeneralized>()) {
+            auto generalizedLeastSigOp = this->leastSigOp->Generalize();
+            const auto& leastSigOp = static_cast<const DerivedGeneralized&>(*generalizedLeastSigOp);
+            leastSigOp.Flatten(out);
+        } else {
+            out.push_back(this->leastSigOp->Copy());
+        }
     }
 
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;

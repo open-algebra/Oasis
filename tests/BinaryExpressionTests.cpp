@@ -59,3 +59,33 @@ TEST_CASE("Specialize Recursively Considers Commutative Property", "[Symbolic]")
     auto result2 = Oasis::Multiply<Oasis::Variable, Oasis::Multiply<Oasis::Real, Oasis::Variable>>::Specialize(*generalizedMultiply);
     REQUIRE(result2 != nullptr);
 }
+
+TEST_CASE("Flatten Function", "[Symbolic]")
+{
+    Oasis::Real real1 { 1.0 };
+    Oasis::Real real2 { 2.0 };
+    Oasis::Real real3 { 3.0 };
+
+    Oasis::Add add {
+        Oasis::Add {
+            real1,
+            real2 },
+        real3
+    };
+
+    std::vector<std::unique_ptr<Oasis::Expression>> flattened;
+
+    add.Flatten(flattened);
+
+    std::vector<std::unique_ptr<Oasis::Expression>> expected;
+
+    expected.emplace_back(real1.Copy());
+    expected.emplace_back(real2.Copy());
+    expected.emplace_back(real3.Copy());
+
+    REQUIRE(flattened.size() == expected.size());
+
+    for (int i = 0; i < flattened.size(); i++) {
+        REQUIRE(flattened[i]->Equals(*expected[i]));
+    }
+}
