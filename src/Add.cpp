@@ -4,6 +4,7 @@
 
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Imaginary.hpp"
 #include "Oasis/Multiply.hpp"
 
 namespace Oasis {
@@ -37,6 +38,20 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
             return std::make_unique<Multiply<Expression>>(Real(coefficient1.GetValue() + coefficient2.GetValue()), leftTerm);
         }
+    }
+
+    if (auto ImgCase = Add<Imaginary>::Specialize(simplifiedAdd); ImgCase != nullptr) {
+        return std::make_unique<Multiply<Real, Imaginary>>(Real { 2.0 }, Imaginary {});
+    }
+
+    if (auto ImgCase = Add<Multiply<Expression, Imaginary>, Imaginary>::Specialize(simplifiedAdd); ImgCase != nullptr) {
+        return std::make_unique<Multiply<Expression>>(
+            *(Add { Real { 1.0 }, ImgCase->GetMostSigOp().GetMostSigOp() }.Simplify()), Imaginary {});
+    }
+
+    if (auto ImgCase = Add<Multiply<Expression, Imaginary>, Multiply<Expression, Imaginary>>::Specialize(simplifiedAdd); ImgCase != nullptr) {
+        return std::make_unique<Multiply<Expression>>(
+            *(Add { ImgCase->GetLeastSigOp().GetMostSigOp(), ImgCase->GetMostSigOp().GetMostSigOp() }.Simplify()), Imaginary {});
     }
 
     // exponent + exponent

@@ -396,7 +396,7 @@ TEST_CASE("Subtraction of Exponents", "[Subtract][Exponent][Symbolic]")
                 .Equals(*simplified4));
 }
 
-TEST_CASE("Imaginary Exponents", "[Imaginary][Exponent]")
+TEST_CASE("Imaginary Exponent Rule", "[Imaginary][Exponent]")
 {
     Oasis::Imaginary i {};
     Oasis::Exponent i1 {
@@ -415,45 +415,26 @@ TEST_CASE("Imaginary Exponents", "[Imaginary][Exponent]")
         Oasis::Imaginary {},
         Oasis::Real { 4.0 }
     };
+    Oasis::Exponent img {
+        Oasis::Multiply{
+            Oasis::Real{-4.0},
+            Oasis::Variable{"x"}
+        },
+        Oasis::Real {0.5}
+    };
 
     auto simplified1 = i1.Simplify();
     auto simplified2 = i2.Simplify();
     auto simplified3 = i3.Simplify();
     auto simplified4 = i4.Simplify();
+    auto simplifiedimg = img.Simplify();
 
     REQUIRE(i.Is<Oasis::Imaginary>());
     REQUIRE(Oasis::Imaginary {}.Equals(*simplified1));
     REQUIRE(Oasis::Multiply { Oasis::Real { -1 }, Oasis::Imaginary {} }.Equals(*simplified3));
     REQUIRE(Oasis::Real { -1.0 }.Equals(*simplified2));
     REQUIRE(Oasis::Real { 1.0 }.Equals(*simplified4));
-}
-
-TEST_CASE("Imaginary Multiplication", "[Imaginary][Multiplication]")
-{
-    Oasis::Multiply i2 {
-        Oasis::Imaginary {},
-        Oasis::Imaginary {}
-    };
-    Oasis::Multiply i3 {
-        Oasis::Exponent {
-            Oasis::Imaginary {},
-            Oasis::Real { 2.0 } },
-        Oasis::Imaginary {}
-    };
-    Oasis::Multiply i4 {
-        Oasis::Exponent {
-            Oasis::Imaginary {},
-            Oasis::Real { 2.0 } },
-        Oasis::Exponent {
-            Oasis::Imaginary {},
-            Oasis::Real { 2.0 } }
-    };
-
-    auto simplified2 = i2.Simplify();
-    auto simplified3 = i3.Simplify();
-    auto simplified4 = i4.Simplify();
-
-    REQUIRE(Oasis::Multiply { Oasis::Real { -1 }, Oasis::Imaginary {} }.Equals(*simplified3));
-    REQUIRE(Oasis::Real { -1.0 }.Equals(*simplified2));
-    REQUIRE(Oasis::Real { 1.0 }.Equals(*simplified4));
+    REQUIRE(Oasis::Multiply {Oasis::Multiply{
+                                  Oasis::Real{2.0}, Oasis::Exponent{Oasis::Variable{"x"}, Oasis::Real{0.5}}},
+        Oasis::Imaginary{}}.Equals(*simplifiedimg));
 }

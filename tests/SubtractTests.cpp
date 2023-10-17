@@ -4,8 +4,10 @@
 
 #include "catch2/catch_test_macros.hpp"
 
-#include "Oasis/Subtract.hpp"
+#include "Oasis/Imaginary.hpp"
+#include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/Subtract.hpp"
 
 TEST_CASE("Subtraction", "[Subtract]")
 {
@@ -53,4 +55,18 @@ TEST_CASE("Subtraction Async", "[Subtract][Async]")
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
     REQUIRE(simplifiedReal.GetValue() == -4.0);
+}
+
+TEST_CASE("Imaginary Subtration", "[Subtract][Imaginary]")
+{
+    Oasis::Subtract s1 {
+        Oasis::Multiply {
+            Oasis::Real { 3.0 },
+            Oasis::Imaginary {} },
+        Oasis::Imaginary {}
+    };
+
+    auto spec1 = s1.Simplify();
+
+    REQUIRE(Oasis::Multiply { Oasis::Real { 2.0 }, Oasis::Imaginary {} }.Equals(*spec1));
 }

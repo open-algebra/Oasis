@@ -57,6 +57,15 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
+    if (auto ImgCase = Exponent<Multiply<Real, Expression>, Real>::Specialize(simplifiedExponent); ImgCase != nullptr) {
+        if (ImgCase->GetMostSigOp().GetMostSigOp().GetValue() < 0 && ImgCase->GetLeastSigOp().GetValue() == 0.5) {
+            return std::make_unique<Multiply<Expression>>(
+                Multiply<Expression> { Real { pow(abs(ImgCase->GetMostSigOp().GetMostSigOp().GetValue()), 0.5) },
+                    Exponent<Expression> { ImgCase->GetMostSigOp().GetLeastSigOp(), Real { 0.5 } } },
+                Imaginary {});
+        }
+    }
+
     if (auto expExpCase = Exponent<Exponent<Expression, Expression>, Expression>::Specialize(simplifiedExponent); expExpCase != nullptr) {
         return std::make_unique<Exponent<Expression>>(expExpCase->GetMostSigOp().GetMostSigOp(),
             *(Multiply { expExpCase->GetMostSigOp().GetLeastSigOp(), expExpCase->GetLeastSigOp() }.Simplify()));
