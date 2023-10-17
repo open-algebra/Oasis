@@ -420,11 +420,26 @@ public:
         return std::make_unique<DerivedGeneralized>(generalized);
     }
 
+    /**
+     * Swaps the operands of this expression.
+     * @return A new expression with the operands swapped.
+     */
     auto SwapOperands() -> DerivedT<LeastSigOpT, MostSigOpT>
     {
         return DerivedT { *this->leastSigOp, *this->mostSigOp };
     }
 
+    /**
+     * Flattens this expression.
+     *
+     * Flattening an expression means that all operands of the expression are copied into a vector.
+     * For example, flattening the expression `Add { Add { Real { 1.0 }, Real { 2.0 } }, Real { 3.0 } }`
+     * would result in a vector containing three `Real` expressions, `Real { 1.0 }`, `Real { 2.0 }`, and
+     * `Real { 3.0 }`. This is useful for simplifying expressions, as it allows the simplifier to
+     * operate on the operands of the expression without having to worry about the structure of the
+     * expression.
+     * @param out The vector to copy the operands into.
+     */
     auto Flatten(std::vector<std::unique_ptr<Expression>>& out) const -> void
     {
         if (this->mostSigOp->template Is<DerivedGeneralized>()) {
