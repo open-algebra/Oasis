@@ -42,7 +42,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (leftTerm.Equals(rightTerm)) {
             return std::make_unique<Real>(coefficient1.GetValue() / coefficient2.GetValue());
         }
-        std::unordered_map<std::string, int> variables;
+        std::unordered_map<std::string, double> variables;
 
 
         const Oasis::IExpression auto& holderLeft=likeTermsCase->GetMostSigOp().GetLeastSigOp(); 
@@ -92,17 +92,22 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 variables.insert(std::make_pair(temp->GetName(),0));
             variables[temp->GetName()]++;
         }
-        else if (leftover->GetType()==ExpressionType::Exponent){
-            auto temp=Exponent<Variable, Real>::Specialize(*leftover);
+        else if (auto temp=Exponent<Variable, Real>::Specialize(*leftover); temp!= nullptr){
             if (auto it=variables.find(temp->GetMostSigOp().GetName()); it==variables.end())
                 variables.insert(std::make_pair(temp->GetMostSigOp().GetName(),0));
             variables[temp->GetMostSigOp().GetName()]+=temp->GetLeastSigOp().GetValue();
         }
         else{
-            auto temp=Exponent<Variable, Real>::Specialize(*leftover);
-            if (auto it=variables.find(temp->GetMostSigOp().GetName()); it==variables.end())
-                variables.insert(std::make_pair(temp->GetMostSigOp().GetName(),0));
-            variables[temp->GetMostSigOp().GetName()]+=temp->GetLeastSigOp().GetValue();
+            auto check=Exponent<Expression, Real>::Specialize(*leftover);
+            if (check!=nullptr){
+                const auto& sortingLeftLeastSigOp = dynamic_cast<const Exponent<Expression>&>(*check->Generalize());
+                double val = dynamic_cast<const Real&>(sortingLeftLeastSigOp.GetMostSigOp()).GetValue();
+                topexpress.push_back(std::make_pair(sortingLeftLeastSigOp.GetLeastSigOp().Copy(), val));
+            }
+            else{
+                const auto& check2 = dynamic_cast<const BinaryExpressionBase&>(*leftover->Generalize());
+                topexpress.push_back(std::make_pair(check2.Copy(), 1));
+            }
         }
 
         
@@ -166,22 +171,48 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 variables.insert(std::make_pair(temp->GetName(),0));
             variables[temp->GetName()]--;
         }
-        else if (leftover->GetType()==ExpressionType::Exponent){
-            auto temp=Exponent<Variable, Real>::Specialize(*leftover);
+        else if (auto temp=Exponent<Variable, Real>::Specialize(*leftover); temp!= nullptr){
             if (auto it=variables.find(temp->GetMostSigOp().GetName()); it==variables.end())
                 variables.insert(std::make_pair(temp->GetMostSigOp().GetName(),0));
-            variables[temp->GetMostSigOp().GetName()]+=temp->GetLeastSigOp().GetValue();
+            variables[temp->GetMostSigOp().GetName()]-=temp->GetLeastSigOp().GetValue();
         }
         else{
-            auto temp=Exponent<Variable, Real>::Specialize(*leftover);
-            if (auto it=variables.find(temp->GetMostSigOp().GetName()); it==variables.end())
-                variables.insert(std::make_pair(temp->GetMostSigOp().GetName(),0));
-            variables[temp->GetMostSigOp().GetName()]+=temp->GetLeastSigOp().GetValue();
+            auto check=Exponent<Expression, Real>::Specialize(*leftover);
+            bool checked=true;
+            if (check!=nullptr){
+                const auto& sortingRightLeastSigOp = dynamic_cast<const Exponent<Expression>&>(*check->Generalize());
+                double val = dynamic_cast<const Real&>(sortingRightLeastSigOp.GetMostSigOp()).GetValue();
+                std::list<std::pair<std::unique_ptr<Expression>, double>>::iterator it;
+                for (it = topexpress.begin(); it != topexpress.end(); ++it){
+                    if (it->first==sortingRightLeastSigOp.GetLeastSigOp().Copy()){
+                        checked=false;
+                        topexpress.push_back(std::make_pair(sortingRightLeastSigOp.GetLeastSigOp().Copy(), it->second-val));
+                        topexpress.erase(it);
+                    }
+                }
+                if (checked){
+                    topexpress.push_back(std::make_pair(sortingRightLeastSigOp.GetLeastSigOp().Copy(), -val));
+                }
+            }
+            else{
+                const auto& check2 = dynamic_cast<const BinaryExpressionBase&>(*leftover->Generalize());
+                std::list<std::pair<std::unique_ptr<Expression>, double>>::iterator it;
+                for (it = topexpress.begin(); it != topexpress.end(); ++it){
+                    if (it->first==check2.Copy()){
+                        bool checked=false;
+                        topexpress.push_back(std::make_pair(check2.Copy(), it->second-1));
+                        topexpress.erase(it);
+                    }
+                }
+                if (checked){
+                    topexpress.push_back(std::make_pair(check2.Copy(), -1));
+                }
+            }
         }
 
 
-        std::vector<std::pair<std::string, int>> top;
-        std::vector<std::pair<std::string, int>> bot;
+        std::vector<std::pair<std::string, double>> top;
+        std::vector<std::pair<std::string, double>> bot;
         for (auto it=variables.begin(); it!=variables.end(); it++){
             if (it->second==0)
                 continue;
@@ -211,7 +242,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
 
 
-auto Divide<Expression>::Recurse(std::vector<std::pair<std::string, int>> varList, int front, int end) const -> std::unique_ptr<Expression>{
+auto Divide<Expression>::Recurse(std::vector<std::pair<std::string, double>> varList, int front, int end) const -> std::unique_ptr<Expression>{
     if (front==end){
         if (varList[front].second==1)
             return std::make_unique<Variable>(varList[front].first);
