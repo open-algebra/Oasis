@@ -1,4 +1,10 @@
-# Adapted from https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml.
+# ##############################################################################
+# OASIS: Open Algebra Software for Inferring Solutions
+#
+# cmake-multi-platform.yml
+# ##############################################################################
+
+# See https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml.
 
 name: CMake on multiple platforms
 
