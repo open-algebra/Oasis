@@ -84,6 +84,56 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
+    // simplifies expressions and combines like terms
+    // ex: 1 + 2x + 3 + 5x = 4 + 7x (or 7x + 4)
+    std::vector<std::unique_ptr<Expression>> adds;
+    std::vector<std::unique_ptr<Expression>> vals;
+    simplifiedAdd.Flatten(adds);
+    for (const auto& addend : adds) {
+        // real
+        if (auto real = Real::Specialize(*addend); real != nullptr) {
+            int i = 0;
+            for (i; i < vals.size(); i++) {
+                if (auto valI = Real::Specialize(*vals[i]); valI != nullptr) {
+                    vals[i] = Real { valI->GetValue() + real->GetValue() }.Generalize();
+                    break;
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                vals.push_back(addend->Generalize());
+            }
+        }
+        // single i
+        if (auto img = Imaginary::Specialize(*addend); img != nullptr) {
+            int i = 0;
+            for (i; i < vals.size(); i++) {
+                if (auto valI = Multiply<Expression, Imaginary>::Specialize(*vals[i]); valI != nullptr) {
+                    vals[i] = Add<Expression> { valI->GetMostSigOp(), Real { 1.0 } }.Simplify();
+                    break;
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                vals.push_back(Multiply<Expression> { Real { 1.0 }, Imaginary {} }.Generalize());
+            }
+        }
+        // n*i
+        if (auto img = Multiply<Expression, Imaginary>::Specialize(*addend); img != nullptr) {
+            int i = 0;
+            for (i; i < vals.size(); i++) {
+                if (auto valI = Multiply<Expression, Imaginary>::Specialize(*vals[i]); valI != nullptr) {
+                    vals[i] = Add<Expression> { valI->GetMostSigOp(), img->GetMostSigOp() }.Simplify();
+                    break;
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                vals.push_back(Multiply<Expression> { img->GetMostSigOp(), Imaginary {} }.Generalize());
+            }
+        }
+    }
+
     return simplifiedAdd.Copy();
 }
 

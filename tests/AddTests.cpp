@@ -161,3 +161,28 @@ TEST_CASE("Imaginary Addition", "[Imaginary][Add]")
 
     REQUIRE(Oasis::Multiply { Oasis::Real { 2.0 }, Oasis::Imaginary {} }.Equals(*spec1));
 }
+
+TEST_CASE("Associativity", "[Add][Associative]")
+{
+    Oasis::Add assoc1 {
+        Oasis::Real { 2.0 },
+        Oasis::Add {
+            Oasis::Variable { "x" },
+            Oasis::Add {
+                Oasis::Add {
+                    Oasis::Real { 3.0 },
+                    Oasis::Variable { "x" } },
+                Oasis::Multiply {
+                    Oasis::Real { 3.0 },
+                    Oasis::Variable { "x" } } } }
+    };
+
+    auto simplified1 = assoc1.Simplify();
+
+    REQUIRE(Oasis::Add {
+        Oasis::Real { 5.0 },
+        Oasis::Multiply {
+            Oasis::Real { 5.0 },
+            Oasis::Variable { "x" } } }
+                .Equals(*simplified1));
+}
