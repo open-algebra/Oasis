@@ -49,6 +49,8 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         const Oasis::IExpression auto& holderRight=likeTermsCase->GetLeastSigOp().GetLeastSigOp();
 
         auto leftover=holderLeft.Generalize();
+
+        std::list<std::pair<std::unique_ptr<Expression>, double>> topexpress;
         
 
         //Variables
@@ -69,13 +71,34 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             sortingLeft = Multiply<Exponent<Variable, Real>, Expression>::Specialize(sortingLeft->GetLeastSigOp());
         }
 
+        //Expressions
+        for (auto sortingLeft=Multiply<Expression, Expression>::Specialize(*leftover); sortingLeft != nullptr;){
+            if (sortingLeft->GetLeastSigOp().GetType()==ExpressionType::Exponent){
+                const auto& sortingLeftLeastSigOp = dynamic_cast<const Exponent<Expression>&>(*sortingLeft->Generalize());
+                double val = dynamic_cast<const Real&>(sortingLeftLeastSigOp.GetMostSigOp()).GetValue();
+                topexpress.push_back(std::make_pair(sortingLeftLeastSigOp.GetLeastSigOp().Copy(), val));
+            }
+            else{
+                topexpress.push_back(std::make_pair(sortingLeft->GetLeastSigOp().Copy(), 1));
+            }
+            sortingLeft = Multiply<Expression, Expression>::Specialize(sortingLeft->GetLeastSigOp());
+        }
+
+
+
         if (leftover->GetType()==ExpressionType::Variable){
             auto temp=Variable::Specialize(*leftover);
             if (auto it=variables.find(temp->GetName()); it==variables.end())
                 variables.insert(std::make_pair(temp->GetName(),0));
             variables[temp->GetName()]++;
         }
-        if (leftover->GetType()==ExpressionType::Exponent){
+        else if (leftover->GetType()==ExpressionType::Exponent){
+            auto temp=Exponent<Variable, Real>::Specialize(*leftover);
+            if (auto it=variables.find(temp->GetMostSigOp().GetName()); it==variables.end())
+                variables.insert(std::make_pair(temp->GetMostSigOp().GetName(),0));
+            variables[temp->GetMostSigOp().GetName()]+=temp->GetLeastSigOp().GetValue();
+        }
+        else{
             auto temp=Exponent<Variable, Real>::Specialize(*leftover);
             if (auto it=variables.find(temp->GetMostSigOp().GetName()); it==variables.end())
                 variables.insert(std::make_pair(temp->GetMostSigOp().GetName(),0));
@@ -103,19 +126,58 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             leftover = sortingRight->GetLeastSigOp().Generalize();
             sortingRight = Multiply<Exponent<Variable, Real>, Expression>::Specialize(sortingRight->GetLeastSigOp());
         }
+        for (auto sortingRight=Multiply<Expression, Expression>::Specialize(*leftover); sortingRight != nullptr;){
+            bool checked=true;
+            if (sortingRight->GetLeastSigOp().GetType()==ExpressionType::Exponent){
+                const auto& sortingRightLeastSigOp = dynamic_cast<const Exponent<Expression>&>(*sortingRight->Generalize());
+                double val = dynamic_cast<const Real&>(sortingRightLeastSigOp.GetMostSigOp()).GetValue();
+                std::list<std::pair<std::unique_ptr<Expression>, double>>::iterator it;
+                for (it = topexpress.begin(); it != topexpress.end(); ++it){
+                    if (it->first==sortingRightLeastSigOp.GetLeastSigOp().Copy()){
+                        checked=false;
+                        topexpress.push_back(std::make_pair(sortingRightLeastSigOp.GetLeastSigOp().Copy(), it->second-val));
+                        topexpress.erase(it);
+                    }
+                }
+                if (checked){
+                    topexpress.push_back(std::make_pair(sortingRightLeastSigOp.GetLeastSigOp().Copy(), -val));
+                }
+            }
+            else{
+                std::list<std::pair<std::unique_ptr<Expression>, double>>::iterator it;
+                for (it = topexpress.begin(); it != topexpress.end(); ++it){
+                    if (it->first==sortingRight->GetLeastSigOp().Copy()){
+                        bool checked=false;
+                        topexpress.push_back(std::make_pair(sortingRight->GetLeastSigOp().Copy(), it->second-1));
+                        topexpress.erase(it);
+                    }
+                }
+                if (checked){
+                    topexpress.push_back(std::make_pair(sortingRight->GetLeastSigOp().Copy(), -1));
+                }
+            }
+            sortingRight = Multiply<Expression, Expression>::Specialize(sortingRight->GetLeastSigOp());
+        }
+
+
         if (leftover->GetType()==ExpressionType::Variable){
             auto temp=Variable::Specialize(*leftover);
             if (auto it=variables.find(temp->GetName()); it==variables.end())
                 variables.insert(std::make_pair(temp->GetName(),0));
             variables[temp->GetName()]--;
         }
-        if (leftover->GetType()==ExpressionType::Exponent){
+        else if (leftover->GetType()==ExpressionType::Exponent){
             auto temp=Exponent<Variable, Real>::Specialize(*leftover);
             if (auto it=variables.find(temp->GetMostSigOp().GetName()); it==variables.end())
                 variables.insert(std::make_pair(temp->GetMostSigOp().GetName(),0));
             variables[temp->GetMostSigOp().GetName()]+=temp->GetLeastSigOp().GetValue();
         }
-
+        else{
+            auto temp=Exponent<Variable, Real>::Specialize(*leftover);
+            if (auto it=variables.find(temp->GetMostSigOp().GetName()); it==variables.end())
+                variables.insert(std::make_pair(temp->GetMostSigOp().GetName(),0));
+            variables[temp->GetMostSigOp().GetName()]+=temp->GetLeastSigOp().GetValue();
+        }
 
 
         std::vector<std::pair<std::string, int>> top;
@@ -143,26 +205,6 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
     return simplifiedDivide.Copy();
 }
-
-
-/*
-Thinking space
-Items in a factored expression
-1 real at the front: 4
-Variables on their own: x
-Variables with exponents on their own: y^2
-Expressions: 
-Additions: (z+1)
-Subtractions: (a-1)
-Divisions: (b+2)/c
-
-Need to find a way to parse expressions and eliminate them
-
-For expressions add all expressions to a list and then loop 
-through and if you have the same expressions, delete both.
-
-Seperate expressions by multiplies
-*/
 
 
 
