@@ -29,7 +29,6 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (auto realCase = Divide<Real>::Specialize(simplifiedDivide); realCase != nullptr) {
         const Real& dividend = realCase->GetMostSigOp();
         const Real& divisor = realCase->GetLeastSigOp();
-
         return std::make_unique<Real>(dividend.GetValue() / divisor.GetValue());
     }
 
@@ -110,10 +109,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             }
         }
 
-        
-
-
-
+    
 
         leftover=Variable::Specialize(holderRight);
 
@@ -209,21 +205,41 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 }
             }
         }
+        
+        std::vector<std::unique_ptr<Expression>> top;
+        std::vector<std::unique_ptr<Expression>> bot;
+        
+        for (auto it=topexpress.begin(); it!=topexpress.end(); it++){
+            if (it->second==0)
+                continue;
+            if (it->second==1)
+                top.push_back(std::move(it->first));
+            if (it->second==-1)
+                bot.push_back(std::move(it->first));
+            if (it->second>0){
+                std::unique_ptr<Expression> filler=std::move(it->first);
+                top.push_back(std::make_unique<Exponent<Expression/*, Real*/>>(*filler, Real(it->second)));
+            }
+            if (it->second<0)
+                bot.push_back(std::make_unique<Exponent<Expression/*, Real*/>>(*(it->first), Real(-1*(it->second))));
+        }
 
-
-        std::vector<std::pair<std::string, double>> top;
-        std::vector<std::pair<std::string, double>> bot;
         for (auto it=variables.begin(); it!=variables.end(); it++){
             if (it->second==0)
                 continue;
+            if (it->second==1)
+                top.push_back(std::make_unique<Variable>(it->first));
+            if (it->second==-1)
+                bot.push_back(std::make_unique<Variable>(it->first));
             if (it->second>0)
-                top.push_back(std::make_pair(it->first, it->second));
+                top.push_back(std::make_unique<Exponent<Variable,Real>>(Variable(it->first), Real(it->second)));
             if (it->second<0)
-                bot.push_back(std::make_pair(it->first, -(it->second)));
+                bot.push_back(std::make_unique<Exponent<Variable,Real>>(Variable(it->first), Real(-1*(it->second))));
         }
         if (bot.size()!=0 && top.size()!=0){
             return std::make_unique<Divide<Expression>>(Multiply<Expression>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(Recurse(top, 0, top.size()-1))), *(Recurse(bot, 0, bot.size()-1)));
         }
+        
         if (top.size()!=0){
             return std::make_unique<Multiply<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(Recurse(top, 0, top.size()-1)));
         }
@@ -242,13 +258,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
 
 
-auto Divide<Expression>::Recurse(std::vector<std::pair<std::string, double>> varList, int front, int end) const -> std::unique_ptr<Expression>{
-    if (front==end){
-        if (varList[front].second==1)
-            return std::make_unique<Variable>(varList[front].first);
-        if (varList[front].second>1)
-            return std::make_unique<Exponent<Variable,Real>>(Variable(varList[front].first), Real(varList[front].second));
-    }
+auto Divide<Expression>::Recurse(std::vector<std::unique_ptr<Expression>> &varList, int front, int end) const -> std::unique_ptr<Expression>{
+    if (front==end)
+        return varList[front]->Copy();
     return std::make_unique<Multiply<Expression>>(*(Recurse(varList, front, (end+front)/2)), *(Recurse(varList,(end+front+1)/2, end)));
 }
 
