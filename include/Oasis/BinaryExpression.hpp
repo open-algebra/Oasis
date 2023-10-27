@@ -61,6 +61,9 @@ protected:
 template <typename MostSigOpT, typename LeastSigOpT, typename T>
 concept IOperand = std::is_same_v<T, MostSigOpT> || std::is_same_v<T, LeastSigOpT>;
 
+template <typename T>
+concept IAssociativeAndCommutative = IExpression<T> && requires { (T::GetStaticCategory() & (Associative | Commutative)) != 0; };
+
 /**
  * The base class for all binary expressions.
  *
@@ -577,6 +580,34 @@ public:
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 };
 
+/**
+ * Builds a reasonably balanced binary expression from a vector of operands.
+ * @tparam T The type of the binary expression, e.g. Add and Multiply.
+ * @param ops The vector of operands.
+ * @return A binary expression with the operands in the vector.
+ */
+template <IAssociativeAndCommutative T>
+auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std::unique_ptr<Expression>
+{
+    if (ops.size() == 2) {
+        return std::make_unique<T>(*ops[0], *ops[1]);
+    }
+
+    std::vector<std::unique_ptr<Expression>> reducedOps;
+    reducedOps.reserve((ops.size() / 2) + 1);
+
+    for (int i = 0; i < ops.size(); i += 2) {
+        if (i + 1 >= ops.size()) {
+            reducedOps.push_back(ops[i]->Copy());
+            break;
+        }
+
+        reducedOps.push_back(std::make_unique<T>(*ops[i], *ops[i + 1]));
+    }
+
+    return BuildFromVector<T>(reducedOps);
+}
+
 #define IMPL_SPECIALIZE(Derived, FirstOp, SecondOp)                                                                      \
     static auto Specialize(const Expression& other) -> std::unique_ptr<Derived<FirstOp, SecondOp>>                       \
     {                                                                                                                    \
@@ -662,7 +693,6 @@ public:
                                                                                                                          \
         return std::make_unique<Derived<FirstOp, SecondOp>>(multiply);                                                   \
     }
-
 } // Oasis
 
 #endif // OASIS_BINARYEXPRESSION_HPP
