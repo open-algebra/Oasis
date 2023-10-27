@@ -173,7 +173,7 @@ TEST_CASE("Associativity", "[Add][Associative]")
                     Oasis::Real { 3.0 },
                     Oasis::Variable { "x" } },
                 Oasis::Multiply {
-                    Oasis::Real { 3.0 },
+                    Oasis::Real { 4.0 },
                     Oasis::Variable { "x" } } } }
     };
 
@@ -182,7 +182,43 @@ TEST_CASE("Associativity", "[Add][Associative]")
     REQUIRE(Oasis::Add {
         Oasis::Real { 5.0 },
         Oasis::Multiply {
-            Oasis::Real { 5.0 },
+            Oasis::Real { 6.0 },
             Oasis::Variable { "x" } } }
                 .Equals(*simplified1));
+
+    Oasis::Add assoc2 {
+        Oasis::Multiply {
+            Oasis::Real { 2.0 },
+            Oasis::Exponent {
+                Oasis::Variable { "x" },
+                Oasis::Real { 2.0 } } },
+        Oasis::Add {
+            Oasis::Exponent {
+                Oasis::Variable { "x" },
+                Oasis::Real { 2.0 } },
+            Oasis::Add {
+                Oasis::Add {
+                    Oasis::Real { 3.0 },
+                    Oasis::Variable { "x" } },
+                Oasis::Multiply {
+                    Oasis::Real { 4.0 },
+                    Oasis::Variable { "x" } } } }
+    };
+
+    auto simplified2 = assoc2.Simplify();
+
+    REQUIRE(Oasis::Add {
+        Oasis::Add {
+
+            Oasis::Multiply {
+                Oasis::Real { 3.0 },
+                Oasis::Exponent {
+                    Oasis::Variable { "x" },
+                    Oasis::Real { 2.0 } } },
+            Oasis::Real { 3.0 },
+        },
+        Oasis::Multiply {
+            Oasis::Real { 5.0 },
+            Oasis::Variable { "x" } } }
+                .Equals(*simplified2));
 }
