@@ -1,4 +1,10 @@
-# Adapted from https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml.
+# ##############################################################################
+# OASIS: Open Algebra Software for Inferring Solutions
+#
+# cmake-multi-platform.yml
+# ##############################################################################
+
+# See https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml.
 
 name: CMake on multiple platforms
 
@@ -63,17 +69,30 @@ jobs:
             # Configures CMake in a subdirectory.
           - name: Configure CMake
             run: >
-                cmake -B ${{ steps.strings.outputs.build-output-dir }} 
+                cmake
+                -B ${{ steps.strings.outputs.build-output-dir }}
                 -S ${{ github.workspace }}
-                -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} 
-                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} 
+                -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
             # Builds Oasis with the given configuration.
           - name: Build
-            run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+            run: >
+                cmake
+                --build ${{ steps.strings.outputs.build-output-dir }}
+                --config ${{ matrix.build_type }}
 
             # Runs the tests registered to CTest by CMake.
           - name: Test
             working-directory: ${{ steps.strings.outputs.build-output-dir }}
             run: ctest --build-config ${{ matrix.build_type }}
+
+            # Uploads the build and test artifacts.
+          - name: Upload Artifacts
+            uses: actions/upload-artifact@v3
+            with:
+                name: build-${{ matrix.os }}
+                path: |
+                    ${{ steps.strings.outputs.build-output-dir }}
+                    !${{ steps.strings.outputs.build-output-dir}}/_deps
