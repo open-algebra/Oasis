@@ -650,7 +650,7 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
                                                                                                                          \
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Derived<FirstOp, SecondOp>> \
     {                                                                                                                    \
-        if (!other.Is<Derived>()) {                                                                                      \
+        if (!other.Is<Oasis::Derived>()) {                                                                               \
             return nullptr;                                                                                              \
         }                                                                                                                \
                                                                                                                          \
