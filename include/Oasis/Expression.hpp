@@ -241,7 +241,20 @@ public:
      */
     [[nodiscard]] virtual std::string ToString() const = 0;
 
+    // RECENTLY ADDED
+    /**
+     * Allows the user to insert binary expressions into an already existing expression
+     *
+     * @param op The operation to be performed
+     * @param exp The other expression.
+     */
+    template <IExpression T>
+    auto Insert(ExpressionType op ,const Expression& exp);
+
     virtual ~Expression() = default;
+
+    bool insertDirection = true;
+    // RECENTLY ADDED
 };
 
 #define EXPRESSION_TYPE(type)                       \

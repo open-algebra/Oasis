@@ -1,5 +1,5 @@
 #include "taskflow/taskflow.hpp"
-
+#include "Oasis/BinaryExpression.hpp"
 #include "Oasis/Expression.hpp"
 
 namespace Oasis {
@@ -73,5 +73,24 @@ auto Expression::StructurallyEquivalentAsync(const Expression& other) const -> b
     executor.run(taskflow).wait();
     return equivalent;
 }
+
+// RECENTLY ADDED
+auto CheckIfInsertShouldGoAboveOrBelow(Oasis::ExpressionType op, const Oasis::Expression& self) -> bool
+{
+    if (op == ExpressionType::Add or op == ExpressionType::Multiply)
+        if (op == self.GetType())
+            return false;
+    return true;
+}
+
+template <IExpression T> auto Expression::Insert(Oasis::ExpressionType op, const Oasis::Expression& exp)
+{
+    if(CheckIfInsertShouldGoAboveOrBelow(op, *this))
+    {
+        this = Oasis::BinaryExpression<T>(this, exp);
+    }
+
+}
+// RECENTLY ADDED
 
 } // namespace Oasis
