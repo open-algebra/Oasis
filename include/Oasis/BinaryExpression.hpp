@@ -602,7 +602,7 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
 #define IMPL_SPECIALIZE(Derived, FirstOp, SecondOp)                                                                      \
     static auto Specialize(const Expression& other) -> std::unique_ptr<Derived<FirstOp, SecondOp>>                       \
     {                                                                                                                    \
-        if (!other.Is<Derived<Expression>>()) {                                                                          \
+        if (!other.Is<Derived>()) {                                                                                      \
             return nullptr;                                                                                              \
         }                                                                                                                \
                                                                                                                          \

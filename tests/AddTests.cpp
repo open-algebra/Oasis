@@ -38,7 +38,7 @@ TEST_CASE("Symbolic Addition", "[Add][Symbolic]")
         };
 
     auto simplified = add.Simplify();
-    REQUIRE(simplified->Is<Oasis::Multiply<Oasis::Expression>>());
+    REQUIRE(simplified->Is<Oasis::Multiply>());
 
     REQUIRE(Oasis::Multiply {
         Oasis::Real { 3.0 },
