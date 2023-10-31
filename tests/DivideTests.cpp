@@ -9,6 +9,7 @@
 #include "Oasis/Variable.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Add.hpp"
 
 TEST_CASE("Division", "[Divide]")
 {
@@ -98,6 +99,46 @@ TEST_CASE("Symbolic Division, unequal variables", "[Division][Symbolic]")
             Oasis::Variable { "x"} },
         Oasis::Variable { "y" } }.Equals(*simplified));
 }
+
+
+TEST_CASE("Symbolic Division of Expressions", "[Division][Symbolic]")
+{
+    //4(z^2+1)(x+1)/2(x+1)=2(z^2+1)
+
+    Oasis::Divide div {
+        Oasis::Multiply{
+            Oasis::Multiply {
+                Oasis::Add {
+                    Oasis::Variable { "x" },
+                    Oasis::Real { 1 } },
+                Oasis::Add{
+                    Oasis::Exponent {
+                        Oasis::Variable { "z" },
+                        Oasis::Real { 2 } },
+                    Oasis::Real{ 1 }}},
+            Oasis::Real { 4.0 }   
+        },
+        Oasis::Multiply {
+                Oasis::Real { 2.0 },
+                Oasis::Add {
+                    Oasis::Variable { "x" },
+                    Oasis::Real { 1 } }}
+        };
+
+
+    auto simplified = div.Simplify();
+
+    CAPTURE(simplified->ToString());
+    REQUIRE(Oasis::Multiply {
+        Oasis::Real{ 2 },
+        Oasis::Add{
+            Oasis::Exponent {
+                Oasis::Variable { "z" },
+                Oasis::Real { 2 } },
+            Oasis::Real{ 1 }},
+        }.Equals(*simplified));
+}
+
 
 TEST_CASE("Symbolic Division, unequal exponents", "[Division][Symbolic]")
 {
