@@ -15,9 +15,7 @@ namespace Oasis {
 template <IExpression MinuendT, IExpression SubtrahendT>
 class Subtract;
 
-/**
- * Template specialization for Subtract with two Expressions.
- */
+/// @cond
 template <>
 class Subtract<Expression, Expression> : public BinaryExpression<Subtract> {
 public:
@@ -37,6 +35,7 @@ public:
     EXPRESSION_TYPE(Subtract)
     EXPRESSION_CATEGORY(0)
 };
+/// @endcond
 
 /**
  * The Subtract expression subtracts two expressions.

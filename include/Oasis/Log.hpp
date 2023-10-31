@@ -14,9 +14,7 @@ namespace Oasis {
 template <IExpression BaseT, IExpression ArgumentT>
 class Log;
 
-/**
- * Template specialization for Log with two Expressions.
- */
+/// @cond
 template <>
 class Log<Expression, Expression> : public BinaryExpression<Log> {
 public:
@@ -36,6 +34,7 @@ public:
     EXPRESSION_TYPE(Log)
     EXPRESSION_CATEGORY(None)
 };
+/// @endcond
 
 /**
  * The Log expression represents the logarithm of a base and an argument.

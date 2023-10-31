@@ -14,13 +14,7 @@ namespace Oasis {
 template <IExpression MostSigOpT, IExpression LeastSigOpT>
 class BinaryExpressionBase;
 
-/**
- * Template specialization for binary expressions with two Expression operands.
- *
- * This is a "Generalized" binary expression, meaning that it accepts any expression as an operand.
- *
- * @note See the documentation for BinaryExpressionBase for more information.
- */
+/// @cond
 template <>
 class BinaryExpressionBase<Expression, Expression> : public Expression {
 public:
@@ -51,6 +45,7 @@ protected:
     std::unique_ptr<Expression> mostSigOp;
     std::unique_ptr<Expression> leastSigOp;
 };
+/// @endcond
 
 /**
  * A concept for an operand of a binary expression.
@@ -465,15 +460,7 @@ public:
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 };
 
-/**
- * Template specialization for binary expressions with two Expression operands.
- *
- * This is a "Generalized" binary expression, meaning that it accepts any expression as an operand.
- *
- * @note See the documentation for BinaryExpression for more information.
- *
- * @tparam Derived The derived class.
- */
+/// @cond
 template <template <IExpression, IExpression> class Derived>
 class BinaryExpression<Derived, Expression, Expression> : public BinaryExpressionBase<Expression, Expression> {
 
@@ -579,6 +566,7 @@ public:
 
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 };
+/// @endcond
 
 /**
  * Builds a reasonably balanced binary expression from a vector of operands.
