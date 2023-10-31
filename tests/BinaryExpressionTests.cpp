@@ -112,7 +112,7 @@ TEST_CASE("BuildFromVector Function", "[TreeManip]")
             real3
         };
 
-        auto result = Oasis::BuildFromVector<Oasis::Add<Oasis::Expression>>(input);
+        auto result = Oasis::BuildFromVector<Oasis::Add>(input);
 
         REQUIRE(result != nullptr);
         REQUIRE(result->StructurallyEquivalent(expected));
@@ -131,7 +131,7 @@ TEST_CASE("BuildFromVector Function", "[TreeManip]")
                 real4 }
         };
 
-        auto result = Oasis::BuildFromVector<Oasis::Add<Oasis::Expression>>(input);
+        auto result = Oasis::BuildFromVector<Oasis::Add>(input);
 
         REQUIRE(result != nullptr);
         REQUIRE(result->StructurallyEquivalent(expected));
@@ -158,7 +158,7 @@ TEST_CASE("BuildFromVector Function", "[TreeManip]")
                 real6 }
         };
 
-        auto result = Oasis::BuildFromVector<Oasis::Add<Oasis::Expression>>(input);
+        auto result = Oasis::BuildFromVector<Oasis::Add>(input);
 
         REQUIRE(result != nullptr);
         REQUIRE(result->StructurallyEquivalent(expected));

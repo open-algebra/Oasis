@@ -56,8 +56,8 @@ protected:
 template <typename MostSigOpT, typename LeastSigOpT, typename T>
 concept IOperand = std::is_same_v<T, MostSigOpT> || std::is_same_v<T, LeastSigOpT>;
 
-template <typename T>
-concept IAssociativeAndCommutative = IExpression<T> && requires { (T::GetStaticCategory() & (Associative | Commutative)) != 0; };
+template <template <typename, typename> typename T>
+concept IAssociativeAndCommutative = IExpression<T<Expression, Expression>> && requires { (T<Expression, Expression>::GetStaticCategory() & (Associative | Commutative)) != 0; };
 
 /**
  * The base class for all binary expressions.
@@ -574,11 +574,14 @@ public:
  * @param ops The vector of operands.
  * @return A binary expression with the operands in the vector.
  */
-template <IAssociativeAndCommutative T>
+template <template <typename, typename> typename T>
+    requires IAssociativeAndCommutative<T>
 auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std::unique_ptr<Expression>
 {
+    using GeneralizedT = T<Expression, Expression>;
+
     if (ops.size() == 2) {
-        return std::make_unique<T>(*ops[0], *ops[1]);
+        return std::make_unique<GeneralizedT>(*ops[0], *ops[1]);
     }
 
     std::vector<std::unique_ptr<Expression>> reducedOps;
@@ -590,7 +593,7 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
             break;
         }
 
-        reducedOps.push_back(std::make_unique<T>(*ops[i], *ops[i + 1]));
+        reducedOps.push_back(std::make_unique<GeneralizedT>(*ops[i], *ops[i + 1]));
     }
 
     return BuildFromVector<T>(reducedOps);
