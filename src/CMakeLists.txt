@@ -38,9 +38,13 @@ set(Oasis_HEADERS
 add_library(Oasis ${Oasis_SOURCES} ${Oasis_HEADERS})
 
 if(MSVC)
-    target_compile_options(Oasis PRIVATE "$<$<CONFIG:DEBUG>:/W3>" "$<$<CONFIG:DEBUG>:/WX>")
+    target_compile_options(Oasis PRIVATE "$<$<CONFIG:DEBUG>:/W3>"
+                                         "$<$<CONFIG:DEBUG>:/WX>")
 else()
-    target_compile_options(Oasis PRIVATE "$<$<CONFIG:DEBUG>:-Wall>" "$<$<CONFIG:DEBUG>:-Wextra>" "$<$<CONFIG:DEBUG>:-Wpedantic>" "$<$<CONFIG:DEBUG>:-Werror>")
+    target_compile_options(
+        Oasis
+        PRIVATE "$<$<CONFIG:DEBUG>:-Wall>" "$<$<CONFIG:DEBUG>:-Wextra>"
+                "$<$<CONFIG:DEBUG>:-Wpedantic>" "$<$<CONFIG:DEBUG>:-Werror>")
 endif()
 
 target_compile_features(Oasis PUBLIC cxx_std_20)
