@@ -152,7 +152,7 @@ auto Subtract<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_p
 
 auto Subtract<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Subtract<Expression, Expression>>
 {
-    if (!other.Is<Subtract>()) {
+    if (!other.Is<Oasis::Subtract>()) {
         return nullptr;
     }
 
@@ -162,7 +162,7 @@ auto Subtract<Expression>::Specialize(const Expression& other) -> std::unique_pt
 
 auto Subtract<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Subtract>
 {
-    if (!other.Is<Subtract>()) {
+    if (!other.Is<Oasis::Subtract>()) {
         return nullptr;
     }
 

@@ -222,7 +222,7 @@ auto Multiply<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_p
 
 auto Multiply<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Multiply<Expression, Expression>>
 {
-    if (!other.Is<Multiply>()) {
+    if (!other.Is<Oasis::Multiply>()) {
         return nullptr;
     }
 
@@ -232,7 +232,7 @@ auto Multiply<Expression>::Specialize(const Expression& other) -> std::unique_pt
 
 auto Multiply<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Multiply>
 {
-    if (!other.Is<Multiply>()) {
+    if (!other.Is<Oasis::Multiply>()) {
         return nullptr;
     }
 
