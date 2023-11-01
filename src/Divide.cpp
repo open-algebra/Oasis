@@ -90,7 +90,7 @@ auto Divide<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr
 
 auto Divide<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Divide<Expression, Expression>>
 {
-    if (!other.Is<Divide>()) {
+    if (!other.Is<Oasis::Divide>()) {
         return nullptr;
     }
 
@@ -100,7 +100,7 @@ auto Divide<Expression>::Specialize(const Expression& other) -> std::unique_ptr<
 
 auto Divide<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Divide>
 {
-    if (!other.Is<Divide>()) {
+    if (!other.Is<Oasis::Divide>()) {
         return nullptr;
     }
 

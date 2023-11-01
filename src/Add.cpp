@@ -173,7 +173,7 @@ auto Add<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Ex
 
 auto Add<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Add<Expression, Expression>>
 {
-    if (!other.Is<Add>()) {
+    if (!other.Is<Oasis::Add>()) {
         return nullptr;
     }
 
@@ -183,7 +183,7 @@ auto Add<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Add
 
 auto Add<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Add>
 {
-    if (!other.Is<Add>()) {
+    if (!other.Is<Oasis::Add>()) {
         return nullptr;
     }
 
