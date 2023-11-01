@@ -134,7 +134,7 @@ auto Exponent<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_p
 
 auto Exponent<Expression>::Specialize(const Oasis::Expression& other) -> std::unique_ptr<Exponent<Expression, Expression>>
 {
-    if (!other.Is<Exponent>()) {
+    if (!other.Is<Oasis::Exponent>()) {
         return nullptr;
     }
 
@@ -144,7 +144,7 @@ auto Exponent<Expression>::Specialize(const Oasis::Expression& other) -> std::un
 
 auto Exponent<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Exponent>
 {
-    if (!other.Is<Exponent>()) {
+    if (!other.Is<Oasis::Exponent>()) {
         return nullptr;
     }
 

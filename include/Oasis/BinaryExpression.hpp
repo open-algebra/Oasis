@@ -440,7 +440,7 @@ public:
      */
     auto Flatten(std::vector<std::unique_ptr<Expression>>& out) const -> void
     {
-        if (this->mostSigOp->template Is<DerivedGeneralized>()) {
+        if (this->mostSigOp->template Is<DerivedT>()) {
             auto generalizedMostSigOp = this->mostSigOp->Generalize();
             const auto& mostSigOp = static_cast<const DerivedGeneralized&>(*generalizedMostSigOp);
             mostSigOp.Flatten(out);
@@ -448,7 +448,7 @@ public:
             out.push_back(this->mostSigOp->Copy());
         }
 
-        if (this->leastSigOp->template Is<DerivedGeneralized>()) {
+        if (this->leastSigOp->template Is<DerivedT>()) {
             auto generalizedLeastSigOp = this->leastSigOp->Generalize();
             const auto& leastSigOp = static_cast<const DerivedGeneralized&>(*generalizedLeastSigOp);
             leastSigOp.Flatten(out);
@@ -461,10 +461,10 @@ public:
 };
 
 /// @cond
-template <template <IExpression, IExpression> class Derived>
-class BinaryExpression<Derived, Expression, Expression> : public BinaryExpressionBase<Expression, Expression> {
+template <template <IExpression, IExpression> class DerivedT>
+class BinaryExpression<DerivedT, Expression, Expression> : public BinaryExpressionBase<Expression, Expression> {
 
-    using DerivedGeneralized = Derived<Expression, Expression>;
+    using DerivedGeneralized = DerivedT<Expression, Expression>;
 
 public:
     BinaryExpression() = default;
@@ -547,7 +547,7 @@ public:
 
     auto Flatten(std::vector<std::unique_ptr<Expression>>& out) const -> void
     {
-        if (this->mostSigOp->template Is<DerivedGeneralized>()) {
+        if (this->mostSigOp->template Is<DerivedT>()) {
             auto generalizedMostSigOp = this->mostSigOp->Generalize();
             const auto& mostSigOp = static_cast<const DerivedGeneralized&>(*generalizedMostSigOp);
             mostSigOp.Flatten(out);
@@ -555,7 +555,7 @@ public:
             out.push_back(this->mostSigOp->Copy());
         }
 
-        if (this->leastSigOp->template Is<DerivedGeneralized>()) {
+        if (this->leastSigOp->template Is<DerivedT>()) {
             auto generalizedLeastSigOp = this->leastSigOp->Generalize();
             const auto& leastSigOp = static_cast<const DerivedGeneralized&>(*generalizedLeastSigOp);
             leastSigOp.Flatten(out);
