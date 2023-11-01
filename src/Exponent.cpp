@@ -22,7 +22,8 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
     Exponent simplifiedExponent { *simplifiedBase, *simplifiedPower };
 
     if (auto zeroCase = Exponent<Expression, Real>::Specialize(simplifiedExponent); zeroCase != nullptr) {
-        const Expression& base = zeroCase->GetMostSigOp();
+        // Variable is unused; is this intentional?
+        // const Expression& base = zeroCase->GetMostSigOp();
         const Real& power = zeroCase->GetLeastSigOp();
 
         if (power.GetValue() == 0.0) {
@@ -100,7 +101,7 @@ auto Exponent<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_p
 
     Exponent simplifiedExponent;
 
-    tf::Task simplifyTask = subflow.emplace([&simplifiedExponent, &simplifiedBase, &simplifiedPower](tf::Subflow& sbf) {
+    tf::Task simplifyTask = subflow.emplace([&simplifiedExponent, &simplifiedBase, &simplifiedPower](tf::Subflow&) {
         if (simplifiedPower) {
             simplifiedExponent.SetMostSigOp(*simplifiedBase);
         }
