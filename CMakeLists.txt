@@ -27,14 +27,6 @@ FetchContent_MakeAvailable(Catch2 fmt)
 add_subdirectory(cmake/FetchEigen)
 add_subdirectory(cmake/FetchTaskflow)
 
-if(MSVC)
-    add_compile_options("$<$<CONFIG:DEBUG>:/W3>" "$<$<CONFIG:DEBUG>:/WX>")
-else()
-    add_compile_options(
-        "$<$<CONFIG:DEBUG>:-Wall>" "$<$<CONFIG:DEBUG>:-Wextra>"
-        "$<$<CONFIG:DEBUG>:-Wpedantic>" "$<$<CONFIG:DEBUG>:-Werror>")
-endif()
-
 # Processes the CMakeLists.txt for each target.
 add_subdirectory(src)
 

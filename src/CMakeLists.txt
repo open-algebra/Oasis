@@ -37,6 +37,12 @@ set(Oasis_HEADERS
 # Adds a library target called "Oasis" to be built from source files.
 add_library(Oasis ${Oasis_SOURCES} ${Oasis_HEADERS})
 
+if(MSVC)
+    target_compile_options(Oasis PRIVATE "$<$<CONFIG:DEBUG>:/W3>" "$<$<CONFIG:DEBUG>:/WX>")
+else()
+    target_compile_options(Oasis PRIVATE "$<$<CONFIG:DEBUG>:-Wall>" "$<$<CONFIG:DEBUG>:-Wextra>" "$<$<CONFIG:DEBUG>:-Wpedantic>" "$<$<CONFIG:DEBUG>:-Werror>")
+endif()
+
 target_compile_features(Oasis PUBLIC cxx_std_20)
 target_include_directories(Oasis PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 target_link_libraries(Oasis PUBLIC fmt::fmt Eigen3::Eigen Taskflow)

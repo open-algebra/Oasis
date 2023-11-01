@@ -13,6 +13,12 @@ set(Oasis_TESTS
 # Adds an executable target called "OasisTests" to be built from sources files.
 add_executable(OasisTests ${Oasis_TESTS})
 
+if(MSVC)
+    target_compile_options(OasisTests PRIVATE "$<$<CONFIG:DEBUG>:/W3>" "$<$<CONFIG:DEBUG>:/WX>")
+else()
+    target_compile_options(OasisTests PRIVATE "$<$<CONFIG:DEBUG>:-Wall>" "$<$<CONFIG:DEBUG>:-Wextra>" "$<$<CONFIG:DEBUG>:-Wpedantic>" "$<$<CONFIG:DEBUG>:-Werror>")
+endif()
+
 add_library(Oasis::Oasis ALIAS Oasis)
 target_link_libraries(OasisTests PRIVATE Oasis::Oasis Catch2::Catch2WithMain)
 
