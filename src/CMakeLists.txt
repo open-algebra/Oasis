@@ -38,7 +38,7 @@ set(Oasis_HEADERS
 add_library(Oasis ${Oasis_SOURCES} ${Oasis_HEADERS})
 
 if(MSVC)
-    target_compile_options(Oasis PRIVATE /W3> /WX>)
+    target_compile_options(Oasis PRIVATE /W3 /WX)
 else()
     target_compile_options(Oasis PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
