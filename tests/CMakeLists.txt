@@ -14,13 +14,9 @@ set(Oasis_TESTS
 add_executable(OasisTests ${Oasis_TESTS})
 
 if(MSVC)
-    target_compile_options(OasisTests PRIVATE "$<$<CONFIG:DEBUG>:/W3>"
-                                              "$<$<CONFIG:DEBUG>:/WX>")
+    target_compile_options(OasisTests PRIVATE /W3> /WX>)
 else()
-    target_compile_options(
-        OasisTests
-        PRIVATE "$<$<CONFIG:DEBUG>:-Wall>" "$<$<CONFIG:DEBUG>:-Wextra>"
-                "$<$<CONFIG:DEBUG>:-Wpedantic>" "$<$<CONFIG:DEBUG>:-Werror>")
+    target_compile_options(OasisTests PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 add_library(Oasis::Oasis ALIAS Oasis)
