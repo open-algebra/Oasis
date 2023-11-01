@@ -14,7 +14,7 @@ set(Oasis_TESTS
 add_executable(OasisTests ${Oasis_TESTS})
 
 if(MSVC)
-    target_compile_options(OasisTests PRIVATE /W3> /WX>)
+    target_compile_options(OasisTests PRIVATE /W3 /WX)
 else()
     target_compile_options(OasisTests PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
