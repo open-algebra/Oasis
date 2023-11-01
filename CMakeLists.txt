@@ -30,7 +30,9 @@ add_subdirectory(cmake/FetchTaskflow)
 if(MSVC)
     add_compile_options("$<$<CONFIG:DEBUG>:/W3>" "$<$<CONFIG:DEBUG>:/WX>")
 else()
-    add_compile_options("$<$<CONFIG:DEBUG>:-Wall>" "$<$<CONFIG:DEBUG>:-Wextra>" "$<$<CONFIG:DEBUG>:-Wpedantic>" "$<$<CONFIG:DEBUG>:-Werror>")
+    add_compile_options(
+        "$<$<CONFIG:DEBUG>:-Wall>" "$<$<CONFIG:DEBUG>:-Wextra>"
+        "$<$<CONFIG:DEBUG>:-Wpedantic>" "$<$<CONFIG:DEBUG>:-Werror>")
 endif()
 
 # Processes the CMakeLists.txt for each target.
