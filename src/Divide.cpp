@@ -147,7 +147,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 std::list<std::pair<std::unique_ptr<Expression>, double>>::iterator it;
                 for (it = topexpress.begin(); it != topexpress.end(); ++it){
                     if (it->first==sortingRight->GetLeastSigOp().Copy()){
-                        bool checked=false;
+                        checked=false;
                         topexpress.push_back(std::make_pair(sortingRight->GetLeastSigOp().Copy(), it->second-1));
                         topexpress.erase(it);
                     }
@@ -317,7 +317,7 @@ auto Divide<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr
 
 auto Divide<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Divide<Expression, Expression>>
 {
-    if (!other.Is<Divide>()) {
+    if (!other.Is<Oasis::Divide>()) {
         return nullptr;
     }
 
@@ -327,7 +327,7 @@ auto Divide<Expression>::Specialize(const Expression& other) -> std::unique_ptr<
 
 auto Divide<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Divide>
 {
-    if (!other.Is<Divide>()) {
+    if (!other.Is<Oasis::Divide>()) {
         return nullptr;
     }
 
