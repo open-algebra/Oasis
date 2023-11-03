@@ -48,14 +48,14 @@ jobs:
                   - os: windows-latest
                     c_compiler: clang-17
         steps:
+            # Checks out the repository.
+          - name: Checkout repository
+            uses: actions/checkout@v4
+
             # Creates reusable strings to use in steps.
           - name: Set reusable strings
             id: strings
             run: echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-            # Checks out the repository.
-          - name: Checkout repository
-            uses: actions/checkout@v4
 
             # Installs LLVM 17 on the runner.
           - name: Install LLVM 17
