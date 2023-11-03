@@ -243,16 +243,8 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return std::make_unique<Real>(coefficient1.GetValue() / coefficient2.GetValue());
         }
     }
-    return mostSigOp->Simplify();
     return simplifiedDivide.Copy();
 }
-
-
-/*
-Doesn't yet take in the case of an exponent with an expression as the exponent. 
-Still needs factor in order to work properly
-*/
-
 
 
 auto Divide<Expression>::Recurse(std::vector<std::unique_ptr<Expression>> &varList, int front, int end) const -> std::unique_ptr<Expression>{
