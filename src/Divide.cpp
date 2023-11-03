@@ -72,7 +72,8 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         //Expressions
         for (auto sortingLeft=Multiply<Expression, Expression>::Specialize(*leftover); sortingLeft != nullptr;){
             if (sortingLeft->GetLeastSigOp().GetType()==ExpressionType::Exponent){
-                const auto& sortingLeftLeastSigOp = dynamic_cast<const Exponent<Expression>&>(*sortingLeft->Generalize());
+                auto useable=sortingLeft->Generalize();
+                const auto& sortingLeftLeastSigOp = dynamic_cast<const Exponent<Expression>&>(*useable);
                 double val = dynamic_cast<const Real&>(sortingLeftLeastSigOp.GetMostSigOp()).GetValue();
                 topexpress.push_back(std::make_pair(sortingLeftLeastSigOp.GetLeastSigOp().Copy(), val));
             }
@@ -99,7 +100,8 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         else{
             auto check=Exponent<Expression, Real>::Specialize(*leftover);
             if (check!=nullptr){
-                const auto& sortingLeftLeastSigOp = dynamic_cast<const Exponent<Expression>&>(*check->Generalize());
+                auto useable=check->Generalize();
+                const auto& sortingLeftLeastSigOp = dynamic_cast<const Exponent<Expression>&>(*useable);
                 double val = dynamic_cast<const Real&>(sortingLeftLeastSigOp.GetMostSigOp()).GetValue();
                 topexpress.push_back(std::make_pair(sortingLeftLeastSigOp.GetLeastSigOp().Copy(), val));
             }
@@ -126,7 +128,8 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         for (auto sortingRight=Multiply<Expression, Expression>::Specialize(*leftover); sortingRight != nullptr;){
             bool checked=true;
             if (sortingRight->GetLeastSigOp().GetType()==ExpressionType::Exponent){
-                const auto& sortingRightLeastSigOp = dynamic_cast<const Exponent<Expression>&>(*sortingRight->Generalize());
+                auto useable=sortingRight->Generalize();
+                const auto& sortingRightLeastSigOp = dynamic_cast<const Exponent<Expression>&>(*useable);
                 double val = dynamic_cast<const Real&>(sortingRightLeastSigOp.GetMostSigOp()).GetValue();
                 std::list<std::pair<std::unique_ptr<Expression>, double>>::iterator it;
                 for (it = topexpress.begin(); it != topexpress.end(); ++it){
@@ -171,7 +174,8 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             auto check=Exponent<Expression, Real>::Specialize(*leftover);
             bool checked=true;
             if (check!=nullptr){
-                const auto& sortingRightLeastSigOp = dynamic_cast<const Exponent<Expression>&>(*check->Generalize());
+                auto useable=check->Generalize();
+                const auto& sortingRightLeastSigOp = dynamic_cast<const Exponent<Expression>&>(*useable);
                 double val = dynamic_cast<const Real&>(sortingRightLeastSigOp.GetMostSigOp()).GetValue();
                 std::list<std::pair<std::unique_ptr<Expression>, double>>::iterator it;
                 for (it = topexpress.begin(); it != topexpress.end(); ++it){
@@ -231,17 +235,13 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 bot.push_back(std::make_unique<Exponent<Variable,Real>>(Variable(it->first), Real(-1*(it->second))));
         }
         if (bot.size()!=0 && top.size()!=0){
-            auto builtTopTree = BuildFromVector<Oasis::Multiply>(top);
-            auto builtBottomTree = BuildFromVector<Oasis::Multiply>(bot);
-            return std::make_unique<Divide<Expression>>(Multiply<Expression>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *builtTopTree), *builtBottomTree);
+            return std::make_unique<Divide<Expression>>(Multiply<Expression>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(Recurse(top, 0, top.size()-1))), *(Recurse(bot, 0, bot.size()-1)));
         } 
         if (top.size()!=0){
-            auto builtTree = BuildFromVector<Oasis::Multiply>(top);
-            return std::make_unique<Multiply<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *builtTree);
+            return std::make_unique<Multiply<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(Recurse(top, 0, top.size()-1)));
         }
         if (bot.size()!=0){
-            auto builtTree = BuildFromVector<Oasis::Multiply>(bot);
-            return std::make_unique<Divide<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()),*builtTree);   
+            return std::make_unique<Divide<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()),*(Recurse(bot, 0, bot.size()-1)));   
         }
         else{
             return std::make_unique<Real>(coefficient1.GetValue() / coefficient2.GetValue());
