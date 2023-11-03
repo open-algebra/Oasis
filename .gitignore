@@ -154,3 +154,6 @@ docs/latex/
 
 # Visual Studio Files
 .vs/
+
+# CMake Files
+CMakeSettings.json
