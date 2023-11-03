@@ -85,7 +85,7 @@ TEST_CASE("Flatten Function", "[TreeManip]")
 
     REQUIRE(flattened.size() == expected.size());
 
-    for (int i = 0; i < flattened.size(); i++) {
+    for (unsigned int i = 0; i < flattened.size(); i++) {
         REQUIRE(flattened[i]->Equals(*expected[i]));
     }
 }

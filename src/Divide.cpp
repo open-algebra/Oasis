@@ -56,7 +56,7 @@ auto Divide<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr
     Divide simplifiedDivide;
 
     // While this task isn't actually parallelized, it exists as a prerequisite for check possible cases in parallel
-    tf::Task simplifyTask = subflow.emplace([&simplifiedDivide, &simplifiedDividend, &simplifiedDivisor](tf::Subflow& sbf) {
+    tf::Task simplifyTask = subflow.emplace([&simplifiedDivide, &simplifiedDividend, &simplifiedDivisor](tf::Subflow&) {
         if (simplifiedDividend) {
             simplifiedDivide.SetMostSigOp(*simplifiedDividend);
         }

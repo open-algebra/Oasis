@@ -139,7 +139,7 @@ auto Add<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Ex
     Add simplifiedAdd;
 
     // While this task isn't actually parallelized, it exists as a prerequisite for check possible cases in parallel
-    tf::Task simplifyTask = subflow.emplace([&simplifiedAdd, &simplifiedAugend, &simplifiedAddend](tf::Subflow& sbf) {
+    tf::Task simplifyTask = subflow.emplace([&simplifiedAdd, &simplifiedAugend, &simplifiedAddend](tf::Subflow&) {
         if (simplifiedAugend) {
             simplifiedAdd.SetMostSigOp(*simplifiedAugend);
         }
