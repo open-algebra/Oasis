@@ -248,8 +248,7 @@ public:
      * @param op The operation to be performed
      * @param exp The other expression.
      */
-    template <IExpression T>
-    auto Insert(ExpressionType op ,const Expression& exp);
+    auto Insert(ExpressionType op, const Expression& exp);
 
     virtual ~Expression() = default;
 

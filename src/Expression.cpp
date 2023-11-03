@@ -1,6 +1,12 @@
-#include "taskflow/taskflow.hpp"
-#include "Oasis/BinaryExpression.hpp"
 #include "Oasis/Expression.hpp"
+#include "Oasis/BinaryExpression.hpp"
+#include "Oasis/Add.hpp"
+#include "Oasis/Subtract.hpp"
+#include "Oasis/Multiply.hpp"
+#include "Oasis/Divide.hpp"
+#include "Oasis/Log.hpp"
+#include "Oasis/Exponent.hpp"
+#include "taskflow/taskflow.hpp"
 
 namespace Oasis {
 
@@ -83,12 +89,38 @@ auto CheckIfInsertShouldGoAboveOrBelow(Oasis::ExpressionType op, const Oasis::Ex
     return true;
 }
 
-template <IExpression T> auto Expression::Insert(Oasis::ExpressionType op, const Oasis::Expression& exp)
+void MakeBinaryExpression(ExpressionType op, Expression& self, const Expression& exp)
+{
+    switch(op)
+    {
+        case ExpressionType::Add:
+            self = Add<Expression>(self, exp);
+        case ExpressionType::Subtract:
+            self = Subtract<Expression>(self, exp);
+        case ExpressionType::Multiply:
+            self = Multiply<Expression>(self, exp);
+        case ExpressionType::Divide:
+            self = Divide<Expression>(self, exp);
+        case ExpressionType::Log:
+            self = Log<Expression>(self, exp);
+        case ExpressionType::Exponent:
+            self = Exponent<Expression>(self, exp);
+        default:
+            throw std::logic_error("ERROR op value not valid");
+    }
+}
+
+
+
+auto Expression::Insert(Oasis::ExpressionType op, const Oasis::Expression& exp)
 {
     if(CheckIfInsertShouldGoAboveOrBelow(op, *this))
     {
-        this = Oasis::BinaryExpression<T>(this, exp);
+        MakeBinaryExpression(op, *this, exp);
+        return this;
     }
+
+    Expression insert_node = this;
 
 }
 // RECENTLY ADDED
