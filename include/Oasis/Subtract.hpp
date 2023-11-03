@@ -49,11 +49,13 @@ public:
     Subtract() = default;
     Subtract(const Subtract<MinuendT, SubtrahendT>& other)
         : BinaryExpression<Subtract, MinuendT, SubtrahendT>(other)
-    { }
+    {
+    }
 
     Subtract(const MinuendT& addend1, const SubtrahendT& addend2)
         : BinaryExpression<Subtract, MinuendT, SubtrahendT>(addend1, addend2)
-    { }
+    {
+    }
 
     [[nodiscard]] auto ToString() const -> std::string final
     {
