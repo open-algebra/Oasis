@@ -27,8 +27,6 @@ public:
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
-    auto Recurse(std::vector<std::unique_ptr<Expression>> &varList, int front, int end) const -> std::unique_ptr<Expression>;
-
     [[nodiscard]] auto ToString() const -> std::string final;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Divide>;

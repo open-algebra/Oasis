@@ -580,7 +580,9 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
 {
     using GeneralizedT = T<Expression, Expression>;
 
-    if (ops.size() == 2) {
+    if (ops.size() == 1) {
+        return ops.front()->Copy();
+    } else if (ops.size() == 2) {
         return std::make_unique<GeneralizedT>(*ops[0], *ops[1]);
     }
 

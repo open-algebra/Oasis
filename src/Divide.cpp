@@ -235,13 +235,13 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 bot.push_back(std::make_unique<Exponent<Variable,Real>>(Variable(it->first), Real(-1*(it->second))));
         }
         if (bot.size()!=0 && top.size()!=0){
-            return std::make_unique<Divide<Expression>>(Multiply<Expression>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(Recurse(top, 0, top.size()-1))), *(Recurse(bot, 0, bot.size()-1)));
+            return std::make_unique<Divide<Expression>>(Multiply<Expression>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(BuildFromVector<Oasis::Multiply>(top))), *(BuildFromVector<Oasis::Multiply>(bot)));
         } 
         if (top.size()!=0){
-            return std::make_unique<Multiply<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(Recurse(top, 0, top.size()-1)));
+            return std::make_unique<Multiply<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(BuildFromVector<Oasis::Multiply>(top)));
         }
         if (bot.size()!=0){
-            return std::make_unique<Divide<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()),*(Recurse(bot, 0, bot.size()-1)));   
+            return std::make_unique<Divide<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()),*(BuildFromVector<Oasis::Multiply>(bot)));   
         }
         else{
             return std::make_unique<Real>(coefficient1.GetValue() / coefficient2.GetValue());
@@ -251,11 +251,6 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 }
 
 
-auto Divide<Expression>::Recurse(std::vector<std::unique_ptr<Expression>> &varList, int front, int end) const -> std::unique_ptr<Expression>{
-    if (front==end)
-        return varList[front]->Copy();
-    return std::make_unique<Multiply<Expression>>(*(Recurse(varList, front, (end+front)/2)), *(Recurse(varList,(end+front+1)/2, end)));
-}
 
 
 
