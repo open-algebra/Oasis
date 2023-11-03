@@ -51,8 +51,7 @@ jobs:
             # Creates reusable strings to use in steps.
           - name: Set reusable strings
             id: strings
-            run: |
-                echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+            run: echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
             # Checks out the repository.
           - name: Checkout repository
