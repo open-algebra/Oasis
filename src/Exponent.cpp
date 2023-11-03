@@ -22,8 +22,6 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
     Exponent simplifiedExponent { *simplifiedBase, *simplifiedPower };
 
     if (auto zeroCase = Exponent<Expression, Real>::Specialize(simplifiedExponent); zeroCase != nullptr) {
-        // Variable is unused; is this intentional?
-        // const Expression& base = zeroCase->GetMostSigOp();
         const Real& power = zeroCase->GetLeastSigOp();
 
         if (power.GetValue() == 0.0) {
