@@ -118,7 +118,7 @@ auto Subtract<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_p
     Subtract simplifiedSubtract;
 
     // While this task isn't actually parallelized, it exists as a prerequisite for check possible cases in parallel
-    tf::Task simplifyTask = subflow.emplace([&simplifiedSubtract, &simplifiedMinuend, &simplifiedSubtrahend](tf::Subflow& sbf) {
+    tf::Task simplifyTask = subflow.emplace([&simplifiedSubtract, &simplifiedMinuend, &simplifiedSubtrahend](tf::Subflow&) {
         if (simplifiedMinuend) {
             simplifiedSubtract.SetMostSigOp(*simplifiedMinuend);
         }

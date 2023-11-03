@@ -365,14 +365,15 @@ public:
     {
         DerivedSpecialized copy;
 
+        // This is not actually parallelized.
         if (this->mostSigOp) {
-            subflow.emplace([this, &copy](tf::Subflow& sbf) {
+            subflow.emplace([this, &copy](tf::Subflow&) {
                 copy.SetMostSigOp(*this->mostSigOp);
             });
         }
 
         if (this->leastSigOp) {
-            subflow.emplace([this, &copy](tf::Subflow& sbf) {
+            subflow.emplace([this, &copy](tf::Subflow&) {
                 copy.SetLeastSigOp(*this->leastSigOp);
             });
         }
@@ -487,14 +488,15 @@ public:
     {
         std::unique_ptr<DerivedGeneralized> copy = std::make_unique<DerivedGeneralized>();
 
+        // This is not actually parallelized.
         if (mostSigOp) {
-            subflow.emplace([this, &copy](tf::Subflow& sbf) {
+            subflow.emplace([this, &copy](tf::Subflow&) {
                 copy->SetMostSigOp(*mostSigOp);
             });
         }
 
         if (leastSigOp) {
-            subflow.emplace([&](tf::Subflow& sbf) {
+            subflow.emplace([&](tf::Subflow&) {
                 copy->SetLeastSigOp(*leastSigOp);
             });
         }
@@ -589,7 +591,7 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
     std::vector<std::unique_ptr<Expression>> reducedOps;
     reducedOps.reserve((ops.size() / 2) + 1);
 
-    for (int i = 0; i < ops.size(); i += 2) {
+    for (unsigned int i = 0; i < ops.size(); i += 2) {
         if (i + 1 >= ops.size()) {
             reducedOps.push_back(ops[i]->Copy());
             break;

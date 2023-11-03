@@ -30,7 +30,7 @@ auto Variable::Specialize(const Expression& other) -> std::unique_ptr<Variable>
     return other.Is<Variable>() ? std::make_unique<Variable>(dynamic_cast<const Variable&>(other)) : nullptr;
 }
 
-auto Variable::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Variable>
+auto Variable::Specialize(const Expression& other, tf::Subflow&) -> std::unique_ptr<Variable>
 {
     return other.Is<Variable>() ? std::make_unique<Variable>(dynamic_cast<const Variable&>(other)) : nullptr;
 }
