@@ -47,10 +47,11 @@ target_compile_features(Oasis PUBLIC cxx_std_20)
 target_include_directories(Oasis PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 target_link_libraries(Oasis PUBLIC fmt::fmt Eigen3::Eigen Taskflow)
 
-# Adds compiler flags for code coverage.
-# Note that only the Clang compiler is currently supported for code coverage.
+# Adds compiler flags for code coverage. Note that only the Clang compiler is
+# currently supported for code coverage.
 if(OASIS_BUILD_WITH_COVERAGE)
-    target_compile_options(Oasis PUBLIC -fprofile-instr-generate -fcoverage-mapping)
+    target_compile_options(Oasis PUBLIC -fprofile-instr-generate
+                                        -fcoverage-mapping)
     target_link_options(Oasis PUBLIC -fprofile-instr-generate)
 endif()
 
