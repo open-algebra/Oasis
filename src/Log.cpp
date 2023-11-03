@@ -27,7 +27,7 @@ auto Log<Expression>::ToString() const -> std::string
 
 auto Log<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Log>
 {
-    if (!other.Is<Log>()) {
+    if (!other.Is<Oasis::Log>()) {
         return nullptr;
     }
 
@@ -37,7 +37,7 @@ auto Log<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Log
 
 auto Log<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Log>
 {
-    if (!other.Is<Log>()) {
+    if (!other.Is<Oasis::Log>()) {
         return nullptr;
     }
 

@@ -16,13 +16,7 @@ namespace Oasis {
 template <IExpression BaseT, IExpression PowerT>
 class Exponent;
 
-/**
- * An Exponent template.
- * An exponent exists in the form base^power.
- * The most significant op (left child) is the 'base'
- * The least significant op (right child) is the 'power'
- */
-
+/// @cond
 template <>
 class Exponent<Expression, Expression> : public BinaryExpression<Exponent> {
 public:
@@ -42,6 +36,7 @@ public:
     EXPRESSION_TYPE(Exponent)
     EXPRESSION_CATEGORY(0)
 };
+/// @endcond
 
 /**
  * The exponent expression creates an exponent two expressions.

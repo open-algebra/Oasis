@@ -4,6 +4,7 @@
 
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Imaginary.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Variable.hpp"
 
@@ -26,6 +27,25 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
         const Real& subtrahend = realCase->GetLeastSigOp();
 
         return std::make_unique<Real>(minuend.GetValue() - subtrahend.GetValue());
+    }
+
+    if (auto ImgCase = Subtract<Imaginary>::Specialize(simplifiedSubtract); ImgCase != nullptr) {
+        return std::make_unique<Multiply<Real, Imaginary>>(Real { 2.0 }, Imaginary {});
+    }
+
+    if (auto ImgCase = Subtract<Multiply<Expression, Imaginary>, Imaginary>::Specialize(simplifiedSubtract); ImgCase != nullptr) {
+        return std::make_unique<Multiply<Expression>>(
+            *(Subtract { ImgCase->GetMostSigOp().GetMostSigOp(), Real { 1.0 } }.Simplify()), Imaginary {});
+    }
+
+    if (auto ImgCase = Subtract<Imaginary, Multiply<Expression, Imaginary>>::Specialize(simplifiedSubtract); ImgCase != nullptr) {
+        return std::make_unique<Multiply<Expression>>(
+            *(Subtract { Real { 1.0 }, ImgCase->GetLeastSigOp().GetMostSigOp() }.Simplify()), Imaginary {});
+    }
+
+    if (auto ImgCase = Subtract<Multiply<Expression, Imaginary>, Multiply<Expression, Imaginary>>::Specialize(simplifiedSubtract); ImgCase != nullptr) {
+        return std::make_unique<Multiply<Expression>>(
+            *(Subtract { ImgCase->GetLeastSigOp().GetMostSigOp(), ImgCase->GetMostSigOp().GetMostSigOp() }.Simplify()), Imaginary {});
     }
 
     // exponent - exponent
@@ -132,7 +152,7 @@ auto Subtract<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_p
 
 auto Subtract<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Subtract<Expression, Expression>>
 {
-    if (!other.Is<Subtract>()) {
+    if (!other.Is<Oasis::Subtract>()) {
         return nullptr;
     }
 
@@ -142,7 +162,7 @@ auto Subtract<Expression>::Specialize(const Expression& other) -> std::unique_pt
 
 auto Subtract<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Subtract>
 {
-    if (!other.Is<Subtract>()) {
+    if (!other.Is<Oasis::Subtract>()) {
         return nullptr;
     }
 

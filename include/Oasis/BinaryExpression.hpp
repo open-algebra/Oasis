@@ -14,13 +14,7 @@ namespace Oasis {
 template <IExpression MostSigOpT, IExpression LeastSigOpT>
 class BinaryExpressionBase;
 
-/**
- * Template specialization for binary expressions with two Expression operands.
- *
- * This is a "Generalized" binary expression, meaning that it accepts any expression as an operand.
- *
- * @note See the documentation for BinaryExpressionBase for more information.
- */
+/// @cond
 template <>
 class BinaryExpressionBase<Expression, Expression> : public Expression {
 public:
@@ -51,6 +45,7 @@ protected:
     std::unique_ptr<Expression> mostSigOp;
     std::unique_ptr<Expression> leastSigOp;
 };
+/// @endcond
 
 /**
  * A concept for an operand of a binary expression.
@@ -60,6 +55,9 @@ protected:
  */
 template <typename MostSigOpT, typename LeastSigOpT, typename T>
 concept IOperand = std::is_same_v<T, MostSigOpT> || std::is_same_v<T, LeastSigOpT>;
+
+template <template <typename, typename> typename T>
+concept IAssociativeAndCommutative = IExpression<T<Expression, Expression>> && requires { (T<Expression, Expression>::GetStaticCategory() & (Associative | Commutative)) != 0; };
 
 /**
  * The base class for all binary expressions.
@@ -420,22 +418,53 @@ public:
         return std::make_unique<DerivedGeneralized>(generalized);
     }
 
+    /**
+     * Swaps the operands of this expression.
+     * @return A new expression with the operands swapped.
+     */
+    auto SwapOperands() -> DerivedT<LeastSigOpT, MostSigOpT>
+    {
+        return DerivedT { *this->leastSigOp, *this->mostSigOp };
+    }
+
+    /**
+     * Flattens this expression.
+     *
+     * Flattening an expression means that all operands of the expression are copied into a vector.
+     * For example, flattening the expression `Add { Add { Real { 1.0 }, Real { 2.0 } }, Real { 3.0 } }`
+     * would result in a vector containing three `Real` expressions, `Real { 1.0 }`, `Real { 2.0 }`, and
+     * `Real { 3.0 }`. This is useful for simplifying expressions, as it allows the simplifier to
+     * operate on the operands of the expression without having to worry about the structure of the
+     * expression.
+     * @param out The vector to copy the operands into.
+     */
+    auto Flatten(std::vector<std::unique_ptr<Expression>>& out) const -> void
+    {
+        if (this->mostSigOp->template Is<DerivedT>()) {
+            auto generalizedMostSigOp = this->mostSigOp->Generalize();
+            const auto& mostSigOp = static_cast<const DerivedGeneralized&>(*generalizedMostSigOp);
+            mostSigOp.Flatten(out);
+        } else {
+            out.push_back(this->mostSigOp->Copy());
+        }
+
+        if (this->leastSigOp->template Is<DerivedT>()) {
+            auto generalizedLeastSigOp = this->leastSigOp->Generalize();
+            const auto& leastSigOp = static_cast<const DerivedGeneralized&>(*generalizedLeastSigOp);
+            leastSigOp.Flatten(out);
+        } else {
+            out.push_back(this->leastSigOp->Copy());
+        }
+    }
+
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 };
 
-/**
- * Template specialization for binary expressions with two Expression operands.
- *
- * This is a "Generalized" binary expression, meaning that it accepts any expression as an operand.
- *
- * @note See the documentation for BinaryExpression for more information.
- *
- * @tparam Derived The derived class.
- */
-template <template <IExpression, IExpression> class Derived>
-class BinaryExpression<Derived, Expression, Expression> : public BinaryExpressionBase<Expression, Expression> {
+/// @cond
+template <template <IExpression, IExpression> class DerivedT>
+class BinaryExpression<DerivedT, Expression, Expression> : public BinaryExpressionBase<Expression, Expression> {
 
-    using DerivedGeneralized = Derived<Expression, Expression>;
+    using DerivedGeneralized = DerivedT<Expression, Expression>;
 
 public:
     BinaryExpression() = default;
@@ -511,13 +540,69 @@ public:
         return std::make_unique<DerivedGeneralized>(generalized);
     }
 
+    auto SwapOperands() -> DerivedGeneralized
+    {
+        return DerivedGeneralized { *this->leastSigOp, *this->mostSigOp };
+    }
+
+    auto Flatten(std::vector<std::unique_ptr<Expression>>& out) const -> void
+    {
+        if (this->mostSigOp->template Is<DerivedT>()) {
+            auto generalizedMostSigOp = this->mostSigOp->Generalize();
+            const auto& mostSigOp = static_cast<const DerivedGeneralized&>(*generalizedMostSigOp);
+            mostSigOp.Flatten(out);
+        } else {
+            out.push_back(this->mostSigOp->Copy());
+        }
+
+        if (this->leastSigOp->template Is<DerivedT>()) {
+            auto generalizedLeastSigOp = this->leastSigOp->Generalize();
+            const auto& leastSigOp = static_cast<const DerivedGeneralized&>(*generalizedLeastSigOp);
+            leastSigOp.Flatten(out);
+        } else {
+            out.push_back(this->leastSigOp->Copy());
+        }
+    }
+
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 };
+/// @endcond
+
+/**
+ * Builds a reasonably balanced binary expression from a vector of operands.
+ * @tparam T The type of the binary expression, e.g. Add and Multiply.
+ * @param ops The vector of operands.
+ * @return A binary expression with the operands in the vector.
+ */
+template <template <typename, typename> typename T>
+    requires IAssociativeAndCommutative<T>
+auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std::unique_ptr<Expression>
+{
+    using GeneralizedT = T<Expression, Expression>;
+
+    if (ops.size() == 2) {
+        return std::make_unique<GeneralizedT>(*ops[0], *ops[1]);
+    }
+
+    std::vector<std::unique_ptr<Expression>> reducedOps;
+    reducedOps.reserve((ops.size() / 2) + 1);
+
+    for (int i = 0; i < ops.size(); i += 2) {
+        if (i + 1 >= ops.size()) {
+            reducedOps.push_back(ops[i]->Copy());
+            break;
+        }
+
+        reducedOps.push_back(std::make_unique<GeneralizedT>(*ops[i], *ops[i + 1]));
+    }
+
+    return BuildFromVector<T>(reducedOps);
+}
 
 #define IMPL_SPECIALIZE(Derived, FirstOp, SecondOp)                                                                      \
     static auto Specialize(const Expression& other) -> std::unique_ptr<Derived<FirstOp, SecondOp>>                       \
     {                                                                                                                    \
-        if (!other.Is<Derived<Expression>>()) {                                                                          \
+        if (!other.Is<Oasis::Derived>()) {                                                                                      \
             return nullptr;                                                                                              \
         }                                                                                                                \
                                                                                                                          \
@@ -565,7 +650,7 @@ public:
                                                                                                                          \
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Derived<FirstOp, SecondOp>> \
     {                                                                                                                    \
-        if (!other.Is<Derived>()) {                                                                                      \
+        if (!other.Is<Oasis::Derived>()) {                                                                               \
             return nullptr;                                                                                              \
         }                                                                                                                \
                                                                                                                          \
@@ -599,7 +684,6 @@ public:
                                                                                                                          \
         return std::make_unique<Derived<FirstOp, SecondOp>>(multiply);                                                   \
     }
-
 } // Oasis
 
 #endif // OASIS_BINARYEXPRESSION_HPP

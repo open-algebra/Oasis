@@ -59,3 +59,108 @@ TEST_CASE("Specialize Recursively Considers Commutative Property", "[Symbolic]")
     auto result2 = Oasis::Multiply<Oasis::Variable, Oasis::Multiply<Oasis::Real, Oasis::Variable>>::Specialize(*generalizedMultiply);
     REQUIRE(result2 != nullptr);
 }
+
+TEST_CASE("Flatten Function", "[TreeManip]")
+{
+    Oasis::Real real1 { 1.0 };
+    Oasis::Real real2 { 2.0 };
+    Oasis::Real real3 { 3.0 };
+
+    Oasis::Add add {
+        Oasis::Add {
+            real1,
+            real2 },
+        real3
+    };
+
+    std::vector<std::unique_ptr<Oasis::Expression>> flattened;
+
+    add.Flatten(flattened);
+
+    std::vector<std::unique_ptr<Oasis::Expression>> expected;
+
+    expected.emplace_back(real1.Copy());
+    expected.emplace_back(real2.Copy());
+    expected.emplace_back(real3.Copy());
+
+    REQUIRE(flattened.size() == expected.size());
+
+    for (int i = 0; i < flattened.size(); i++) {
+        REQUIRE(flattened[i]->Equals(*expected[i]));
+    }
+}
+
+TEST_CASE("BuildFromVector Function", "[TreeManip]")
+{
+    Oasis::Real real1 { 1.0 };
+    Oasis::Real real2 { 2.0 };
+    Oasis::Real real3 { 3.0 };
+    Oasis::Real real4 { 4.0 };
+
+    std::vector<std::unique_ptr<Oasis::Expression>> input;
+
+    input.emplace_back(real1.Copy());
+    input.emplace_back(real2.Copy());
+    input.emplace_back(real3.Copy());
+
+    SECTION("Vector who's size is odd")
+    {
+        Oasis::Add expected {
+            Oasis::Add {
+                real1,
+                real2 },
+            real3
+        };
+
+        auto result = Oasis::BuildFromVector<Oasis::Add>(input);
+
+        REQUIRE(result != nullptr);
+        REQUIRE(result->StructurallyEquivalent(expected));
+    }
+
+    input.emplace_back(real4.Copy());
+
+    SECTION("Vector who's size is a power of 2")
+    {
+        Oasis::Add expected {
+            Oasis::Add {
+                real1,
+                real2 },
+            Oasis::Add {
+                real3,
+                real4 }
+        };
+
+        auto result = Oasis::BuildFromVector<Oasis::Add>(input);
+
+        REQUIRE(result != nullptr);
+        REQUIRE(result->StructurallyEquivalent(expected));
+    }
+
+    SECTION("Vector who's size is even, but not a power of 2")
+    {
+        Oasis::Real real5 { 5.0 };
+        Oasis::Real real6 { 6.0 };
+
+        input.emplace_back(real5.Copy());
+        input.emplace_back(real6.Copy());
+
+        Oasis::Add expected {
+            Oasis::Add {
+                Oasis::Add {
+                    real1,
+                    real2 },
+                Oasis::Add {
+                    real3,
+                    real4 } },
+            Oasis::Add {
+                real5,
+                real6 }
+        };
+
+        auto result = Oasis::BuildFromVector<Oasis::Add>(input);
+
+        REQUIRE(result != nullptr);
+        REQUIRE(result->StructurallyEquivalent(expected));
+    }
+}

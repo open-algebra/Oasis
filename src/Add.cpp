@@ -1,9 +1,11 @@
 //
 // Created by Matthew McCall on 7/2/23.
 //
+#include <unordered_map>
 
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Imaginary.hpp"
 #include "Oasis/Multiply.hpp"
 
 namespace Oasis {
@@ -39,6 +41,20 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
+    if (auto ImgCase = Add<Imaginary>::Specialize(simplifiedAdd); ImgCase != nullptr) {
+        return std::make_unique<Multiply<Real, Imaginary>>(Real { 2.0 }, Imaginary {});
+    }
+
+    if (auto ImgCase = Add<Multiply<Expression, Imaginary>, Imaginary>::Specialize(simplifiedAdd); ImgCase != nullptr) {
+        return std::make_unique<Multiply<Expression>>(
+            *(Add { Real { 1.0 }, ImgCase->GetMostSigOp().GetMostSigOp() }.Simplify()), Imaginary {});
+    }
+
+    if (auto ImgCase = Add<Multiply<Expression, Imaginary>, Multiply<Expression, Imaginary>>::Specialize(simplifiedAdd); ImgCase != nullptr) {
+        return std::make_unique<Multiply<Expression>>(
+            *(Add { ImgCase->GetLeastSigOp().GetMostSigOp(), ImgCase->GetMostSigOp().GetMostSigOp() }.Simplify()), Imaginary {});
+    }
+
     // exponent + exponent
     if (auto exponentCase = Add<Exponent<Expression>, Exponent<Expression>>::Specialize(simplifiedAdd); exponentCase != nullptr) {
         if (exponentCase->GetMostSigOp().GetMostSigOp().Equals(exponentCase->GetLeastSigOp().GetMostSigOp()) && exponentCase->GetMostSigOp().GetLeastSigOp().Equals(exponentCase->GetLeastSigOp().GetLeastSigOp())) {
@@ -68,6 +84,29 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 exponentCase->GetLeastSigOp());
         }
     }
+
+    std::map<std::unique_ptr<Expression>, unsigned> terms;
+
+    std::vector<std::unique_ptr<Expression>> simplifiedTerms;
+    this->Flatten(simplifiedTerms);
+
+    //    for (const auto& term: simplifiedTerms) {
+    //        if (auto multiply = Multiply<Real, Expression>::Specialize(*term); multiply != nullptr) {
+    //            auto leastSigOp = multiply->GetLeastSigOp().Copy();
+    //            if (terms.find(leastSigOp) == terms.end()) {
+    //                terms[leastSigOp] = 0;
+    //            }
+    //
+    //            terms[leastSigOp] += static_cast<int>(multiply->GetMostSigOp().GetValue());
+    //        } else {
+    //            if (terms.find(term) == terms.end()) {
+    //                terms[term] = 0;
+    //            }
+    //
+    //            terms[term] += 1;
+    //        }
+    //
+    //    }
 
     return simplifiedAdd.Copy();
 }
@@ -134,7 +173,7 @@ auto Add<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Ex
 
 auto Add<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Add<Expression, Expression>>
 {
-    if (!other.Is<Add>()) {
+    if (!other.Is<Oasis::Add>()) {
         return nullptr;
     }
 
@@ -144,7 +183,7 @@ auto Add<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Add
 
 auto Add<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Add>
 {
-    if (!other.Is<Add>()) {
+    if (!other.Is<Oasis::Add>()) {
         return nullptr;
     }
 
