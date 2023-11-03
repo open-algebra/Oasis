@@ -231,13 +231,17 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 bot.push_back(std::make_unique<Exponent<Variable,Real>>(Variable(it->first), Real(-1*(it->second))));
         }
         if (bot.size()!=0 && top.size()!=0){
-            return std::make_unique<Divide<Expression>>(Multiply<Expression>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(Recurse(top, 0, top.size()-1))), *(Recurse(bot, 0, bot.size()-1)));
+            auto builtTopTree = BuildFromVector<Oasis::Multiply>(top);
+            auto builtBottomTree = BuildFromVector<Oasis::Multiply>(bot);
+            return std::make_unique<Divide<Expression>>(Multiply<Expression>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *builtTopTree), *builtBottomTree);
         } 
         if (top.size()!=0){
-            return std::make_unique<Multiply<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *(Recurse(top, 0, top.size()-1)));
+            auto builtTree = BuildFromVector<Oasis::Multiply>(top);
+            return std::make_unique<Multiply<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()), *builtTree);
         }
         if (bot.size()!=0){
-            return std::make_unique<Divide<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()),*(Recurse(bot, 0, bot.size()-1)));   
+            auto builtTree = BuildFromVector<Oasis::Multiply>(bot);
+            return std::make_unique<Divide<Expression>>(Real(coefficient1.GetValue()/coefficient2.GetValue()),*builtTree);   
         }
         else{
             return std::make_unique<Real>(coefficient1.GetValue() / coefficient2.GetValue());
@@ -318,7 +322,7 @@ auto Divide<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr
 
 auto Divide<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Divide<Expression, Expression>>
 {
-    if (!other.Is<Oasis::Divide>()) {
+    if (!other.Is<Divide>()) {
         return nullptr;
     }
 
@@ -328,7 +332,7 @@ auto Divide<Expression>::Specialize(const Expression& other) -> std::unique_ptr<
 
 auto Divide<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Divide>
 {
-    if (!other.Is<Oasis::Divide>()) {
+    if (!other.Is<Divide>()) {
         return nullptr;
     }
 
