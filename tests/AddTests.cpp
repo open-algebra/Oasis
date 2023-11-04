@@ -38,7 +38,6 @@ TEST_CASE("Symbolic Addition", "[Add][Symbolic]")
         };
 
     auto simplified = add.Simplify();
-    REQUIRE(simplified->Is<Oasis::Multiply<Oasis::Expression>>());
 
     REQUIRE(Oasis::Multiply {
         Oasis::Real { 3.0 },
@@ -162,7 +161,7 @@ TEST_CASE("Imaginary Addition", "[Imaginary][Add]")
     REQUIRE(Oasis::Multiply { Oasis::Real { 2.0 }, Oasis::Imaginary {} }.Equals(*spec1));
 }
 
-TEST_CASE("Associativity", "[Add][Associative]")
+TEST_CASE("Addition Associativity", "[Add][Associative]")
 {
     Oasis::Add assoc1 {
         Oasis::Real { 2.0 },

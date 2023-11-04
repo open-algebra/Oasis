@@ -239,6 +239,15 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
+    // makes all expr^1 into expr
+    for (auto& val : vals) {
+        if (auto exp = Exponent<Expression, Real>::Specialize(*val); exp != nullptr) {
+            if (exp->GetLeastSigOp().GetValue() == 1.0) {
+                val = exp->GetMostSigOp().Generalize();
+            }
+        }
+    }
+
     return BuildFromVector<Multiply>(vals);
 
     // return simplifiedMultiply.Copy();

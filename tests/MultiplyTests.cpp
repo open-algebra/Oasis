@@ -108,8 +108,6 @@ TEST_CASE("Multiply Associativity", "[Multiply][Associativity]")
                 Oasis::Variable { "x" },
                 Oasis::Real { 5.0 } },
             Oasis::Real { 3.0 } },
-        Oasis::Exponent {
-            Oasis::Variable { "y" },
-            Oasis::Real { 1.0 } } }
+        Oasis::Variable { "y" } }
                 .Equals(*simplified1));
 }
