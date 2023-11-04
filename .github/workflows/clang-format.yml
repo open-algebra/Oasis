@@ -20,9 +20,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Installs clang-17 on the Ubuntu runner (Ubuntu 22.04 LTS comes with Clang 14).
+      - name: Install Clang 17
+        run: |
+            wget https://apt.llvm.org/llvm.sh
+            chmod +x llvm.sh
+            sudo ./llvm.sh 17 all
+
         # Runs cmake-format on all CMakeLists.txt files.
       - name: Run clang-format
-        run: clang-format -Werror src/**.cpp include/Oasis/**.hpp;
+        run: clang-format-17 -Werror src/**.cpp include/Oasis/**.hpp;
 
         # Checks for modified files.
       - name: Check for modified files
