@@ -44,7 +44,7 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git commit -am "[Actions] Format CMakeLists.txt"
+          git commit -am "[Actions] Run clang-format"
           git push
 
         # Fails if the workflow hasn't been run in the contributor's fork.
