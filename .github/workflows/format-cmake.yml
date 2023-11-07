@@ -47,7 +47,8 @@ jobs:
 
             # Fails if the workflow hasn't been run in the contributor's fork.
           - name: Reject on edits
-            if: github.event_name == 'pull_request' &&
+            if: |
+                github.event_name == 'pull_request' &&
                 steps.check-file-modified.outputs.files-modified != 0
             uses: actions/github-script@v6
             with:
