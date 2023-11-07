@@ -4,8 +4,6 @@
 # cmake-multi-platform.yml
 # ##############################################################################
 
-# See https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml.
-
 name: CMake on multiple platforms
 
 on:
@@ -48,18 +46,18 @@ jobs:
                   - os: windows-latest
                     c_compiler: clang-17
         steps:
-          - uses: actions/checkout@v3
-            with:
-                submodules: recursive
+            # Checks out the repository.
+          - name: Checkout repository
+            uses: actions/checkout@v4
 
-            # Turns repeated input strings into step outputs.
+            # Creates reusable strings to use in steps.
           - name: Set reusable strings
             id: strings
             shell: bash
-            run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+            run: echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-            # Installs clang-17 on the Ubuntu runner (Ubuntu 22.04 LTS comes with Clang 14).
-          - name: Install Clang 17
+            # Installs LLVM 17 on the Ubuntu runner.
+          - name: Install LLVM 17
             if: ${{ matrix.os == 'ubuntu-latest' }}
             run: |
                 wget https://apt.llvm.org/llvm.sh
@@ -70,7 +68,7 @@ jobs:
           - name: Configure CMake
             run: >
                 cmake
-                -B ${{ steps.strings.outputs.build-output-dir }}
+                -B ${{ steps.strings.outputs.build-dir }}
                 -S ${{ github.workspace }}
                 -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
                 -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
@@ -80,27 +78,28 @@ jobs:
           - name: Build Oasis
             run: >
                 cmake
-                --build ${{ steps.strings.outputs.build-output-dir }}
+                --build ${{ steps.strings.outputs.build-dir }}
                 --config ${{ matrix.build_type }}
                 --target Oasis
 
-          - name: Build Test
+            # Builds the tests for Oasis with the given configurations.
+          - name: Build OasisTests
             run: >
                 cmake
-                --build ${{ steps.strings.outputs.build-output-dir }}
+                --build ${{ steps.strings.outputs.build-dir }}
                 --config ${{ matrix.build_type }}
                 --target OasisTests
 
             # Runs the tests registered to CTest by CMake.
           - name: Test
-            working-directory: ${{ steps.strings.outputs.build-output-dir }}
+            working-directory: ${{ steps.strings.outputs.build-dir }}
             run: ctest --build-config ${{ matrix.build_type }}
 
             # Uploads the build and test artifacts.
-          - name: Upload Artifacts
+          - name: Upload artifacts
             uses: actions/upload-artifact@v3
             with:
                 name: build-${{ matrix.os }}
                 path: |
-                    ${{ steps.strings.outputs.build-output-dir }}
-                    !${{ steps.strings.outputs.build-output-dir}}/_deps
+                    ${{ steps.strings.outputs.build-dir }}
+                    !${{ steps.strings.outputs.build-dir }}/_deps
