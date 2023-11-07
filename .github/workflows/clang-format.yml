@@ -1,7 +1,7 @@
 # ##############################################################################
 # OASIS: Open Algebra Software for Inferring Solutions
 #
-# clang-formal.yml
+# clang-format.yml
 # ##############################################################################
 
 name: Clang Format
@@ -27,9 +27,9 @@ jobs:
             chmod +x llvm.sh
             sudo ./llvm.sh 17 all
 
-        # Runs cmake-format on all CMakeLists.txt files.
+        # Runs clang-format on all source and header files.
       - name: Run clang-format
-        run: clang-format-17 -Werror -i src/**.cpp include/Oasis/**.hpp;
+        run: clang-format-17 -i src/**.cpp include/Oasis/**.hpp;
 
         # Checks for modified files.
       - name: Check for modified files
