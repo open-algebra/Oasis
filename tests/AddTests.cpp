@@ -8,6 +8,7 @@
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 
 TEST_CASE("Addition", "[Add]")
@@ -220,4 +221,27 @@ TEST_CASE("Addition Associativity", "[Add][Associative]")
             Oasis::Real { 5.0 },
             Oasis::Variable { "x" } } }
                 .Equals(*simplified2));
+}
+
+TEST_CASE("Expression Addition", "[Add][Expression]")
+{
+    Oasis::Add eq {
+        Oasis::Add {
+            Oasis::Variable { "x" },
+            Oasis::Variable { "y" } },
+        Oasis::Multiply {
+            Oasis::Real { 5.0 },
+            Oasis::Add {
+                Oasis::Variable { "x" },
+                Oasis::Variable { "y" } } }
+    };
+
+    auto simplified1 = eq.Simplify();
+
+    REQUIRE(Oasis::Multiply {
+        Oasis::Real { 6.0 },
+        Oasis::Add {
+            Oasis::Variable { "x" },
+            Oasis::Variable { "y" } } }
+                .Equals(*simplified1))
 }

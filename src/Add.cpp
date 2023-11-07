@@ -84,6 +84,24 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
+    if (auto exprCase = Add<Expression>::Specialize(simplifiedAdd); exprCase != nullptr) {
+        if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp())) {
+            return std::make_unique<Multiply<Expression>>(Real { 2.0 }, exprCase->GetMostSigOp());
+        }
+    }
+
+    if (auto exprCase = Add<Expression, Multiply<Expression>>::Specialize(simplifiedAdd); exprCase != nullptr) {
+        if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetLeastSigOp())) {
+            return std::make_unique<Multiply<Expression>>(*(Add<Expression> { Real { 1.0 }, exprCase->GetLeastSigOp().GetMostSigOp() }.Simplify()), exprCase->GetMostSigOp());
+        }
+    }
+
+    if (auto exprCase = Add<Multiply<Expression>, Multiply<Expression>>::Specialize(simplifiedAdd); exprCase != nullptr) {
+        if (exprCase->GetMostSigOp().GetLeastSigOp().Equals(exprCase->GetLeastSigOp().GetLeastSigOp())) {
+            return std::make_unique<Multiply<Expression>>(*(Add<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetMostSigOp() }.Simplify()), exprCase->GetMostSigOp());
+        }
+    }
+
     // simplifies expressions and combines like terms
     // ex: 1 + 2x + 3 + 5x = 4 + 7x (or 7x + 4)
     std::vector<std::unique_ptr<Expression>> adds;
