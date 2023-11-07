@@ -54,7 +54,7 @@ jobs:
           - name: Set reusable strings
             id: strings
             shell: bash
-            run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+            run: echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
             # Installs LLVM 17 on the Ubuntu runner.
           - name: Install LLVM 17
@@ -68,7 +68,7 @@ jobs:
           - name: Configure CMake
             run: >
                 cmake
-                -B ${{ steps.strings.outputs.build-output-dir }}
+                -B ${{ steps.strings.outputs.build-dir }}
                 -S ${{ github.workspace }}
                 -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
                 -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
@@ -78,7 +78,7 @@ jobs:
           - name: Build Oasis
             run: >
                 cmake
-                --build ${{ steps.strings.outputs.build-output-dir }}
+                --build ${{ steps.strings.outputs.build-dir }}
                 --config ${{ matrix.build_type }}
                 --target Oasis
 
@@ -86,13 +86,13 @@ jobs:
           - name: Build OasisTests
             run: >
                 cmake
-                --build ${{ steps.strings.outputs.build-output-dir }}
+                --build ${{ steps.strings.outputs.build-dir }}
                 --config ${{ matrix.build_type }}
                 --target OasisTests
 
             # Runs the tests registered to CTest by CMake.
           - name: Test
-            working-directory: ${{ steps.strings.outputs.build-output-dir }}
+            working-directory: ${{ steps.strings.outputs.build-dir }}
             run: ctest --build-config ${{ matrix.build_type }}
 
             # Uploads the build and test artifacts.
@@ -101,5 +101,5 @@ jobs:
             with:
                 name: build-${{ matrix.os }}
                 path: |
-                    ${{ steps.strings.outputs.build-output-dir }}
-                    !${{ steps.strings.outputs.build-output-dir }}/_deps
+                    ${{ steps.strings.outputs.build-dir }}
+                    !${{ steps.strings.outputs.build-dir }}/_deps
