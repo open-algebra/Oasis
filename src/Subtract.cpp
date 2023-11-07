@@ -86,7 +86,6 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-
     return simplifiedSubtract.Copy();
 }
 

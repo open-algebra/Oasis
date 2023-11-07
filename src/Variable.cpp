@@ -6,7 +6,8 @@
 
 namespace Oasis {
 
-Variable::Variable(std::string name) : name(std::move(name))
+Variable::Variable(std::string name)
+    : name(std::move(name))
 {
 }
 
