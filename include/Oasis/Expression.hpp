@@ -244,14 +244,14 @@ public:
     virtual ~Expression() = default;
 };
 
-#define EXPRESSION_TYPE(type)                       \
-    auto GetType() const-> ExpressionType override \
-    {                                               \
+#define EXPRESSION_TYPE(type)                     \
+    auto GetType() const->ExpressionType override \
+    {                                             \
         return ExpressionType::type;              \
-    }                                               \
-                                                    \
+    }                                             \
+                                                  \
     static auto GetStaticType()->ExpressionType   \
-    {                                               \
+    {                                             \
         return ExpressionType::type;              \
     }
 

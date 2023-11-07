@@ -46,12 +46,14 @@ template <IExpression BaseT = Expression, IExpression ArgumentT = BaseT>
 class Log : public BinaryExpression<Log, BaseT, ArgumentT> {
     Log() = default;
     Log(const Log<BaseT, ArgumentT>& other)
-            : BinaryExpression<Log, BaseT, ArgumentT>(other)
-    { }
+        : BinaryExpression<Log, BaseT, ArgumentT>(other)
+    {
+    }
 
     Log(const BaseT& base, const ArgumentT& argument)
-            : BinaryExpression<Log, BaseT, ArgumentT>(base, argument)
-    { }
+        : BinaryExpression<Log, BaseT, ArgumentT>(base, argument)
+    {
+    }
 
     [[nodiscard]] auto ToString() const -> std::string final
     {

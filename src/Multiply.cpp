@@ -156,7 +156,6 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-
     return simplifiedMultiply.Copy();
 }
 
