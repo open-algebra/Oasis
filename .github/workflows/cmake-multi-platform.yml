@@ -55,6 +55,7 @@ jobs:
             # Creates reusable strings to use in steps.
           - name: Set reusable strings
             id: strings
+            shell: bash
             run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
             # Installs LLVM 17 on the runner.
