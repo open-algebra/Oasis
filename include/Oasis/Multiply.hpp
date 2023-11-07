@@ -15,15 +15,13 @@ namespace Oasis {
 template <IExpression MultiplicandT, IExpression MultiplierT>
 class Multiply;
 
-/**
- * Template specialization for Multiply with two Expressions.
- */
+/// @cond
 template <>
 class Multiply<Expression, Expression> : public BinaryExpression<Multiply> {
 public:
     Multiply() = default;
     Multiply(const Multiply<Expression, Expression>& other) = default;
-    
+
     Multiply(const Expression& multiplicand, const Expression& multiplier);
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
@@ -37,6 +35,7 @@ public:
     EXPRESSION_TYPE(Multiply)
     EXPRESSION_CATEGORY(Associative | Commutative)
 };
+/// @endcond
 
 /**
  * The Multiply expression multiplies two expressions.
@@ -50,11 +49,13 @@ public:
     Multiply() = default;
     Multiply(const Multiply<MultiplicandT, MultiplierT>& other)
         : BinaryExpression<Multiply, MultiplicandT, MultiplierT>(other)
-    { }
-    
+    {
+    }
+
     Multiply(const MultiplicandT& addend1, const MultiplierT& addend2)
         : BinaryExpression<Multiply, MultiplicandT, MultiplierT>(addend1, addend2)
-    { }
+    {
+    }
 
     [[nodiscard]] auto ToString() const -> std::string final
     {

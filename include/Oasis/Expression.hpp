@@ -167,6 +167,12 @@ public:
         return GetType() == T::GetStaticType();
     }
 
+    template <template <typename, typename> typename T>
+    [[nodiscard]] bool Is() const
+    {
+        return GetType() == T<Expression, Expression>::GetStaticType();
+    }
+
     /**
      * Simplifies this expression.
      * @return The simplified expression.
@@ -239,25 +245,25 @@ public:
 };
 
 #define EXPRESSION_TYPE(type)                       \
-    auto GetType() const-> ExpressionType override \
+    auto GetType() const -> ExpressionType override \
     {                                               \
-        return ExpressionType::type;              \
+        return ExpressionType::type;                \
     }                                               \
                                                     \
-    static auto GetStaticType()->ExpressionType   \
+    static auto GetStaticType() -> ExpressionType   \
     {                                               \
-        return ExpressionType::type;              \
+        return ExpressionType::type;                \
     }
 
-#define EXPRESSION_CATEGORY(category)           \
-    auto GetCategory() const->uint32_t override \
-    {                                           \
-        return category;                        \
-    }                                           \
-                                                \
-    static auto GetStaticCategory()->uint32_t   \
-    {                                           \
-        return category;                        \
+#define EXPRESSION_CATEGORY(category)             \
+    auto GetCategory() const -> uint32_t override \
+    {                                             \
+        return category;                          \
+    }                                             \
+                                                  \
+    static auto GetStaticCategory() -> uint32_t   \
+    {                                             \
+        return category;                          \
     }
 
 } // namespace Oasis

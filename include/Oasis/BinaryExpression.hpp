@@ -14,13 +14,7 @@ namespace Oasis {
 template <IExpression MostSigOpT, IExpression LeastSigOpT>
 class BinaryExpressionBase;
 
-/**
- * Template specialization for binary expressions with two Expression operands.
- *
- * This is a "Generalized" binary expression, meaning that it accepts any expression as an operand.
- *
- * @note See the documentation for BinaryExpressionBase for more information.
- */
+/// @cond
 template <>
 class BinaryExpressionBase<Expression, Expression> : public Expression {
 public:
@@ -51,6 +45,7 @@ protected:
     std::unique_ptr<Expression> mostSigOp;
     std::unique_ptr<Expression> leastSigOp;
 };
+/// @endcond
 
 /**
  * A concept for an operand of a binary expression.
@@ -61,8 +56,8 @@ protected:
 template <typename MostSigOpT, typename LeastSigOpT, typename T>
 concept IOperand = std::is_same_v<T, MostSigOpT> || std::is_same_v<T, LeastSigOpT>;
 
-template <typename T>
-concept IAssociativeAndCommutative = IExpression<T> && requires { (T::GetStaticCategory() & (Associative | Commutative)) != 0; };
+template <template <typename, typename> typename T>
+concept IAssociativeAndCommutative = IExpression<T<Expression, Expression>> && requires { (T<Expression, Expression>::GetStaticCategory() & (Associative | Commutative)) != 0; };
 
 /**
  * The base class for all binary expressions.
@@ -370,14 +365,15 @@ public:
     {
         DerivedSpecialized copy;
 
+        // This is not actually parallelized.
         if (this->mostSigOp) {
-            subflow.emplace([this, &copy](tf::Subflow& sbf) {
+            subflow.emplace([this, &copy](tf::Subflow&) {
                 copy.SetMostSigOp(*this->mostSigOp);
             });
         }
 
         if (this->leastSigOp) {
-            subflow.emplace([this, &copy](tf::Subflow& sbf) {
+            subflow.emplace([this, &copy](tf::Subflow&) {
                 copy.SetLeastSigOp(*this->leastSigOp);
             });
         }
@@ -445,7 +441,7 @@ public:
      */
     auto Flatten(std::vector<std::unique_ptr<Expression>>& out) const -> void
     {
-        if (this->mostSigOp->template Is<DerivedGeneralized>()) {
+        if (this->mostSigOp->template Is<DerivedT>()) {
             auto generalizedMostSigOp = this->mostSigOp->Generalize();
             const auto& mostSigOp = static_cast<const DerivedGeneralized&>(*generalizedMostSigOp);
             mostSigOp.Flatten(out);
@@ -453,7 +449,7 @@ public:
             out.push_back(this->mostSigOp->Copy());
         }
 
-        if (this->leastSigOp->template Is<DerivedGeneralized>()) {
+        if (this->leastSigOp->template Is<DerivedT>()) {
             auto generalizedLeastSigOp = this->leastSigOp->Generalize();
             const auto& leastSigOp = static_cast<const DerivedGeneralized&>(*generalizedLeastSigOp);
             leastSigOp.Flatten(out);
@@ -465,19 +461,11 @@ public:
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 };
 
-/**
- * Template specialization for binary expressions with two Expression operands.
- *
- * This is a "Generalized" binary expression, meaning that it accepts any expression as an operand.
- *
- * @note See the documentation for BinaryExpression for more information.
- *
- * @tparam Derived The derived class.
- */
-template <template <IExpression, IExpression> class Derived>
-class BinaryExpression<Derived, Expression, Expression> : public BinaryExpressionBase<Expression, Expression> {
+/// @cond
+template <template <IExpression, IExpression> class DerivedT>
+class BinaryExpression<DerivedT, Expression, Expression> : public BinaryExpressionBase<Expression, Expression> {
 
-    using DerivedGeneralized = Derived<Expression, Expression>;
+    using DerivedGeneralized = DerivedT<Expression, Expression>;
 
 public:
     BinaryExpression() = default;
@@ -500,14 +488,15 @@ public:
     {
         std::unique_ptr<DerivedGeneralized> copy = std::make_unique<DerivedGeneralized>();
 
+        // This is not actually parallelized.
         if (mostSigOp) {
-            subflow.emplace([this, &copy](tf::Subflow& sbf) {
+            subflow.emplace([this, &copy](tf::Subflow&) {
                 copy->SetMostSigOp(*mostSigOp);
             });
         }
 
         if (leastSigOp) {
-            subflow.emplace([&](tf::Subflow& sbf) {
+            subflow.emplace([&](tf::Subflow&) {
                 copy->SetLeastSigOp(*leastSigOp);
             });
         }
@@ -560,7 +549,7 @@ public:
 
     auto Flatten(std::vector<std::unique_ptr<Expression>>& out) const -> void
     {
-        if (this->mostSigOp->template Is<DerivedGeneralized>()) {
+        if (this->mostSigOp->template Is<DerivedT>()) {
             auto generalizedMostSigOp = this->mostSigOp->Generalize();
             const auto& mostSigOp = static_cast<const DerivedGeneralized&>(*generalizedMostSigOp);
             mostSigOp.Flatten(out);
@@ -568,7 +557,7 @@ public:
             out.push_back(this->mostSigOp->Copy());
         }
 
-        if (this->leastSigOp->template Is<DerivedGeneralized>()) {
+        if (this->leastSigOp->template Is<DerivedT>()) {
             auto generalizedLeastSigOp = this->leastSigOp->Generalize();
             const auto& leastSigOp = static_cast<const DerivedGeneralized&>(*generalizedLeastSigOp);
             leastSigOp.Flatten(out);
@@ -579,6 +568,7 @@ public:
 
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 };
+/// @endcond
 
 /**
  * Builds a reasonably balanced binary expression from a vector of operands.
@@ -586,23 +576,28 @@ public:
  * @param ops The vector of operands.
  * @return A binary expression with the operands in the vector.
  */
-template <IAssociativeAndCommutative T>
+template <template <typename, typename> typename T>
+    requires IAssociativeAndCommutative<T>
 auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std::unique_ptr<Expression>
 {
-    if (ops.size() == 2) {
-        return std::make_unique<T>(*ops[0], *ops[1]);
+    using GeneralizedT = T<Expression, Expression>;
+
+    if (ops.size() == 1) {
+        return ops.front()->Copy();
+    } else if (ops.size() == 2) {
+        return std::make_unique<GeneralizedT>(*ops[0], *ops[1]);
     }
 
     std::vector<std::unique_ptr<Expression>> reducedOps;
     reducedOps.reserve((ops.size() / 2) + 1);
 
-    for (int i = 0; i < ops.size(); i += 2) {
+    for (unsigned int i = 0; i < ops.size(); i += 2) {
         if (i + 1 >= ops.size()) {
             reducedOps.push_back(ops[i]->Copy());
             break;
         }
 
-        reducedOps.push_back(std::make_unique<T>(*ops[i], *ops[i + 1]));
+        reducedOps.push_back(std::make_unique<GeneralizedT>(*ops[i], *ops[i + 1]));
     }
 
     return BuildFromVector<T>(reducedOps);
@@ -611,7 +606,7 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
 #define IMPL_SPECIALIZE(Derived, FirstOp, SecondOp)                                                                      \
     static auto Specialize(const Expression& other) -> std::unique_ptr<Derived<FirstOp, SecondOp>>                       \
     {                                                                                                                    \
-        if (!other.Is<Derived<Expression>>()) {                                                                          \
+        if (!other.Is<Oasis::Derived>()) {                                                                               \
             return nullptr;                                                                                              \
         }                                                                                                                \
                                                                                                                          \
@@ -659,7 +654,7 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
                                                                                                                          \
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Derived<FirstOp, SecondOp>> \
     {                                                                                                                    \
-        if (!other.Is<Derived>()) {                                                                                      \
+        if (!other.Is<Oasis::Derived>()) {                                                                               \
             return nullptr;                                                                                              \
         }                                                                                                                \
                                                                                                                          \

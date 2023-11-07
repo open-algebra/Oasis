@@ -86,7 +86,6 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-
     return simplifiedSubtract.Copy();
 }
 
@@ -118,7 +117,7 @@ auto Subtract<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_p
     Subtract simplifiedSubtract;
 
     // While this task isn't actually parallelized, it exists as a prerequisite for check possible cases in parallel
-    tf::Task simplifyTask = subflow.emplace([&simplifiedSubtract, &simplifiedMinuend, &simplifiedSubtrahend](tf::Subflow& sbf) {
+    tf::Task simplifyTask = subflow.emplace([&simplifiedSubtract, &simplifiedMinuend, &simplifiedSubtrahend](tf::Subflow&) {
         if (simplifiedMinuend) {
             simplifiedSubtract.SetMostSigOp(*simplifiedMinuend);
         }
@@ -152,7 +151,7 @@ auto Subtract<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_p
 
 auto Subtract<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Subtract<Expression, Expression>>
 {
-    if (!other.Is<Subtract>()) {
+    if (!other.Is<Oasis::Subtract>()) {
         return nullptr;
     }
 
@@ -162,7 +161,7 @@ auto Subtract<Expression>::Specialize(const Expression& other) -> std::unique_pt
 
 auto Subtract<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Subtract>
 {
-    if (!other.Is<Subtract>()) {
+    if (!other.Is<Oasis::Subtract>()) {
         return nullptr;
     }
 

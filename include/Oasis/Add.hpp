@@ -15,11 +15,7 @@ namespace Oasis {
 template <IExpression AugendT, IExpression AddendT>
 class Add;
 
-/**
- * Template specialization for Add with two Expressions.
- *
- * @note See Add
- */
+/// @cond
 template <>
 class Add<Expression, Expression> : public BinaryExpression<Add> {
 public:
@@ -39,6 +35,7 @@ public:
     EXPRESSION_TYPE(Add)
     EXPRESSION_CATEGORY(Associative | Commutative)
 };
+/// @endcond
 
 /**
  * The Add expression adds two expressions together.
@@ -52,11 +49,13 @@ public:
     Add() = default;
     Add(const Add<AugendT, AddendT>& other)
         : BinaryExpression<Add, AugendT, AddendT>(other)
-    { }
+    {
+    }
 
     Add(const AugendT& addend1, const AddendT& addend2)
         : BinaryExpression<Add, AugendT, AddendT>(addend1, addend2)
-    { }
+    {
+    }
 
     [[nodiscard]] auto ToString() const -> std::string final
     {
