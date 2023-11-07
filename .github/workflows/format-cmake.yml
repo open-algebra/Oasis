@@ -31,6 +31,7 @@ jobs:
             # Checks for modified files.
           - name: Check for modified files
             id: check-file-modified
+            shell: bash
             run: echo "files-modified=$(git diff --name-only | wc -l)" >> "$GITHUB_OUTPUT"
 
             # Commits and pushes changes.
