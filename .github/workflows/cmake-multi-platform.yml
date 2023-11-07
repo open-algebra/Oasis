@@ -96,7 +96,7 @@ jobs:
             run: ctest --build-config ${{ matrix.build_type }}
 
             # Uploads the build and test artifacts.
-          - name: Upload Artifacts
+          - name: Upload artifacts
             uses: actions/upload-artifact@v3
             with:
                 name: build-${{ matrix.os }}
