@@ -267,5 +267,5 @@ TEST_CASE("Expression Addition", "[Add][Expression]")
         Oasis::Add {
             Oasis::Variable { "x" },
             Oasis::Variable { "y" } } }
-                .Equals(*simplified1))
+                .Equals(*simplified1));
 }
