@@ -49,11 +49,13 @@ public:
     Divide() = default;
     Divide(const Divide<DividendT, DivisorT>& other)
         : BinaryExpression<Divide, DividendT, DivisorT>(other)
-    { }
+    {
+    }
 
     Divide(const DividendT& addend1, const DivisorT& addend2)
         : BinaryExpression<Divide, DividendT, DivisorT>(addend1, addend2)
-    { }
+    {
+    }
 
     [[nodiscard]] auto ToString() const -> std::string final
     {

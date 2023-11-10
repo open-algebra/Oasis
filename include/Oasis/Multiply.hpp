@@ -21,7 +21,7 @@ class Multiply<Expression, Expression> : public BinaryExpression<Multiply> {
 public:
     Multiply() = default;
     Multiply(const Multiply<Expression, Expression>& other) = default;
-    
+
     Multiply(const Expression& multiplicand, const Expression& multiplier);
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
@@ -49,11 +49,13 @@ public:
     Multiply() = default;
     Multiply(const Multiply<MultiplicandT, MultiplierT>& other)
         : BinaryExpression<Multiply, MultiplicandT, MultiplierT>(other)
-    { }
-    
+    {
+    }
+
     Multiply(const MultiplicandT& addend1, const MultiplierT& addend2)
         : BinaryExpression<Multiply, MultiplicandT, MultiplierT>(addend1, addend2)
-    { }
+    {
+    }
 
     [[nodiscard]] auto ToString() const -> std::string final
     {

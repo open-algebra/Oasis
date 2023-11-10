@@ -44,17 +44,19 @@ public:
  * @tparam BaseT The expression to be used as the base.
  * @tparam PowerT The expression to be used as the power.
  */
-template<IExpression BaseT = Expression, IExpression PowerT = BaseT>
-class Exponent : public BinaryExpression<Exponent, BaseT, PowerT>{
+template <IExpression BaseT = Expression, IExpression PowerT = BaseT>
+class Exponent : public BinaryExpression<Exponent, BaseT, PowerT> {
 public:
     Exponent() = default;
     Exponent(const Exponent<BaseT, PowerT>& other)
         : BinaryExpression<Exponent, BaseT, PowerT>(other)
-    { }
+    {
+    }
 
     Exponent(const BaseT& base, const PowerT& power)
         : BinaryExpression<Exponent, BaseT, PowerT>(base, power)
-    { }
+    {
+    }
 
     [[nodiscard]] auto ToString() const -> std::string final
     {
