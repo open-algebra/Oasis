@@ -111,16 +111,37 @@ void MakeBinaryExpression(ExpressionType op, Expression& self, const Expression&
 }
 
 
-
 auto Expression::Insert(Oasis::ExpressionType op, const Oasis::Expression& exp)
 {
-    if(CheckIfInsertShouldGoAboveOrBelow(op, *this))
+    if(CheckIfInsertShouldGoAboveOrBelow(op, *this)) {
+            MakeBinaryExpression(op, this, exp);
+            return this;
+    }
+    std::unique_ptr<Expression> insert_node = nullptr;
+    std::unique_ptr<Expression> parent = nullptr;
+    if(this->GetType() == ExpressionType::Add)
     {
-        MakeBinaryExpression(op, *this, exp);
-        return this;
+            insert_node = this->Specialize(Add<Expression>());
+            parent = this->Specialize(Add<Expression>());
+    }
+    else
+    {
+            insert_node = this->Specialize(Multiply<Expression>());
+            parent = this->Specialize(Multiply<Expression>());
     }
 
-    Expression insert_node = this;
+    while(true)
+    {
+            if (insert_node->GetType() != ExpressionType::Add and insert_node->GetType() != ExpressionType::Multiply) //Possibly a check that can be a function
+            {
+                if (parent->insertDirection)
+                {
+                    MakeBinaryExpression(op, insert_node, exp);
+                    break;
+                }
+            }
+
+    }
 
 }
 // RECENTLY ADDED
