@@ -257,25 +257,25 @@ public:
 };
 
 #define EXPRESSION_TYPE(type)                       \
-    auto GetType() const-> ExpressionType override \
+    auto GetType() const -> ExpressionType override \
     {                                               \
-        return ExpressionType::type;              \
+        return ExpressionType::type;                \
     }                                               \
                                                     \
-    static auto GetStaticType()->ExpressionType   \
+    static auto GetStaticType() -> ExpressionType   \
     {                                               \
-        return ExpressionType::type;              \
+        return ExpressionType::type;                \
     }
 
-#define EXPRESSION_CATEGORY(category)           \
-    auto GetCategory() const->uint32_t override \
-    {                                           \
-        return category;                        \
-    }                                           \
-                                                \
-    static auto GetStaticCategory()->uint32_t   \
-    {                                           \
-        return category;                        \
+#define EXPRESSION_CATEGORY(category)             \
+    auto GetCategory() const -> uint32_t override \
+    {                                             \
+        return category;                          \
+    }                                             \
+                                                  \
+    static auto GetStaticCategory() -> uint32_t   \
+    {                                             \
+        return category;                          \
     }
 
 } // namespace Oasis

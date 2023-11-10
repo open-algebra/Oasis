@@ -1,49 +1,59 @@
-# Simple workflow for deploying static content to GitHub Pages
+# ##############################################################################
+# OASIS: Open Algebra Software for Inferring Solutions
+#
+# doxygen.yml
+# ##############################################################################
+
 name: Deploy static content to Pages
 
 on:
-  # Runs on pushes targeting the default branch
-  push:
-    branches: ["master"]
+    push:
+        branches: [ "master" ]
+    workflow_dispatch:
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+    contents: read
+    pages: write
+    id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+    group: "pages"
+    cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Doxygen
-        run: sudo apt-get update && sudo apt-get install -y doxygen
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-      - name: Generate Documentation
-        run: doxygen
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
-        with:
-          # Upload output
-          path: 'docs/html'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+    deploy:
+        runs-on: ubuntu-latest
+
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        
+        steps:
+            # Checks out the repository.
+          - name: Checkout repository
+            uses: actions/checkout@v4
+
+            # Installs Doxygen on the runner.
+          - name: Install Doxygen
+            run: |
+                sudo apt-get update
+                sudo apt-get install -y doxygen
+
+            # Sets up GitHub Pages.
+          - name: Setup GitHub Pages
+            uses: actions/configure-pages@v3
+
+            # Generates documentataion using Doxygen.
+          - name: Generate documentation
+            run: doxygen
+
+            # Uploads documentation artifacts.
+          - name: Upload artifacts
+            uses: actions/upload-pages-artifact@v2
+            with:
+              path: 'docs/html'
+
+            # Deploys to GitHub Pages.
+          - name: Deploy to GitHub Pages
+            id: deployment
+            uses: actions/deploy-pages@v2

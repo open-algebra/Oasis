@@ -582,7 +582,9 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
 {
     using GeneralizedT = T<Expression, Expression>;
 
-    if (ops.size() == 2) {
+    if (ops.size() == 1) {
+        return ops.front()->Copy();
+    } else if (ops.size() == 2) {
         return std::make_unique<GeneralizedT>(*ops[0], *ops[1]);
     }
 
@@ -604,7 +606,7 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
 #define IMPL_SPECIALIZE(Derived, FirstOp, SecondOp)                                                                      \
     static auto Specialize(const Expression& other) -> std::unique_ptr<Derived<FirstOp, SecondOp>>                       \
     {                                                                                                                    \
-        if (!other.Is<Oasis::Derived>()) {                                                                                      \
+        if (!other.Is<Oasis::Derived>()) {                                                                               \
             return nullptr;                                                                                              \
         }                                                                                                                \
                                                                                                                          \

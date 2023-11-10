@@ -49,11 +49,13 @@ public:
     Add() = default;
     Add(const Add<AugendT, AddendT>& other)
         : BinaryExpression<Add, AugendT, AddendT>(other)
-    { }
+    {
+    }
 
     Add(const AugendT& addend1, const AddendT& addend2)
         : BinaryExpression<Add, AugendT, AddendT>(addend1, addend2)
-    { }
+    {
+    }
 
     [[nodiscard]] auto ToString() const -> std::string final
     {

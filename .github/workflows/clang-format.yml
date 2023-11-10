@@ -1,10 +1,10 @@
 # ##############################################################################
 # OASIS: Open Algebra Software for Inferring Solutions
 #
-# format-cmake.yml
+# clang-format.yml
 # ##############################################################################
 
-name: Format CMake
+name: Clang Format
 
 on:
     pull_request:
@@ -20,13 +20,16 @@ jobs:
           - name: Checkout repository
             uses: actions/checkout@v4
 
-            # Installs cmakelang.
-          - name: Install cmakelang
-            run: pip install cmakelang
+            # Installs LLVM 17 on the runner.
+          - name: Install LLVM 17
+            run: |
+                wget https://apt.llvm.org/llvm.sh
+                chmod +x llvm.sh
+                sudo ./llvm.sh 17 all
 
-            # Runs cmake-format on all CMakeLists.txt files.
-          - name: Run cmake-format
-            run: find . -name CMakeLists.txt -type f -execdir bash -c "cmake-format -i {}" \;
+            # Runs clang-format on all source and header files.
+          - name: Run clang-format
+            run: clang-format-17 -i src/**.cpp include/Oasis/**.hpp;
 
             # Checks for modified files.
           - name: Check for modified files
@@ -42,7 +45,7 @@ jobs:
             run: |
                 git config user.name "github-actions"
                 git config user.email "github-actions@github.com"
-                git commit -am "[Actions] Format CMakeLists.txt"
+                git commit -am "[Actions] Run clang-format"
                 git push
 
             # Fails if the workflow hasn't been run in the contributor's fork.
@@ -52,4 +55,4 @@ jobs:
                 steps.check-file-modified.outputs.files-modified != 0
             uses: actions/github-script@v6
             with:
-                script: core.setFailed('The workflow must be run on your fork before merging a PR.')
+              script: core.setFailed('The workflow must be run on your fork before merging a PR.')
