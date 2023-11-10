@@ -92,7 +92,7 @@ public:
     {
     }
 
-    [[nodiscard]] auto Equals(const Expression& other) const -> bool final
+    [[nodiscard]] auto Equals(const Expression& other) const -> bool override
     {
         if (this->GetType() != other.GetType()) {
             return false;
@@ -381,6 +381,41 @@ public:
         subflow.join();
 
         return std::make_unique<DerivedSpecialized>(copy);
+    }
+
+    [[nodiscard]] auto Equals(const Expression& other) const -> bool final
+    {
+        if (BinaryExpressionBase<MostSigOpT, LeastSigOpT>::Equals(other)) {
+            return true;
+        }
+
+        if (this->GetType() != other.GetType()) {
+            return false;
+        }
+
+        if (!(this->GetCategory() & Associative)) {
+            return false;
+        }
+
+        auto otherGeneralized = other.Generalize();
+        const auto& otherBinary = static_cast<const DerivedGeneralized&>(*otherGeneralized);
+
+        auto thisFlattened = std::vector<std::unique_ptr<Expression>> {};
+        auto otherFlattened = std::vector<std::unique_ptr<Expression>> {};
+
+        this->Flatten(thisFlattened);
+        otherBinary.Flatten(otherFlattened);
+
+        for (const auto& thisOperand : thisFlattened) {
+            if (std::find_if(otherFlattened.begin(), otherFlattened.end(), [&thisOperand](const auto& otherOperand) {
+                    return thisOperand->Equals(*otherOperand);
+                })
+                == otherFlattened.end()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     [[nodiscard]] auto Generalize() const -> std::unique_ptr<Expression> final
