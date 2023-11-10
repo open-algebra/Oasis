@@ -89,3 +89,13 @@ jobs:
                         repo: context.repo.repo,
                         body: '```${{ steps.reports.outputs.report-file }}```'
                     })
+
+            # Uploads the build, test, and coverage artifacts.
+          - name: Upload artifacts
+            uses: actions/upload-artifact@v3
+            with:
+                name: build-test-cover
+                path: |
+                    ${{ steps.strings.outputs.build-dir }}
+                    !${{ steps.strings.outputs.build-dir }}/_deps
+                    ${{ steps.strings.outputs.coverage-dir }}
