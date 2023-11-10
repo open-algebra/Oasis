@@ -76,7 +76,10 @@ jobs:
             run: |
                 llvm-profdata-17 merge -sparse oasis.profraw -o oasis.profdata
                 llvm-cov-17 show -output-dir reports -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ${{ github.workspace }}/src ${{ github.workspace }}/include
-                echo "report-file=$(cat reports/index.txt)" >> "$GITHUB_OUTPUT"
+                ML_EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+                echo "report-file<<$EOF" >> "$GITHUB_OUTPUT"
+                echo "$(cat reports/index.txt)" >> "$GITHUB_OUTPUT"
+                echo "$EOF" >> "$GITHUB_OUTPUT"
 
             # Writes a comment on the pull request.
           - name: Write Comment
