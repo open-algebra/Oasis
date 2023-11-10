@@ -91,9 +91,9 @@ jobs:
                         issue_number: context.issue.number,
                         owner: context.repo.owner,
                         repo: context.repo.repo,
-                        body: '```${{ steps.reports.outputs.report-file }}```'
+                        body: 'Hello World'
                     })
-
+            #```${{ steps.reports.outputs.report-file }}```
             # Uploads the build, test, and coverage artifacts.
           - name: Upload artifacts
             uses: actions/upload-artifact@v3
