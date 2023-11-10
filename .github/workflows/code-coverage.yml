@@ -72,6 +72,7 @@ jobs:
           - name: Report Coverage
             id: reports
             working-directory: ${{ steps.strings.outputs.coverage-dir }}
+            shell: bash
             run: |
                 llvm-profdata-17 merge -sparse oasis.profraw -o oasis.profdata
                 llvm-cov-17 show -output-dir reports -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ${{ github.workspace }}/src ${{ github.workspace }}/include
