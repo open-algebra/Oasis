@@ -23,7 +23,7 @@ public:
 
     BinaryExpressionBase(const Expression& mostSigOp, const Expression& leastSigOp);
 
-    [[nodiscard]] auto Equals(const Expression& other) const -> bool final;
+    [[nodiscard]] auto Equals(const Expression& other) const -> bool override;
 
     [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool override;
     auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool override;
@@ -397,7 +397,7 @@ public:
             return false;
         }
 
-        auto otherGeneralized = other.Generalize();
+        const auto otherGeneralized = other.Generalize();
         const auto& otherBinary = static_cast<const DerivedGeneralized&>(*otherGeneralized);
 
         auto thisFlattened = std::vector<std::unique_ptr<Expression>> {};
