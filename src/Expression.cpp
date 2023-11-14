@@ -94,17 +94,23 @@ void MakeBinaryExpression(ExpressionType op, std::unique_ptr<Expression>& self, 
     switch(op)
     {
         case ExpressionType::Add:
-            self = Add<Expression>(self, exp);
+            self = std::make_unique<Add<Expression>>(*self, exp);
+            break;
         case ExpressionType::Subtract:
-            self = Subtract<Expression>(self, exp);
+            self = std::make_unique<Subtract<Expression>>(*self, exp);
+            break;
         case ExpressionType::Multiply:
-            self = Multiply<Expression>(self, exp);
+            self = std::make_unique<Multiply<Expression>>(*self, exp);
+            break;
         case ExpressionType::Divide:
-            self = Divide<Expression>(self, exp);
+            self = std::make_unique<Divide<Expression>>(*self, exp);
+            break;
         case ExpressionType::Log:
-            self = Log<Expression>(self, exp);
+            self = std::make_unique<Log<Expression>>(*self, exp);
+            break;
         case ExpressionType::Exponent:
-            self = Exponent<Expression>(self, exp);
+            self = std::make_unique<Exponent<Expression>>(*self, exp);
+            break;
         default:
             throw std::logic_error("ERROR op value not valid");
     }
@@ -114,8 +120,9 @@ void MakeBinaryExpression(ExpressionType op, std::unique_ptr<Expression>& self, 
 auto Expression::Insert(Oasis::ExpressionType op, const Oasis::Expression& exp)
 {
     if(CheckIfInsertShouldGoAboveOrBelow(op, *this)) {
-            MakeBinaryExpression(op, *this, exp);
-            return this;
+            auto temp = this->Generalize();
+            MakeBinaryExpression(op, temp, exp);
+            //this = dynamic_cast<Expression*>(temp);   
     }
     std::unique_ptr<Expression> insert_node;
     //std::unique_ptr<BinaryExpression> parent;
