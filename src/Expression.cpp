@@ -89,7 +89,7 @@ auto CheckIfInsertShouldGoAboveOrBelow(Oasis::ExpressionType op, const Oasis::Ex
     return true;
 }
 
-void MakeBinaryExpression(ExpressionType op, Expression& self, const Expression& exp)
+void MakeBinaryExpression(ExpressionType op, std::unique_ptr<Expression>& self, const Expression& exp)
 {
     switch(op)
     {
@@ -114,32 +114,74 @@ void MakeBinaryExpression(ExpressionType op, Expression& self, const Expression&
 auto Expression::Insert(Oasis::ExpressionType op, const Oasis::Expression& exp)
 {
     if(CheckIfInsertShouldGoAboveOrBelow(op, *this)) {
-            MakeBinaryExpression(op, this, exp);
+            MakeBinaryExpression(op, *this, exp);
             return this;
     }
-    std::unique_ptr<Expression> insert_node = nullptr;
-    std::unique_ptr<Expression> parent = nullptr;
-    if(this->GetType() == ExpressionType::Add)
-    {
-            insert_node = this->Specialize(Add<Expression>());
-            parent = this->Specialize(Add<Expression>());
-    }
-    else
-    {
-            insert_node = this->Specialize(Multiply<Expression>());
-            parent = this->Specialize(Multiply<Expression>());
-    }
+    std::unique_ptr<Expression> insert_node;
+    //std::unique_ptr<BinaryExpression> parent;
+//    if(this->GetType() == ExpressionType::Add)
+//    {
+//            insert_node = this->Specialize(Add<Expression>());
+//            parent = this->Specialize(Add<Expression>());
+//    }
+//    else
+//    {
+//            insert_node = this->Specialize(Multiply<Expression>());
+//            parent = this->Specialize(Multiply<Expression>());
+//    }
 
     while(true)
     {
             if (insert_node->GetType() != ExpressionType::Add and insert_node->GetType() != ExpressionType::Multiply) //Possibly a check that can be a function
             {
-                if (parent->insertDirection)
-                {
-                    MakeBinaryExpression(op, insert_node, exp);
+//                if (parent->insertDirection)
+//                {
+                    MakeBinaryExpression(op, *insert_node, exp);
                     break;
-                }
+//                }
+//                else
+//                {
+//                    MakeBinaryExpression(op, *exp, insert_node);
+//                    break;
+//                }
+
             }
+
+            insert_node = this->Specialize(BinaryExpression);
+            insert_node->insertDirection = not(insert_node->insertDirection);
+            if (not(insert_node->insertDirection))
+            {
+                    insert_node = insert_node.GetLeastSigOp();
+//                    if(insert_node->GetType() != ExpressionType::Add)
+//                    {
+//                        auto addNode = dynamic_cast<Add<Expression>*>(insert_node.get());
+//                        insert_node = addNode->GetMostSigOp();
+//                    }
+//                    else
+//                    {
+//                        auto mulNode = dynamic_cast<Multiply<Expression>*>(insert_node.get());
+//                        insert_node = mulNode->GetMostSigOp();
+//                    }
+//            }
+//            else
+//            {
+//                    if(insert_node->GetType() != ExpressionType::Add)
+//                    {
+//                        auto addNode = dynamic_cast<Add<Expression>*>(insert_node.get());
+//                        insert_node = addNode->GetLeastSigOp();
+//                    }
+//                    else
+//                    {
+//                        auto mulNode = dynamic_cast<Multiply<Expression>*>(insert_node.get());
+//                        insert_node = mulNode->GetLeastSigOp();
+//                    }
+            }
+            else {
+                    insert_node = insert_node.GetMostSigOp();
+            }
+
+            //parent = insert_node;
+            //parent->insertDirection = not(parent->insertDirection);
 
     }
 
