@@ -164,3 +164,56 @@ TEST_CASE("BuildFromVector Function", "[TreeManip]")
         REQUIRE(result->StructurallyEquivalent(expected));
     }
 }
+
+TEST_CASE("Equals follows associativity and commutativity")
+{
+    Oasis::Real real1 { 1.0 };
+    Oasis::Real real2 { 2.0 };
+    Oasis::Real real3 { 3.0 };
+
+    Oasis::Add add1 {
+        Oasis::Add {
+            real1,
+            real2 },
+        real3
+    };
+
+    // (1 + 2) + 3 == 1 + (2 + 3)
+    SECTION("Associativity")
+    {
+        Oasis::Add add2 {
+            real1,
+            Oasis::Add {
+                real2,
+                real3 }
+        };
+
+        REQUIRE(add1.Equals(add2));
+    }
+
+    // (1 + 2) + 3 == 3 + (1 + 2)
+    SECTION("Commutativity")
+    {
+        Oasis::Add add2 {
+            real3,
+            Oasis::Add {
+                real1,
+                real2 }
+        };
+
+        REQUIRE(add1.Equals(add2));
+    }
+
+    // (1 + 2) + 3 == (3 + 2) + 1
+    SECTION("Associativity and Commutativity")
+    {
+        Oasis::Add add2 {
+            Oasis::Add {
+                real3,
+                real2 },
+            real1
+        };
+
+        REQUIRE(add1.Equals(add2));
+    }
+}
