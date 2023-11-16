@@ -395,7 +395,7 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
     }
 
     std::vector<std::unique_ptr<Expression>> reducedOps;
-    reducedOps.reserve((ops.size() / 2) + 1);
+    reducedOps.reserve(ops.size() / 2 + 1);
 
     for (unsigned int i = 0; i < ops.size(); i += 2) {
         if (i + 1 >= ops.size()) {
