@@ -8,8 +8,7 @@
 set(Oasis_SOURCES
     # cmake-format: sortable
     Add.cpp
-    BinaryExpression.cpp
-    Divide.cpp
+        Divide.cpp
     Exponent.cpp
     Expression.cpp
     Imaginary.cpp
