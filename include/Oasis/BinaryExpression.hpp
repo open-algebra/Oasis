@@ -11,42 +11,6 @@
 
 namespace Oasis {
 
-template <IExpression MostSigOpT, IExpression LeastSigOpT>
-class BinaryExpressionBase;
-
-/// @cond
-template <>
-class BinaryExpressionBase<Expression, Expression> : public Expression {
-public:
-    BinaryExpressionBase() = default;
-    BinaryExpressionBase(const BinaryExpressionBase& other);
-
-    BinaryExpressionBase(const Expression& mostSigOp, const Expression& leastSigOp);
-
-    [[nodiscard]] auto Equals(const Expression& other) const -> bool override;
-
-    [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool override;
-    auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool override;
-
-    auto AddOperand(const std::unique_ptr<Expression>& operand) -> bool;
-
-    auto SetMostSigOp(const Expression& op) -> void;
-    auto SetLeastSigOp(const Expression& op) -> void;
-
-    [[nodiscard]] auto HasMostSigOp() const -> bool;
-    [[nodiscard]] auto HasLeastSigOp() const -> bool;
-
-    [[nodiscard]] auto GetMostSigOp() const -> const Expression&;
-    [[nodiscard]] auto GetLeastSigOp() const -> const Expression&;
-
-    auto operator=(const BinaryExpressionBase& other) -> BinaryExpressionBase&;
-
-protected:
-    std::unique_ptr<Expression> mostSigOp;
-    std::unique_ptr<Expression> leastSigOp;
-};
-/// @endcond
-
 /**
  * A concept for an operand of a binary expression.
  * @tparam MostSigOpT The type of the most significant operand.
@@ -58,270 +22,6 @@ concept IOperand = std::is_same_v<T, MostSigOpT> || std::is_same_v<T, LeastSigOp
 
 template <template <typename, typename> typename T>
 concept IAssociativeAndCommutative = IExpression<T<Expression, Expression>> && requires { (T<Expression, Expression>::GetStaticCategory() & (Associative | Commutative)) != 0; };
-
-/**
- * The base class for all binary expressions.
- *
- * The BinaryExpressionBase class is a base class for all binary expressions. It provides a common
- * interface for all binary expressions, and implements common functionality. Specifically, it provides
- * functionality not dependent on the Derived class.
- *
- * @note This class is not intended to be used directly by end users.
- *
- * @tparam MostSigOpT The type of the most significant operand.
- * @tparam LeastSigOpT The type of the least significant operand.
- */
-template <IExpression MostSigOpT = Expression, IExpression LeastSigOpT = MostSigOpT>
-class BinaryExpressionBase : public Expression {
-public:
-    BinaryExpressionBase() = default;
-    BinaryExpressionBase(const BinaryExpressionBase<MostSigOpT, LeastSigOpT>& other)
-    {
-        if (other.mostSigOp) {
-            SetMostSigOp(*other.mostSigOp);
-        }
-
-        if (other.leastSigOp) {
-            SetLeastSigOp(*other.leastSigOp);
-        }
-    }
-
-    BinaryExpressionBase(const MostSigOpT& mostSigOp, const LeastSigOpT& leastSigOp)
-        : mostSigOp(std::make_unique<MostSigOpT>(mostSigOp))
-        , leastSigOp(std::make_unique<LeastSigOpT>(leastSigOp))
-    {
-    }
-
-    [[nodiscard]] auto Equals(const Expression& other) const -> bool override
-    {
-        if (this->GetType() != other.GetType()) {
-            return false;
-        }
-
-        const auto& otherBinary = static_cast<const BinaryExpressionBase&>(other);
-
-        if ((mostSigOp == nullptr) == (otherBinary.mostSigOp == nullptr)) {
-            if (mostSigOp && otherBinary.mostSigOp) {
-                if (!mostSigOp->Equals(*otherBinary.mostSigOp)) {
-                    return false;
-                }
-            }
-        } else {
-            return false;
-        }
-
-        if ((leastSigOp == nullptr) == (otherBinary.leastSigOp == nullptr)) {
-            if (leastSigOp && otherBinary.leastSigOp) {
-                if (!leastSigOp->Equals(*otherBinary.leastSigOp)) {
-                    return false;
-                }
-            }
-        } else {
-            return false;
-        }
-
-        return true;
-    }
-
-    [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final
-    {
-        return Generalize()->Simplify();
-    }
-
-    auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final
-    {
-        std::unique_ptr<Expression> normalized, simplified;
-
-        tf::Task normalizeTask = subflow.emplace([this, &normalized](tf::Subflow& sbf) {
-            normalized = Generalize(sbf);
-        });
-
-        tf::Task simplifyTask = subflow.emplace([&normalized, &simplified](tf::Subflow& sbf) {
-            simplified = normalized->Simplify(sbf);
-        });
-
-        simplifyTask.succeed(normalizeTask);
-        subflow.join();
-
-        return simplified;
-    }
-
-    [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool override
-    {
-        if (this->GetType() != other.GetType()) {
-            return false;
-        }
-
-        std::unique_ptr<Expression> otherGeneralized = other.Generalize();
-        const auto& otherBinary = static_cast<const BinaryExpressionBase&>(*otherGeneralized);
-
-        if ((mostSigOp == nullptr) == (otherBinary.mostSigOp == nullptr)) {
-            if (mostSigOp && otherBinary.mostSigOp) {
-                if (!mostSigOp->StructurallyEquivalent(*otherBinary.mostSigOp)) {
-                    return false;
-                }
-            }
-        }
-
-        if ((leastSigOp == nullptr) == (otherBinary.leastSigOp == nullptr)) {
-            if (leastSigOp && otherBinary.leastSigOp) {
-                if (!leastSigOp->StructurallyEquivalent(*otherBinary.leastSigOp)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool override
-    {
-        if (this->GetType() != other.GetType()) {
-            return false;
-        }
-
-        std::unique_ptr<Expression> otherGeneralized;
-
-        tf::Task generalizeTask = subflow.emplace([&](tf::Subflow& sbf) {
-            otherGeneralized = other.Generalize(sbf);
-        });
-
-        bool mostSigOpEquivalent = false, leastSigOpEquivalent = false;
-
-        if (this->mostSigOp) {
-            tf::Task compMostSigOp = subflow.emplace([this, &otherGeneralized, &mostSigOpEquivalent](tf::Subflow& sbf) {
-                const auto& otherBinary = dynamic_cast<const BinaryExpressionBase<Expression>&>(*otherGeneralized);
-                if (otherBinary.HasMostSigOp()) {
-                    mostSigOpEquivalent = mostSigOp->StructurallyEquivalent(otherBinary.GetMostSigOp(), sbf);
-                }
-            });
-
-            compMostSigOp.succeed(generalizeTask);
-        }
-
-        if (this->leastSigOp) {
-            tf::Task compLeastSigOp = subflow.emplace([this, &otherGeneralized, &leastSigOpEquivalent](tf::Subflow& sbf) {
-                const auto& otherBinary = dynamic_cast<const BinaryExpressionBase<Expression>&>(*otherGeneralized);
-                if (otherBinary.HasLeastSigOp()) {
-                    leastSigOpEquivalent = leastSigOp->StructurallyEquivalent(otherBinary.GetLeastSigOp(), sbf);
-                }
-            });
-
-            compLeastSigOp.succeed(generalizeTask);
-        }
-
-        subflow.join();
-
-        return mostSigOpEquivalent && leastSigOpEquivalent;
-    }
-
-    /**
-     * Adds an operand to this expression.
-     *
-     * If this expression already has two operands, this function returns false. If this expression
-     * does not have its most significant operance set, this function sets it. Otherwise, it sets the
-     * least significant operand if it is not already set.
-     * @tparam T The type of the operand to add.
-     * @param operand The operand to add.
-     * @return true if the operand was added, false otherwise.
-     */
-    template <IOperand<MostSigOpT, LeastSigOpT> T>
-    auto AddOperand(const std::unique_ptr<T>& operand) -> bool
-    {
-        if (mostSigOp && leastSigOp) {
-            return false;
-        }
-
-        assert(operand != nullptr);
-
-        if (mostSigOp == nullptr) {
-            mostSigOp = operand->Copy();
-            return true;
-        }
-
-        if (leastSigOp == nullptr) {
-            leastSigOp = operand->Copy();
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Sets the most significant operand of this expression.
-     * @param op The operand to set.
-     */
-    auto SetMostSigOp(const MostSigOpT& op) -> void
-    {
-        if constexpr (std::is_same_v<MostSigOpT, Expression>) {
-            mostSigOp = op.Copy();
-        } else {
-            mostSigOp = std::make_unique<MostSigOpT>(op);
-        }
-    }
-
-    /**
-     * Sets the least significant operand of this expression.
-     * @param op The operand to set.
-     */
-    auto SetLeastSigOp(const LeastSigOpT& op) -> void
-    {
-        if constexpr (std::is_same_v<LeastSigOpT, Expression>) {
-            leastSigOp = op.Copy();
-        } else {
-            leastSigOp = std::make_unique<LeastSigOpT>(op);
-        }
-    }
-
-    /**
-     * Gets whether this expression has a most significant operand.
-     * @return True if this expression has a most significant operand, false otherwise.
-     */
-    [[nodiscard]] auto HasMostSigOp() const -> bool
-    {
-        return mostSigOp != nullptr;
-    }
-
-    /**
-     * Gets whether this expression has a least significant operand.
-     * @return True if this expression has a least significant operand, false otherwise.
-     */
-    [[nodiscard]] auto HasLeastSigOp() const -> bool
-    {
-        return leastSigOp != nullptr;
-    }
-
-    /**
-     * Gets the most significant operand of this expression.
-     * @return The most significant operand of this expression.
-     */
-    auto GetMostSigOp() const -> const MostSigOpT&
-    {
-        assert(mostSigOp != nullptr);
-        return *mostSigOp;
-    }
-
-    /**
-     * Gets the least significant operand of this expression.
-     * @return The least significant operand of this expression.
-     */
-    auto GetLeastSigOp() const -> const LeastSigOpT&
-    {
-        assert(leastSigOp != nullptr);
-        return *leastSigOp;
-    }
-
-    /**
-     * Assignment operator.
-     * @param other The other expression to assign to this expression.
-     * @return This expression.
-     */
-    auto operator=(const BinaryExpressionBase<MostSigOpT, LeastSigOpT>& other) -> BinaryExpressionBase<MostSigOpT, LeastSigOpT>& = default;
-
-protected:
-    std::unique_ptr<MostSigOpT> mostSigOp;
-    std::unique_ptr<LeastSigOpT> leastSigOp;
-};
 
 /**
  * A binary expression.
@@ -339,21 +39,28 @@ protected:
  * @tparam LeastSigOpT The type of the least significant operand.
  */
 template <template <IExpression, IExpression> class DerivedT, IExpression MostSigOpT = Expression, IExpression LeastSigOpT = MostSigOpT>
-class BinaryExpression : public BinaryExpressionBase<MostSigOpT, LeastSigOpT> {
+class BinaryExpression : public Expression {
 
     using DerivedSpecialized = DerivedT<MostSigOpT, LeastSigOpT>;
     using DerivedGeneralized = DerivedT<Expression, Expression>;
 
 public:
     BinaryExpression() = default;
-    BinaryExpression(const BinaryExpression<DerivedT, MostSigOpT, LeastSigOpT>& other)
-        : BinaryExpressionBase<MostSigOpT, LeastSigOpT>(other)
+    BinaryExpression(const BinaryExpression& other)
     {
+        if (other.HasMostSigOp()) {
+            SetMostSigOp(other.GetMostSigOp());
+        }
+
+        if (other.HasLeastSigOp()) {
+            SetLeastSigOp(other.GetLeastSigOp());
+        }
     }
 
     BinaryExpression(const MostSigOpT& mostSigOp, const LeastSigOpT& leastSigOp)
-        : BinaryExpressionBase<MostSigOpT, LeastSigOpT>(mostSigOp, leastSigOp)
     {
+        SetMostSigOp(mostSigOp);
+        SetLeastSigOp(leastSigOp);
     }
 
     [[nodiscard]] auto Copy() const -> std::unique_ptr<Expression> final
@@ -385,26 +92,44 @@ public:
 
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final
     {
-        if (BinaryExpressionBase<MostSigOpT, LeastSigOpT>::Equals(other)) {
-            return true;
-        }
-
         if (this->GetType() != other.GetType()) {
             return false;
+        }
+
+        const auto otherGeneralized = other.Generalize();
+        const auto& otherBinaryGeneralized = static_cast<const DerivedGeneralized&>(*otherGeneralized);
+
+        bool mostSigOpMismatch = false, leastSigOpMismatch = false;
+
+        if (this->HasMostSigOp() == otherBinaryGeneralized.HasMostSigOp()) {
+            if (mostSigOp && otherBinaryGeneralized.HasMostSigOp()) {
+                mostSigOpMismatch = !mostSigOp->Equals(otherBinaryGeneralized.GetMostSigOp());
+            }
+        } else {
+            mostSigOpMismatch = true;
+        }
+
+        if (this->HasLeastSigOp() == otherBinaryGeneralized.HasLeastSigOp()) {
+            if (this->HasLeastSigOp() && otherBinaryGeneralized.HasLeastSigOp()) {
+                leastSigOpMismatch = !leastSigOp->Equals(otherBinaryGeneralized.GetLeastSigOp());
+            }
+        } else {
+            mostSigOpMismatch = true;
+        }
+
+        if (!mostSigOpMismatch && !leastSigOpMismatch) {
+            return true;
         }
 
         if (!(this->GetCategory() & Associative)) {
             return false;
         }
 
-        const auto otherGeneralized = other.Generalize();
-        const auto& otherBinary = static_cast<const DerivedGeneralized&>(*otherGeneralized);
-
         auto thisFlattened = std::vector<std::unique_ptr<Expression>> {};
         auto otherFlattened = std::vector<std::unique_ptr<Expression>> {};
 
         this->Flatten(thisFlattened);
-        otherBinary.Flatten(otherFlattened);
+        otherBinaryGeneralized.Flatten(otherFlattened);
 
         for (const auto& thisOperand : thisFlattened) {
             if (std::find_if(otherFlattened.begin(), otherFlattened.end(), [&thisOperand](const auto& otherOperand) {
@@ -454,13 +179,94 @@ public:
         return std::make_unique<DerivedGeneralized>(generalized);
     }
 
-    /**
-     * Swaps the operands of this expression.
-     * @return A new expression with the operands swapped.
-     */
-    auto SwapOperands() -> DerivedT<LeastSigOpT, MostSigOpT>
+    [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
     {
-        return DerivedT { *this->leastSigOp, *this->mostSigOp };
+        return Generalize()->Simplify();
+    }
+
+    auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> override
+    {
+        std::unique_ptr<Expression> generalized, simplified;
+
+        tf::Task generalizeTask = subflow.emplace([this, &generalized](tf::Subflow& sbf) {
+            generalized = Generalize(sbf);
+        });
+
+        tf::Task simplifyTask = subflow.emplace([&generalized, &simplified](tf::Subflow& sbf) {
+            simplified = generalized->Simplify(sbf);
+        });
+
+        simplifyTask.succeed(generalizeTask);
+        subflow.join();
+
+        return simplified;
+    }
+
+    [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool override
+    {
+        if (this->GetType() != other.GetType()) {
+            return false;
+        }
+
+        const std::unique_ptr<Expression> otherGeneralized = other.Generalize();
+        const auto& otherBinaryGeneralized = static_cast<const DerivedGeneralized&>(*otherGeneralized);
+
+        if (this->HasMostSigOp() == otherBinaryGeneralized.HasMostSigOp()) {
+            if (this->HasMostSigOp() && otherBinaryGeneralized.HasMostSigOp()) {
+                if (!mostSigOp->StructurallyEquivalent(otherBinaryGeneralized.GetMostSigOp())) {
+                    return false;
+                }
+            }
+        }
+
+        if (this->HasLeastSigOp() == otherBinaryGeneralized.HasLeastSigOp()) {
+            if (this->HasLeastSigOp() && otherBinaryGeneralized.HasLeastSigOp()) {
+                if (!leastSigOp->StructurallyEquivalent(otherBinaryGeneralized.GetLeastSigOp())) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool override
+    {
+        if (this->GetType() != other.GetType()) {
+            return false;
+        }
+
+        std::unique_ptr<Expression> otherGeneralized;
+
+        tf::Task generalizeTask = subflow.emplace([&](tf::Subflow& sbf) {
+            otherGeneralized = other.Generalize(sbf);
+        });
+
+        bool mostSigOpEquivalent = false, leastSigOpEquivalent = false;
+
+        if (this->mostSigOp) {
+            tf::Task compMostSigOp = subflow.emplace([this, &otherGeneralized, &mostSigOpEquivalent](tf::Subflow& sbf) {
+                if (const auto& otherBinary = static_cast<const DerivedGeneralized&>(*otherGeneralized); otherBinary.HasMostSigOp()) {
+                    mostSigOpEquivalent = mostSigOp->StructurallyEquivalent(otherBinary.GetMostSigOp(), sbf);
+                }
+            });
+
+            compMostSigOp.succeed(generalizeTask);
+        }
+
+        if (this->leastSigOp) {
+            tf::Task compLeastSigOp = subflow.emplace([this, &otherGeneralized, &leastSigOpEquivalent](tf::Subflow& sbf) {
+                if (const auto& otherBinary = static_cast<const DerivedGeneralized&>(*otherGeneralized); otherBinary.HasLeastSigOp()) {
+                    leastSigOpEquivalent = leastSigOp->StructurallyEquivalent(otherBinary.GetLeastSigOp(), sbf);
+                }
+            });
+
+            compLeastSigOp.succeed(generalizeTask);
+        }
+
+        subflow.join();
+
+        return mostSigOpEquivalent && leastSigOpEquivalent;
     }
 
     /**
@@ -493,117 +299,81 @@ public:
         }
     }
 
-    auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
-};
-
-/// @cond
-template <template <IExpression, IExpression> class DerivedT>
-class BinaryExpression<DerivedT, Expression, Expression> : public BinaryExpressionBase<Expression, Expression> {
-
-    using DerivedGeneralized = DerivedT<Expression, Expression>;
-
-public:
-    BinaryExpression() = default;
-    BinaryExpression(const BinaryExpression& other)
-        : BinaryExpressionBase<Expression, Expression>(other)
+    /**
+     * Gets the most significant operand of this expression.
+     * @return The most significant operand of this expression.
+     */
+    auto GetMostSigOp() const -> const MostSigOpT&
     {
+        assert(mostSigOp != nullptr);
+        return *mostSigOp;
     }
 
-    BinaryExpression(const Expression& mostSigOp, const Expression& leastSigOp)
-        : BinaryExpressionBase<Expression, Expression>(mostSigOp, leastSigOp)
+    /**
+     * Gets the least significant operand of this expression.
+     * @return The least significant operand of this expression.
+     */
+    auto GetLeastSigOp() const -> const LeastSigOpT&
     {
+        assert(leastSigOp != nullptr);
+        return *leastSigOp;
     }
 
-    [[nodiscard]] auto Copy() const -> std::unique_ptr<Expression> override
+    /**
+     * Gets whether this expression has a most significant operand.
+     * @return True if this expression has a most significant operand, false otherwise.
+     */
+    [[nodiscard]] auto HasMostSigOp() const -> bool
     {
-        return std::make_unique<DerivedGeneralized>(*static_cast<const DerivedGeneralized*>(this));
+        return mostSigOp != nullptr;
     }
 
-    auto Copy(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final
+    /**
+     * Gets whether this expression has a least significant operand.
+     * @return True if this expression has a least significant operand, false otherwise.
+     */
+    [[nodiscard]] auto HasLeastSigOp() const -> bool
     {
-        std::unique_ptr<DerivedGeneralized> copy = std::make_unique<DerivedGeneralized>();
-
-        // This is not actually parallelized.
-        if (mostSigOp) {
-            subflow.emplace([this, &copy](tf::Subflow&) {
-                copy->SetMostSigOp(*mostSigOp);
-            });
-        }
-
-        if (leastSigOp) {
-            subflow.emplace([&](tf::Subflow&) {
-                copy->SetLeastSigOp(*leastSigOp);
-            });
-        }
-
-        subflow.join();
-
-        return copy;
+        return leastSigOp != nullptr;
     }
 
-    [[nodiscard]] auto Generalize() const -> std::unique_ptr<Expression> final
+    auto SetMostSigOp(const MostSigOpT& op) -> void
     {
-        DerivedGeneralized generalized;
-
-        if (this->mostSigOp) {
-            generalized.SetMostSigOp(*this->mostSigOp->Copy());
-        }
-
-        if (this->leastSigOp) {
-            generalized.SetLeastSigOp(*this->leastSigOp->Copy());
-        }
-
-        return std::make_unique<DerivedGeneralized>(generalized);
-    }
-
-    auto Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final
-    {
-        DerivedGeneralized generalized;
-
-        if (this->mostSigOp) {
-            subflow.emplace([this, &generalized](tf::Subflow& sbf) {
-                generalized.SetMostSigOp(*this->mostSigOp->Copy(sbf));
-            });
-        }
-
-        if (this->leastSigOp) {
-            subflow.emplace([this, &generalized](tf::Subflow& sbf) {
-                generalized.SetLeastSigOp(*this->leastSigOp->Copy(sbf));
-            });
-        }
-
-        subflow.join();
-
-        return std::make_unique<DerivedGeneralized>(generalized);
-    }
-
-    auto SwapOperands() -> DerivedGeneralized
-    {
-        return DerivedGeneralized { *this->leastSigOp, *this->mostSigOp };
-    }
-
-    auto Flatten(std::vector<std::unique_ptr<Expression>>& out) const -> void
-    {
-        if (this->mostSigOp->template Is<DerivedT>()) {
-            auto generalizedMostSigOp = this->mostSigOp->Generalize();
-            const auto& mostSigOp = static_cast<const DerivedGeneralized&>(*generalizedMostSigOp);
-            mostSigOp.Flatten(out);
+        if constexpr (std::same_as<MostSigOpT, Expression>) {
+            this->mostSigOp = op.Copy();
         } else {
-            out.push_back(this->mostSigOp->Copy());
+            this->mostSigOp = std::make_unique<MostSigOpT>(op);
         }
+    }
 
-        if (this->leastSigOp->template Is<DerivedT>()) {
-            auto generalizedLeastSigOp = this->leastSigOp->Generalize();
-            const auto& leastSigOp = static_cast<const DerivedGeneralized&>(*generalizedLeastSigOp);
-            leastSigOp.Flatten(out);
+    /**
+     * Sets the least significant operand of this expression.
+     * @param op The operand to set.
+     */
+    auto SetLeastSigOp(const LeastSigOpT& op) -> void
+    {
+        if constexpr (std::same_as<LeastSigOpT, Expression>) {
+            this->leastSigOp = op.Copy();
         } else {
-            out.push_back(this->leastSigOp->Copy());
+            this->leastSigOp = std::make_unique<LeastSigOpT>(op);
         }
+    }
+
+    /**
+     * Swaps the operands of this expression.
+     * @return A new expression with the operands swapped.
+     */
+    auto SwapOperands() -> DerivedT<LeastSigOpT, MostSigOpT>
+    {
+        return DerivedT { *this->leastSigOp, *this->mostSigOp };
     }
 
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
+
+protected:
+    std::unique_ptr<MostSigOpT> mostSigOp;
+    std::unique_ptr<LeastSigOpT> leastSigOp;
 };
-/// @endcond
 
 /**
  * Builds a reasonably balanced binary expression from a vector of operands.
@@ -619,12 +389,13 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
 
     if (ops.size() == 1) {
         return ops.front()->Copy();
-    } else if (ops.size() == 2) {
+    }
+    if (ops.size() == 2) {
         return std::make_unique<GeneralizedT>(*ops[0], *ops[1]);
     }
 
     std::vector<std::unique_ptr<Expression>> reducedOps;
-    reducedOps.reserve((ops.size() / 2) + 1);
+    reducedOps.reserve(ops.size() / 2 + 1);
 
     for (unsigned int i = 0; i < ops.size(); i += 2) {
         if (i + 1 >= ops.size()) {
