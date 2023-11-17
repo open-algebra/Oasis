@@ -486,7 +486,7 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
         }                                                                                                                \
                                                                                                                          \
         if (otherBinaryExpression.HasLeastSigOp()) {                                                                     \
-            specialized->SetLeastSigOp(SecondOp::Specialize(otherBinaryExpression.GetLeastSigOp()));                      \
+            specialized->SetLeastSigOp(SecondOp::Specialize(otherBinaryExpression.GetLeastSigOp()));                     \
             rightOperandSpecialized = specialized->HasLeastSigOp();                                                      \
         }                                                                                                                \
                                                                                                                          \
@@ -509,7 +509,7 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
         }                                                                                                                \
                                                                                                                          \
         if (otherWithSwappedOps.HasLeastSigOp()) {                                                                       \
-            specialized->SetLeastSigOp(SecondOp::Specialize(otherWithSwappedOps.GetLeastSigOp()));                        \
+            specialized->SetLeastSigOp(SecondOp::Specialize(otherWithSwappedOps.GetLeastSigOp()));                       \
             rightOperandSpecialized = specialized->HasLeastSigOp();                                                      \
         }                                                                                                                \
                                                                                                                          \
