@@ -5,6 +5,8 @@
 #ifndef OASIS_BINARYEXPRESSION_HPP
 #define OASIS_BINARYEXPRESSION_HPP
 
+#include <list>
+
 #include "taskflow/taskflow.hpp"
 
 #include "Expression.hpp"
@@ -444,26 +446,20 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
 {
     using GeneralizedT = T<Expression, Expression>;
 
-    if (ops.size() == 1) {
-        return ops.front()->Copy();
-    }
-    if (ops.size() == 2) {
-        return std::make_unique<GeneralizedT>(*ops[0], *ops[1]);
-    }
+    std::list<std::unique_ptr<Expression>> opsList;
+    opsList.resize(ops.size());
 
-    std::vector<std::unique_ptr<Expression>> reducedOps;
-    reducedOps.reserve(ops.size() / 2 + 1);
+    std::transform(ops.begin(), ops.end(), opsList.begin(), [](const auto& op) { return op->Copy(); });
 
-    for (unsigned int i = 0; i < ops.size(); i += 2) {
-        if (i + 1 >= ops.size()) {
-            reducedOps.push_back(ops[i]->Copy());
-            break;
+    while (std::next(opsList.begin()) != opsList.end()) {
+        for (auto i = opsList.begin(); i != opsList.end() && std::next(i) != opsList.end();) {
+            auto node = std::make_unique<GeneralizedT>(**i, **std::next(i));
+            opsList.insert(i, std::move(node));
+            i = opsList.erase(i, std::next(i, 2));
         }
-
-        reducedOps.push_back(std::make_unique<GeneralizedT>(*ops[i], *ops[i + 1]));
     }
 
-    return BuildFromVector<T>(reducedOps);
+    return std::move(opsList.front());
 }
 
 #define IMPL_SPECIALIZE(Derived, FirstOp, SecondOp)                                                                      \
