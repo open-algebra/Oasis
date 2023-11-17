@@ -10,7 +10,6 @@
 #include "Expression.hpp"
 
 namespace Oasis {
-
 /**
  * A concept for an operand of a binary expression.
  * @tparam MostSigOpT The type of the most significant operand.
@@ -22,6 +21,9 @@ concept IOperand = std::is_same_v<T, MostSigOpT> || std::is_same_v<T, LeastSigOp
 
 template <template <typename, typename> typename T>
 concept IAssociativeAndCommutative = IExpression<T<Expression, Expression>> && requires { (T<Expression, Expression>::GetStaticCategory() & (Associative | Commutative)) != 0; };
+
+template <typename T, typename... U>
+concept IsAnyOf = (std::same_as<T, U> || ...);
 
 /**
  * A binary expression.
@@ -72,16 +74,15 @@ public:
     {
         DerivedSpecialized copy;
 
-        // This is not actually parallelized.
         if (this->mostSigOp) {
-            subflow.emplace([this, &copy](tf::Subflow&) {
-                copy.SetMostSigOp(*this->mostSigOp);
+            subflow.emplace([this, &copy](tf::Subflow& sbf) {
+                copy.SetMostSigOp(mostSigOp->Copy(sbf), sbf);
             });
         }
 
         if (this->leastSigOp) {
-            subflow.emplace([this, &copy](tf::Subflow&) {
-                copy.SetLeastSigOp(*this->leastSigOp);
+            subflow.emplace([this, &copy](tf::Subflow& sbf) {
+                copy.SetLeastSigOp(leastSigOp->Copy(sbf), sbf);
             });
         }
 
@@ -337,6 +338,10 @@ public:
         return leastSigOp != nullptr;
     }
 
+    /**
+     * \brief Sets the most significant operand of this expression.
+     * \param op The operand to set.
+     */
     auto SetMostSigOp(const MostSigOpT& op) -> void
     {
         if constexpr (std::same_as<MostSigOpT, Expression>) {
@@ -359,11 +364,63 @@ public:
         }
     }
 
+    template <typename T>
+        requires IsAnyOf<T, MostSigOpT, Expression>
+    auto SetMostSigOp(std::unique_ptr<T>&& op) -> void
+    {
+        if constexpr (std::same_as<T, Expression>) {
+            auto specializedOp = MostSigOpT::Specialize(*op);
+            assert(specializedOp);
+            this->mostSigOp = std::move(specializedOp);
+        } else {
+            this->mostSigOp = std::move(op);
+        }
+    }
+
+    template <typename T>
+        requires IsAnyOf<T, LeastSigOpT, Expression>
+    auto SetLeastSigOp(std::unique_ptr<T>&& op) -> void
+    {
+        if constexpr (std::same_as<T, Expression>) {
+            auto specializedOp = LeastSigOpT::Specialize(*op);
+            assert(specializedOp);
+            this->leastSigOp = std::move(specializedOp);
+        } else {
+            this->leastSigOp = std::move(op);
+        }
+    }
+
+    template <typename T>
+        requires IsAnyOf<T, MostSigOpT, Expression>
+    auto SetMostSigOp(std::unique_ptr<T>&& op, tf::Subflow& subflow) -> void
+    {
+        if constexpr (std::same_as<T, Expression>) {
+            auto specializedOp = MostSigOpT::Specialize(*op, subflow);
+            assert(specializedOp);
+            this->mostSigOp = std::move(specializedOp);
+        } else {
+            this->mostSigOp = std::move(op);
+        }
+    }
+
+    template <typename T>
+        requires IsAnyOf<T, LeastSigOpT, Expression>
+    auto SetLeastSigOp(std::unique_ptr<T>&& op, tf::Subflow& subflow) -> void
+    {
+        if constexpr (std::same_as<T, Expression>) {
+            auto specializedOp = LeastSigOpT::Specialize(*op, subflow);
+            assert(specializedOp);
+            this->leastSigOp = std::move(specializedOp);
+        } else {
+            this->leastSigOp = std::move(op);
+        }
+    }
+
     /**
      * Swaps the operands of this expression.
      * @return A new expression with the operands swapped.
      */
-    auto SwapOperands() -> DerivedT<LeastSigOpT, MostSigOpT>
+    auto SwapOperands() const -> DerivedT<LeastSigOpT, MostSigOpT>
     {
         return DerivedT { *this->leastSigOp, *this->mostSigOp };
     }
@@ -416,46 +473,51 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
             return nullptr;                                                                                              \
         }                                                                                                                \
                                                                                                                          \
-        Derived<FirstOp, SecondOp> specialized;                                                                          \
+        auto specialized = std::make_unique<Derived<FirstOp, SecondOp>>();                                               \
                                                                                                                          \
         std::unique_ptr<Expression> otherGeneralized = other.Generalize();                                               \
-        const auto& otherBinaryExpression = dynamic_cast<const Derived<Expression>&>(*otherGeneralized);                 \
+        const auto& otherBinaryExpression = static_cast<const Derived<Expression>&>(*otherGeneralized);                  \
                                                                                                                          \
-        bool swappedOperands = false;                                                                                    \
+        bool leftOperandSpecialized = true, rightOperandSpecialized = true;                                              \
                                                                                                                          \
         if (otherBinaryExpression.HasMostSigOp()) {                                                                      \
-            auto specializedMostSigOp = FirstOp::Specialize(otherBinaryExpression.GetMostSigOp());                       \
-            if (!specializedMostSigOp) {                                                                                 \
-                if (!(Derived::GetStaticCategory() & Commutative)) {                                                     \
-                    return nullptr;                                                                                      \
-                }                                                                                                        \
-                specializedMostSigOp = FirstOp::Specialize(otherBinaryExpression.GetLeastSigOp());                       \
-                if (specializedMostSigOp) {                                                                              \
-                    swappedOperands = true;                                                                              \
-                } else {                                                                                                 \
-                    return nullptr;                                                                                      \
-                }                                                                                                        \
-            }                                                                                                            \
-            specialized.SetMostSigOp(*specializedMostSigOp);                                                             \
+            specialized->SetMostSigOp(FirstOp::Specialize(otherBinaryExpression.GetMostSigOp()));                        \
+            leftOperandSpecialized = specialized->HasMostSigOp();                                                        \
         }                                                                                                                \
                                                                                                                          \
         if (otherBinaryExpression.HasLeastSigOp()) {                                                                     \
-            if (swappedOperands && otherBinaryExpression.HasMostSigOp()) {                                               \
-                auto specializedLeastSigOp = SecondOp::Specialize(otherBinaryExpression.GetMostSigOp());                 \
-                if (!specializedLeastSigOp) {                                                                            \
-                    return nullptr;                                                                                      \
-                }                                                                                                        \
-                specialized.SetLeastSigOp(*specializedLeastSigOp);                                                       \
-            } else {                                                                                                     \
-                auto specializedLeastSigOp = SecondOp::Specialize(otherBinaryExpression.GetLeastSigOp());                \
-                if (!specializedLeastSigOp) {                                                                            \
-                    return nullptr;                                                                                      \
-                }                                                                                                        \
-                specialized.SetLeastSigOp(*specializedLeastSigOp);                                                       \
-            }                                                                                                            \
+            specialized->SetLeastSigOp(SecondOp::Specialize(otherBinaryExpression.GetLeastSigOp()));                      \
+            rightOperandSpecialized = specialized->HasLeastSigOp();                                                      \
         }                                                                                                                \
                                                                                                                          \
-        return std::make_unique<Derived<FirstOp, SecondOp>>(specialized);                                                \
+        if (leftOperandSpecialized && rightOperandSpecialized) {                                                         \
+            return specialized;                                                                                          \
+        }                                                                                                                \
+                                                                                                                         \
+        if (!(other.GetCategory() & Commutative)) {                                                                      \
+            return nullptr;                                                                                              \
+        }                                                                                                                \
+                                                                                                                         \
+        leftOperandSpecialized = true, rightOperandSpecialized = true;                                                   \
+        specialized = std::make_unique<Derived<FirstOp, SecondOp>>();                                                    \
+                                                                                                                         \
+        auto otherWithSwappedOps                                                                                         \
+            = otherBinaryExpression.SwapOperands();                                                                      \
+        if (otherWithSwappedOps.HasMostSigOp()) {                                                                        \
+            specialized->SetMostSigOp(FirstOp::Specialize(otherWithSwappedOps.GetMostSigOp()));                          \
+            leftOperandSpecialized = specialized->HasMostSigOp();                                                        \
+        }                                                                                                                \
+                                                                                                                         \
+        if (otherWithSwappedOps.HasLeastSigOp()) {                                                                       \
+            specialized->SetLeastSigOp(SecondOp::Specialize(otherWithSwappedOps.GetLeastSigOp()));                        \
+            rightOperandSpecialized = specialized->HasLeastSigOp();                                                      \
+        }                                                                                                                \
+                                                                                                                         \
+        if (leftOperandSpecialized && rightOperandSpecialized) {                                                         \
+            return specialized;                                                                                          \
+        }                                                                                                                \
+                                                                                                                         \
+        return nullptr;                                                                                                  \
     }                                                                                                                    \
                                                                                                                          \
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Derived<FirstOp, SecondOp>> \
