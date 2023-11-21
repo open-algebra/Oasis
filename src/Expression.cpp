@@ -89,108 +89,70 @@ auto CheckIfInsertShouldGoAboveOrBelow(Oasis::ExpressionType op, const Oasis::Ex
     return true;
 }
 
-void MakeBinaryExpression(ExpressionType op, std::unique_ptr<Expression>& self, const Expression& exp)
+
+auto MakeBinaryExpression(Oasis::ExpressionType op, const Expression& expression1, const Expression& expression2)
 {
-    switch(op)
+    std::unique_ptr<Expression> result;
+
+    switch (op)
     {
-        case ExpressionType::Add:
-            self = std::make_unique<Add<Expression>>(*self, exp);
-            break;
-        case ExpressionType::Subtract:
-            self = std::make_unique<Subtract<Expression>>(*self, exp);
-            break;
-        case ExpressionType::Multiply:
-            self = std::make_unique<Multiply<Expression>>(*self, exp);
-            break;
-        case ExpressionType::Divide:
-            self = std::make_unique<Divide<Expression>>(*self, exp);
-            break;
-        case ExpressionType::Log:
-            self = std::make_unique<Log<Expression>>(*self, exp);
-            break;
-        case ExpressionType::Exponent:
-            self = std::make_unique<Exponent<Expression>>(*self, exp);
-            break;
-        default:
-            throw std::logic_error("ERROR op value not valid");
+    case ExpressionType::Add:
+        result = Oasis::Add(expression1, expression2).Generalize();
+        break;
+    case ExpressionType::Subtract:
+        result = Oasis::Subtract(expression1, expression2).Generalize();
+        break;
+    case ExpressionType::Multiply:
+        result = Oasis::Multiply(expression1, expression2).Generalize();
+        break;
+    case ExpressionType::Divide:
+        result = Oasis::Divide(expression1, expression2).Generalize();
+        break;
+    case ExpressionType::Log:
+        result = Oasis::Log(expression1, expression2).Generalize();
+        break;
+    case ExpressionType::Exponent:
+        result = Oasis::Exponent(expression1, expression2).Generalize();
+        break;
+    default:
+        throw std::logic_error("ERROR: ExpressionType not valid");
     }
+    return result;
 }
 
 
-auto Expression::Insert(Oasis::ExpressionType op, const Oasis::Expression& exp)
+auto Expression::Insert(Oasis::ExpressionType op, const Oasis::Expression& expression2)
 {
-    if(CheckIfInsertShouldGoAboveOrBelow(op, *this)) {
-            auto temp = this->Generalize();
-            MakeBinaryExpression(op, temp, exp);
-            //this = dynamic_cast<Expression*>(temp);   
-    }
-    std::unique_ptr<Expression> insert_node;
-    //std::unique_ptr<BinaryExpression> parent;
-//    if(this->GetType() == ExpressionType::Add)
+    //if(CheckIfInsertShouldGoAboveOrBelow(op, *this)) {}
+
+    auto self = this->Generalize();
+    return MakeBinaryExpression(op, *self, expression2);
+
+    //auto insert_node = this->Generalize();
+
+//    while(true)
 //    {
-//            insert_node = this->Specialize(Add<Expression>());
-//            parent = this->Specialize(Add<Expression>());
-//    }
-//    else
-//    {
-//            insert_node = this->Specialize(Multiply<Expression>());
-//            parent = this->Specialize(Multiply<Expression>());
-//    }
-
-    while(true)
-    {
-            if (insert_node->GetType() != ExpressionType::Add and insert_node->GetType() != ExpressionType::Multiply) //Possibly a check that can be a function
-            {
-//                if (parent->insertDirection)
-//                {
-                    MakeBinaryExpression(op, *insert_node, exp);
-                    break;
-//                }
-//                else
-//                {
-//                    MakeBinaryExpression(op, *exp, insert_node);
-//                    break;
-//                }
-
-            }
-
-            insert_node = this->Specialize(BinaryExpression);
-            insert_node->insertDirection = not(insert_node->insertDirection);
-            if (not(insert_node->insertDirection))
-            {
-                    insert_node = insert_node.GetLeastSigOp();
-//                    if(insert_node->GetType() != ExpressionType::Add)
-//                    {
-//                        auto addNode = dynamic_cast<Add<Expression>*>(insert_node.get());
-//                        insert_node = addNode->GetMostSigOp();
-//                    }
-//                    else
-//                    {
-//                        auto mulNode = dynamic_cast<Multiply<Expression>*>(insert_node.get());
-//                        insert_node = mulNode->GetMostSigOp();
-//                    }
-//            }
-//            else
+//            if (insert_node->GetType() != ExpressionType::Add and insert_node->GetType() != ExpressionType::Multiply) //Possibly a check that can be a function
 //            {
-//                    if(insert_node->GetType() != ExpressionType::Add)
-//                    {
-//                        auto addNode = dynamic_cast<Add<Expression>*>(insert_node.get());
-//                        insert_node = addNode->GetLeastSigOp();
-//                    }
-//                    else
-//                    {
-//                        auto mulNode = dynamic_cast<Multiply<Expression>*>(insert_node.get());
-//                        insert_node = mulNode->GetLeastSigOp();
-//                    }
-            }
-            else {
-                    insert_node = insert_node.GetMostSigOp();
-            }
-
-            //parent = insert_node;
-            //parent->insertDirection = not(parent->insertDirection);
-
-    }
+//                    return MakeBinaryExpression(op, *insert_node, expression2);
+//                    break;
+//            }
+//
+//            insert_node = this->Specialize(insert_node);
+//            insert_node->insertDirection = not(insert_node->insertDirection);
+//            if (not(insert_node->insertDirection))
+//            {
+//                    insert_node = insert_node.GetLeastSigOp();
+//
+//            }
+//            else {
+//                    insert_node = insert_node.GetMostSigOp();
+//            }
+//
+//            //parent = insert_node;
+//            //parent->insertDirection = not(parent->insertDirection);
+//
+//    }
 
 }
 // RECENTLY ADDED
