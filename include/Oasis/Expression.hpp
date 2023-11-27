@@ -84,6 +84,12 @@ public:
 
     /**
      * Compares this expression to another expression for equality.
+     *
+     * Two expressions are equal if they are structurally equivalent and have the same value.
+     * While this method considers the associativity and commutativity of expressions, it does not
+     * simplify the expressions before comparing them. For example, `Add<Real>(Real(1), Real(2))`
+     * and `Add<Real>(Real(2), Real(1))` are not equal, despite being structurally equivalent.
+     *
      * @param other The other expression.
      * @return Whether the two expressions are equal.
      */

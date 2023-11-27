@@ -32,6 +32,8 @@ jobs:
             # Checks out the repository.
           - name: Checkout repository
             uses: actions/checkout@v4
+            with:
+                submodules: recursive
 
             # Installs Doxygen on the runner.
           - name: Install Doxygen
