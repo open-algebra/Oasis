@@ -32,7 +32,7 @@ jobs:
           - name: Save PR number
             run: |
                 mkdir -p ${{ steps.strings.outputs.pr-dir }}
-                echo "${{ github.event.number }}" > ${{ steps.strings.outputs.pr-dir }}/number.txt
+                echo "${{ github.event.number }}" > ${{ steps.strings.outputs.pr-dir }}/issue_number
 
             # Installs LLVM 17 on the runner.
           - name: Install LLVM 17
