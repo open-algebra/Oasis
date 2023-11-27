@@ -10,11 +10,6 @@ on:
     pull_request:
         branches: [ "master" ]
 
-permissions:
-    contents: read
-    issues: write
-    pull-requests: write
-
 jobs:
     collect-coverage:
         runs-on: ubuntu-latest
@@ -31,6 +26,13 @@ jobs:
             run: |
                 echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
                 echo "coverage-dir=${{ github.workspace }}/coverage" >> "$GITHUB_OUTPUT"
+                echo "pr-dir=${{ github.workspace }}/pr" >> "$GITHUB_OUTPUT"
+
+            # Saves the PR number to use in writing a comment on the PR.
+          - name: Save PR number
+            run: |
+                mkdir -p ${{ steps.strings.outputs.pr-dir }}
+                echo "${{ github.event.number }}" > ${{ steps.strings.outputs.pr-dir }}/number.txt
 
             # Installs LLVM 17 on the runner.
           - name: Install LLVM 17
@@ -75,30 +77,13 @@ jobs:
 
             # Creates reports from the coverage data.
           - name: Report Coverage
-            id: reports
             working-directory: ${{ steps.strings.outputs.coverage-dir }}
             shell: bash
             run: |
                 llvm-profdata-17 merge -sparse oasis.profraw -o oasis.profdata
                 llvm-cov-17 show -output-dir reports -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ${{ github.workspace }}/src ${{ github.workspace }}/include
-                ML_EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-                echo "report-file<<$ML_EOF" >> "$GITHUB_OUTPUT"
-                echo "$(cat reports/index.txt)" >> "$GITHUB_OUTPUT"
-                echo "$ML_EOF" >> "$GITHUB_OUTPUT"
 
-            # Writes a comment on the pull request.
-          - name: Write Comment
-            uses: actions/github-script@v6
-            with:
-                script: |
-                    github.rest.issues.createComment({
-                        issue_number: context.issue.number,
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        body: 'Hello World'
-                    })
-            #```${{ steps.reports.outputs.report-file }}```
-            # Uploads the build, test, and coverage artifacts.
+            # Uploads the build, test, and code coverage artifacts.
           - name: Upload artifacts
             uses: actions/upload-artifact@v3
             with:
@@ -107,3 +92,9 @@ jobs:
                     ${{ steps.strings.outputs.build-dir }}
                     !${{ steps.strings.outputs.build-dir }}/_deps
                     ${{ steps.strings.outputs.coverage-dir }}
+
+          - name: Upload PR number
+            uses: actions/upload-artifact@v3
+            with:
+                name: pr-number
+                path: ${{ steps.strings.outputs.pr-dir }}
