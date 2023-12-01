@@ -1,7 +1,6 @@
 //
 // Created by Matthew McCall on 7/2/23.
 //
-#include <unordered_map>
 
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
@@ -85,30 +84,157 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    std::map<std::unique_ptr<Expression>, unsigned> terms;
+    if (auto exprCase = Add<Expression>::Specialize(simplifiedAdd); exprCase != nullptr) {
+        if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp())) {
+            return std::make_unique<Multiply<Expression>>(Real { 2.0 }, exprCase->GetMostSigOp());
+        }
+    }
 
-    std::vector<std::unique_ptr<Expression>> simplifiedTerms;
-    this->Flatten(simplifiedTerms);
+    if (auto exprCase = Add<Expression, Multiply<Expression>>::Specialize(simplifiedAdd); exprCase != nullptr) {
+        if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetLeastSigOp())) {
+            return std::make_unique<Multiply<Expression>>(*(Add<Expression> { Real { 1.0 }, exprCase->GetLeastSigOp().GetMostSigOp() }.Simplify()), exprCase->GetMostSigOp());
+        }
+    }
 
-    //    for (const auto& term: simplifiedTerms) {
-    //        if (auto multiply = Multiply<Real, Expression>::Specialize(*term); multiply != nullptr) {
-    //            auto leastSigOp = multiply->GetLeastSigOp().Copy();
-    //            if (terms.find(leastSigOp) == terms.end()) {
-    //                terms[leastSigOp] = 0;
-    //            }
-    //
-    //            terms[leastSigOp] += static_cast<int>(multiply->GetMostSigOp().GetValue());
-    //        } else {
-    //            if (terms.find(term) == terms.end()) {
-    //                terms[term] = 0;
-    //            }
-    //
-    //            terms[term] += 1;
-    //        }
-    //
-    //    }
+    if (auto exprCase = Add<Multiply<Expression>, Multiply<Expression>>::Specialize(simplifiedAdd); exprCase != nullptr) {
+        if (exprCase->GetMostSigOp().GetLeastSigOp().Equals(exprCase->GetLeastSigOp().GetLeastSigOp())) {
+            return std::make_unique<Multiply<Expression>>(*(Add<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetMostSigOp() }.Simplify()), exprCase->GetMostSigOp());
+        }
+    }
 
-    return simplifiedAdd.Copy();
+    // simplifies expressions and combines like terms
+    // ex: 1 + 2x + 3 + 5x = 4 + 7x (or 7x + 4)
+    std::vector<std::unique_ptr<Expression>> adds;
+    std::vector<std::unique_ptr<Expression>> vals;
+    simplifiedAdd.Flatten(adds);
+    for (const auto& addend : adds) {
+        // real
+        size_t i = 0;
+        if (auto real = Real::Specialize(*addend); real != nullptr) {
+            for (; i < vals.size(); i++) {
+                if (auto valI = Real::Specialize(*vals[i]); valI != nullptr) {
+                    vals[i] = Real { valI->GetValue() + real->GetValue() }.Generalize();
+                    break;
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                vals.push_back(addend->Generalize());
+            }
+            continue;
+        }
+        // single i
+        if (auto img = Imaginary::Specialize(*addend); img != nullptr) {
+            for (; i < vals.size(); i++) {
+                if (auto valI = Multiply<Expression, Imaginary>::Specialize(*vals[i]); valI != nullptr) {
+                    vals[i] = Multiply<Expression> { *(Add<Expression> { valI->GetMostSigOp(), Real { 1.0 } }.Simplify()), Imaginary {} }.Generalize();
+                    break;
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                vals.push_back(Multiply<Expression> { Real { 1.0 }, Imaginary {} }.Generalize());
+            }
+            continue;
+        }
+        // n*i
+        if (auto img = Multiply<Expression, Imaginary>::Specialize(*addend); img != nullptr) {
+            for (; i < vals.size(); i++) {
+                if (auto valI = Multiply<Expression, Imaginary>::Specialize(*vals[i]); valI != nullptr) {
+                    vals[i] = Multiply<Expression> { *(Add<Expression> { valI->GetMostSigOp(), img->GetMostSigOp() }.Simplify()), Imaginary {} }.Generalize();
+                    break;
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                // vals.push_back(Multiply<Expression> { img->GetMostSigOp(), Imaginary {} }.Generalize());
+                vals.push_back(img->Generalize());
+            }
+            continue;
+        }
+        // single variable
+        if (auto var = Variable::Specialize(*addend); var != nullptr) {
+            for (; i < vals.size(); i++) {
+                if (auto valI = Multiply<Expression, Variable>::Specialize(*vals[i]); valI != nullptr) {
+                    if (valI->GetLeastSigOp().GetName() == var->GetName()) {
+                        vals[i] = Multiply<Expression> { *(Add<Expression> { valI->GetMostSigOp(), Real { 1.0 } }.Simplify()), *var }.Generalize();
+                        break;
+                    } else
+                        continue;
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                vals.push_back(Multiply<Expression> { Real { 1.0 }, *var }.Generalize());
+            }
+            continue;
+        }
+        // n*variable
+        if (auto var = Multiply<Expression, Variable>::Specialize(*addend); var != nullptr) {
+            for (; i < vals.size(); i++) {
+                if (auto valI = Multiply<Expression, Variable>::Specialize(*vals[i]); valI != nullptr) {
+                    if (valI->GetLeastSigOp().GetName() == var->GetLeastSigOp().GetName()) {
+                        vals[i] = Multiply<Expression> { *(Add<Expression> { valI->GetMostSigOp(), var->GetMostSigOp() }.Simplify()), valI->GetLeastSigOp() }.Generalize();
+                        break;
+                    } else
+                        continue;
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                // vals.push_back(Multiply<Expression> { var->GetMostSigOp(), var->GetLeastSigOp() }.Generalize());
+                vals.push_back(var->Generalize());
+            }
+            continue;
+        }
+        // single exponent
+        if (auto exp = Exponent<Expression>::Specialize(*addend); exp != nullptr) {
+            for (; i < vals.size(); i++) {
+                if (auto valI = Multiply<Expression, Exponent<Expression>>::Specialize(*vals[i]); valI != nullptr) {
+                    if (valI->GetLeastSigOp().Equals(*exp)) {
+                        vals[i] = Multiply<Expression> { *(Add<Expression> { valI->GetMostSigOp(), Real { 1.0 } }.Simplify()), *exp }.Generalize();
+                        break;
+                    } else
+                        continue;
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                vals.push_back(Multiply<Expression> { Real { 1.0 }, *exp }.Generalize());
+            }
+            continue;
+        }
+        // n*exponent
+        if (auto exp = Multiply<Expression, Exponent<Expression>>::Specialize(*addend); exp != nullptr) {
+            for (; i < vals.size(); i++) {
+                if (auto valI = Multiply<Expression, Exponent<Expression>>::Specialize(*vals[i]); valI != nullptr) {
+                    if (valI->GetLeastSigOp().Equals(exp->GetLeastSigOp())) {
+                        vals[i] = Multiply<Expression> { *(Add<Expression> { valI->GetMostSigOp(), exp->GetMostSigOp() }.Simplify()), valI->GetLeastSigOp() }.Generalize();
+                        break;
+                    } else
+                        continue;
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                // vals.push_back(Multiply<Expression> { var->GetMostSigOp(), var->GetLeastSigOp() }.Generalize());
+                vals.push_back(exp->Generalize());
+            }
+            continue;
+        }
+    }
+    // rebuild equation after simplification.
+    for (auto& val : vals) {
+        if (auto expr = Multiply<Real, Expression>::Specialize(*val); expr != nullptr) {
+            if (expr->GetMostSigOp().GetValue() == 1.0) {
+                val = expr->GetLeastSigOp().Generalize();
+            }
+        }
+    }
+
+    return BuildFromVector<Add>(vals);
+
+    // return simplifiedAdd.Copy();
 }
 
 auto Add<Expression>::ToString() const -> std::string

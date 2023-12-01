@@ -8,6 +8,7 @@
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 
 TEST_CASE("Addition", "[Add]")
@@ -183,4 +184,88 @@ TEST_CASE("Imaginary Addition", "[Imaginary][Add]")
     auto spec1 = a1.Simplify();
 
     REQUIRE(Oasis::Multiply { Oasis::Real { 2.0 }, Oasis::Imaginary {} }.Equals(*spec1));
+}
+
+TEST_CASE("Addition Associativity", "[Add][Associative]")
+{
+    Oasis::Add assoc1 {
+        Oasis::Real { 2.0 },
+        Oasis::Add {
+            Oasis::Variable { "x" },
+            Oasis::Add {
+                Oasis::Add {
+                    Oasis::Real { 3.0 },
+                    Oasis::Variable { "x" } },
+                Oasis::Multiply {
+                    Oasis::Real { 4.0 },
+                    Oasis::Variable { "x" } } } }
+    };
+
+    auto simplified1 = assoc1.Simplify();
+
+    REQUIRE(Oasis::Add {
+        Oasis::Real { 5.0 },
+        Oasis::Multiply {
+            Oasis::Real { 6.0 },
+            Oasis::Variable { "x" } } }
+                .Equals(*simplified1));
+
+    Oasis::Add assoc2 {
+        Oasis::Multiply {
+            Oasis::Real { 2.0 },
+            Oasis::Exponent {
+                Oasis::Variable { "x" },
+                Oasis::Real { 2.0 } } },
+        Oasis::Add {
+            Oasis::Exponent {
+                Oasis::Variable { "x" },
+                Oasis::Real { 2.0 } },
+            Oasis::Add {
+                Oasis::Add {
+                    Oasis::Real { 3.0 },
+                    Oasis::Variable { "x" } },
+                Oasis::Multiply {
+                    Oasis::Real { 4.0 },
+                    Oasis::Variable { "x" } } } }
+    };
+
+    auto simplified2 = assoc2.Simplify();
+
+    REQUIRE(Oasis::Add {
+        Oasis::Add {
+
+            Oasis::Multiply {
+                Oasis::Real { 3.0 },
+                Oasis::Exponent {
+                    Oasis::Variable { "x" },
+                    Oasis::Real { 2.0 } } },
+            Oasis::Real { 3.0 },
+        },
+        Oasis::Multiply {
+            Oasis::Real { 5.0 },
+            Oasis::Variable { "x" } } }
+                .Equals(*simplified2));
+}
+
+TEST_CASE("Expression Addition", "[Add][Expression]")
+{
+    Oasis::Add eq {
+        Oasis::Add {
+            Oasis::Variable { "x" },
+            Oasis::Variable { "y" } },
+        Oasis::Multiply {
+            Oasis::Real { 5.0 },
+            Oasis::Add {
+                Oasis::Variable { "x" },
+                Oasis::Variable { "y" } } }
+    };
+
+    auto simplified1 = eq.Simplify();
+
+    REQUIRE(Oasis::Multiply {
+        Oasis::Real { 6.0 },
+        Oasis::Add {
+            Oasis::Variable { "x" },
+            Oasis::Variable { "y" } } }
+                .Equals(*simplified1));
 }
