@@ -26,7 +26,7 @@ jobs:
 
         steps:
             # Downloads the artifacts uploaded by the pull request workflow run.
-          - name: Download artifact
+          - name: Download artifacts
             uses: actions/github-script@v6
             with:
                 script: |
@@ -57,12 +57,12 @@ jobs:
                     });
 
                     let fs = require('fs');
-                    fs.writeFileSync('${{github.workspace}}/pr-number.zip', Buffer.from(download.data));
-                    fs.writeFileSync('${{github.workspace}}/build-test-cover.zip', Buffer.from(download.data));
+                    fs.writeFileSync('${{github.workspace}}/pr-number.zip', Buffer.from(download1.data));
+                    fs.writeFileSync('${{github.workspace}}/build-test-cover.zip', Buffer.from(download2.data));
 
             # Unzips the artifacts.
           - name: Unzip artifacts
-            run: unzip *.zip
+            run: unzip \*.zip
 
             # Writes a comment on the pull request.
           - name: Comment on PR
@@ -77,5 +77,5 @@ jobs:
                         owner: context.repo.owner,
                         repo: context.repo.repo,
                         issue_number: issue_number,
-                        body: '```' + coverage_file + '```'
+                        body: '```\n' + coverage_file + '\n```'
                     });
