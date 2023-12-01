@@ -128,42 +128,71 @@ auto Expression::Insert(Oasis::ExpressionType op, const Oasis::Expression& expre
         return MakeBinaryExpression(op, *self, expression2);
     }
 
-    std::unique_ptr<Expression> insert_node = this->Generalize();
+    std::unique_ptr<Expression> temp = this->Generalize();
     if(op == ExpressionType::Add)
     {
-        auto parent = Oasis::Add<Oasis::Real, Oasis::Add<Oasis::Real>>::Specialize(*insert_node);
-    }
-    else (op == ExpressionType::Multiply)
-    {
-        auto parent = Oasis::Multiply<Oasis::Real, Oasis::Multiply<Oasis::Real>>::Specialize(*insert_node);
-    }
-
-
-
-    while(true)
-    {
-            if (insert_node->GetType() != ExpressionType::Add and insert_node->GetType() != ExpressionType::Multiply) //Possibly a check that can be a function
+        std::unique_ptr<Expression> insert_node = std::move(temp); //dynamic_cast<Add<Expression>&>(*temp);
+        std::unique_ptr<Add<Expression>> parent = nullptr; //dynamic_cast<Add<Expression>&>(*temp);
+        while(true)
+        {
+            if (insert_node->GetType() != ExpressionType::Add)
             {
                 auto result = MakeBinaryExpression(op, *insert_node, expression2);
-
-                //return this;
+                if(parent->insertDirection) {
+                    parent->SetMostSigOp(*result);
+                }
+                else {
+                    parent->SetLeastSigOp(*result);
+                }
+                return this->Generalize();
             }
 
-            //insert_node = this->Specialize(insert_node);
-            //insert_node->insertDirection = not(insert_node->insertDirection);
-            //if (not(insert_node->insertDirection))
-            //{
-            //    insert_node = insert_node.GetLeastSigOp();
+            auto insert_casted = dynamic_cast<Add<Expression>&>(*insert_node);
+            if (insert_node->insertDirection)
+            {
+                insert_node = insert_casted.GetLeastSigOp().Generalize();
+            }
+            else {
+                insert_node = insert_casted.GetMostSigOp().Generalize();
+            }
 
-            //}
-            //else {
-            //    insert_node = insert_node.GetMostSigOp();
-            //}
-
-            //parent = insert_node;
-            //parent->insertDirection = not(parent->insertDirection);
-
+            parent = Oasis::Add<Oasis::Expression, Oasis::Expression>::Specialize(insert_casted); //insert_casted.Specialize();
+            parent->insertDirection = not(parent->insertDirection);
+        }
     }
+    else
+    {
+            std::unique_ptr<Expression> insert_node = std::move(temp); //dynamic_cast<Add<Expression>&>(*temp);
+            std::unique_ptr<Multiply<Expression>> parent = nullptr; //dynamic_cast<Add<Expression>&>(*temp);
+            while(true)
+            {
+                if (insert_node->GetType() != ExpressionType::Multiply)
+                {
+                    auto result = MakeBinaryExpression(op, *insert_node, expression2);
+                    //need to make most sig op of parent here to set result to it
+                    if(parent->insertDirection) {
+                        parent->SetMostSigOp(*result);
+                    }
+                    else {
+                        parent->SetLeastSigOp(*result);
+                    }
+                    return this->Generalize();
+                }
+
+                auto insert_casted = dynamic_cast<Multiply<Expression>&>(*insert_node);
+                if (insert_node->insertDirection)
+                {
+                    insert_node = insert_casted.GetLeastSigOp().Generalize();
+                }
+                else {
+                    insert_node = insert_casted.GetMostSigOp().Generalize();
+                }
+
+                parent = Oasis::Multiply<Oasis::Expression, Oasis::Expression>::Specialize(insert_casted); //insert_casted.Specialize();
+                parent->insertDirection = not(parent->insertDirection);
+            }
+    }
+
 
 }
 // RECENTLY ADDED
