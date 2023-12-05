@@ -3,6 +3,7 @@
 
 #include <concepts>
 #include <memory>
+#include <string>
 
 namespace tf {
 class Subflow;
@@ -18,6 +19,7 @@ class Expression;
 enum class ExpressionType {
     None,
     Real,
+    Imaginary,
     Variable,
     Add,
     Subtract,
@@ -163,6 +165,12 @@ public:
     [[nodiscard]] bool Is() const
     {
         return GetType() == T::GetStaticType();
+    }
+
+    template <template <typename, typename> typename T>
+    [[nodiscard]] bool Is() const
+    {
+        return GetType() == T<Expression, Expression>::GetStaticType();
     }
 
     /**
