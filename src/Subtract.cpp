@@ -4,7 +4,9 @@
 
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Divide.hpp"
 #include "Oasis/Variable.hpp"
 
 namespace Oasis {
@@ -63,6 +65,15 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return std::make_unique<Multiply<Expression>>(
                 *(Subtract { exponentCase->GetMostSigOp().GetMostSigOp(), exponentCase->GetLeastSigOp().GetMostSigOp() }.Simplify()),
                 exponentCase->GetMostSigOp().GetLeastSigOp());
+        }
+    }
+
+    // log(a) - log(b) = log(a / b)
+    if (auto logCase = Subtract<Log<Expression, Expression>, Log<Expression, Expression>>::Specialize(simplifiedSubtract); logCase != nullptr) {
+        if (logCase->GetMostSigOp().GetMostSigOp().Equals(logCase->GetLeastSigOp().GetMostSigOp())) {
+            const IExpression auto& base = logCase->GetMostSigOp().GetMostSigOp();
+            const IExpression auto& argument = Divide<Expression>({logCase->GetMostSigOp().GetLeastSigOp(), logCase->GetLeastSigOp().GetLeastSigOp()});
+            return std::make_unique<Log<Expression>>(base, argument);
         }
     }
 

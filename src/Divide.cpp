@@ -3,6 +3,7 @@
 //
 
 #include "Oasis/Divide.hpp"
+#include "Oasis/Log.hpp"
 
 namespace Oasis {
 
@@ -23,6 +24,15 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         const Real& divisor = realCase->GetLeastSigOp();
 
         return std::make_unique<Real>(dividend.GetValue() / divisor.GetValue());
+    }
+
+    // log(a) / log(b) = log[b](a)
+    if (auto logCase = Divide<Log<Expression, Expression>, Log<Expression, Expression>>::Specialize(simplifiedDivide); logCase != nullptr) {
+        if (logCase->GetMostSigOp().GetMostSigOp().Equals(logCase->GetLeastSigOp().GetMostSigOp())) {
+            const IExpression auto& base = logCase->GetLeastSigOp().GetLeastSigOp();
+            const IExpression auto& argument = logCase->GetMostSigOp().GetLeastSigOp();
+            return std::make_unique<Log<Expression>>(base, argument);
+        }
     }
 
     return simplifiedDivide.Copy();
