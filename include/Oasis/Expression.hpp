@@ -247,7 +247,22 @@ public:
      */
     [[nodiscard]] virtual std::string ToString() const = 0;
 
+    // CURRENT ADDITIONS
+
+    /**
+     * Allows the user to insert binary expressions into an already existing expression
+     *
+     * @param op The operation to be performed on both expressions
+     * @param expression2 The other expression passed by reference
+     */
+    auto Insert(Oasis::ExpressionType op, const Oasis::Expression& expression2) -> std::unique_ptr<Expression>;
+
+    bool insertDirection = true;
+    // CURRENT ADDITIONS
+
     virtual ~Expression() = default;
+
+
 };
 
 #define EXPRESSION_TYPE(type)                       \
