@@ -208,7 +208,10 @@ TEST_CASE("Addition Associativity", "[Add][Associative]")
             Oasis::Real { 6.0 },
             Oasis::Variable { "x" } } }
                 .Equals(*simplified1));
+}
 
+TEST_CASE("Add Associativity with wider tree", "[Add][Associativity]")
+{
     Oasis::Add assoc2 {
         Oasis::Multiply {
             Oasis::Real { 2.0 },

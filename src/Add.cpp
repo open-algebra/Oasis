@@ -91,7 +91,7 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
     simplifiedAdd.Flatten(adds);
     for (const auto& addend : adds) {
         // real
-        int i = 0;
+        size_t i = 0;
         if (auto real = Real::Specialize(*addend); real != nullptr) {
             for (; i < vals.size(); i++) {
                 if (auto valI = Real::Specialize(*vals[i]); valI != nullptr) {

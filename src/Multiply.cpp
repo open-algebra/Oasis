@@ -161,7 +161,7 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     std::vector<std::unique_ptr<Expression>> vals;
     simplifiedMultiply.Flatten(multiplies);
     for (const auto& multiplicand : multiplies) {
-        int i = 0;
+        size_t i = 0;
         if (auto real = Real::Specialize(*multiplicand); real != nullptr) {
             for (; i < vals.size(); i++) {
                 if (auto valI = Real::Specialize(*vals[i]); valI != nullptr) {
