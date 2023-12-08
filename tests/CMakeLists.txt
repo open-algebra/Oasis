@@ -7,8 +7,13 @@
 # These variables MUST be modified whenever a new test file is added.
 set(Oasis_TESTS
     # cmake-format: sortable
-    AddTests.cpp BinaryExpressionTests.cpp DivideTests.cpp ExponentTests.cpp
-        LogTests.cpp MultiplyTests.cpp SubtractTests.cpp)
+    AddTests.cpp
+    BinaryExpressionTests.cpp
+    DivideTests.cpp
+    ExponentTests.cpp
+    LogTests.cpp
+    MultiplyTests.cpp
+    SubtractTests.cpp)
 
 # Adds an executable target called "OasisTests" to be built from sources files.
 add_executable(OasisTests ${Oasis_TESTS})

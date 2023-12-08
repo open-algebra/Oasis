@@ -16,7 +16,7 @@ set(Oasis_SOURCES
     Multiply.cpp
     Real.cpp
     Subtract.cpp
-        Undefined.cpp
+    Undefined.cpp
     Variable.cpp)
 
 set(Oasis_HEADERS
