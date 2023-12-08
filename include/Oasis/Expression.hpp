@@ -84,6 +84,12 @@ public:
 
     /**
      * Compares this expression to another expression for equality.
+     *
+     * Two expressions are equal if they are structurally equivalent and have the same value.
+     * While this method considers the associativity and commutativity of expressions, it does not
+     * simplify the expressions before comparing them. For example, `Add<Real>(Real(1), Real(2))`
+     * and `Add<Real>(Real(2), Real(1))` are not equal, despite being structurally equivalent.
+     *
      * @param other The other expression.
      * @return Whether the two expressions are equal.
      */
@@ -167,6 +173,12 @@ public:
         return GetType() == T::GetStaticType();
     }
 
+    template <template <typename, typename> typename T>
+    [[nodiscard]] bool Is() const
+    {
+        return GetType() == T<Expression, Expression>::GetStaticType();
+    }
+
     /**
      * Simplifies this expression.
      * @return The simplified expression.
@@ -239,25 +251,25 @@ public:
 };
 
 #define EXPRESSION_TYPE(type)                       \
-    auto GetType() const-> ExpressionType override \
+    auto GetType() const -> ExpressionType override \
     {                                               \
-        return ExpressionType::type;              \
+        return ExpressionType::type;                \
     }                                               \
                                                     \
-    static auto GetStaticType()->ExpressionType   \
+    static auto GetStaticType() -> ExpressionType   \
     {                                               \
-        return ExpressionType::type;              \
+        return ExpressionType::type;                \
     }
 
-#define EXPRESSION_CATEGORY(category)           \
-    auto GetCategory() const->uint32_t override \
-    {                                           \
-        return category;                        \
-    }                                           \
-                                                \
-    static auto GetStaticCategory()->uint32_t   \
-    {                                           \
-        return category;                        \
+#define EXPRESSION_CATEGORY(category)             \
+    auto GetCategory() const -> uint32_t override \
+    {                                             \
+        return category;                          \
+    }                                             \
+                                                  \
+    static auto GetStaticCategory() -> uint32_t   \
+    {                                             \
+        return category;                          \
     }
 
 } // namespace Oasis

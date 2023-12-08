@@ -10,6 +10,10 @@ project(Oasis)
 include(CTest)
 include(FetchContent)
 
+option(OASIS_BUILD_TESTS "Enables building unit tests for Oasis" ON)
+option(OASIS_BUILD_WITH_COVERAGE
+       "Enables building Oasis with code coverage enabled" OFF)
+
 # Fetches dependencies and integrates them into the project.
 FetchContent_Declare(
     Catch2
@@ -30,6 +34,6 @@ add_subdirectory(cmake/FetchTaskflow)
 # Processes the CMakeLists.txt for each target.
 add_subdirectory(src)
 
-if(BUILD_TESTING)
+if(OASIS_BUILD_TESTS)
     add_subdirectory(tests)
 endif()

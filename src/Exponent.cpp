@@ -22,7 +22,6 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
     Exponent simplifiedExponent { *simplifiedBase, *simplifiedPower };
 
     if (auto zeroCase = Exponent<Expression, Real>::Specialize(simplifiedExponent); zeroCase != nullptr) {
-        const Expression& base = zeroCase->GetMostSigOp();
         const Real& power = zeroCase->GetLeastSigOp();
 
         if (power.GetValue() == 0.0) {
@@ -100,7 +99,7 @@ auto Exponent<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_p
 
     Exponent simplifiedExponent;
 
-    tf::Task simplifyTask = subflow.emplace([&simplifiedExponent, &simplifiedBase, &simplifiedPower](tf::Subflow& sbf) {
+    tf::Task simplifyTask = subflow.emplace([&simplifiedExponent, &simplifiedBase, &simplifiedPower](tf::Subflow&) {
         if (simplifiedPower) {
             simplifiedExponent.SetMostSigOp(*simplifiedBase);
         }
@@ -134,7 +133,7 @@ auto Exponent<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_p
 
 auto Exponent<Expression>::Specialize(const Oasis::Expression& other) -> std::unique_ptr<Exponent<Expression, Expression>>
 {
-    if (!other.Is<Exponent>()) {
+    if (!other.Is<Oasis::Exponent>()) {
         return nullptr;
     }
 
@@ -144,7 +143,7 @@ auto Exponent<Expression>::Specialize(const Oasis::Expression& other) -> std::un
 
 auto Exponent<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Exponent>
 {
-    if (!other.Is<Exponent>()) {
+    if (!other.Is<Oasis::Exponent>()) {
         return nullptr;
     }
 

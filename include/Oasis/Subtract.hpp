@@ -15,9 +15,7 @@ namespace Oasis {
 template <IExpression MinuendT, IExpression SubtrahendT>
 class Subtract;
 
-/**
- * Template specialization for Subtract with two Expressions.
- */
+/// @cond
 template <>
 class Subtract<Expression, Expression> : public BinaryExpression<Subtract> {
 public:
@@ -37,6 +35,7 @@ public:
     EXPRESSION_TYPE(Subtract)
     EXPRESSION_CATEGORY(0)
 };
+/// @endcond
 
 /**
  * The Subtract expression subtracts two expressions.
@@ -50,11 +49,13 @@ public:
     Subtract() = default;
     Subtract(const Subtract<MinuendT, SubtrahendT>& other)
         : BinaryExpression<Subtract, MinuendT, SubtrahendT>(other)
-    { }
+    {
+    }
 
     Subtract(const MinuendT& addend1, const SubtrahendT& addend2)
         : BinaryExpression<Subtract, MinuendT, SubtrahendT>(addend1, addend2)
-    { }
+    {
+    }
 
     [[nodiscard]] auto ToString() const -> std::string final
     {

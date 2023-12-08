@@ -34,7 +34,7 @@ public:
         return this->GetType() == other.GetType();
     }
 
-    auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool final
+    auto StructurallyEquivalent(const Expression& other, tf::Subflow&) const -> bool final
     {
         return this->GetType() == other.GetType();
     }

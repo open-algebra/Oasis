@@ -1,0 +1,100 @@
+# ##############################################################################
+# OASIS: Open Algebra Software for Inferring Solutions
+#
+# code-coverage.yml
+# ##############################################################################
+
+name: Code Coverage
+
+on:
+    pull_request:
+        branches: [ "master" ]
+
+jobs:
+    collect-coverage:
+        runs-on: ubuntu-latest
+
+        steps:
+            # Checks out the repository.
+          - name: Checkout repository
+            uses: actions/checkout@v4
+
+            # Creates reusable strings to use in steps.
+          - name: Set reusable strings
+            id: strings
+            shell: bash
+            run: |
+                echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+                echo "coverage-dir=${{ github.workspace }}/coverage" >> "$GITHUB_OUTPUT"
+                echo "pr-dir=${{ github.workspace }}/pr" >> "$GITHUB_OUTPUT"
+
+            # Saves the PR number to use in writing a comment on the PR.
+          - name: Save PR number
+            run: |
+                mkdir -p ${{ steps.strings.outputs.pr-dir }}
+                echo "${{ github.event.number }}" > ${{ steps.strings.outputs.pr-dir }}/issue_number
+
+            # Installs LLVM 17 on the runner.
+          - name: Install LLVM 17
+            run: |
+                wget https://apt.llvm.org/llvm.sh
+                chmod +x llvm.sh
+                sudo ./llvm.sh 17
+
+            # Configures CMake in a subdirectory.
+          - name: Configure CMake
+            run: >
+                cmake
+                -B ${{ steps.strings.outputs.build-dir }}
+                -S ${{ github.workspace }}
+                -DCMAKE_C_COMPILER=clang-17
+                -DCMAKE_CXX_COMPILER=clang++-17
+                -DCMAKE_BUILD_TYPE=Debug
+                -DOASIS_BUILD_WITH_COVERAGE=ON
+
+            # Builds Oasis with the given configuration.
+          - name: Build Oasis
+            run: >
+                cmake
+                --build ${{ steps.strings.outputs.build-dir }}
+                --config Debug
+                --target Oasis
+
+            # Builds the tests for Oasis with the given configuration.
+          - name: Build OasisTests
+            run: >
+                cmake
+                --build ${{ steps.strings.outputs.build-dir }}
+                --config Debug
+                --target OasisTests
+
+            # Runs the tests registered to CTest by CMake.
+          - name: Collect Coverage
+            working-directory: ${{ steps.strings.outputs.build-dir }}
+            run: >
+                LLVM_PROFILE_FILE="${{ steps.strings.outputs.coverage-dir }}/oasis.profraw"
+                ctest --build-config Debug
+
+            # Creates reports from the coverage data.
+          - name: Report Coverage
+            working-directory: ${{ steps.strings.outputs.coverage-dir }}
+            shell: bash
+            run: |
+                llvm-profdata-17 merge -sparse oasis.profraw -o oasis.profdata
+                llvm-cov-17 show -output-dir reports -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ${{ github.workspace }}/src ${{ github.workspace }}/include
+
+            # Uploads the build, test, and code coverage artifacts.
+          - name: Upload artifacts
+            uses: actions/upload-artifact@v3
+            with:
+                name: build-test-cover
+                path: |
+                    ${{ steps.strings.outputs.build-dir }}
+                    !${{ steps.strings.outputs.build-dir }}/_deps
+                    ${{ steps.strings.outputs.coverage-dir }}
+
+          - name: Upload PR number
+            uses: actions/upload-artifact@v3
+            with:
+                name: pr-number
+                path: ${{ steps.strings.outputs.pr-dir }}
