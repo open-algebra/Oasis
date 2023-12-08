@@ -15,8 +15,9 @@ namespace Oasis {
 class Undefined : public LeafExpression<Undefined> {
 public:
     Undefined() = default;
+    Undefined(const Undefined& other) = default;
 
-    [[nodiscard]] auto Equals(const Expression& other) const -> bool final {return false;}
+    [[nodiscard]] auto Equals(const Expression&) const -> bool final { return false; }
 
     EXPRESSION_TYPE(None)
     EXPRESSION_CATEGORY(0)

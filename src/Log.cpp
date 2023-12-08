@@ -36,7 +36,6 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     if (auto invalidArgumentCase = Log<Expression, Real>::Specialize(simplifiedLog); invalidArgumentCase != nullptr) {
-        const Expression& base = invalidArgumentCase->GetMostSigOp();
         const Real& argument = invalidArgumentCase->GetLeastSigOp();
 
         if (argument.GetValue() <= 0.0 ) {
