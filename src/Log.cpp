@@ -18,16 +18,16 @@ Log<Expression>::Log(const Expression& base, const Expression& argument)
 
 auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
-    auto simplifiedBase = mostSigOp ? mostSigOp->Simplify() : nullptr;
-    auto simplifiedArgument = leastSigOp ? leastSigOp->Simplify() : nullptr;
+    const auto simplifiedBase = mostSigOp ? mostSigOp->Simplify() : nullptr;
+    const auto simplifiedArgument = leastSigOp ? leastSigOp->Simplify() : nullptr;
 
     if (!simplifiedBase || !simplifiedArgument) {
         return nullptr;
     }
 
-    Log simplifiedLog { *simplifiedBase, *simplifiedArgument };
+    const Log simplifiedLog { *simplifiedBase, *simplifiedArgument };
 
-    if (auto invalidBaseCase = Log<Real, Expression>::Specialize(simplifiedLog); invalidBaseCase != nullptr) {
+    if (const auto invalidBaseCase = Log<Real, Expression>::Specialize(simplifiedLog); invalidBaseCase != nullptr) {
         const Real& b = invalidBaseCase->GetMostSigOp();
 
         if (b.GetValue() <= 0.0 || b.GetValue() == 1) {
@@ -35,7 +35,7 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    if (auto invalidArgumentCase = Log<Expression, Real>::Specialize(simplifiedLog); invalidArgumentCase != nullptr) {
+    if (const auto invalidArgumentCase = Log<Expression, Real>::Specialize(simplifiedLog); invalidArgumentCase != nullptr) {
         const Real& argument = invalidArgumentCase->GetLeastSigOp();
 
         if (argument.GetValue() <= 0.0 ) {
@@ -59,9 +59,10 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     // log[a](b^x) = x * log[a](b)
-    if (auto expCase = Log<Expression, Exponent<Expression, Expression>>::Specialize(simplifiedLog); expCase != nullptr) {
-        const IExpression auto& log = Log<Expression>(expCase->GetMostSigOp(), expCase->GetLeastSigOp().GetMostSigOp()); //might need to check that it isnt nullptr
-        const IExpression auto& factor = expCase->GetLeastSigOp().GetLeastSigOp();
+    if (const auto expCase = Log<Expression, Exponent<Expression, Expression>>::Specialize(simplifiedLog); expCase != nullptr) {
+        const auto exponent = expCase->GetLeastSigOp();
+        const IExpression auto& log = Log<Expression>(expCase->GetMostSigOp(), exponent.GetMostSigOp()); // might need to check that it isnt nullptr
+        const IExpression auto& factor = exponent.GetLeastSigOp();
         return Oasis::Multiply<Oasis::Expression>(factor, log).Simplify();
     }
 
@@ -84,7 +85,7 @@ auto Log<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Log
         return nullptr;
     }
 
-    auto otherGeneralized = other.Generalize();
+    const auto otherGeneralized = other.Generalize();
     return std::make_unique<Log>(dynamic_cast<const Log<Expression>&>(*otherGeneralized));
 }
 
@@ -94,7 +95,7 @@ auto Log<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
         return nullptr;
     }
 
-    auto otherGeneralized = other.Generalize(subflow);
+    const auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Log>(dynamic_cast<const Log<Expression>&>(*otherGeneralized));
 }
 
