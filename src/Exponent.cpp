@@ -4,8 +4,8 @@
 
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
-#include "Oasis/Multiply.hpp"
 #include "Oasis/Log.hpp"
+#include "Oasis/Multiply.hpp"
 #include <cmath>
 
 namespace Oasis {

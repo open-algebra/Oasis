@@ -2,8 +2,8 @@
 // Created by Matthew McCall on 8/10/23.
 //
 #include "Oasis/Divide.hpp"
-#include "Oasis/Log.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Variable.hpp"
 #include <map>

@@ -6,8 +6,8 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
-#include "Oasis/Multiply.hpp"
 #include "Oasis/Log.hpp"
+#include "Oasis/Multiply.hpp"
 
 namespace Oasis {
 
@@ -90,7 +90,7 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (auto logCase = Add<Log<Expression, Expression>, Log<Expression, Expression>>::Specialize(simplifiedAdd); logCase != nullptr) {
         if (logCase->GetMostSigOp().GetMostSigOp().Equals(logCase->GetLeastSigOp().GetMostSigOp())) {
             const IExpression auto& base = logCase->GetMostSigOp().GetMostSigOp();
-            const IExpression auto& argument = Multiply<Expression>({logCase->GetMostSigOp().GetLeastSigOp(), logCase->GetLeastSigOp().GetLeastSigOp()});
+            const IExpression auto& argument = Multiply<Expression>({ logCase->GetMostSigOp().GetLeastSigOp(), logCase->GetLeastSigOp().GetLeastSigOp() });
             return std::make_unique<Log<Expression>>(base, argument);
         }
     }
