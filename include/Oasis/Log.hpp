@@ -8,6 +8,7 @@
 #include "fmt/core.h"
 
 #include "BinaryExpression.hpp"
+#include "Real.hpp"
 
 namespace Oasis {
 
@@ -44,6 +45,7 @@ public:
  */
 template <IExpression BaseT = Expression, IExpression ArgumentT = BaseT>
 class Log : public BinaryExpression<Log, BaseT, ArgumentT> {
+public:
     Log() = default;
     Log(const Log<BaseT, ArgumentT>& other)
         : BinaryExpression<Log, BaseT, ArgumentT>(other)
@@ -57,7 +59,7 @@ class Log : public BinaryExpression<Log, BaseT, ArgumentT> {
 
     [[nodiscard]] auto ToString() const -> std::string final
     {
-        return fmt::format("log({}, {})", this->GetBase(), this->GetArgument());
+        return fmt::format("log({}, {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
     }
 
     IMPL_SPECIALIZE(Log, BaseT, ArgumentT);
