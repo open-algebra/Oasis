@@ -1,10 +1,12 @@
 //
 // Created by Matthew McCall on 7/2/23.
 //
+#include <unordered_map>
 
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 
 namespace Oasis {
@@ -84,6 +86,16 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
+    // log(a) + log(b) = log(ab)
+    if (auto logCase = Add<Log<Expression, Expression>, Log<Expression, Expression>>::Specialize(simplifiedAdd); logCase != nullptr) {
+        if (logCase->GetMostSigOp().GetMostSigOp().Equals(logCase->GetLeastSigOp().GetMostSigOp())) {
+            const IExpression auto& base = logCase->GetMostSigOp().GetMostSigOp();
+            const IExpression auto& argument = Multiply<Expression>({ logCase->GetMostSigOp().GetLeastSigOp(), logCase->GetLeastSigOp().GetLeastSigOp() });
+            return std::make_unique<Log<Expression>>(base, argument);
+        }
+    }
+
+    return simplifiedAdd.Copy();
     // simplifies expressions and combines like terms
     // ex: 1 + 2x + 3 + 5x = 4 + 7x (or 7x + 4)
     std::vector<std::unique_ptr<Expression>> adds;

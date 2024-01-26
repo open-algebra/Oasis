@@ -3,18 +3,19 @@
 Open Algebra Software for Inferring Solutions is a C++ library for embedding computer algebra and symbolic manipulation.
 
 ## Building
-The library is written in C++20 and is built with CMake. All dependencies are managed by CMake itself in an effort to be highly portable. As, such all you need is CMake and a modern C++ compiler. 
+The library is written in C++20 and is built with CMake. All dependencies are managed by CMake itself in an effort to be highly portable. As, such all you need is:
+* CMake - The build tool
+* Git - Used by CMake to automatically download dependencies
+* A modern C++ compiler (See below)
 
 ### Supported Compilers
 
 * AppleClang ≥ 15
 * Clang ≥ 15 (≥ 16 for Ubuntu)
 * MSVC
+* GCC ≥ 13.2.1
 
 #### Unsupported Tools
-* There is [a bug in GCC](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111485) that prevents the library from compiling,
-a fix is in the master branch of GCC but has not been released yet.
-  * Nautrally, MinGW does not work. If you're using CLion on Windows, you'll need to use the Visual Studio toolchain in CLion.
 * NMake seems to have problems. We recommend [Ninja](https://ninja-build.org) or Makefiles.
 
 ### Example Build Commands
