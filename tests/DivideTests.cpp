@@ -27,7 +27,6 @@ TEST_CASE("Division", "[Divide]")
     REQUIRE(simplifiedReal.GetValue() == 1.0);
 }
 
-/*
 TEST_CASE("Symbolic Division, equal variables", "[Division][Symbolic]")
 {
     Oasis::Divide div {
@@ -192,7 +191,6 @@ TEST_CASE("Symbolic Division, equal exponents", "[Division][Symbolic]")
                 Oasis::Real { 2 } } },
         Oasis::Variable { "y" } }.Equals(*simplified));
 }
-*/
 
 TEST_CASE("Generalized Division", "[Divide][Generalized]")
 {
