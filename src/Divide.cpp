@@ -332,6 +332,37 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             }
             continue;
         }
+        if (auto expExpr = Exponent<Expression>::Specialize(*denom); expExpr != nullptr) {
+            for (; i < result.size(); i++) {
+                if (auto resExpr = Exponent<Expression, Expression>::Specialize(*result[i]); resExpr != nullptr) {
+                    if (expExpr->GetMostSigOp().Equals(resExpr->GetMostSigOp())) {
+                        // subtract exp
+                        break;
+                    }
+                } else if (result[i]->Equals(expExpr->GetMostSigOp())) {
+                    // subtract exp
+                    break;
+                }
+            }
+            if (i >= result.size()) {
+                result.push_back(Exponent<Expression> { expExpr->GetMostSigOp(), Multiply { Real { -1.0 }, expExpr->GetLeastSigOp() } }.Generalize());
+            }
+            continue;
+        }
+        for (; i < result.size(); i++) {
+            if (auto resExpr = Exponent<Expression, Expression>::Specialize(*result[i]); resExpr != nullptr) {
+                if (denom->Equals(resExpr->GetMostSigOp())) {
+                    // subtract exp
+                    break;
+                }
+            } else if (result[i]->Equals(*denom)) {
+                result[i] = Real { 1.0 }.Generalize();
+                break;
+            }
+        }
+        if (i >= result.size()) {
+            result.push_back(Exponent<Expression> { *denom, Real { -1.0 } }.Generalize());
+        }
     }
 
     // rebuild into tree
@@ -385,7 +416,6 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return BuildFromVector<Multiply>(numeratorVals);
     else
         return Divide { Real { 1.0 }, *(BuildFromVector<Multiply>(denominatorVals)) }.Generalize();
-    // return simplifiedDivide.Copy();
 }
 
 auto Divide<Expression>::ToString() const -> std::string
