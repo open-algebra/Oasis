@@ -28,7 +28,7 @@ jobs:
                 sudo ./llvm.sh 17 all
 
             # Commits and pushes changes.
-          - name: Commit and push
+          - name: Format, Commit and Push
             if: |
                 github.event_name == 'workflow_dispatch'
             run: |
@@ -39,7 +39,7 @@ jobs:
                 git push
 
             # Fails if the workflow hasn't been run in the contributor's fork.
-          - name: Reject on edits
+          - name: Reject if not formatted
             if: |
                 github.event_name == 'pull_request'
             run: clang-format-17 -n -Werror src/**.cpp include/Oasis/**.hpp;

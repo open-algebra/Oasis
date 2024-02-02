@@ -17,7 +17,10 @@ class Add;
 
 /// @cond
 template <>
-class Add<Expression, Expression> : public BinaryExpression<Add> {
+class Add<
+Expression
+, Expression
+> : public BinaryExpression<Add> {
 public:
     Add() = default;
     Add(const Add<Expression, Expression>& other) = default;
