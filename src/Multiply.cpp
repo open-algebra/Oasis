@@ -246,6 +246,11 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 val = exp->GetMostSigOp().Generalize();
             }
         }
+        if (auto mul = Multiply<Real, Expression>::Specialize(*val); mul != nullptr) {
+            if (mul->GetMostSigOp().GetValue() == 1.0) {
+                val = mul->GetLeastSigOp().Generalize();
+            }
+        }
     }
 
     return BuildFromVector<Multiply>(vals);

@@ -95,7 +95,7 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    return simplifiedAdd.Copy();
+    // return simplifiedAdd.Copy();
     // simplifies expressions and combines like terms
     // ex: 1 + 2x + 3 + 5x = 4 + 7x (or 7x + 4)
     std::vector<std::unique_ptr<Expression>> adds;
@@ -218,6 +218,14 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
     // rebuild equation after simplification.
+
+    for (auto& val : vals) {
+        if (auto mul = Multiply<Real, Expression>::Specialize(*val); mul != nullptr) {
+            if (mul->GetMostSigOp().GetValue() == 1.0) {
+                val = mul->GetLeastSigOp().Generalize();
+            }
+        }
+    }
 
     return BuildFromVector<Add>(vals);
 

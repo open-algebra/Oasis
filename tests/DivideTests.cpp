@@ -126,7 +126,7 @@ TEST_CASE("Symbolic Division of Expressions", "[Division][Symbolic]")
 
 
     auto simplified = div.Simplify();
-
+    std::cout << simplified->ToString() << std::endl;
     CAPTURE(simplified->ToString());
     REQUIRE(Oasis::Multiply {
         Oasis::Real{ 2 },
