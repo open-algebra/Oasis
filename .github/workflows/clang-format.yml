@@ -27,22 +27,12 @@ jobs:
                 chmod +x llvm.sh
                 sudo ./llvm.sh 17 all
 
-            # Runs clang-format on all source and header files.
-          - name: Run clang-format
-            run: clang-format-17 -i src/**.cpp include/Oasis/**.hpp;
-
-            # Checks for modified files.
-          - name: Check for modified files
-            id: check-file-modified
-            shell: bash
-            run: echo "files-modified=$(git diff --name-only | wc -l)" >> "$GITHUB_OUTPUT"
-
             # Commits and pushes changes.
           - name: Commit and push
             if: |
-                github.event_name == 'workflow_dispatch' &&
-                steps.check-file-modified.outputs.files-modified != 0
+                github.event_name == 'workflow_dispatch'
             run: |
+                clang-format-17 -i src/**.cpp include/Oasis/**.hpp;
                 git config user.name "github-actions"
                 git config user.email "github-actions@github.com"
                 git commit -am "[Actions] Run clang-format"
@@ -51,8 +41,5 @@ jobs:
             # Fails if the workflow hasn't been run in the contributor's fork.
           - name: Reject on edits
             if: |
-                github.event_name == 'pull_request' &&
-                steps.check-file-modified.outputs.files-modified != 0
-            uses: actions/github-script@v6
-            with:
-              script: core.setFailed('The workflow must be run on your fork before merging a PR.')
+                github.event_name == 'pull_request'
+            run: clang-format-17 -n -Werror src/**.cpp include/Oasis/**.hpp;
