@@ -281,6 +281,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             if (i >= result.size()) {
                 result.push_back(Real { 1 / real->GetValue() }.Generalize());
             }
+            continue;
         }
         if (auto img = Imaginary::Specialize(*denom); img != nullptr) {
             for (; i < result.size(); i++) {
@@ -292,6 +293,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             if (i >= result.size()) {
                 result.push_back(Exponent<Expression> { Imaginary {}, Real { -1.0 } }.Generalize());
             }
+            continue;
         }
         if (auto var = Variable::Specialize(*denom); var != nullptr) {
             for (; i < result.size(); i++) {
@@ -303,12 +305,14 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 } else if (auto resI = Variable::Specialize(*result[i]); resI != nullptr) {
                     if (resI->Equals(*var)) {
                         result[i] = Real { 1.0 }.Generalize();
+                        break;
                     }
                 }
             }
             if (i >= result.size()) {
                 result.push_back(Exponent<Expression> { *var, Real { -1.0 } }.Generalize());
             }
+            continue;
         }
         if (auto var = Exponent<Variable, Expression>::Specialize(*denom); var != nullptr) {
             for (; i < result.size(); i++) {
@@ -326,6 +330,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             if (i >= result.size()) {
                 result.push_back(Exponent<Expression> { var->GetMostSigOp(), Multiply { Real { -1.0 }, var->GetLeastSigOp() } }.Generalize());
             }
+            continue;
         }
     }
 
@@ -335,26 +340,24 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             if (valI->GetValue() != 1.0) {
                 numeratorVals.push_back(valI->Generalize());
             }
-        }
-        if (auto var = Variable::Specialize(*val); var != nullptr) {
-            numerator.push_back(val->Generalize());
-        }
-        if (auto img = Imaginary::Specialize(*val); img != nullptr) {
-            numerator.push_back(val->Generalize());
-        }
-        if (auto valI = Exponent<Expression, Real>::Specialize(*val); valI != nullptr) {
-            if (valI->GetLeastSigOp().GetValue() < 0.0) {
-                denominatorVals.push_back(Exponent { valI->GetMostSigOp(), Real { valI->GetLeastSigOp().GetValue() * -1.0 } }.Generalize());
+        } else if (auto var = Variable::Specialize(*val); var != nullptr) {
+            numeratorVals.push_back(val->Generalize());
+        } else if (auto img = Imaginary::Specialize(*val); img != nullptr) {
+            numeratorVals.push_back(val->Generalize());
+        } else if (auto expR = Exponent<Expression, Real>::Specialize(*val); expR != nullptr) {
+            if (expR->GetLeastSigOp().GetValue() < 0.0) {
+                denominatorVals.push_back(Exponent { expR->GetMostSigOp(), Real { expR->GetLeastSigOp().GetValue() * -1.0 } }.Generalize());
             } else {
                 numeratorVals.push_back(val->Generalize());
             }
-        }
-        if (auto valI = Exponent<Expression, Multiply<Real, Expression>>::Specialize(*val); valI != nullptr) {
-            if (valI->GetLeastSigOp().GetMostSigOp().GetValue() < 0.0) {
-                denominatorVals.push_back(Exponent { valI->GetMostSigOp(), valI->GetLeastSigOp().GetLeastSigOp() }.Generalize());
+        } else if (auto exp = Exponent<Expression, Multiply<Real, Expression>>::Specialize(*val); exp != nullptr) {
+            if (exp->GetLeastSigOp().GetMostSigOp().GetValue() < 0.0) {
+                denominatorVals.push_back(Exponent { exp->GetMostSigOp(), exp->GetLeastSigOp().GetLeastSigOp() }.Generalize());
             } else {
                 numeratorVals.push_back(val->Generalize());
             }
+        } else {
+            numeratorVals.push_back(val->Generalize());
         }
     }
 
@@ -376,9 +379,13 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     // rebuild subtrees
-    return Divide { *(BuildFromVector<Multiply>(numeratorVals)), *(BuildFromVector<Multiply>(denominatorVals)) }.Generalize();
-
-    return simplifiedDivide.Copy();
+    if (!numeratorVals.empty() && !denominatorVals.empty())
+        return Divide { *(BuildFromVector<Multiply>(numeratorVals)), *(BuildFromVector<Multiply>(denominatorVals)) }.Generalize();
+    else if (!numeratorVals.empty() && denominatorVals.empty())
+        return BuildFromVector<Multiply>(numeratorVals);
+    else
+        return Divide { Real { 1.0 }, *(BuildFromVector<Multiply>(denominatorVals)) }.Generalize();
+    // return simplifiedDivide.Copy();
 }
 
 auto Divide<Expression>::ToString() const -> std::string

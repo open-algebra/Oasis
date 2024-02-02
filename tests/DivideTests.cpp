@@ -32,11 +32,11 @@ TEST_CASE("Symbolic Division, equal variables", "[Division][Symbolic]")
     Oasis::Divide div {
         Oasis::Multiply {
             Oasis::Real { 2.0 },
-            Oasis::Variable { "x"} },
+            Oasis::Variable { "x" } },
         Oasis::Multiply {
                 Oasis::Real { 1.0 },
-                Oasis::Variable { "x" } }
-        };
+            Oasis::Variable { "x" } }
+    };
 
 
     Oasis::Divide div2 {
