@@ -267,7 +267,7 @@ public:
         return category;                          \
     }                                             \
                                                   \
-    static auto GetStaticCategory() -> uint32_t   \
+    constexpr static auto GetStaticCategory() -> uint32_t   \
     {                                             \
         return category;                          \
     }
