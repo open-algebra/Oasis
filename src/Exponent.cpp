@@ -29,7 +29,7 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return std::make_unique<Real>(1.0);
         }
     }
-    
+
     if (auto zeroCase = Exponent<Real, Expression>::Specialize(simplifiedExponent); zeroCase != nullptr) {
         const Real& base = zeroCase->GetMostSigOp();
 
@@ -48,7 +48,7 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (auto oneCase = Exponent<Expression, Real>::Specialize(simplifiedExponent); oneCase != nullptr) {
         const Real& power = oneCase->GetLeastSigOp();
         if (power.GetValue() == 1.0) {
-            return std::make_unique<Expression>(oneCase->GetMostSigOp());
+            return oneCase->GetMostSigOp().Copy();
         }
     }
 
