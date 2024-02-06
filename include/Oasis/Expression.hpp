@@ -161,12 +161,11 @@ public:
      */
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Expression>;
 
-    
     /**
-     * Attempts to integrate this expression using Integration rules
-     * 
+     * Attempts to integrate this expression using integration rules
+     *
      * @return An indefinite integral of the expression added to a constant
-    */
+     */
     [[nodiscard]] virtual auto Integrate() -> std::unique_ptr<Expression>;
 
     /**

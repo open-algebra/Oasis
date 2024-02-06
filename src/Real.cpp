@@ -4,7 +4,10 @@
 
 #include <string>
 
+#include "Oasis/Add.hpp"
+#include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/Variable.hpp"
 
 namespace Oasis {
 
@@ -36,6 +39,17 @@ auto Real::Specialize(const Expression& other) -> std::unique_ptr<Real>
 auto Real::Specialize(const Expression& other, tf::Subflow&) -> std::unique_ptr<Real>
 {
     return other.Is<Real>() ? std::make_unique<Real>(dynamic_cast<const Real&>(other)) : nullptr;
+}
+
+auto Real::Integrate() -> std::unique_ptr<Expression>
+{
+    if (value != 0) {
+        return std::make_unique<Add<Multiply<Real, Variable>, Variable>>(Add {
+            Multiply<Real, Variable> { Real { value }, Variable { "x" } },
+            Variable { "C" } });
+    }
+
+    return std::make_unique<Variable>(Variable { "C" });
 }
 
 } // namespace Oasis

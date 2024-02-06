@@ -11,6 +11,7 @@ set(Oasis_TESTS
     BinaryExpressionTests.cpp
     DivideTests.cpp
     ExponentTests.cpp
+    IntegrateTests.cpp
     LogTests.cpp
     MultiplyTests.cpp
     SubtractTests.cpp)
