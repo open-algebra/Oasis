@@ -29,6 +29,14 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return std::make_unique<Real>(1.0);
         }
     }
+    
+    if (auto zeroCase = Exponent<Real, Expression>::Specialize(simplifiedExponent); zeroCase != nullptr) {
+        const Real& base = zeroCase->GetMostSigOp();
+
+        if (base.GetValue() == 0.0) {
+            return std::make_unique<Real>(0.0);
+        }
+    }
 
     if (auto realCase = Exponent<Real>::Specialize(simplifiedExponent); realCase != nullptr) {
         const Real& base = realCase->GetMostSigOp();
@@ -37,10 +45,17 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return std::make_unique<Real>(pow(base.GetValue(), power.GetValue()));
     }
 
-    if (auto oneCase = Exponent<Variable, Real>::Specialize(simplifiedExponent); oneCase != nullptr) {
+    if (auto oneCase = Exponent<Expression, Real>::Specialize(simplifiedExponent); oneCase != nullptr) {
         const Real& power = oneCase->GetLeastSigOp();
         if (power.GetValue() == 1.0) {
-            return std::make_unique<Variable>(oneCase->GetMostSigOp());
+            return std::make_unique<Expression>(oneCase->GetMostSigOp());
+        }
+    }
+
+    if (auto oneCase = Exponent<Real, Expression>::Specialize(simplifiedExponent); oneCase != nullptr) {
+        const Real& base = oneCase->GetMostSigOp();
+        if (base.GetValue() == 1.0) {
+            return std::make_unique<Real>(1.0);
         }
     }
 
