@@ -336,11 +336,11 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             for (; i < result.size(); i++) {
                 if (auto resExpr = Exponent<Expression, Expression>::Specialize(*result[i]); resExpr != nullptr) {
                     if (expExpr->GetMostSigOp().Equals(resExpr->GetMostSigOp())) {
-                        // subtract exp
+                        result[i] = Exponent { expExpr->GetMostSigOp(), *(Subtract { resExpr->GetLeastSigOp(), expExpr->GetLeastSigOp() }.Simplify()) }.Generalize();
                         break;
                     }
                 } else if (result[i]->Equals(expExpr->GetMostSigOp())) {
-                    // subtract exp
+                    result[i] = Exponent { expExpr->GetMostSigOp(), *(Subtract { Real { 1.0 }, resExpr->GetLeastSigOp() }.Simplify()) }.Generalize();
                     break;
                 }
             }
@@ -352,7 +352,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         for (; i < result.size(); i++) {
             if (auto resExpr = Exponent<Expression, Expression>::Specialize(*result[i]); resExpr != nullptr) {
                 if (denom->Equals(resExpr->GetMostSigOp())) {
-                    // subtract exp
+                    result[i] = Exponent { *denom, *(Subtract { resExpr->GetLeastSigOp(), Real { 1.0 } }.Simplify()) }.Generalize();
                     break;
                 }
             } else if (result[i]->Equals(*denom)) {
