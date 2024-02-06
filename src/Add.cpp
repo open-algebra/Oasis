@@ -70,7 +70,7 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
     // 2x + x = 3x
     if (const auto likeTermsCase2 = Add<Multiply<Real, Expression>, Expression>::Specialize(simplifiedAdd); likeTermsCase2 != nullptr) {
         const Real& coeffiecent = likeTermsCase2->GetMostSigOp().GetMostSigOp();
-        return std::make_unique<Multiply<Real, Expression>>(Real { coeffiecent.GetValue() + 1}, likeTermsCase2->GetMostSigOp());
+        return std::make_unique<Multiply<Real, Expression>>(Real { coeffiecent.GetValue() + 1 }, likeTermsCase2->GetMostSigOp());
     }
 
     return simplifiedAdd.Copy();
