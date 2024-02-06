@@ -43,11 +43,6 @@ public:
 
     auto operator=(const Variable& other) -> Variable& = default;
 
-    bool operator==(const Variable& other)
-    {
-        return name == other.GetName();
-    }
-
 private:
     std::string name {};
 };
