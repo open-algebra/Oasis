@@ -1,5 +1,6 @@
 #include "taskflow/taskflow.hpp"
 
+#include "Expression.hpp"
 #include "Oasis/Expression.hpp"
 
 namespace Oasis {
@@ -32,6 +33,11 @@ auto Expression::Specialize(const Expression& other) -> std::unique_ptr<Expressi
 auto Expression::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Expression>
 {
     return other.Copy(subflow);
+}
+
+auto Expression::Integrate() -> std::unique_ptr<Expression>
+{
+    return Copy();
 }
 
 auto Expression::Simplify() const -> std::unique_ptr<Expression>
