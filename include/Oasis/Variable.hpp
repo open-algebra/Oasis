@@ -38,6 +38,8 @@ public:
 
     [[nodiscard]] auto ToString() const -> std::string final;
 
+    [[nodiscard]] auto Integrate(const Variable& integrationVariable) -> std::unique_ptr<Expression>;
+
     static auto Specialize(const Expression& other) -> std::unique_ptr<Variable>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Variable>;
 
