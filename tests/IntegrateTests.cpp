@@ -15,7 +15,8 @@ TEST_CASE("Reals", "[Real]")
     };
 
     Oasis::Real base { 2.0f };
+    Oasis::Variable var { "x" };
 
-    auto integrated = base.Integrate();
+    auto integrated = base.Integrate(var);
     REQUIRE(integral.Equals(*integrated));
 }
