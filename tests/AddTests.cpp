@@ -247,4 +247,15 @@ TEST_CASE("Add Associativity with wider tree", "[Add][Associativity]")
             Oasis::Real { 5.0 },
             Oasis::Variable { "x" } } }
                 .Equals(*simplified2));
+
+TEST_CASE("Add Operator Overload", "[Add][Operator Overload]")
+{
+    const std::unique_ptr<Oasis::Expression> a = std::make_unique<Oasis::Real>(1.0);
+    const std::unique_ptr<Oasis::Expression> b = std::make_unique<Oasis::Real>(2.0);
+
+    const auto sum = a+b;
+    auto realSum = Oasis::Real::Specialize(*sum);
+
+    REQUIRE(realSum != nullptr);
+    REQUIRE(realSum->GetValue() == 3.0);
 }
