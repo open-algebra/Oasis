@@ -4,6 +4,7 @@
 
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include <cmath>
 
@@ -68,6 +69,13 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (auto expExpCase = Exponent<Exponent<Expression, Expression>, Expression>::Specialize(simplifiedExponent); expExpCase != nullptr) {
         return std::make_unique<Exponent<Expression>>(expExpCase->GetMostSigOp().GetMostSigOp(),
             *(Multiply { expExpCase->GetMostSigOp().GetLeastSigOp(), expExpCase->GetLeastSigOp() }.Simplify()));
+    }
+
+    // a^log[a](x) = x - maybe add domain stuff (should only be defined for x >= 0)
+    if (auto logCase = Exponent<Expression, Log<Expression, Expression>>::Specialize(simplifiedExponent); logCase != nullptr) {
+        if (logCase->GetMostSigOp().Equals(logCase->GetLeastSigOp().GetMostSigOp())) {
+            return Expression::Specialize(logCase->GetLeastSigOp().GetLeastSigOp());
+        }
     }
 
     return simplifiedExponent.Copy();
