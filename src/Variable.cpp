@@ -4,6 +4,7 @@
 
 #include "Oasis/Variable.hpp"
 #include "Oasis/Add.hpp"
+#include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Multiply.hpp"
 
@@ -43,8 +44,10 @@ auto Variable::Integrate(const Variable& integrationVariable) -> std::unique_ptr
 {
     // Power rule
     if (name == integrationVariable.GetName()) {
-        return std::make_unique<Add<Exponent<Variable, Real>, Variable>>(Add {
-            Exponent { Variable { integrationVariable.GetName() }, Real { 2.0f } },
+        return std::make_unique<Add<Divide<Exponent<Variable, Real>, Real>, Variable>>(Add {
+            Divide {
+                Exponent { Variable { integrationVariable.GetName() }, Real { 2.0f } },
+                Real { 2.0f } },
             Variable { "C" } });
     }
 
