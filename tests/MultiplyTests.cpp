@@ -111,7 +111,6 @@ TEST_CASE("Multiply Associativity", "[Multiply][Associativity]")
         Oasis::Variable { "y" } }
                 .Equals(*simplified1));
 }
-
 TEST_CASE("Multiply Operator Overload", "[Multiply][Operator Overload]")
 {
     const std::unique_ptr<Oasis::Expression> a = std::make_unique<Oasis::Real>(1.0);
@@ -122,5 +121,4 @@ TEST_CASE("Multiply Operator Overload", "[Multiply][Operator Overload]")
 
     REQUIRE(realSum != nullptr);
     REQUIRE(realSum->GetValue() == 2.0);
-
 }
