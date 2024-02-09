@@ -222,3 +222,16 @@ TEST_CASE("Division Async", "[Divide][Async]")
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
     REQUIRE(simplifiedReal.GetValue() == 1.0);
 }
+
+TEST_CASE("Divide Operator Overload", "[Divide][Operator Overload]")
+{
+    const std::unique_ptr<Oasis::Expression> a = std::make_unique<Oasis::Real>(1.0);
+    const std::unique_ptr<Oasis::Expression> b = std::make_unique<Oasis::Real>(2.0);
+
+    const auto sum = b/a;
+    auto realSum = Oasis::Real::Specialize(*sum);
+
+    REQUIRE(realSum != nullptr);
+    REQUIRE(realSum->GetValue() == 2.0);
+
+}
