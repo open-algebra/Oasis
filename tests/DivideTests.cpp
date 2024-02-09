@@ -124,10 +124,8 @@ TEST_CASE("Symbolic Division of Expressions", "[Division][Symbolic]")
                     Oasis::Real { 1 } }}
         };
 
-
     auto simplified = div.Simplify();
 
-    // somehow equals is broken? Not really sure
     CAPTURE(simplified->ToString());
     REQUIRE(Oasis::Multiply {
         Oasis::Real{ 2 },

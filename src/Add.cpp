@@ -67,13 +67,15 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     // x + x = 2x
     if (simplifiedAugend->Equals(*simplifiedAddend)) {
-        return std::make_unique<Multiply<Real, Expression>>(Real { 2.0 }, *simplifiedAugend);
+        return Multiply<Real, Expression> { Real { 2.0 }, *simplifiedAugend }.Simplify();
     }
 
     // 2x + x = 3x
     if (const auto likeTermsCase2 = Add<Multiply<Real, Expression>, Expression>::Specialize(simplifiedAdd); likeTermsCase2 != nullptr) {
-        const Real& coeffiecent = likeTermsCase2->GetMostSigOp().GetMostSigOp();
-        return std::make_unique<Multiply<Real, Expression>>(Real { coeffiecent.GetValue() + 1 }, likeTermsCase2->GetMostSigOp());
+        if (likeTermsCase2->GetMostSigOp().GetLeastSigOp().Equals(likeTermsCase2->GetLeastSigOp())) {
+            const Real& coeffiecent = likeTermsCase2->GetMostSigOp().GetMostSigOp();
+            return std::make_unique<Multiply<Real, Expression>>(Real { coeffiecent.GetValue() + 1 }, likeTermsCase2->GetMostSigOp().GetLeastSigOp());
+        }
     }
 
     // simplifies expressions and combines like terms
@@ -121,7 +123,6 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
             }
             if (i >= vals.size()) {
                 // check to make sure it is one thing only
-                // vals.push_back(Multiply<Expression> { img->GetMostSigOp(), Imaginary {} }.Generalize());
                 vals.push_back(img->Generalize());
             }
             continue;
@@ -156,7 +157,6 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
             }
             if (i >= vals.size()) {
                 // check to make sure it is one thing only
-                // vals.push_back(Multiply<Expression> { var->GetMostSigOp(), var->GetLeastSigOp() }.Generalize());
                 vals.push_back(var->Generalize());
             }
             continue;
@@ -191,7 +191,6 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
             }
             if (i >= vals.size()) {
                 // check to make sure it is one thing only
-                // vals.push_back(Multiply<Expression> { var->GetMostSigOp(), var->GetLeastSigOp() }.Generalize());
                 vals.push_back(exp->Generalize());
             }
             continue;
@@ -208,8 +207,6 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     return BuildFromVector<Add>(vals);
-
-    // return simplifiedAdd.Copy();
 }
 
 auto Add<Expression>::ToString() const -> std::string
