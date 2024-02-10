@@ -87,6 +87,30 @@ TEST_CASE("Imaginary Multiplication", "[Imaginary][Multiplication]")
     REQUIRE(Oasis::Real { 1.0 }.Equals(*simplified4));
 }
 
+TEST_CASE("Multiply Associativity", "[Multiply][Associativity]")
+{
+    Oasis::Multiply m1 {
+        Oasis::Multiply {
+            Oasis::Variable { "x" },
+            Oasis::Real { 3.0 } },
+        Oasis::Multiply {
+            Oasis::Variable { "y" },
+            Oasis::Exponent {
+                Oasis::Variable { "x" },
+                Oasis::Real { 4.0 } } }
+    };
+
+    auto simplified1 = m1.Simplify();
+
+    REQUIRE(Oasis::Multiply {
+        Oasis::Multiply {
+            Oasis::Exponent {
+                Oasis::Variable { "x" },
+                Oasis::Real { 5.0 } },
+            Oasis::Real { 3.0 } },
+        Oasis::Variable { "y" } }
+                .Equals(*simplified1));
+}
 TEST_CASE("Multiply Operator Overload", "[Multiply][Operator Overload]")
 {
     const std::unique_ptr<Oasis::Expression> a = std::make_unique<Oasis::Real>(1.0);
@@ -97,5 +121,4 @@ TEST_CASE("Multiply Operator Overload", "[Multiply][Operator Overload]")
 
     REQUIRE(realSum != nullptr);
     REQUIRE(realSum->GetValue() == 2.0);
-
 }
