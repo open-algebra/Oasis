@@ -2,6 +2,11 @@
 
 #include "Oasis/Expression.hpp"
 
+#include <Oasis/Add.hpp>
+#include <Oasis/Divide.hpp>
+#include <Oasis/Multiply.hpp>
+#include <Oasis/Subtract.hpp>
+
 namespace Oasis {
 
 auto Expression::GetCategory() const -> uint32_t
@@ -80,3 +85,19 @@ auto Expression::StructurallyEquivalentAsync(const Expression& other) const -> b
 }
 
 } // namespace Oasis
+std::unique_ptr<Oasis::Expression> operator+(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
+{
+    return Oasis::Add { *lhs, *rhs }.Simplify();
+}
+std::unique_ptr<Oasis::Expression> operator-(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
+{
+    return Oasis::Subtract { *lhs, *rhs }.Simplify();
+}
+std::unique_ptr<Oasis::Expression> operator*(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
+{
+    return Oasis::Multiply { *lhs, *rhs }.Simplify();
+}
+std::unique_ptr<Oasis::Expression> operator/(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
+{
+    return Oasis::Divide { *lhs, *rhs }.Simplify();
+}
