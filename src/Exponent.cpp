@@ -3,6 +3,8 @@
 //
 
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Add.hpp"
+#include "Oasis/Divide.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
@@ -157,6 +159,25 @@ auto Exponent<Expression>::Specialize(const Expression& other, tf::Subflow& subf
 
     auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Exponent>(dynamic_cast<const Exponent&>(*otherGeneralized));
+}
+
+auto Exponent<Expression>::Integrate(const Variable& integrationVariable) -> std::unique_ptr<Expression>
+{
+    auto simplifiedBase = mostSigOp->Simplify();
+    auto simplifiedPower = leastSigOp->Simplify();
+
+    Exponent simplifiedExponent { *simplifiedBase, *simplifiedPower };
+
+    if (auto realExponent = Exponent<Variable, Real>::Specialize(simplifiedExponent); realExponent != nullptr) {
+        const Variable& expBase = realExponent->GetMostSigOp();
+        const Real& expPow = realExponent->GetLeastSigOp();
+
+        if (integrationVariable.GetName() == expBase.GetName()) {
+            return std::make_unique<Add<Divide<Exponent<Variable, Real>, Real>, Variable>>(
+                Divide { Exponent { Variable { expBase.GetName() }, Real { expPow.GetValue() + 1 } }, Real { expPow.GetValue() + 1 } }, Variable { "C" });
+        }
+    }
+    return simplifiedExponent.Copy();
 }
 
 } // Oasis
