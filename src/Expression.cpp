@@ -9,10 +9,10 @@
 #include <Oasis/Subtract.hpp>
 #include <Oasis/Variable.hpp>
 
-std::vector<long> getAllFactors(long n)
+std::vector<long long> getAllFactors(long long n)
 {
-    std::vector<long> answer;
-    for (long i = 1; i * i <= n; i++) {
+    std::vector<long long> answer;
+    for (long long i = 1; i * i <= n; i++) {
         if (n % i == 0) {
             answer.push_back(i);
         }
@@ -23,7 +23,7 @@ std::vector<long> getAllFactors(long n)
     return answer;
 }
 
-long gcf(long a, long b)
+long long gcf(long long a, long long b)
 {
     if (b > a) {
         std::swap(a, b);
@@ -58,7 +58,7 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
         termsE.push_back(Copy());
     }
     std::string varName = "";
-    std::vector<long> termsC;
+    std::vector<long long> termsC;
     for (const auto& i : termsE) {
         double coefficent;
         std::string variableName;
@@ -101,16 +101,16 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
         termsC.pop_back();
     }
     std::reverse(termsC.begin(), termsC.end());
-    std::vector<long> q = getAllFactors(termsC.front());
-    std::vector<long> p = getAllFactors(termsC.back());
+    std::vector<long long> q = getAllFactors(termsC.front());
+    std::vector<long long> p = getAllFactors(termsC.back());
     for (auto pv : p) {
         for (auto qv : q) {
             if (gcf(pv, qv) == 1) {
-                for (long sign : { -1, 1 }) {
-                    long mpv = pv * sign;
-                    std::vector<long> newTermsC;
-                    long h = 0;
-                    for (long i : termsC) {
+                for (long long sign : { -1, 1 }) {
+                    long long mpv = pv * sign;
+                    std::vector<long long> newTermsC;
+                    long long h = 0;
+                    for (long long i : termsC) {
                         h *= mpv;
                         if (h % qv != 0) {
                             break;

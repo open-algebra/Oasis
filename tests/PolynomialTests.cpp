@@ -16,23 +16,22 @@
 
 TEST_CASE("7th degree polynomial with rational roots", "[factor][duplicateRoot]")
 {
-    // 19891950 - 160023895 x + 475755646 x^2 - 621674764 x^3 + 253625736 x^4 + 167604471 x^5 - 159891300 x^6 + 24097500 x^7
     Oasis::Add add {
         Oasis::Add {
             Oasis::Add {
-                Oasis::Real { 19'891'950 },
+                Oasis::Real { 222'126'775 },
                 Oasis::Multiply {
-                    Oasis::Real { -160'023'895 },
+                    Oasis::Real { -1'989'731'815 },
                     Oasis::Variable { "x" } },
             },
             Oasis::Add {
                 Oasis::Multiply {
-                    Oasis::Real { 475'755'646 },
+                    Oasis::Real { 6'674'884'402 },
                     Oasis::Exponent {
                         Oasis::Variable { "x" },
                         Oasis::Real { 2 } } },
                 Oasis::Multiply {
-                    Oasis::Real { -621'674'764 },
+                    Oasis::Real { -9'967'889'122 },
                     Oasis::Exponent {
                         Oasis::Variable { "x" },
                         Oasis::Real { 3 } } },
@@ -40,24 +39,24 @@ TEST_CASE("7th degree polynomial with rational roots", "[factor][duplicateRoot]"
         Oasis::Add {
             Oasis::Add {
                 Oasis::Multiply {
-                    Oasis::Real { 253'625'736 },
+                    Oasis::Real { 5'069'070'055 },
                     Oasis::Exponent {
                         Oasis::Variable { "x" },
                         Oasis::Real { 4 } } },
                 Oasis::Multiply {
-                    Oasis::Real { 167'604'471 },
+                    Oasis::Real { 2'370'752'969 },
                     Oasis::Exponent {
                         Oasis::Variable { "x" },
                         Oasis::Real { 5 } } },
             },
             Oasis::Add {
                 Oasis::Multiply {
-                    Oasis::Real { -159'891'300 },
+                    Oasis::Real { -2'841'027'600 },
                     Oasis::Exponent {
                         Oasis::Variable { "x" },
                         Oasis::Real { 6 } } },
                 Oasis::Multiply {
-                    Oasis::Real { 24'097'500 },
+                    Oasis::Real { 446'760'000 },
                     Oasis::Exponent {
                         Oasis::Variable { "x" },
                         Oasis::Real { 7 } } },
@@ -65,7 +64,7 @@ TEST_CASE("7th degree polynomial with rational roots", "[factor][duplicateRoot]"
     };
     auto zeros = add.FindZeros();
     REQUIRE(zeros.size() == 6);
-    std::set<std::tuple<long, long>> goalSet = { std::tuple(1, 3), std::tuple(6, 7), std::tuple(13, 17), std::tuple(-5, 3), std::tuple(101, 150), std::tuple(5, 1) };
+    std::set<std::tuple<long, long>> goalSet = { std::tuple(1, 3), std::tuple(67, 73), std::tuple(13, 17), std::tuple(-5, 3), std::tuple(101, 200), std::tuple(5, 1) };
     for (auto& i : zeros) {
         auto divideCase = Oasis::Divide<Oasis::Real>::Specialize(*i);
         REQUIRE(divideCase != nullptr);
