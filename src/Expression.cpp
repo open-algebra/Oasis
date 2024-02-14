@@ -17,8 +17,8 @@ std::vector<long> getAllFactors(long n)
             answer.push_back(i);
         }
     }
-    if (abs(n) != 1) {
-        answer.push_back(abs(n));
+    if (std::abs(n) != 1) {
+        answer.push_back(std::abs(n));
     }
     return answer;
 }
@@ -84,40 +84,25 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             variableName = varName;
             exponent = 0;
         } else {
-            std::cerr << "no match\n";
             return {};
         }
         if (varName == "") {
             varName = variableName;
         }
         if (coefficent != round(coefficent) || exponent != round(exponent) || varName != variableName || exponent < 0) {
-            std::cerr << (coefficent != round(coefficent)) << (exponent != round(exponent)) << (varName != variableName) << (exponent < 0);
-            std::cerr << "rule Break\n";
             return {};
         }
         if (termsC.size() <= exponent) {
             termsC.resize(exponent + 1, 0);
         }
-        std::cout << "(" << exponent << "," << coefficent << "," << lround(coefficent) << ',' << termsC[exponent] << ")\n";
         termsC[exponent] += lround(coefficent);
     }
     while (termsC.back() == 0) {
         termsC.pop_back();
     }
-    for (auto i : termsC) {
-        std::cout << i << ' ';
-    }
-    std::cout << '\n';
     std::reverse(termsC.begin(), termsC.end());
     std::vector<long> q = getAllFactors(termsC.front());
     std::vector<long> p = getAllFactors(termsC.back());
-    for (auto i : p) {
-        std::cout << i << ' ';
-    }
-    std::cout << '\n';
-    for (auto i : q) {
-        std::cout << i << ' ';
-    }
     for (auto pv : p) {
         for (auto qv : q) {
             if (gcf(pv, qv) == 1) {
