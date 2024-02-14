@@ -93,7 +93,7 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             return {};
         }
         if (termsC.size() <= exponent) {
-            termsC.resize(exponent + 1, 0);
+            termsC.resize(lround(exponent) + 1, 0);
         }
         termsC[exponent] += lround(coefficent);
     }
