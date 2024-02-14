@@ -121,7 +121,7 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
                     }
                     if (newTermsC.size() == termsC.size() && newTermsC.back() == 0) {
                         termsC = newTermsC;
-                        results.push_back(std::make_unique<Divide<Real>>(Real(1.0*mpv), Real(1.0*qv)));
+                        results.push_back(std::make_unique<Divide<Real>>(Real(1.0 * mpv), Real(1.0 * qv)));
                         do {
                             termsC.pop_back();
                         } while (termsC.back() == 0);
