@@ -13,6 +13,7 @@ include(FetchContent)
 option(OASIS_BUILD_TESTS "Enables building unit tests for Oasis" ON)
 option(OASIS_BUILD_WITH_COVERAGE
        "Enables building Oasis with code coverage enabled" OFF)
+option(OASIS_BUILD_GUI "Enables building the GUI application" OFF)
 
 # Fetches dependencies and integrates them into the project.
 FetchContent_Declare(
@@ -36,4 +37,8 @@ add_subdirectory(src)
 
 if(OASIS_BUILD_TESTS)
     add_subdirectory(tests)
+endif()
+
+if(OASIS_BUILD_GUI)
+    add_subdirectory(gui)
 endif()
