@@ -28,6 +28,7 @@ enum class ExpressionType {
     Exponent,
     Log,
     Sin,
+    Arcsin,
 };
 
 /**
