@@ -40,21 +40,26 @@ auto Variable::Specialize(const Expression& other, tf::Subflow&) -> std::unique_
     return other.Is<Variable>() ? std::make_unique<Variable>(dynamic_cast<const Variable&>(other)) : nullptr;
 }
 
-auto Variable::Integrate(const Variable& integrationVariable) -> std::unique_ptr<Expression>
+auto Variable::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
 {
-    // Power rule
-    if (name == integrationVariable.GetName()) {
-        return std::make_unique<Add<Divide<Exponent<Variable, Real>, Real>, Variable>>(Add {
-            Divide {
-                Exponent { Variable { integrationVariable.GetName() }, Real { 2.0f } },
-                Real { 2.0f } },
+    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+
+        // Power rule
+        if (name == (*variable).GetName()) {
+            return std::make_unique<Add<Divide<Exponent<Variable, Real>, Real>, Variable>>(Add {
+                Divide {
+                    Exponent { Variable { (*variable).GetName() }, Real { 2.0f } },
+                    Real { 2.0f } },
+                Variable { "C" } });
+        }
+
+        // Different variable, treat as constant
+        return std::make_unique<Add<Multiply<Variable, Variable>, Variable>>(Add {
+            Multiply { Variable { name }, Variable { (*variable).GetName() } },
             Variable { "C" } });
     }
 
-    // Different variable, treat as constant
-    return std::make_unique<Add<Multiply<Variable, Variable>, Variable>>(Add {
-        Multiply { Variable { name }, Variable { integrationVariable.GetName() } },
-        Variable { "C" } });
+    return Copy();
 }
 
 } // Oasis
