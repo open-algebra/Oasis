@@ -23,7 +23,7 @@ TEST_CASE("7th degree polynomial with rational roots", "[factor][duplicateRoot]"
     std::vector<long> vecL = { 24750, -200'925, 573'625, -631'406, 79184, 247'799, -92631, 8820 };
     for (size_t i = 0; i < vecL.size(); i++) {
         Oasis::Real num = Oasis::Real(vecL[i]);
-        size_t exp = i + offset;
+        long exp = ((long)i) + offset;
         if (exp < -1) {
             vec.push_back(Oasis::Divide(num, Oasis::Exponent(Oasis::Variable("x"), Oasis::Real(-exp * 1.0))).Copy());
         } else if (exp == -1) {
@@ -72,7 +72,7 @@ TEST_CASE("irrational quadratic", "[quadraticFormula]")
     std::vector<long> vecL = { -1, 1, 1 };
     for (size_t i = 0; i < vecL.size(); i++) {
         Oasis::Real num = Oasis::Real(vecL[i]);
-        long exp = i + offset;
+        long exp = ((long)i) + offset;
         if (exp < -1) {
             vec.push_back(Oasis::Divide(num, Oasis::Exponent(Oasis::Variable("x"), Oasis::Real(-exp))).Copy());
         } else if (exp == -1) {
