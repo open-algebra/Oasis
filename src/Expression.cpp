@@ -120,7 +120,7 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
     }
     std::vector<std::unique_ptr<Expression>> coefficents;
     for (size_t i = negCoefficents.size(); i > 1; i--) {
-        coefficents.push_back(negCoefficents[i-1]->Simplify());
+        coefficents.push_back(negCoefficents[i - 1]->Simplify());
     }
     for (const std::unique_ptr<Expression>& i : posCoefficents) {
         coefficents.push_back(i->Simplify());
@@ -192,7 +192,7 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
         std::reverse(termsC.begin(), termsC.end());
         std::cout << termsC.size() << '\n';
         for (auto i : termsC) {
-            coefficents.push_back(Real(i*1.0).Copy());
+            coefficents.push_back(Real(i * 1.0).Copy());
         }
     }
     std::cout << coefficents.size() << '\n';
