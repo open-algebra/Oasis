@@ -58,81 +58,158 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
         termsE.push_back(Copy());
     }
     std::string varName = "";
-    std::vector<long long> termsC;
+    std::vector<std::unique_ptr<Expression>> posCoefficents;
+    std::vector<std::unique_ptr<Expression>> negCoefficents;
     for (const auto& i : termsE) {
-        double coefficent;
+        std::unique_ptr<Expression> coefficent;
         std::string variableName;
         double exponent;
         if (auto variableCase = Variable::Specialize(*i); variableCase != nullptr) {
-            coefficent = 1;
+            coefficent = Real(1).Copy();
             variableName = variableCase->GetName();
             exponent = 1;
         } else if (auto expCase = Exponent<Variable, Real>::Specialize(*i); expCase != nullptr) {
-            coefficent = 1;
+            coefficent = Real(1).Copy();
             variableName = expCase->GetMostSigOp().GetName();
             exponent = expCase->GetLeastSigOp().GetValue();
-        } else if (auto prodCase = Multiply<Real, Variable>::Specialize(*i); prodCase != nullptr) {
-            coefficent = prodCase->GetMostSigOp().GetValue();
+        } else if (auto prodCase = Multiply<Expression, Variable>::Specialize(*i); prodCase != nullptr) {
+            coefficent = prodCase->GetMostSigOp().Copy();
             variableName = prodCase->GetLeastSigOp().GetName();
             exponent = 1;
-        } else if (auto prodExpCase = Multiply<Real, Exponent<Variable, Real>>::Specialize(*i); prodExpCase != nullptr) {
-            coefficent = prodExpCase->GetMostSigOp().GetValue();
+        } else if (auto prodExpCase = Multiply<Expression, Exponent<Variable, Real>>::Specialize(*i); prodExpCase != nullptr) {
+            coefficent = prodExpCase->GetMostSigOp().Copy();
             variableName = prodExpCase->GetLeastSigOp().GetMostSigOp().GetName();
             exponent = prodExpCase->GetLeastSigOp().GetLeastSigOp().GetValue();
-        } else if (auto realCase = Real::Specialize(*i); realCase != nullptr) {
-            coefficent = realCase->GetValue();
+        } else if (auto divCase = Divide<Expression, Variable>::Specialize(*i); divCase != nullptr) {
+            coefficent = divCase->GetMostSigOp().Copy();
+            variableName = divCase->GetLeastSigOp().GetName();
+            exponent = -1;
+        } else if (auto divExpCase = Divide<Expression, Exponent<Variable, Real>>::Specialize(*i); divExpCase != nullptr) {
+            coefficent = divExpCase->GetMostSigOp().Copy();
+            variableName = divExpCase->GetLeastSigOp().GetMostSigOp().GetName();
+            exponent = -divExpCase->GetLeastSigOp().GetLeastSigOp().GetValue();
+        } else {
+            coefficent = i->Copy();
             variableName = varName;
             exponent = 0;
-        } else {
-            return {};
         }
         if (varName == "") {
             varName = variableName;
         }
-        if (coefficent != round(coefficent) || exponent != round(exponent) || varName != variableName || exponent < 0) {
+        if (exponent != round(exponent) || varName != variableName) {
             return {};
         }
-        if (termsC.size() <= exponent) {
-            termsC.resize(lround(exponent) + 1, 0);
+        if (exponent >= 0) {
+            while (posCoefficents.size() <= exponent) {
+                posCoefficents.push_back(Real(0).Copy());
+            }
+            posCoefficents[lround(exponent)] = Add<Expression>(*coefficent, *posCoefficents[lround(exponent)]).Copy();
+        } else {
+            exponent *= -1;
+            while (negCoefficents.size() <= exponent) {
+                negCoefficents.push_back(Real(0).Copy());
+            }
+            negCoefficents[lround(exponent)] = Add<Expression>(*coefficent, *negCoefficents[lround(exponent)]).Copy();
         }
-        termsC[lround(exponent)] += lround(coefficent);
     }
-    while (termsC.back() == 0) {
-        termsC.pop_back();
+    while (negCoefficents.size() > 0 && Real::Specialize(*negCoefficents.back()) != nullptr && Real::Specialize(*negCoefficents.back())->GetValue() == 0) {
+        negCoefficents.pop_back();
     }
-    std::reverse(termsC.begin(), termsC.end());
-    std::vector<long long> q = getAllFactors(termsC.front());
-    std::vector<long long> p = getAllFactors(termsC.back());
-    for (auto pv : p) {
-        for (auto qv : q) {
-            if (gcf(pv, qv) == 1) {
-                for (long long sign : { -1, 1 }) {
-                    long long mpv = pv * sign;
-                    std::vector<long long> newTermsC;
-                    long long h = 0;
-                    for (long long i : termsC) {
-                        h *= mpv;
-                        if (h % qv != 0) {
-                            break;
-                        }
-                        h /= qv;
-                        h += i;
-                        newTermsC.push_back(h);
-                    }
-                    if (newTermsC.size() == termsC.size() && newTermsC.back() == 0) {
-                        termsC = newTermsC;
-                        results.push_back(std::make_unique<Divide<Real>>(Real(1.0 * mpv), Real(1.0 * qv)));
-                        do {
-                            termsC.pop_back();
-                        } while (termsC.back() == 0);
-                        if (termsC.size() == 0) {
-                            return results;
+    while (posCoefficents.size() > 0 && Real::Specialize(*posCoefficents.back()) != nullptr && Real::Specialize(*posCoefficents.back())->GetValue() == 0) {
+        posCoefficents.pop_back();
+    }
+    std::vector<std::unique_ptr<Expression>> coefficents;
+    for (int i = negCoefficents.size() - 1; i > 0; i--) {
+        coefficents.push_back(negCoefficents[i]->Simplify());
+    }
+    for (const std::unique_ptr<Expression>& i : posCoefficents) {
+        coefficents.push_back(i->Simplify());
+    }
+    if (coefficents.size() <= 1) {
+        return {};
+    }
+    std::vector<long long> termsC;
+    for (auto& i : coefficents) {
+        auto realCase = Real::Specialize(*i);
+        if (realCase == nullptr) {
+            break;
+        }
+        double value = realCase->GetValue();
+        if (value != round(value)) {
+            break;
+        } else {
+            termsC.push_back(lround(value));
+        }
+    }
+    if (termsC.size() == coefficents.size()) {
+        std::reverse(termsC.begin(), termsC.end());
+        for (auto pv : getAllFactors(termsC.back())) {
+            for (auto qv : getAllFactors(termsC.front())) {
+                if (gcf(pv, qv) == 1) {
+                    for (long long sign : { -1, 1 }) {
+                        bool doAdd = true;
+                        while (true) {
+                            long long mpv = pv * sign;
+                            std::vector<long long> newTermsC;
+                            long long h = 0;
+                            for (long long i : termsC) {
+                                h *= mpv;
+                                if (h % qv != 0) {
+                                    break;
+                                }
+                                h /= qv;
+                                h += i;
+                                newTermsC.push_back(h);
+                            }
+                            if (newTermsC.size() == termsC.size() && newTermsC.back() == 0) {
+                                termsC = newTermsC;
+                                if (doAdd) {
+                                    results.push_back(std::make_unique<Divide<Real>>(Real(1.0 * mpv), Real(1.0 * qv)));
+                                    doAdd = false;
+                                }
+                                do {
+                                    termsC.pop_back();
+                                    std::cout << mpv << "/" << qv << '\n';
+                                } while (termsC.back() == 0);
+                                if (termsC.size() <= 1) {
+                                    break;
+                                }
+                            } else {
+                                break;
+                            }
                         }
                     }
                 }
+                if (termsC.size() <= 1) {
+                    break;
+                }
+            }
+            if (termsC.size() <= 1) {
+                break;
             }
         }
+        coefficents.clear();
+        std::reverse(termsC.begin(), termsC.end());
+        std::cout << termsC.size() << '\n';
+        for (auto i : termsC) {
+            coefficents.push_back(Real(i).Copy());
+        }
     }
+    std::cout << coefficents.size() << '\n';
+    if (coefficents.size() == 2) {
+        results.push_back(Divide(Multiply(Real(-1), *coefficents[0]), *coefficents[1]).Simplify());
+    } else if (coefficents.size() == 3) {
+        std::cout << "hi\n";
+        auto& a = coefficents[2];
+        auto& b = coefficents[1];
+        auto& c = coefficents[0];
+        auto negB = Multiply(Real(-1.0), *b).Simplify();
+        auto sqrt = Exponent(*Add(Multiply(*b, *b), Multiply(Real(-4), Multiply(*a, *c))).Simplify(), Divide(Real(1), Real(2))).Copy();
+        auto twoA = Multiply(Real(2), *a).Simplify();
+        results.push_back(Divide(Add(*negB, *sqrt), *twoA).Copy());
+        results.push_back(Divide(Subtract(*negB, *sqrt), *twoA).Copy());
+    }
+    std::cout << results.size() << '\n';
     return results;
 }
 

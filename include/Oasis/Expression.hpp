@@ -97,7 +97,7 @@ public:
     [[nodiscard]] virtual auto Equals(const Expression& other) const -> bool = 0;
 
     /**
-     * The FindZeros function finds all rational zeros of a polynomial of. Currently assumes an expression of the form a+bx+cx^2+dx^3+... where a, b, c, d are a integers.
+     * The FindZeros function finds all rational real zeros, and up to 2 irrational/complex zeros of a polynomial. Currently assumes an expression of the form a+bx+cx^2+dx^3+... where a, b, c, d are a integers.
      *
      * @tparam origonalExpresion The expression for which all the factors will be found.
      */
