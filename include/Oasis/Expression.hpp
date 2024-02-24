@@ -27,6 +27,7 @@ enum class ExpressionType {
     Divide,
     Exponent,
     Log,
+    Integrate,
 };
 
 /**
