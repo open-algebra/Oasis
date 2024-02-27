@@ -297,20 +297,11 @@ auto Divide<Expression>::Integrate(const Expression& integrationVariable) -> std
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
-        auto top = mostSigOp->Simplify();
-        auto bottom = leastSigOp->Simplify();
-
-        Divide simplifiedDiv = Divide { *top, *bottom };
+        auto simplifiedDiv = this->Simplify();
 
         // Constant case - Integrand over a divisor
-        if (auto constant = Divide<Expression, Real>::Specialize(simplifiedDiv); constant != nullptr) {
-            auto dividend = constant->GetMostSigOp().Copy();
-            auto bottomNum = constant->GetLeastSigOp();
-            auto integrated = (*dividend).Integrate(integrationVariable);
-
-            if (auto add = Add<Expression, Variable>::Specialize(*integrated); add != nullptr) {
-                return std::make_unique<Add<Divide<Expression, Real>, Variable>>(Add<Divide<Expression, Real>, Variable> { Divide<Expression, Real> { add->GetMostSigOp(), Real { bottomNum.GetValue() } }, Variable { "C" } });
-            }
+        if (auto constant = Multiply<Real, Expression>::Specialize(*simplifiedDiv); constant != nullptr) {
+            return constant->Integrate(integrationVariable);
         }
     }
 

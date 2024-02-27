@@ -342,13 +342,10 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) -> s
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
-        auto leftSide = mostSigOp->Simplify();
-        auto rightSide = leastSigOp->Simplify();
-
-        Multiply simplifiedMult = Multiply { *leftSide, *rightSide };
+        auto simplifiedMult = this->Simplify();
 
         // Constant case - Constant number multiplied by integrand
-        if (auto constant = Multiply<Real, Expression>::Specialize(simplifiedMult); constant != nullptr) {
+        if (auto constant = Multiply<Real, Expression>::Specialize(*simplifiedMult); constant != nullptr) {
             auto exp = constant->GetLeastSigOp().Copy();
             auto num = constant->GetMostSigOp();
             auto integrated = (*exp).Integrate(integrationVariable);
