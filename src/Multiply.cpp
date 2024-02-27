@@ -351,7 +351,7 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) -> s
             auto num = constant->GetMostSigOp();
             auto integrated = (*exp).Integrate(integrationVariable);
 
-            if (auto add = Add<Expression, Variable>::Specialize(*integrated); constant != nullptr) {
+            if (auto add = Add<Expression, Variable>::Specialize(*integrated); add != nullptr) {
                 return std::make_unique<Add<Multiply<Real, Expression>, Variable>>(Add<Multiply<Real, Expression>, Variable> { Multiply<Real, Expression> { Real { num.GetValue() }, add->GetMostSigOp() }, Variable { "C" } });
             }
         }
