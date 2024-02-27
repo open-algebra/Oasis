@@ -40,7 +40,7 @@ jobs:
             run: |
                 sudo apt-get update
                 sudo apt-get install -y curl graphviz
-                curl -L https://www.doxygen.nl/files/doxygen-1.10.0.linux.bin.tar.gz | tar xvf -
+                curl -L https://www.doxygen.nl/files/doxygen-1.10.0.linux.bin.tar.gz | tar xzvf -
 
             # Sets up GitHub Pages.
           - name: Setup GitHub Pages
