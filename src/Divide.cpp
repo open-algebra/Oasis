@@ -295,12 +295,14 @@ auto Divide<Expression>::Specialize(const Expression& other, tf::Subflow& subflo
 
 auto Divide<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
 {
+    // Single integration variable
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
         auto top = mostSigOp->Simplify();
         auto bottom = leastSigOp->Simplify();
 
         Divide simplifiedDiv = Divide { *top, *bottom };
 
+        // Constant case - Integrand over a divisor
         if (auto constant = Divide<Expression, Real>::Specialize(simplifiedDiv); constant != nullptr) {
             auto dividend = constant->GetMostSigOp().Copy();
             auto bottomNum = constant->GetLeastSigOp();

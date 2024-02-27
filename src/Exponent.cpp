@@ -160,6 +160,7 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) -> s
 
         Exponent simplifiedExponent { *simplifiedBase, *simplifiedPower };
 
+        // Variable with a constant power
         if (auto realExponent = Exponent<Variable, Real>::Specialize(simplifiedExponent); realExponent != nullptr) {
             const Variable& expBase = realExponent->GetMostSigOp();
             const Real& expPow = realExponent->GetLeastSigOp();

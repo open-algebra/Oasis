@@ -340,12 +340,14 @@ auto Multiply<Expression>::Specialize(const Expression& other, tf::Subflow& subf
 
 auto Multiply<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
 {
+    // Single integration variable
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
         auto leftSide = mostSigOp->Simplify();
         auto rightSide = leastSigOp->Simplify();
 
         Multiply simplifiedMult = Multiply { *leftSide, *rightSide };
 
+        // Constant case - Constant number multiplied by integrand
         if (auto constant = Multiply<Real, Expression>::Specialize(simplifiedMult); constant != nullptr) {
             auto exp = constant->GetLeastSigOp().Copy();
             auto num = constant->GetMostSigOp();

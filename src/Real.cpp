@@ -44,12 +44,14 @@ auto Real::Specialize(const Expression& other, tf::Subflow&) -> std::unique_ptr<
 auto Real::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
 {
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+        // Constant rule
         if (value != 0) {
             return std::make_unique<Add<Multiply<Real, Variable>, Variable>>(Add {
                 Multiply<Real, Variable> { Real { value }, Variable { (*variable).GetName() } },
                 Variable { "C" } });
         }
 
+        // Zero rule
         return std::make_unique<Variable>(Variable { "C" });
     }
     return Copy();
