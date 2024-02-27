@@ -2,6 +2,7 @@
 // Created by Matthew McCall on 8/10/23.
 //
 #include "Oasis/Divide.hpp"
+#include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
@@ -290,6 +291,28 @@ auto Divide<Expression>::Specialize(const Expression& other, tf::Subflow& subflo
 
     auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Divide>(dynamic_cast<const Divide&>(*otherGeneralized));
+}
+
+auto Divide<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+{
+    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+        auto top = mostSigOp->Simplify();
+        auto bottom = leastSigOp->Simplify();
+
+        Divide simplifiedDiv = Divide { *top, *bottom };
+
+        if (auto constant = Divide<Expression, Real>::Specialize(simplifiedDiv); constant != nullptr) {
+            auto dividend = constant->GetMostSigOp().Copy();
+            auto bottomNum = constant->GetLeastSigOp();
+            auto integrated = (*dividend).Integrate(integrationVariable);
+
+            if (auto add = Add<Expression, Variable>::Specialize(*integrated); add != nullptr) {
+                return std::make_unique<Add<Divide<Expression, Real>, Variable>>(Add<Divide<Expression, Real>, Variable> { Divide<Expression, Real> { add->GetMostSigOp(), Real { bottomNum.GetValue() } }, Variable { "C" } });
+            }
+        }
+    }
+
+    return Copy();
 }
 
 } // Oasis
