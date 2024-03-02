@@ -27,6 +27,8 @@ enum class ExpressionType {
     Divide,
     Exponent,
     Log,
+    Limit,
+    Differentiate,
 };
 
 /**
@@ -81,6 +83,7 @@ public:
      * @return A copy of this expression.
      */
     virtual auto Copy(tf::Subflow& subflow) const -> std::unique_ptr<Expression> = 0;
+
 
     /**
      * Compares this expression to another expression for equality.
