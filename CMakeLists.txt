@@ -4,7 +4,7 @@
 # CMakeLists.txt - Top-level
 # ##############################################################################
 
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.18)
 project(Oasis)
 
 include(CTest)
