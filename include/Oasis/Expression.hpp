@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <vector>
 
 namespace tf {
 class Subflow;
@@ -279,15 +280,15 @@ public:
         return ExpressionType::type;                \
     }
 
-#define EXPRESSION_CATEGORY(category)             \
-    auto GetCategory() const -> uint32_t override \
-    {                                             \
-        return category;                          \
-    }                                             \
-                                                  \
-    static auto GetStaticCategory() -> uint32_t   \
-    {                                             \
-        return category;                          \
+#define EXPRESSION_CATEGORY(category)                     \
+    auto GetCategory() const -> uint32_t override         \
+    {                                                     \
+        return category;                                  \
+    }                                                     \
+                                                          \
+    constexpr static auto GetStaticCategory() -> uint32_t \
+    {                                                     \
+        return category;                                  \
     }
 
 } // namespace Oasis

@@ -107,6 +107,14 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
+    if (auto zeroCase = Exponent<Real, Expression>::Specialize(simplifiedExponent); zeroCase != nullptr) {
+        const Real& base = zeroCase->GetMostSigOp();
+
+        if (base.GetValue() == 0.0) {
+            return std::make_unique<Real>(0.0);
+        }
+    }
+
     if (auto specialBase = Exponent<Real, Expression>::Specialize(simplifiedExponent); specialBase != nullptr) {
         const Real& base = specialBase->GetMostSigOp();
         if(base.GetValue() == 1.0){
