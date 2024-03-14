@@ -20,7 +20,6 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedAugend = mostSigOp ? mostSigOp->Simplify() : nullptr;
     auto simplifiedAddend = leastSigOp ? leastSigOp->Simplify() : nullptr;
-
     Add simplifiedAdd { *simplifiedAugend, *simplifiedAddend };
 
     if (auto realCase = Add<Real>::Specialize(simplifiedAdd); realCase != nullptr) {
@@ -32,7 +31,7 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     if (auto zeroCase = Add<Real, Expression>::Specialize(simplifiedAdd); zeroCase != nullptr) {
         if (zeroCase->GetMostSigOp().GetValue() == 0) {
-            return zeroCase->GetLeastSigOp().Generalize();
+            return zeroCase->GetLeastSigOp().Copy();
         }
     }
 
@@ -66,10 +65,16 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (const auto likeTermsCase2 = Add<Multiply<Real, Expression>, Expression>::Specialize(simplifiedAdd); likeTermsCase2 != nullptr) {
         if (likeTermsCase2->GetMostSigOp().GetLeastSigOp().Equals(likeTermsCase2->GetLeastSigOp())) {
             const Real& coeffiecent = likeTermsCase2->GetMostSigOp().GetMostSigOp();
+            double newCoeffiecentVal = coeffiecent.GetValue() + 1;
+            if (newCoeffiecentVal == 0) {
+                return std::make_unique<Real>(0);
+            }
+            if (newCoeffiecentVal == 1) {
+                return likeTermsCase2->GetMostSigOp().GetLeastSigOp().Copy();
+            }
             return std::make_unique<Multiply<Real, Expression>>(Real { coeffiecent.GetValue() + 1 }, likeTermsCase2->GetMostSigOp().GetLeastSigOp());
         }
     }
-
     // simplifies expressions and combines like terms
     // ex: 1 + 2x + 3 + 5x = 4 + 7x (or 7x + 4)
     std::vector<std::unique_ptr<Expression>> adds;
@@ -188,16 +193,25 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
             continue;
         }
     }
+
     // rebuild equation after simplification.
 
-    for (auto& val : vals) {
+    for (size_t i = 0; i < vals.size(); i++) {
+        auto& val = vals[i];
         if (auto mul = Multiply<Real, Expression>::Specialize(*val); mul != nullptr) {
-            if (mul->GetMostSigOp().GetValue() == 1.0) {
+            double coefficient = mul->GetMostSigOp().GetValue();
+            if (coefficient == 1.0) {
                 val = mul->GetLeastSigOp().Generalize();
+            } else if (coefficient == 0) {
+                std::swap(val, vals.back());
+                vals.pop_back();
+                i--;
             }
         }
     }
-
+    if (vals.size() == 0) {
+        return std::make_unique<Real>(0);
+    }
     return BuildFromVector<Add>(vals);
 }
 

@@ -69,7 +69,8 @@ public:
 
     [[nodiscard]] auto Copy() const -> std::unique_ptr<Expression> final
     {
-        return std::make_unique<DerivedSpecialized>(*static_cast<const DerivedSpecialized*>(this));
+        auto ret = std::make_unique<DerivedSpecialized>(*static_cast<const DerivedSpecialized*>(this));
+        return ret;
     }
 
     auto Copy(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final
@@ -272,6 +273,20 @@ public:
         return mostSigOpEquivalent && leastSigOpEquivalent;
     }
 
+    [[nodiscard]] virtual auto SubstituteVariable(const Expression& var, const Expression& exp) const -> std::unique_ptr<Expression>
+    {
+        DerivedGeneralized generalized;
+
+        if (mostSigOp) {
+            generalized.SetMostSigOp(*mostSigOp->SubstituteVariable(var, exp));
+        }
+
+        if (leastSigOp) {
+            generalized.SetLeastSigOp(*leastSigOp->SubstituteVariable(var, exp));
+        }
+
+        return std::make_unique<DerivedGeneralized>(generalized);
+    }
     /**
      * Flattens this expression.
      *

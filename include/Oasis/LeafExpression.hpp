@@ -38,6 +38,11 @@ public:
     {
         return this->GetType() == other.GetType();
     }
+
+    [[nodiscard]] virtual auto SubstituteVariable(const Expression&, const Expression&) const -> std::unique_ptr<Expression>
+    {
+        return Copy();
+    }
 };
 
 } // Oasis

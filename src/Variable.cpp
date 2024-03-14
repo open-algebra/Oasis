@@ -36,4 +36,13 @@ auto Variable::Specialize(const Expression& other, tf::Subflow&) -> std::unique_
     return other.Is<Variable>() ? std::make_unique<Variable>(dynamic_cast<const Variable&>(other)) : nullptr;
 }
 
+[[nodiscard]] auto Variable::SubstituteVariable(const Expression& var, const Expression& exp) const -> std::unique_ptr<Expression>
+{
+    if (Equals(var)) {
+        return exp.Copy();
+    } else {
+        return Copy();
+    }
+}
+
 } // Oasis

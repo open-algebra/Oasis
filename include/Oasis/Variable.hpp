@@ -40,6 +40,7 @@ public:
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Variable>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Variable>;
+    [[nodiscard]] virtual auto SubstituteVariable(const Expression& var, const Expression& exp) const -> std::unique_ptr<Expression> final;
 
     auto operator=(const Variable& other) -> Variable& = default;
 

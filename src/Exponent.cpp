@@ -3,12 +3,37 @@
 //
 
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Add.hpp"
+#include "Oasis/Divide.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Util.hpp"
 #include <cmath>
+#include <tuple>
 
+#ifndef M_PIl
+constexpr auto M_PIl = 3.141592653589793238462643383279502884L;
+#endif
 namespace Oasis {
+
+auto complexSpecialize(const Exponent<Expression>& exp) -> std::tuple<double,double,double>{
+    auto specializeExp = Exponent<Add<Real,Expression>,Real>::Specialize(exp);
+    std::tuple<double,double,double> failure(NAN,NAN,NAN);
+    if(specializeExp==nullptr){
+        return failure;
+    }
+    double pow = specializeExp->GetLeastSigOp().GetValue();
+    const auto& base = specializeExp->GetMostSigOp();
+    double realPart = base.GetMostSigOp().GetValue();
+    const auto& imgPart = base.GetLeastSigOp();
+    if(imgPart.Is<Imaginary>()){
+        return std::make_tuple(realPart,1,pow);
+    } else if (auto imgPartMult = Multiply<Real,Imaginary>::Specialize(imgPart); imgPartMult !=nullptr){
+        return std::make_tuple(realPart,imgPartMult->GetMostSigOp().GetValue(),pow);
+    }
+    return failure;
+}
 
 Exponent<Expression>::Exponent(const Expression& base, const Expression& power)
     : BinaryExpression(base, power)
@@ -18,29 +43,77 @@ Exponent<Expression>::Exponent(const Expression& base, const Expression& power)
 auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedBase = mostSigOp->Simplify();
-    auto simplifiedPower = leastSigOp->Simplify();
+    std::unique_ptr<Expression> simplifiedPower = leastSigOp->Simplify();
 
     Exponent simplifiedExponent { *simplifiedBase, *simplifiedPower };
 
-    if (auto zeroCase = Exponent<Expression, Real>::Specialize(simplifiedExponent); zeroCase != nullptr) {
-        const Real& power = zeroCase->GetLeastSigOp();
-
+    if (auto realCase = Exponent<Real>::Specialize(simplifiedExponent); realCase != nullptr) {
+        double powerValue = realCase->GetLeastSigOp().GetValue();
+        double baseValue = realCase->GetMostSigOp().GetValue();
+        if (baseValue >= 0) {
+            return std::make_unique<Real>(std::pow(baseValue, powerValue));
+        }
+        double powerNumValueD = powerValue;
+        double powerDenValueD = 1;
+        if(powerValue == 0.5){
+            powerNumValueD = 1;
+            powerDenValueD = 2;
+        } else if(auto PowerDiv = Divide<Expression>::Specialize(*leastSigOp); PowerDiv!=nullptr){
+            auto SimplifedPowerDiv = Divide<Real>::Specialize(Divide(*PowerDiv->GetMostSigOp().Simplify(), *PowerDiv->GetLeastSigOp().Simplify()));
+            if (SimplifedPowerDiv != nullptr) {
+                powerNumValueD = SimplifedPowerDiv->GetMostSigOp().GetValue();
+                powerDenValueD = SimplifedPowerDiv->GetLeastSigOp().GetValue();
+                if (Util::isInt(powerNumValueD) && Util::isInt(powerDenValueD)) {
+            long long powerNumValue = lround(powerNumValueD);
+            long long powerDenValue = lround(powerDenValueD);
+            long long simpBy = Util::gcf(powerNumValue, powerDenValue);
+            powerDenValue /= simpBy;
+            if (powerDenValue % 2 == 1) {
+                return std::make_unique<Real>(-std::pow(-baseValue, powerValue));
+            }
+            powerNumValueD /= simpBy;
+            powerDenValueD = 1.0*powerDenValue;
+        }
+            }
+        }
+        double newAbs = std::pow(-baseValue, powerValue);
+        if(powerNumValueD==1&&powerDenValueD==2){
+            return std::make_unique<Multiply<Real,Imaginary>>(Real(newAbs),Imaginary());
+        }
+        double angle = std::fmod((M_PIl * powerNumValueD),(2*M_PIl));
+        if(angle>M_PIl){
+            angle-=2*M_PIl;
+        }
+        angle/=powerDenValueD;
+        Real newReal = Real(newAbs*std::cos(angle));
+        Real newImg = Real(newAbs*std::sin(angle));
+        return std::make_unique<Add<Real,Multiply<Real,Imaginary>>>(newReal,Multiply(newImg,Imaginary()));
+    }
+    
+    if (auto multCase = Exponent<Multiply<Expression>,Expression>::Specialize(simplifiedExponent); multCase != nullptr){
+        auto& base = multCase->GetMostSigOp();
+        auto& left = base.GetMostSigOp();
+        auto& right = base.GetLeastSigOp();
+        auto& exp = multCase->GetLeastSigOp();
+        return Multiply(Exponent(left,exp),Exponent(right,exp)).Simplify();
+    }
+    if (auto specialPower = Exponent<Expression, Real>::Specialize(simplifiedExponent); specialPower != nullptr) {
+        const Real& power = specialPower->GetLeastSigOp();
+        if (power.GetValue() == 1.0) {
+            return specialPower->GetMostSigOp().Copy();
+        }
         if (power.GetValue() == 0.0) {
             return std::make_unique<Real>(1.0);
         }
     }
 
-    if (auto realCase = Exponent<Real>::Specialize(simplifiedExponent); realCase != nullptr) {
-        const Real& base = realCase->GetMostSigOp();
-        const Real& power = realCase->GetLeastSigOp();
-
-        return std::make_unique<Real>(pow(base.GetValue(), power.GetValue()));
-    }
-
-    if (auto oneCase = Exponent<Variable, Real>::Specialize(simplifiedExponent); oneCase != nullptr) {
-        const Real& power = oneCase->GetLeastSigOp();
-        if (power.GetValue() == 1.0) {
-            return std::make_unique<Variable>(oneCase->GetMostSigOp());
+    if (auto specialBase = Exponent<Real, Expression>::Specialize(simplifiedExponent); specialBase != nullptr) {
+        const Real& base = specialBase->GetMostSigOp();
+        if(base.GetValue() == 1.0){
+            return std::make_unique<Real>(1.0);
+        } 
+        if (base.GetValue() == 0.0){
+            return std::make_unique<Real>(0.0);
         }
     }
 
@@ -54,6 +127,9 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return std::make_unique<Real>(1);
         } else if (power == 3) {
             return std::make_unique<Multiply<Real, Imaginary>>(Real { -1 }, Imaginary {});
+        } else {
+            auto angle = M_PIl/2*(power);
+            return std::make_unique<Add<Real,Multiply<Real,Imaginary> > >(Real(std::cos(angle)),Multiply(Real(std::sin(angle)),Imaginary()));
         }
     }
 
@@ -64,6 +140,43 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
                     Exponent<Expression> { ImgCase->GetMostSigOp().GetLeastSigOp(), Real { 0.5 } } },
                 Imaginary {});
         }
+    }
+
+    if (auto complexCase = complexSpecialize(simplifiedExponent); !std::isnan(std::get<0>(complexCase))) {
+        double realPart = std::get<0>(complexCase);
+        double imgPart = std::get<1>(complexCase);
+        double power = std::get<2>(complexCase);
+        double powerNumValueD = power;
+        double powerDenValueD = 1;
+        if(power == 0.5){
+            powerNumValueD = 1;
+            powerDenValueD = 2;
+        } else if(auto PowerDiv = Divide<Expression>::Specialize(*leastSigOp); PowerDiv!=nullptr){
+            auto SimplifedPowerDiv = Divide<Real>::Specialize(Divide(*PowerDiv->GetMostSigOp().Simplify(), *PowerDiv->GetLeastSigOp().Simplify()));
+            if (SimplifedPowerDiv != nullptr) {
+                powerNumValueD = SimplifedPowerDiv->GetMostSigOp().GetValue();
+                powerDenValueD = SimplifedPowerDiv->GetLeastSigOp().GetValue();
+                if (Util::isInt(powerNumValueD) && Util::isInt(powerDenValueD)) {
+                    long long powerNumValue = lround(powerNumValueD);
+                    long long powerDenValue = lround(powerDenValueD);
+                    long long simpBy = Util::gcf(powerNumValue, powerDenValue);
+                    powerNumValueD /= simpBy;
+                    powerDenValueD /= simpBy;
+                }
+            }
+        }
+        double absSquare = realPart*realPart+imgPart*imgPart;
+        double newAbs = std::pow(absSquare,power/2.0);
+        double angle = std::atan2(imgPart,realPart);
+        angle*=powerNumValueD;
+        angle = std::fmod(angle,(2*M_PIl));
+        if(angle>M_PIl){
+            angle-=2*M_PIl;
+        }
+        angle/=powerDenValueD;
+        Real newReal = Real(newAbs*std::cos(angle));
+        Real newImg = Real(newAbs*std::sin(angle));
+        return std::make_unique<Add<Real,Multiply<Real,Imaginary>>>(newReal,Multiply(newImg,Imaginary()));
     }
 
     if (auto expExpCase = Exponent<Exponent<Expression, Expression>, Expression>::Specialize(simplifiedExponent); expExpCase != nullptr) {

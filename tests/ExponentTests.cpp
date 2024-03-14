@@ -5,12 +5,70 @@
 #include "catch2/catch_test_macros.hpp"
 
 #include "Oasis/Add.hpp"
+#include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
+#include "Oasis/Util.hpp"
 #include "Oasis/Variable.hpp"
+
+Oasis::Add<Oasis::Real, Oasis::Multiply<Oasis::Real, Oasis::Imaginary>> pairToComp(double a, double b)
+{
+    return Oasis::Add<Oasis::Real, Oasis::Multiply<Oasis::Real, Oasis::Imaginary>>(Oasis::Real(a), Oasis::Multiply(Oasis::Real(b), Oasis::Imaginary()));
+}
+
+TEST_CASE("Complex to real", "[Exponent][complex]")
+{
+    const double epsilon = std::pow(10, -5);
+    Oasis::Real Reald(3.1);
+    Oasis::Real Reali(3);
+    Oasis::Divide<Oasis::Real> Realf(Oasis::Real(3), Oasis::Real(2));
+    Oasis::Imaginary img;
+    Oasis::Multiply<Oasis::Real, Oasis::Imaginary> imgMult(Oasis::Real(5), img);
+    auto comp = pairToComp(1, 5.0 / 3.0);
+    REQUIRE(Oasis::Util::abs(Oasis::Subtract(Oasis::Exponent(img, Reald), pairToComp(0.156434465, -0.987688341))).GetValue() < epsilon);
+    REQUIRE(Oasis::Util::abs(Oasis::Add(Oasis::Exponent(img, Reali), Oasis::Imaginary())).GetValue() < epsilon);
+    REQUIRE(Oasis::Util::abs(Oasis::Subtract(Oasis::Exponent(img, Realf), pairToComp(-0.707106781, 0.70710678))).GetValue() < epsilon);
+
+    REQUIRE(Oasis::Util::abs(Oasis::Subtract(Oasis::Exponent(imgMult, Reald), pairToComp(22.9688607, -145.019679))).GetValue() < epsilon);
+    REQUIRE(Oasis::Util::abs(Oasis::Add(Oasis::Exponent(imgMult, Reali), Oasis::Multiply(Oasis::Real(125), Oasis::Imaginary()))).GetValue() < epsilon);
+    REQUIRE(Oasis::Util::abs(Oasis::Subtract(Oasis::Exponent(imgMult, Realf), pairToComp(-7.90569415, 7.90569415))).GetValue() < epsilon);
+    REQUIRE(Oasis::Util::abs(Oasis::Subtract(Oasis::Exponent(comp, Reald), pairToComp(-7.83638781, -0.412382111))).GetValue() < epsilon);
+    REQUIRE(Oasis::Util::abs(Oasis::Subtract(Oasis::Exponent(comp, Reali), pairToComp(-7.33333333, 0.37037037))).GetValue() < epsilon);
+    REQUIRE(Oasis::Util::abs(Oasis::Subtract(Oasis::Exponent(comp, Realf), pairToComp(0.068362382, 2.70887555))).GetValue() < epsilon);
+}
+
+TEST_CASE("Decimil Number Exponentiation", "[Exponent][Numerical]")
+{
+    const double epsilon = std::pow(10, -5);
+    Oasis::Exponent exponent {
+        Oasis::Real { 5.5 },
+        Oasis::Real { 2.5 }
+    };
+
+    auto simplified = exponent.Simplify();
+    REQUIRE(simplified->Is<Oasis::Real>());
+
+    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
+    REQUIRE(std::abs(simplifiedReal.GetValue() - 70.9425383673) < epsilon);
+}
+
+TEST_CASE("negative to odd root", "[Exponent][Numerical]")
+{
+    const double epsilon = std::pow(10, -5);
+    Oasis::Exponent exponent {
+        Oasis::Real { -5.5 },
+        Oasis::Divide { Oasis::Real(4), Oasis::Real(6) }
+    };
+
+    auto simplified = exponent.Simplify();
+    REQUIRE(simplified->Is<Oasis::Real>());
+
+    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
+    REQUIRE(std::abs(simplifiedReal.GetValue() + 3.11583984218) < epsilon);
+}
 
 TEST_CASE("Zero Rule", "[Exponent][Zero]")
 {
@@ -374,7 +432,6 @@ TEST_CASE("Subtraction of Exponents", "[Subtract][Exponent][Symbolic]")
     auto simplified2 = sub2.Simplify();
     auto simplified3 = sub3.Simplify();
     auto simplified4 = sub4.Simplify();
-
     REQUIRE(Oasis::Real { 0.0 }.Equals(*simplified));
     REQUIRE(Oasis::Multiply {
         Oasis::Real { 1.0 },
@@ -416,11 +473,10 @@ TEST_CASE("Imaginary Exponent Rule", "[Imaginary][Exponent]")
         Oasis::Real { 4.0 }
     };
     Oasis::Exponent img {
-        Oasis::Multiply{
-            Oasis::Real{-4.0},
-            Oasis::Variable{"x"}
-        },
-        Oasis::Real {0.5}
+        Oasis::Multiply {
+            Oasis::Real { -4.0 },
+            Oasis::Variable { "x" } },
+        Oasis::Real { 0.5 }
     };
 
     auto simplified1 = i1.Simplify();
@@ -434,7 +490,8 @@ TEST_CASE("Imaginary Exponent Rule", "[Imaginary][Exponent]")
     REQUIRE(Oasis::Multiply { Oasis::Real { -1 }, Oasis::Imaginary {} }.Equals(*simplified3));
     REQUIRE(Oasis::Real { -1.0 }.Equals(*simplified2));
     REQUIRE(Oasis::Real { 1.0 }.Equals(*simplified4));
-    REQUIRE(Oasis::Multiply {Oasis::Multiply{
-                                  Oasis::Real{2.0}, Oasis::Exponent{Oasis::Variable{"x"}, Oasis::Real{0.5}}},
-        Oasis::Imaginary{}}.Equals(*simplifiedimg));
+    REQUIRE(Oasis::Multiply { Oasis::Multiply {
+                                  Oasis::Real { 2.0 }, Oasis::Exponent { Oasis::Variable { "x" }, Oasis::Real { 0.5 } } },
+        Oasis::Imaginary {} }
+                .Equals(*simplifiedimg));
 }

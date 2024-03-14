@@ -2,6 +2,7 @@
 #define OASIS_EXPRESSION_HPP
 
 #include <concepts>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -97,9 +98,9 @@ public:
     [[nodiscard]] virtual auto Equals(const Expression& other) const -> bool = 0;
 
     /**
-     * The FindZeros function finds all rational real zeros, and up to 2 irrational/complex zeros of a polynomial. Currently assumes an expression of the form a+bx+cx^2+dx^3+... where a, b, c, d are a integers.
+     * The FindZeros function finds all rational real zeros, and up to 4 irrational/complex zeros of a polynomial. Currently assumes an expression of the form a+bx+cx^2+dx^3+... where a, b, c, d are a integers.
      *
-     * @tparam origonalExpresion The expression for which all the factors will be found.
+     * @return a vector of Expressions giving the zeros.
      */
     auto FindZeros() const -> std::vector<std::unique_ptr<Expression>>;
 
@@ -248,6 +249,15 @@ public:
      * @return Whether the two expressions are structurally equivalent.
      */
     [[nodiscard]] auto StructurallyEquivalentAsync(const Expression& other) const -> bool;
+
+    /**
+     * The SubstituteVariable function substitues every instantce of a given variable with a given expression.
+     *
+     * @tparam var The variable to substitute.
+     * @tparam exp The Expression to subsitute the varible with.
+     * @return The expression with the variable subsituted with the given expression.
+     */
+    [[nodiscard]] virtual auto SubstituteVariable(const Expression& var, const Expression& exp) const -> std::unique_ptr<Expression> = 0;
 
     /**
      * Converts this expression to a string.
