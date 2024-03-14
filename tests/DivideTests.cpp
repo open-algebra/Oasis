@@ -28,8 +28,8 @@ TEST_CASE("Complex Division", "[Divide][Complex]")
     std::cout << div.ToString() << '\n';
     auto simplifiedComplex = Oasis::Add<Oasis::Real, Oasis::Multiply<Oasis::Real, Oasis::Imaginary>>::Specialize(*simplified);
     REQUIRE(simplifiedComplex != nullptr);
-    REQUIRE(abs(simplifiedComplex->GetMostSigOp().GetValue() - 0.0975609756) < epsilon);
-    REQUIRE(abs(simplifiedComplex->GetLeastSigOp().GetMostSigOp().GetValue() + 0.12195122) < epsilon);
+    REQUIRE(std::abs(simplifiedComplex->GetMostSigOp().GetValue() - 0.0975609756) < epsilon);
+    REQUIRE(std::abs(simplifiedComplex->GetLeastSigOp().GetMostSigOp().GetValue() + 0.12195122) < epsilon);
 }
 
 TEST_CASE("Division", "[Divide]")
