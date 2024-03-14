@@ -7,8 +7,8 @@
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Subtract.hpp"
-#include "Oasis/Variable.hpp"
 #include "Oasis/Util.hpp"
+#include "Oasis/Variable.hpp"
 
 std::vector<long long> getAllFactors(long long n)
 {
@@ -46,7 +46,7 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             coefficent = Real(1).Copy();
             variableName = variableCase->GetName();
             exponent = 1;
-            if(variableName!=varName){  
+            if (variableName != varName) {
                 coefficent = i->Copy();
                 variableName = varName;
                 exponent = 0;
@@ -184,8 +184,8 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
     const Real p2(2);
     const Real p3(3);
     const Real p4(4);
-    const Divide half(p1,p2); 
-    const Divide third(p1,p3); 
+    const Divide half(p1, p2);
+    const Divide third(p1, p3);
     if (coefficents.size() == 2) {
         results.push_back(Divide(Multiply(n1, *coefficents[0]), *coefficents[1]).Simplify());
     } else if (coefficents.size() == 3) {
@@ -197,83 +197,84 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
         auto twoA = Multiply(p2, *a).Simplify();
         results.push_back(Divide(Add(*negB, *sqrt), *twoA).Copy());
         results.push_back(Divide(Subtract(*negB, *sqrt), *twoA).Copy());
-    } else if (coefficents.size() == 4){
-        Divide p(*coefficents[2],*coefficents[3]);
-        Divide q(*coefficents[1],*coefficents[3]);
-        Divide r(*coefficents[0],*coefficents[3]);
-        Multiply base(p3,Exponent(p2,third));
-        Add aLeft(Multiply(n2,Exponent(p,p3)),Add(Multiply(Real(9),Multiply(p,q)),Multiply(Real(-27),r)));
+    } else if (coefficents.size() == 4) {
+        Divide p(*coefficents[2], *coefficents[3]);
+        Divide q(*coefficents[1], *coefficents[3]);
+        Divide r(*coefficents[0], *coefficents[3]);
+        Multiply base(p3, Exponent(p2, third));
+        Add aLeft(Multiply(n2, Exponent(p, p3)), Add(Multiply(Real(9), Multiply(p, q)), Multiply(Real(-27), r)));
         Add aRight(Add(
-            Multiply(n1,Exponent(Multiply(p,q),p2)),
-            Multiply(p4,Exponent(q,p3))),Add(Add(
-            Multiply(p4,Multiply(Exponent(p,p3),r)),
-            Multiply(Multiply(Real(-18),p),Multiply(q,r))),
-            Multiply(Real(27),Exponent(r,p2))));
-        Exponent aTop(Add(aLeft,Multiply(Multiply(p3,Exponent(p3,half)),Exponent(aRight,half))),third);
-        auto a = Divide(aTop,base).Simplify();
-        auto b = Divide(Subtract(Multiply(p3,q),Exponent(p,p2)),Multiply(Real(9),*a)).Simplify();
-        auto rotaterLeft = Divide(Add(n1,Exponent(n3,half)),p2).Simplify();
-        auto rotaterRight= Divide(Subtract(n1,Exponent(n3,half)),p2).Simplify();
-        for(int i = 0; i < 3; i++){
+                       Multiply(n1, Exponent(Multiply(p, q), p2)),
+                       Multiply(p4, Exponent(q, p3))),
+            Add(Add(
+                    Multiply(p4, Multiply(Exponent(p, p3), r)),
+                    Multiply(Multiply(Real(-18), p), Multiply(q, r))),
+                Multiply(Real(27), Exponent(r, p2))));
+        Exponent aTop(Add(aLeft, Multiply(Multiply(p3, Exponent(p3, half)), Exponent(aRight, half))), third);
+        auto a = Divide(aTop, base).Simplify();
+        auto b = Divide(Subtract(Multiply(p3, q), Exponent(p, p2)), Multiply(Real(9), *a)).Simplify();
+        auto rotaterLeft = Divide(Add(n1, Exponent(n3, half)), p2).Simplify();
+        auto rotaterRight = Divide(Subtract(n1, Exponent(n3, half)), p2).Simplify();
+        for (int i = 0; i < 3; i++) {
             Real iR = Real(i);
-            Add totalExpression(Divide(p,n3),Subtract(Multiply(Exponent(*rotaterLeft,iR),*a),Multiply(Exponent(*rotaterRight,iR),*b)));
+            Add totalExpression(Divide(p, n3), Subtract(Multiply(Exponent(*rotaterLeft, iR), *a), Multiply(Exponent(*rotaterRight, iR), *b)));
             results.push_back(totalExpression.Copy());
         }
-    } else if (coefficents.size() == 5){
+    } else if (coefficents.size() == 5) {
         auto& a = coefficents[4];
         auto& b = coefficents[3];
         auto& c = coefficents[2];
         auto& d = coefficents[1];
         auto& e = coefficents[0];
-        //2c^3-8bc+27ad^2+27b^2e-27ace
+        // 2c^3-8bc+27ad^2+27b^2e-27ace
         std::vector<std::unique_ptr<Expression>> addVector;
-        addVector.push_back(Multiply(p2,Exponent(*c,p3)).Copy());
-        addVector.push_back(Multiply(Multiply(Real(-9),*b),Multiply(*c,*d)).Copy());
-        addVector.push_back(Multiply(Multiply(Real(27),*a),Exponent(*d,p2)).Copy());
-        addVector.push_back(Multiply(Multiply(Real(27),Exponent(*b,p2)),*e).Copy());
-        addVector.push_back(Multiply(Multiply(Real(-72),*a),Multiply(*c,*e)).Copy());
+        addVector.push_back(Multiply(p2, Exponent(*c, p3)).Copy());
+        addVector.push_back(Multiply(Multiply(Real(-9), *b), Multiply(*c, *d)).Copy());
+        addVector.push_back(Multiply(Multiply(Real(27), *a), Exponent(*d, p2)).Copy());
+        addVector.push_back(Multiply(Multiply(Real(27), Exponent(*b, p2)), *e).Copy());
+        addVector.push_back(Multiply(Multiply(Real(-72), *a), Multiply(*c, *e)).Copy());
         Add param1 = *Add<Expression>::Specialize(*BuildFromVector<Add>(addVector));
 
-        //param1 + sqrt(-4(c^2-3bd+12ae)^3+param1^2)
+        // param1 + sqrt(-4(c^2-3bd+12ae)^3+param1^2)
         addVector.clear();
-        addVector.push_back(Exponent(*c,p2).Copy());
-        addVector.push_back(Multiply(n3,Multiply(*b,*d)).Copy());
-        addVector.push_back(Multiply(Real(12),Multiply(*a,*e)).Copy());
-        Add param2(param1,Exponent(Add(Multiply(n4,Exponent(*BuildFromVector<Add>(addVector),p3)),Exponent(param1,p2)),half));
+        addVector.push_back(Exponent(*c, p2).Copy());
+        addVector.push_back(Multiply(n3, Multiply(*b, *d)).Copy());
+        addVector.push_back(Multiply(Real(12), Multiply(*a, *e)).Copy());
+        Add param2(param1, Exponent(Add(Multiply(n4, Exponent(*BuildFromVector<Add>(addVector), p3)), Exponent(param1, p2)), half));
 
         //(c^2-3bd+12ae)/(3a*cbrt(param2/2))+cbrt(param2/2)/(3a)
         addVector.clear();
-        addVector.push_back(Exponent(*c,p2).Copy());
-        addVector.push_back(Multiply(n3,Multiply(*b,*d)).Copy());
-        addVector.push_back(Multiply(Real(12),Multiply(*a,*e)).Copy());
-        Add param3(Divide(*BuildFromVector<Add>(addVector),Multiply(p3,Multiply(*a,Exponent(Divide(param2,p2),third)))),Divide(Exponent(Divide(param2,p2),third),Multiply(p3,*a)));
+        addVector.push_back(Exponent(*c, p2).Copy());
+        addVector.push_back(Multiply(n3, Multiply(*b, *d)).Copy());
+        addVector.push_back(Multiply(Real(12), Multiply(*a, *e)).Copy());
+        Add param3(Divide(*BuildFromVector<Add>(addVector), Multiply(p3, Multiply(*a, Exponent(Divide(param2, p2), third)))), Divide(Exponent(Divide(param2, p2), third), Multiply(p3, *a)));
 
-        //sqrt(b^2/(4a^2)-(2c)/(3a)+param3)
+        // sqrt(b^2/(4a^2)-(2c)/(3a)+param3)
         addVector.clear();
-        addVector.push_back(Divide(Exponent(*b,p2),Multiply(p4,Exponent(*a,p2))).Copy());
-        addVector.push_back(Divide(Multiply(n2,*c),Multiply(p3,*a)).Copy());
+        addVector.push_back(Divide(Exponent(*b, p2), Multiply(p4, Exponent(*a, p2))).Copy());
+        addVector.push_back(Divide(Multiply(n2, *c), Multiply(p3, *a)).Copy());
         addVector.push_back(param3.Copy());
-        Exponent param4(*BuildFromVector<Add>(addVector),half);
+        Exponent param4(*BuildFromVector<Add>(addVector), half);
 
-        //b^2/(2a^2)-4c/(3a)-param3
+        // b^2/(2a^2)-4c/(3a)-param3
         addVector.clear();
-        addVector.push_back(Divide(Exponent(*b,p2),Multiply(p2,Exponent(*a,p2))).Copy());
-        addVector.push_back(Divide(Multiply(n4,*c),Multiply(p3,*a)).Copy());
-        addVector.push_back(Multiply(n1,param3).Copy());
+        addVector.push_back(Divide(Exponent(*b, p2), Multiply(p2, Exponent(*a, p2))).Copy());
+        addVector.push_back(Divide(Multiply(n4, *c), Multiply(p3, *a)).Copy());
+        addVector.push_back(Multiply(n1, param3).Copy());
         Add param5 = *Add<Expression>::Specialize(*BuildFromVector<Add>(addVector));
 
         //(-b^3/a^3+4bc/a^2-8d/a)/(4*param4)
         addVector.clear();
-        addVector.push_back(Multiply(n1,Divide(Exponent(*b,p3),Exponent(*a,p3))).Copy());
-        addVector.push_back(Divide(Multiply(Multiply(p4,*b),*c),Exponent(*a,p2)).Copy());
-        addVector.push_back(Divide(Multiply(Real(-8),*d),*a).Copy());
-        Divide param6(*BuildFromVector<Add>(addVector),Multiply(p4,param4));
-        const std::vector<Real> plusMinus = {n1,p1};
-        Divide nbo4a(*b,Multiply(n4,*a));
-        for(Real pm1 : plusMinus){
-            Divide rootExp(Exponent(Add(param5,Multiply(pm1,param6)),half),p2);
-            for(Real pm2 : plusMinus){
-                results.push_back(Add(nbo4a,Add(Multiply(pm1,Divide(param4,p2)),Multiply(pm2,rootExp))).Copy());
+        addVector.push_back(Multiply(n1, Divide(Exponent(*b, p3), Exponent(*a, p3))).Copy());
+        addVector.push_back(Divide(Multiply(Multiply(p4, *b), *c), Exponent(*a, p2)).Copy());
+        addVector.push_back(Divide(Multiply(Real(-8), *d), *a).Copy());
+        Divide param6(*BuildFromVector<Add>(addVector), Multiply(p4, param4));
+        const std::vector<Real> plusMinus = { n1, p1 };
+        Divide nbo4a(*b, Multiply(n4, *a));
+        for (Real pm1 : plusMinus) {
+            Divide rootExp(Exponent(Add(param5, Multiply(pm1, param6)), half), p2);
+            for (Real pm2 : plusMinus) {
+                results.push_back(Add(nbo4a, Add(Multiply(pm1, Divide(param4, p2)), Multiply(pm2, rootExp))).Copy());
             }
         }
     }

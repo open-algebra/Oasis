@@ -273,7 +273,7 @@ public:
         return mostSigOpEquivalent && leastSigOpEquivalent;
     }
 
-    [[nodiscard]] virtual auto SubstituteVariable(const Expression& var, const Expression& exp) const -> std::unique_ptr<Expression>
+    [[nodiscard]] virtual auto SubstituteVariable(const Expression& var, const Expression& exp) const -> std::unique_ptr<Expression> override
     {
         DerivedGeneralized generalized;
 

@@ -6,7 +6,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <vector>
 
 namespace tf {
 class Subflow;
