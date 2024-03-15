@@ -20,6 +20,13 @@
     c. Install Clang-17: sudo ./llvm.sh 17
     d. Check version: clang-xx --version
 
+5. Understanding Oasis Project arithmetic:
+    Equation is broken down into several operations 
+    e.g: x^2 + 2x  is broken down into Add<Exponent<Expression, Real>, Multiply<Expression, Real>>
+    
+    Operations are performed using PEMDAS
+
+
     
 
 
