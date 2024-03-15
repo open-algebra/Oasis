@@ -7,13 +7,14 @@
 
 #include "wx/frame.h"
 
+#include "Oasis/Expression.hpp"
+
 class ArithmeticView final : public wxFrame {
 public:
     ArithmeticView();
 
 private:
-    void OnAbout(wxCommandEvent& event);
-    void OnExit(wxCommandEvent& event);
+    std::vector<std::unique_ptr<Oasis::Expression>> history;
 };
 
 
