@@ -275,4 +275,28 @@ auto Add<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
     return std::make_unique<Add>(dynamic_cast<const Add&>(*otherGeneralized));
 }
 
+auto Add<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+{
+    // Single integration variable
+    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+        auto simplifiedAdd = this->Simplify();
+
+        // Make sure we're still adder
+        if (auto adder = Add<Expression>::Specialize(*simplifiedAdd); adder != nullptr) {
+            auto leftRef = adder->GetLeastSigOp().Copy();
+            auto leftIntegral = leftRef->Integrate(integrationVariable);
+
+            auto rightRef = adder->GetMostSigOp().Copy();
+            auto rightIntegral = rightRef->Integrate(integrationVariable);
+
+            return std::make_unique<Add<Expression>>(*leftIntegral, *rightIntegral);
+        }
+        // If not, use other integration technique
+        else {
+            return simplifiedAdd->Integrate(integrationVariable);
+        }
+    }
+    return Copy();
+}
+
 } // Oasis

@@ -180,4 +180,28 @@ auto Subtract<Expression>::Specialize(const Expression& other, tf::Subflow& subf
     return std::make_unique<Subtract>(dynamic_cast<const Subtract&>(*otherGeneralized));
 }
 
+auto Subtract<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+{
+    // Single integration variable
+    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+        auto simplifiedSub = this->Simplify();
+
+        // Make sure we're still subtracting
+        if (auto adder = Subtract<Expression>::Specialize(*simplifiedSub); adder != nullptr) {
+            auto leftRef = adder->GetLeastSigOp().Copy();
+            auto leftIntegral = leftRef->Integrate(integrationVariable);
+
+            auto rightRef = adder->GetMostSigOp().Copy();
+            auto rightIntegral = rightRef->Integrate(integrationVariable);
+
+            return std::make_unique<Subtract<Expression>>(*leftIntegral, *rightIntegral);
+        }
+        // If not, use other integration technique
+        else {
+            return simplifiedSub->Integrate(integrationVariable);
+        }
+    }
+    return Copy();
+}
+
 } // Oasis
