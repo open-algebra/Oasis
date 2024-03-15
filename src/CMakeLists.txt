@@ -41,6 +41,7 @@ add_library(Oasis ${Oasis_SOURCES} ${Oasis_HEADERS})
 
 if(MSVC)
     target_compile_options(Oasis PRIVATE /W3 /WX)
+    target_compile_options(Oasis PRIVATE /bigobj)
 else()
     target_compile_options(Oasis PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()

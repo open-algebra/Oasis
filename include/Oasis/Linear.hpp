@@ -5,13 +5,31 @@
 #ifndef OASIS_LINEAR_HPP
 #define OASIS_LINEAR_HPP
 
-#include "Expression.hpp"
+#include "Eigen/Dense"
+#include <iostream>
 #include <map>
 #include <string>
+#include <vector>
+
+#include "Expression.hpp"
 
 namespace Oasis {
-template <class Expression...>
-auto SolveLinearSystems(const Expression& expressions...) -> std::map<std::string, float>;
+
+typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatrixXXF;
+typedef Eigen::Matrix<float, Eigen::Dynamic, 1> Matrix1F;
+
+/**
+ * @param exprs A vector of expressions
+ * @return map of variable to their values
+ */
+auto SolveLinearSystems(std::vector<std::unique_ptr<Expression>>& exprs) -> std::map<std::string, float>;
+
+/**
+ *
+ * @param exprs A vector of expressions
+ * @return Dynamic Float matrix with the provided expressions inserted
+ */
+auto ConstructMatrix(const std::vector<std::unique_ptr<Expression>>& exprs) -> std::pair<MatrixXXF, Matrix1F>;
 
 }
 
