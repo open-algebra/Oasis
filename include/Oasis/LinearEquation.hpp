@@ -43,6 +43,14 @@ public:
         }
     }
 
+    LinearEquation(List<Expression> equation) { 
+        this.equation = equation;
+    }
+
+private:
+
+    List<Expression> equation = new List<Expression>();
+
 
 };
 
