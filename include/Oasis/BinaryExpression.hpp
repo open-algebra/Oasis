@@ -182,6 +182,36 @@ public:
         return std::make_unique<DerivedGeneralized>(generalized);
     }
 
+    template <typename T>
+    requires std::is_same_v<DerivedSpecialized, DerivedGeneralized> && IAssociativeAndCommutative<DerivedT>
+    bool Insert(const T& e)
+    {
+        if (!leastSigOp) {
+            leastSigOp = e.Copy();
+            return true;
+        }
+
+        if (leastSigOp->template Is<DerivedSpecialized>()) {
+            try {
+                auto& leastSigOpSpecialized = static_cast<DerivedSpecialized&>(*leastSigOp);
+                return leastSigOpSpecialized.Insert(e);
+            } catch (std::bad_cast&) {
+                auto leastSigOpGeneralized = leastSigOp->Generalize();
+                DerivedGeneralized& leastSigOpGeneralizedDerived = static_cast<DerivedGeneralized&>(*leastSigOpGeneralized);
+                return leastSigOpGeneralizedDerived.Insert(e);
+            }
+        }
+
+        DerivedGeneralized subtree {
+            *leastSigOp,
+            e
+        };
+
+        leastSigOp = subtree.Copy();
+
+        return true;
+    }
+
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
     {
         return Generalize()->Simplify();
