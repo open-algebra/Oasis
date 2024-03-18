@@ -29,12 +29,6 @@ endif()
 add_library(Oasis::Oasis ALIAS Oasis)
 target_link_libraries(OasisTests PRIVATE Oasis::Oasis Catch2::Catch2WithMain)
 
-if(OASIS_BUILD_WITH_COVERAGE)
-    target_compile_options(OasisTests PUBLIC -fprofile-instr-generate
-                                             -fcoverage-mapping)
-    target_link_options(OasisTests PUBLIC -fprofile-instr-generate)
-endif()
-
 # Automatically registers the tests with CTest.
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(Catch)
