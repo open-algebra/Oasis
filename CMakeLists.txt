@@ -17,8 +17,7 @@ option(OASIS_BUILD_WITH_COVERAGE
 # Adds compiler flags for code coverage. Note that only the Clang compiler is
 # currently supported for code coverage.
 if(OASIS_BUILD_WITH_COVERAGE)
-    add_compile_options(-fprofile-instr-generate
-                        -fcoverage-mapping)
+    add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
     add_link_options(-fprofile-instr-generate)
 endif()
 
