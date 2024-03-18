@@ -3,6 +3,7 @@
 //
 
 #include "Oasis/Subtract.hpp"
+#include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
@@ -191,10 +192,18 @@ auto Subtract<Expression>::Integrate(const Expression& integrationVariable) -> s
             auto leftRef = adder->GetLeastSigOp().Copy();
             auto leftIntegral = leftRef->Integrate(integrationVariable);
 
+            auto specializedLeft = Add<Expression>::Specialize(*leftIntegral);
+
             auto rightRef = adder->GetMostSigOp().Copy();
             auto rightIntegral = rightRef->Integrate(integrationVariable);
 
-            return std::make_unique<Subtract<Expression>>(*leftIntegral, *rightIntegral);
+            auto specializedRight = Add<Expression>::Specialize(*rightIntegral);
+
+            if (specializedLeft == nullptr || specializedRight == nullptr) {
+                return Copy();
+            }
+
+            return std::make_unique<Add<Subtract<Expression>, Variable>>(Add { Subtract<Expression> { *(specializedLeft->GetLeastSigOp().Copy()), *(specializedRight->GetLeastSigOp().Copy()) }, Variable { "C" } });
         }
         // If not, use other integration technique
         else {

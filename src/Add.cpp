@@ -286,10 +286,18 @@ auto Add<Expression>::Integrate(const Expression& integrationVariable) -> std::u
             auto leftRef = adder->GetLeastSigOp().Copy();
             auto leftIntegral = leftRef->Integrate(integrationVariable);
 
+            auto specializedLeft = Add<Expression>::Specialize(*leftIntegral);
+
             auto rightRef = adder->GetMostSigOp().Copy();
             auto rightIntegral = rightRef->Integrate(integrationVariable);
 
-            return std::make_unique<Add<Expression>>(*leftIntegral, *rightIntegral);
+            auto specializedRight = Add<Expression>::Specialize(*rightIntegral);
+
+            if (specializedLeft == nullptr || specializedRight == nullptr) {
+                return Copy();
+            }
+
+            return std::make_unique<Add<Add<Expression, Expression>, Variable>>(Add<Add<Expression, Expression>, Variable> { Add<Expression, Expression> { *(specializedLeft->GetLeastSigOp().Copy()), *(specializedRight->GetLeastSigOp().Copy()) }, Variable { "C" } });
         }
         // If not, use other integration technique
         else {
