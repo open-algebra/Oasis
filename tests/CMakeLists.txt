@@ -31,7 +31,7 @@ target_link_libraries(OasisTests PRIVATE Oasis::Oasis Catch2::Catch2WithMain)
 
 if(OASIS_BUILD_WITH_COVERAGE)
     target_compile_options(OasisTests PUBLIC -fprofile-instr-generate
-                                        -fcoverage-mapping)
+                                             -fcoverage-mapping)
     target_link_options(OasisTests PUBLIC -fprofile-instr-generate)
 endif()
 
