@@ -30,16 +30,8 @@ namespace Oasis {
             return std::make_unique<Real>(0);
         }
 
-        if (auto likeTermsCase = Add<Multiply<Real, Expression>>::Specialize(simplifiedDifferentiate); likeTermsCase != nullptr) {
-            const Oasis::IExpression auto& leftTerm = likeTermsCase->GetMostSigOp().GetLeastSigOp();
-            const Oasis::IExpression auto& rightTerm = likeTermsCase->GetLeastSigOp().GetLeastSigOp();
-
-            if (leftTerm.Equals(rightTerm)) {
-                const Real& coefficient1 = likeTermsCase->GetMostSigOp().GetMostSigOp();
-                const Real& coefficient2 = likeTermsCase->GetLeastSigOp().GetMostSigOp();
-
-                return std::make_unique<Multiply<Expression>>(Real(coefficient1.GetValue() + coefficient2.GetValue()), leftTerm);
-            }
+        if (auto isAdd = Differentiate<Add<Real, Expression>>::Specialize(simplifiedDifferentiate); isAdd != nullptr) {
+            return (Differentiate<Expression, Expression>{isAdd->GetMostSigOp().GetLeastSigOp(), isAdd->GetLeastSigOp()}.Simplify());
         }
 
         if (auto ImgCase = Add<Imaginary>::Specialize(simplifiedAdd); ImgCase != nullptr) {
@@ -158,17 +150,17 @@ namespace Oasis {
         return simplifiedAdd.Copy();
     }
 
-    auto Add<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Add<Expression, Expression>>
+    auto Differentiate<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Differentiate<Expression, Expression>>
     {
-        if (!other.Is<Oasis::Add>()) {
+        if (!other.Is<Oasis::Differentiate>()) {
             return nullptr;
         }
 
         auto otherGeneralized = other.Generalize();
-        return std::make_unique<Add>(dynamic_cast<const Add&>(*otherGeneralized));
+        return std::make_unique<Differentiate>(dynamic_cast<const Differentiate&>(*otherGeneralized));
     }
 
-    auto Add<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Add>
+    auto Differentiate<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Add>
     {
         if (!other.Is<Oasis::Add>()) {
             return nullptr;

@@ -468,7 +468,6 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
         if (!other.Is<Oasis::Derived>()) {                                                                               \
             return nullptr;                                                                                              \
         }                                                                                                                \
-                                                                                                                         \
         auto specialized = std::make_unique<Derived<FirstOp, SecondOp>>();                                               \
                                                                                                                          \
         std::unique_ptr<Expression> otherGeneralized = other.Generalize();                                               \

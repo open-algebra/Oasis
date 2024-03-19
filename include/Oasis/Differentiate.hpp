@@ -66,7 +66,7 @@ namespace Oasis {
 
         auto operator=(const Differentiate& other) -> Differentiate& = default;
 
-        EXPRESSION_TYPE(Add)
+        EXPRESSION_TYPE(Differentiate)
         EXPRESSION_CATEGORY(0)
     };
 
