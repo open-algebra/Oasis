@@ -29,7 +29,6 @@ jobs:
             run: |
                 echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
                 echo "coverage-dir=${{ github.workspace }}/coverage" >> "$GITHUB_OUTPUT"
-                echo "pr-dir=${{ github.workspace }}/pr" >> "$GITHUB_OUTPUT"
 
             # Saves the PR number to use in writing a comment on the PR.
           - name: Save PR number
@@ -84,7 +83,7 @@ jobs:
             shell: bash
             run: |
                 llvm-profdata-17 merge -sparse oasis.profraw -o oasis.profdata
-                llvm-cov-17 show -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ${{ github.workspace }}/src ${{ github.workspace }}/include > coverage.txt
+                llvm-cov-17 report -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ${{ github.workspace }}/src ${{ github.workspace }}/include > coverage.txt
 
             # Uploads the build, test, and code coverage artifacts.
           - name: Comment on PR
