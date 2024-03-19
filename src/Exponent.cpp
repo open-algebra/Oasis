@@ -155,13 +155,10 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) -> s
 {
     // variable integration
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
-        auto simplifiedBase = mostSigOp->Simplify();
-        auto simplifiedPower = leastSigOp->Simplify();
-
-        Exponent simplifiedExponent { *simplifiedBase, *simplifiedPower };
+        auto simplifiedExponent = this->Simplify();
 
         // Variable with a constant power
-        if (auto realExponent = Exponent<Variable, Real>::Specialize(simplifiedExponent); realExponent != nullptr) {
+        if (auto realExponent = Exponent<Variable, Real>::Specialize(*simplifiedExponent); realExponent != nullptr) {
             const Variable& expBase = realExponent->GetMostSigOp();
             const Real& expPow = realExponent->GetLeastSigOp();
 
