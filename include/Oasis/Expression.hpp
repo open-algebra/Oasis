@@ -29,6 +29,7 @@ enum class ExpressionType {
     Log,
     Sin,
     Arcsin,
+    Tan,
 };
 
 /**
