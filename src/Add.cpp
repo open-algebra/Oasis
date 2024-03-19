@@ -30,6 +30,12 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return std::make_unique<Real>(firstReal.GetValue() + secondReal.GetValue());
     }
 
+    if (auto zeroCase = Add<Real, Expression>::Specialize(simplifiedAdd); zeroCase != nullptr) {
+        if (zeroCase->GetMostSigOp().GetValue() == 0) {
+            return zeroCase->GetLeastSigOp().Generalize();
+        }
+    }
+
     if (auto likeTermsCase = Add<Multiply<Real, Expression>>::Specialize(simplifiedAdd); likeTermsCase != nullptr) {
         const Oasis::IExpression auto& leftTerm = likeTermsCase->GetMostSigOp().GetLeastSigOp();
         const Oasis::IExpression auto& rightTerm = likeTermsCase->GetLeastSigOp().GetLeastSigOp();

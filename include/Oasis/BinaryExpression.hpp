@@ -22,7 +22,7 @@ template <typename MostSigOpT, typename LeastSigOpT, typename T>
 concept IOperand = std::is_same_v<T, MostSigOpT> || std::is_same_v<T, LeastSigOpT>;
 
 template <template <typename, typename> typename T>
-concept IAssociativeAndCommutative = IExpression<T<Expression, Expression>> && requires { (T<Expression, Expression>::GetStaticCategory() & (Associative | Commutative)) != 0; };
+concept IAssociativeAndCommutative = IExpression<T<Expression, Expression>> && ((T<Expression, Expression>::GetStaticCategory() & (Associative | Commutative)) == (Associative | Commutative));
 
 template <typename T, typename... U>
 concept IsAnyOf = (std::same_as<T, U> || ...);

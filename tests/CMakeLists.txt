@@ -14,6 +14,7 @@ set(Oasis_TESTS
     IntegrateTests.cpp
     LogTests.cpp
     MultiplyTests.cpp
+    PolynomialTests.cpp
     SubtractTests.cpp)
 
 # Adds an executable target called "OasisTests" to be built from sources files.
