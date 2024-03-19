@@ -5,6 +5,7 @@
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 
 TEST_CASE("Nonzero number", "[Integrate][Real][Nonzero]")
@@ -114,4 +115,65 @@ TEST_CASE("Constant Rule Divide", "[Integrate][Divide][Constant]")
     auto simplified = integrated->Simplify();
 
     REQUIRE((simplified->Equals(*(integral.Simplify()))));
+}
+
+TEST_CASE("Add Rule Different Terms", "[Integrate][Add][Different]")
+{
+    Oasis::Variable var { "x" };
+    Oasis::Add<Oasis::Variable, Oasis::Real> integrand { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
+
+    Oasis::Add<Oasis::Add<Oasis::Divide<Oasis::Exponent<Oasis::Variable, Oasis::Real>, Oasis::Real>, Oasis::Multiply<Oasis::Real, Oasis::Variable>>, Oasis::Variable> integral {
+        Oasis::Add {
+            Oasis::Add {
+                Oasis::Divide {
+                    Oasis::Exponent { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } },
+                    Oasis::Real { 2.0f } },
+                Oasis::Multiply {
+                    Oasis::Real { 2.0f },
+                    Oasis::Variable { var.GetName() } } },
+            Oasis::Variable { "C" } }
+    };
+    auto integrated = integrand.Integrate(var);
+    auto simplified = integrated->Simplify();
+
+    REQUIRE(simplified->Equals(*(integral.Simplify())));
+}
+
+TEST_CASE("Subtract Rule Different Terms", "[Integrate][Subtract][Different]")
+{
+    Oasis::Variable var { "x" };
+    Oasis::Subtract<Oasis::Variable, Oasis::Real> integrand { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
+
+    Oasis::Add<Oasis::Subtract<Oasis::Divide<Oasis::Exponent<Oasis::Variable, Oasis::Real>, Oasis::Real>, Oasis::Multiply<Oasis::Real, Oasis::Variable>>, Oasis::Variable> integral {
+        Oasis::Add {
+            Oasis::Subtract {
+                Oasis::Divide {
+                    Oasis::Exponent { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } },
+                    Oasis::Real { 2.0f } },
+                Oasis::Multiply {
+                    Oasis::Real { 2.0f },
+                    Oasis::Variable { var.GetName() } } },
+            Oasis::Variable { "C" } }
+    };
+    auto integrated = integrand.Integrate(var);
+    auto simplified = integrated->Simplify();
+
+    REQUIRE(simplified->Equals(*(integral.Simplify())));
+}
+
+TEST_CASE("Add Rule Like Terms", "[Integrate][Add][Like]")
+{
+    Oasis::Variable var { "x" };
+    Oasis::Add<Oasis::Variable, Oasis::Variable> integrand { Oasis::Variable { var.GetName() }, Oasis::Variable { var.GetName() } };
+
+    Oasis::Add<Oasis::Exponent<Oasis::Variable, Oasis::Real>, Oasis::Variable> integral {
+        Oasis::Add {
+            Oasis::Exponent { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } },
+            Oasis::Variable { "C" } }
+    };
+
+    auto integrated = integrand.Integrate(var);
+    auto simplified = integrated->Simplify();
+
+    REQUIRE(simplified->Equals(*(integral.Simplify())));
 }
