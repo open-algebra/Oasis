@@ -47,16 +47,18 @@ auto Variable::Integrate(const Expression& integrationVariable) -> std::unique_p
         // Power rule
         if (name == (*variable).GetName()) {
             return std::make_unique<Add<Divide<Exponent<Variable, Real>, Real>, Variable>>(Add {
-                Divide {
-                    Exponent { Variable { (*variable).GetName() }, Real { 2.0f } },
-                    Real { 2.0f } },
-                Variable { "C" } });
+                                                                                               Divide {
+                                                                                                   Exponent { Variable { (*variable).GetName() }, Real { 2.0f } },
+                                                                                                   Real { 2.0f } },
+                                                                                               Variable { "C" } })
+                ->Simplify();
         }
 
         // Different variable, treat as constant
         return std::make_unique<Add<Multiply<Variable, Variable>, Variable>>(Add {
-            Multiply { Variable { name }, Variable { (*variable).GetName() } },
-            Variable { "C" } });
+                                                                                 Multiply { Variable { name }, Variable { (*variable).GetName() } },
+                                                                                 Variable { "C" } })
+            ->Simplify();
     }
 
     return Copy();

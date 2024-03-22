@@ -203,7 +203,7 @@ auto Subtract<Expression>::Integrate(const Expression& integrationVariable) -> s
                 return Copy();
             }
 
-            return std::make_unique<Add<Subtract<Expression>, Variable>>(Add { Subtract<Expression> { *(specializedLeft->GetMostSigOp().Copy()), *(specializedRight->GetMostSigOp().Copy()) }, Variable { "C" } });
+            return std::make_unique<Add<Subtract<Expression>, Variable>>(Add { Subtract<Expression> { *(specializedLeft->GetMostSigOp().Copy()), *(specializedRight->GetMostSigOp().Copy()) }, Variable { "C" } })->Simplify();
         }
         // If not, use other integration technique
         else {

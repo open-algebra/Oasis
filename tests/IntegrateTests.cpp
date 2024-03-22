@@ -44,8 +44,9 @@ TEST_CASE("Same Variable", "[Integrate][Variable][Same]")
         Oasis::Variable { "C" }
     };
 
+    auto ptr = integral.Simplify();
     auto integrated = var.Integrate(var);
-    REQUIRE(integral.Equals(*integrated));
+    REQUIRE(ptr->Equals(*integrated));
 }
 
 TEST_CASE("Different Variable", "[Integrate][Variable][Different]")
@@ -72,9 +73,10 @@ TEST_CASE("Power Rule", "[Integrate][Exponent][Power]")
             Oasis::Exponent { Oasis::Variable { var.GetName() }, Oasis::Real { 3.0f } },
             Oasis::Real { 3.0f } },
         Oasis::Variable { "C" } } };
+    auto ptr = integral.Simplify();
 
     auto integrated = integrand.Integrate(var);
-    REQUIRE((*integrated).Equals(integral));
+    REQUIRE((*integrated).Equals(*ptr));
 }
 
 TEST_CASE("Constant Rule Multiply", "[Integrate][Multiply][Constant]")
@@ -93,8 +95,9 @@ TEST_CASE("Constant Rule Multiply", "[Integrate][Multiply][Constant]")
                 "C" } }
     };
 
+    auto ptr = integral.Simplify();
     auto integrated = integrand.Integrate(var);
-    REQUIRE((integrated->Equals(integral)));
+    REQUIRE((integrated->Equals(*ptr)));
 }
 
 TEST_CASE("Constant Rule Divide", "[Integrate][Divide][Constant]")

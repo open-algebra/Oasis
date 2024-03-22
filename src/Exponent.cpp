@@ -172,6 +172,7 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) -> s
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
         auto simplifiedExponent = this->Simplify();
 
+        std::unique_ptr<Expression> integral;
         // Variable with a constant power
         if (auto realExponent = Exponent<Variable, Real>::Specialize(*simplifiedExponent); realExponent != nullptr) {
             const Variable& expBase = realExponent->GetMostSigOp();
@@ -180,10 +181,11 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) -> s
             if ((*variable).GetName() == expBase.GetName()) {
 
                 return std::make_unique<Add<Divide<Exponent<Variable, Real>, Real>, Variable>>(Add {
-                    Divide {
-                        Exponent<Variable, Real> { Variable { (*variable).GetName() }, Real { expPow.GetValue() + 1 } },
-                        Real { expPow.GetValue() + 1 } },
-                    Variable { "C" } });
+                                                                                                   Divide {
+                                                                                                       Exponent<Variable, Real> { Variable { (*variable).GetName() }, Real { expPow.GetValue() + 1 } },
+                                                                                                       Real { expPow.GetValue() + 1 } },
+                                                                                                   Variable { "C" } })
+                    ->Simplify();
             }
         }
     }

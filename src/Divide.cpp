@@ -301,7 +301,7 @@ auto Divide<Expression>::Integrate(const Expression& integrationVariable) -> std
 
         // Constant case - Integrand over a divisor
         if (auto constant = Multiply<Expression, Real>::Specialize(*simplifiedDiv); constant != nullptr) {
-            return constant->Integrate(integrationVariable);
+            return constant->Integrate(integrationVariable)->Simplify();
         }
     }
 

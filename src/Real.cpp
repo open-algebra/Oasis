@@ -47,12 +47,13 @@ auto Real::Integrate(const Expression& integrationVariable) -> std::unique_ptr<E
         // Constant rule
         if (value != 0) {
             return std::make_unique<Add<Multiply<Real, Variable>, Variable>>(Add {
-                Multiply<Real, Variable> { Real { value }, Variable { (*variable).GetName() } },
-                Variable { "C" } });
+                                                                                 Multiply<Real, Variable> { Real { value }, Variable { (*variable).GetName() } },
+                                                                                 Variable { "C" } })
+                ->Simplify();
         }
 
         // Zero rule
-        return std::make_unique<Variable>(Variable { "C" });
+        return std::make_unique<Variable>(Variable { "C" })->Simplify();
     }
     return Copy();
 }
