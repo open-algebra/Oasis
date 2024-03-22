@@ -3,6 +3,7 @@
 //
 
 #include <cmath>
+#include <utility>
 
 #include "KeypadButton.hpp"
 
@@ -18,7 +19,12 @@ EVT_PAINT(KeypadButton::paintEvent)
 
 END_EVENT_TABLE()
 
-KeypadButton::KeypadButton(wxFrame *parent, wxWindowID id, wxString text) : wxWindow(parent, id), text(text), pressedDown(false), hovered(false) {
+KeypadButton::KeypadButton(wxFrame* parent, const wxWindowID id, wxString text)
+    : wxWindow(parent, id)
+    , text(std::move(text))
+    , pressedDown(false)
+    , hovered(false)
+{
     Init();
 }
 
@@ -43,7 +49,7 @@ void KeypadButton::render(wxDC &dc) {
     else
         dc.SetBrush(wxBrush(wxColour(225, 225, 225, 64)));
 
-    wxSize dcSize = dc.GetSize();
+    const wxSize dcSize = dc.GetSize();
 
     if (lastSize != dcSize) {
         fontSize = computeFontSize(dcSize);
