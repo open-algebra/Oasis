@@ -1,5 +1,5 @@
 #include "Tan.hpp"
-
+#include "MathUtils.hpp"
 
 namespace Oasis {
 
@@ -25,7 +25,15 @@ auto Tan::StructurallyEquivalent(const Expression& other) const -> bool {
 
 std::unique_ptr<Expression> Tan::Simplify() const {
     auto simplifiedOperand = operand->Simplify();
-    // Placeholder for specific Tan simplification logic, if applicable.
+    if (MathUtils::isNumericConstant(simplifiedOperand)) {
+        double value = MathUtils::toNumeric(simplifiedOperand);
+        if (MathUtils::equals(value, 0)) {
+            return MathUtils::createNumericExpression(0);
+        }
+        if (MathUtils::equals(value, MathUtils::PI / 4)) {
+            return MathUtils::createNumericExpression(1);
+        }
+    }
     return std::make_unique<Tan>(std::move(simplifiedOperand));
 }
 
