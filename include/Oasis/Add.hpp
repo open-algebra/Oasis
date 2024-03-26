@@ -30,6 +30,8 @@ public:
 
     [[nodiscard]] auto ToString() const -> std::string final;
 
+    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* final;
+
     static auto Specialize(const Expression& other) -> std::unique_ptr<Add>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Add>;
 
@@ -56,11 +58,6 @@ public:
     Add(const AugendT& addend1, const AddendT& addend2)
         : BinaryExpression<Add, AugendT, AddendT>(addend1, addend2)
     {
-    }
-
-    [[nodiscard]] auto ToString() const -> std::string final
-    {
-        return fmt::format("({} + {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
     }
 
     IMPL_SPECIALIZE(Add, AugendT, AddendT)

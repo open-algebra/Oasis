@@ -217,6 +217,16 @@ auto Divide<Expression>::ToString() const -> std::string
     return fmt::format("({} / {})", mostSigOp->ToString(), leastSigOp->ToString());
 }
 
+tinyxml2::XMLElement* Divide<Expression, Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
+{
+    tinyxml2::XMLElement* element = doc.NewElement("mfrac");
+
+    element->InsertEndChild(mostSigOp->ToMathMLElement(doc));
+    element->InsertEndChild(leastSigOp->ToMathMLElement(doc));
+
+    return element;
+}
+
 auto Divide<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
 {
     std::unique_ptr<Expression> simplifiedDividend, simplifiedDivisor;

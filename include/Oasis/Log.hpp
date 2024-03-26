@@ -29,6 +29,8 @@ public:
 
     [[nodiscard]] auto ToString() const -> std::string final;
 
+    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* override;
+
     static auto Specialize(const Expression& other) -> std::unique_ptr<Log>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Log>;
 

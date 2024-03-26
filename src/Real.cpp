@@ -28,6 +28,13 @@ auto Real::ToString() const -> std::string
     return std::to_string(value);
 }
 
+auto Real::ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement*
+{
+    tinyxml2::XMLElement* const element = doc.NewElement("mn");
+    element->SetText(ToString().c_str());
+    return element;
+}
+
 auto Real::Specialize(const Expression& other) -> std::unique_ptr<Real>
 {
     return other.Is<Real>() ? std::make_unique<Real>(dynamic_cast<const Real&>(other)) : nullptr;

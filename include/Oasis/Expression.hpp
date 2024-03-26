@@ -1,10 +1,10 @@
 #ifndef OASIS_EXPRESSION_HPP
 #define OASIS_EXPRESSION_HPP
 
-#include <concepts>
-#include <memory>
 #include <string>
 #include <vector>
+
+#include "tinyxml2.h"
 
 namespace tf {
 class Subflow;
@@ -254,6 +254,19 @@ public:
      * @return The string representation of this expression.
      */
     [[nodiscard]] virtual std::string ToString() const = 0;
+
+    /**
+     * Converts this expression to a MathML string.
+     * @return The MathML representation of this expression.
+     */
+    auto ToMathML() const -> std::string;
+
+    /**
+     *
+     * @param doc The XML document.
+     * @return The XML element.
+     */
+    virtual auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* = 0;
 
     virtual ~Expression() = default;
 };

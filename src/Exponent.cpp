@@ -101,6 +101,19 @@ auto Exponent<Expression>::ToString() const -> std::string
     return fmt::format("({}^{})", mostSigOp->ToString(), leastSigOp->ToString());
 }
 
+tinyxml2::XMLElement* Exponent<Expression, Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
+{
+    tinyxml2::XMLElement* element = doc.NewElement("msup");
+
+    tinyxml2::XMLElement* baseElement = mostSigOp->ToMathMLElement(doc);
+    tinyxml2::XMLElement* powerElement = leastSigOp->ToMathMLElement(doc);
+
+    element->InsertEndChild(baseElement);
+    element->InsertEndChild(powerElement);
+
+    return element;
+}
+
 auto Exponent<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
 {
     std::unique_ptr<Expression> simplifiedBase, simplifiedPower;
