@@ -1,4 +1,6 @@
-# OASIS ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/matthew-mccall/oasis/cmake-multi-platform.yml)
+# OASIS 
+
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/matthew-mccall/oasis/cmake-multi-platform.yml)
 
 Open Algebra Software for Inferring Solutions is a C++ library for embedding computer algebra and symbolic manipulation.
 

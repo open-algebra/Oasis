@@ -4,6 +4,7 @@
 #include <concepts>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace tf {
 class Subflow;
@@ -94,6 +95,13 @@ public:
      * @return Whether the two expressions are equal.
      */
     [[nodiscard]] virtual auto Equals(const Expression& other) const -> bool = 0;
+
+    /**
+     * The FindZeros function finds all rational real zeros, and up to 2 irrational/complex zeros of a polynomial. Currently assumes an expression of the form a+bx+cx^2+dx^3+... where a, b, c, d are a integers.
+     *
+     * @tparam origonalExpresion The expression for which all the factors will be found.
+     */
+    auto FindZeros() const -> std::vector<std::unique_ptr<Expression>>;
 
     /**
      * Gets the category of this expression.
@@ -261,15 +269,15 @@ public:
         return ExpressionType::type;                \
     }
 
-#define EXPRESSION_CATEGORY(category)             \
-    auto GetCategory() const -> uint32_t override \
-    {                                             \
-        return category;                          \
-    }                                             \
-                                                  \
-    static auto GetStaticCategory() -> uint32_t   \
-    {                                             \
-        return category;                          \
+#define EXPRESSION_CATEGORY(category)                     \
+    auto GetCategory() const -> uint32_t override         \
+    {                                                     \
+        return category;                                  \
+    }                                                     \
+                                                          \
+    constexpr static auto GetStaticCategory() -> uint32_t \
+    {                                                     \
+        return category;                                  \
     }
 
 } // namespace Oasis

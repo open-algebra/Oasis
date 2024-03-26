@@ -26,11 +26,53 @@ TEST_CASE("Zero Rule", "[Exponent][Zero]")
     REQUIRE(simplifiedReal.GetValue() == 1.0);
 }
 
+TEST_CASE("Second Zero Rule", "[Exponent][Zero]")
+{
+    Oasis::Exponent exponent {
+        Oasis::Real { 0.0 },
+        Oasis::Real { 5.0 }
+    };
+
+    auto simplified = exponent.Simplify();
+    REQUIRE(simplified->Is<Oasis::Real>());
+
+    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
+    REQUIRE(simplifiedReal.GetValue() == 0.0);
+}
+
 TEST_CASE("Symbolic Zero Rule", "[Exponent][Zero][Symbolic]")
 {
     Oasis::Exponent exponent {
         Oasis::Variable { "x" },
         Oasis::Real { 0.0 }
+    };
+
+    auto simplified = exponent.Simplify();
+    REQUIRE(simplified->Is<Oasis::Real>());
+
+    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
+    REQUIRE(simplifiedReal.GetValue() == 1.0);
+}
+
+TEST_CASE("Second Symbolic Zero Rule", "[Exponent][Zero][Symbolic]")
+{
+    Oasis::Exponent exponent {
+        Oasis::Real { 0.0 },
+        Oasis::Variable { "x" }
+    };
+
+    auto simplified = exponent.Simplify();
+    REQUIRE(simplified->Is<Oasis::Real>());
+
+    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
+    REQUIRE(simplifiedReal.GetValue() == 0.0);
+}
+
+TEST_CASE("Symbolic One Rule", "[Exponent][One][Symbolic]")
+{
+    Oasis::Exponent exponent {
+        Oasis::Real { 1.0 },
+        Oasis::Variable { "x" }
     };
 
     auto simplified = exponent.Simplify();
@@ -416,11 +458,10 @@ TEST_CASE("Imaginary Exponent Rule", "[Imaginary][Exponent]")
         Oasis::Real { 4.0 }
     };
     Oasis::Exponent img {
-        Oasis::Multiply{
-            Oasis::Real{-4.0},
-            Oasis::Variable{"x"}
-        },
-        Oasis::Real {0.5}
+        Oasis::Multiply {
+            Oasis::Real { -4.0 },
+            Oasis::Variable { "x" } },
+        Oasis::Real { 0.5 }
     };
 
     auto simplified1 = i1.Simplify();
@@ -434,7 +475,8 @@ TEST_CASE("Imaginary Exponent Rule", "[Imaginary][Exponent]")
     REQUIRE(Oasis::Multiply { Oasis::Real { -1 }, Oasis::Imaginary {} }.Equals(*simplified3));
     REQUIRE(Oasis::Real { -1.0 }.Equals(*simplified2));
     REQUIRE(Oasis::Real { 1.0 }.Equals(*simplified4));
-    REQUIRE(Oasis::Multiply {Oasis::Multiply{
-                                  Oasis::Real{2.0}, Oasis::Exponent{Oasis::Variable{"x"}, Oasis::Real{0.5}}},
-        Oasis::Imaginary{}}.Equals(*simplifiedimg));
+    REQUIRE(Oasis::Multiply { Oasis::Multiply {
+                                  Oasis::Real { 2.0 }, Oasis::Exponent { Oasis::Variable { "x" }, Oasis::Real { 0.5 } } },
+        Oasis::Imaginary {} }
+                .Equals(*simplifiedimg));
 }
