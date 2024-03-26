@@ -9,6 +9,7 @@
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/Negate.hpp"
 
 namespace Oasis {
 
@@ -69,6 +70,9 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return std::make_unique<Log<>>(base, argument);
         }
     }
+
+    // expr1 - expr2 = expr1 + -expr2
+    return NegateSubtract(std::make_unique<Subtract<Expression>>(simplifiedSubtract));
 
     return simplifiedSubtract.Copy();
 }

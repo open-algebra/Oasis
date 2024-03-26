@@ -20,7 +20,7 @@ auto SolveLinearSystems(std::vector<std::unique_ptr<Expression>>& exprs) -> std:
     auto b = matrices.first.second;
     auto varMap = matrices.second;
 
-    // get result vector from A^-1*b=x
+    // get result vector from A^{-1}*b=x
     Matrix1D x = A.inverse() * b;
 
     std::map<std::string, double> values;
