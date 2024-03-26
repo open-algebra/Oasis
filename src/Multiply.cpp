@@ -27,14 +27,21 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
         return std::make_unique<Real>(multiplicand.GetValue() * multiplier.GetValue());
     }
-
+    if (auto realIdentityCase = Multiply<Real, Expression>::Specialize(simplifiedMultiply); realIdentityCase != nullptr) {
+        double rval = realIdentityCase->GetMostSigOp().GetValue();
+        if (rval == 0) {
+            return std::make_unique<Real>(0);
+        } else if (rval == 1) {
+            return realIdentityCase->GetLeastSigOp().Copy();
+        }
+    }
     if (auto ImgCase = Multiply<Imaginary>::Specialize(simplifiedMultiply); ImgCase != nullptr) {
         return std::make_unique<Real>(-1.0);
     }
 
     if (auto exprCase = Multiply<Expression>::Specialize(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp())) {
-            return std::make_unique<Exponent<Expression, Expression>>(exprCase->GetMostSigOp(), Real { 2.0 });
+            return Exponent<Expression, Expression>(exprCase->GetMostSigOp(), Real { 2.0 }).Simplify();
         }
     }
 
@@ -71,17 +78,19 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     // a*x*x
     if (auto exprCase = Multiply<Multiply<Expression>, Expression>::Specialize(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().Equals(exprCase->GetLeastSigOp())) {
-            return std::make_unique<Multiply<Expression, Expression>>(exprCase->GetMostSigOp().GetMostSigOp(),
-                Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), Real { 2.0 } });
+            return Multiply<Expression, Expression>(exprCase->GetMostSigOp().GetMostSigOp(),
+                Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), Real { 2.0 } })
+                .Simplify();
         }
     }
 
     // a*x*b*x
     if (auto exprCase = Multiply<Multiply<Expression>, Multiply<Expression>>::Specialize(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().Equals(exprCase->GetLeastSigOp().GetLeastSigOp())) {
-            return std::make_unique<Multiply<Expression>>(
+            return Multiply<Expression>(
                 *(Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetMostSigOp() }.Simplify()),
-                *(Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), Real { 2.0 } }.Simplify()));
+                *(Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), Real { 2.0 } }.Simplify()))
+                .Simplify();
         }
     }
 
@@ -154,6 +163,29 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
                     *(Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp().GetLeastSigOp(), exprCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp() }.Simplify()) });
         }
+    }
+
+    if (auto distributiveCase = Multiply<Add<Real, Imaginary>, Expression>::Specialize(simplifiedMultiply); distributiveCase != nullptr) {
+        auto& mult = distributiveCase->GetLeastSigOp();
+        auto& add = distributiveCase->GetMostSigOp();
+        auto& addLeft = add.GetMostSigOp();
+        return Add(Multiply(addLeft, mult), Multiply(Imaginary(), mult)).Simplify();
+    }
+    if (auto distributiveCase = Multiply<Add<Real, Multiply<Real, Imaginary>>, Expression>::Specialize(simplifiedMultiply); distributiveCase != nullptr) {
+        // std::cout << distributiveCase->ToString() << " full" << '\n';
+        auto& mult = distributiveCase->GetLeastSigOp();
+        // std::cout << mult.ToString() << " mult" << '\n';
+        auto& add = distributiveCase->GetMostSigOp();
+        // std::cout << add.ToString() << " add" << '\n';
+        auto& addLeft = add.GetMostSigOp();
+        // std::cout << addLeft.ToString() << " addLeft" << '\n';
+        auto& addRight = add.GetLeastSigOp();
+        // std::cout << addRight.ToString() << " addRight" << '\n';
+        auto unsimpRet = Add(Multiply(addLeft, mult), Multiply(addRight, mult));
+        // std::cout << unsimpRet.ToString() << " unsimpRet" << '\n';
+        auto ret = unsimpRet.Simplify();
+        // std::cout << ret->ToString() << " ret" << '\n';
+        return ret;
     }
 
     // multiply add like terms

@@ -2,6 +2,7 @@
 // Created by Matthew McCall on 8/10/23.
 //
 #include "Oasis/Divide.hpp"
+#include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
@@ -154,6 +155,15 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 break;
             }
         }
+        if (auto complex = Add<Real, Multiply<Real, Imaginary>>::Specialize(*denom); complex != nullptr) {
+            const Real& realPrt = complex->GetMostSigOp();
+            double realPrtD = realPrt.GetValue();
+            const Multiply<Real, Imaginary>& imgPrt = complex->GetLeastSigOp();
+            double imgPrtD = imgPrt.GetMostSigOp().GetValue();
+            result.push_back(std::make_unique<Subtract<Real, Multiply<Real, Imaginary>>>(realPrt, imgPrt));
+            result.push_back(std::make_unique<Real>(1 / (realPrtD * realPrtD + imgPrtD * imgPrtD)));
+            continue;
+        }
         if (i >= result.size()) {
             result.push_back(Exponent<Expression> { *denom, Real { -1.0 } }.Generalize());
         }
@@ -204,12 +214,16 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     // rebuild subtrees
-    if (!numeratorVals.empty() && !denominatorVals.empty())
-        return Divide { *(BuildFromVector<Multiply>(numeratorVals)), *(BuildFromVector<Multiply>(denominatorVals)) }.Generalize();
-    else if (!numeratorVals.empty() && denominatorVals.empty())
-        return BuildFromVector<Multiply>(numeratorVals);
-    else
-        return Divide { Real { 1.0 }, *(BuildFromVector<Multiply>(denominatorVals)) }.Generalize();
+    if (numeratorVals.empty() && denominatorVals.empty()) {
+        return std::make_unique<Real>(1.0);
+    }
+    if (numeratorVals.empty()) {
+        return Divide { Real(1), *(BuildFromVector<Multiply>(denominatorVals)->Simplify()) }.Generalize();
+    } else if (denominatorVals.empty()) {
+        return BuildFromVector<Multiply>(numeratorVals)->Simplify();
+    }
+
+    return Divide { *(BuildFromVector<Multiply>(numeratorVals)->Simplify()), *(BuildFromVector<Multiply>(denominatorVals)->Simplify()) }.Generalize();
 }
 
 auto Divide<Expression>::ToString() const -> std::string
