@@ -78,11 +78,8 @@ TEST_CASE("7th degree polynomial with complex rational roots", "[factor][duplica
     auto zeros = add->FindZeros();
     REQUIRE(zeros.size() == 6);
     for (auto& i : zeros) {
-        std::cout << i->Simplify()->ToString() << '\n';
         auto sub = add->SubstituteVariable(var, *i->Simplify());
-        std::cout << sub->ToString() << '\n';
         auto simplified = sub->Simplify();
-        std::cout << simplified->ToString() << "\n\n\n\n";
         REQUIRE(Oasis::Util::abs(*simplified).GetValue() < epsilon);
     }
 }
@@ -96,7 +93,6 @@ TEST_CASE("imaginary linear polynomial")
     auto zeros = add.FindZeros();
     REQUIRE(zeros.size() == 1);
     if (zeros.size() == 1) {
-        // std::cout << zeros[0]->ToString();
         auto root = Oasis::Multiply<Oasis::Real, Oasis::Imaginary>::Specialize(*zeros[0]->Simplify());
         REQUIRE(root != nullptr);
         REQUIRE(root->GetMostSigOp().GetValue() == -1);

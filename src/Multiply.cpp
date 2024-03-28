@@ -172,19 +172,12 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return Add(Multiply(addLeft, mult), Multiply(Imaginary(), mult)).Simplify();
     }
     if (auto distributiveCase = Multiply<Add<Real, Multiply<Real, Imaginary>>, Expression>::Specialize(simplifiedMultiply); distributiveCase != nullptr) {
-        // std::cout << distributiveCase->ToString() << " full" << '\n';
         auto& mult = distributiveCase->GetLeastSigOp();
-        // std::cout << mult.ToString() << " mult" << '\n';
         auto& add = distributiveCase->GetMostSigOp();
-        // std::cout << add.ToString() << " add" << '\n';
         auto& addLeft = add.GetMostSigOp();
-        // std::cout << addLeft.ToString() << " addLeft" << '\n';
         auto& addRight = add.GetLeastSigOp();
-        // std::cout << addRight.ToString() << " addRight" << '\n';
         auto unsimpRet = Add(Multiply(addLeft, mult), Multiply(addRight, mult));
-        // std::cout << unsimpRet.ToString() << " unsimpRet" << '\n';
         auto ret = unsimpRet.Simplify();
-        // std::cout << ret->ToString() << " ret" << '\n';
         return ret;
     }
 

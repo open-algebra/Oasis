@@ -9,7 +9,6 @@ public:
         , imaginary(0)
     {
     }
-    IntegerComplex(const IntegerComplex& rhs) = default;
     IntegerComplex(long long R, long long I)
         : real(R)
         , imaginary(I)
