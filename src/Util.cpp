@@ -11,18 +11,18 @@ namespace Oasis::Util {
 std::unique_ptr<Expression> IntegerComplex::getExpression() const
 {
     if (imaginary == 0) {
-        return std::make_unique<Real>(real*1.0);
+        return std::make_unique<Real>(real * 1.0);
     }
     std::unique_ptr<Expression> iPar;
     if (imaginary == 1) {
         iPar = std::make_unique<Imaginary>();
     } else {
-        iPar = std::make_unique<Multiply<Real, Imaginary>>(Real(imaginary*1.0), Imaginary());
+        iPar = std::make_unique<Multiply<Real, Imaginary>>(Real(imaginary * 1.0), Imaginary());
     }
     if (real == 0) {
         return iPar;
     }
-    return std::make_unique<Add<Real, Expression>>(Real(real*1.0), *iPar);
+    return std::make_unique<Add<Real, Expression>>(Real(real * 1.0), *iPar);
 }
 IntegerComplex& IntegerComplex::operator+=(const IntegerComplex& rhs)
 {
