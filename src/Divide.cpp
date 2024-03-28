@@ -86,7 +86,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 }
             }
             if (i >= result.size()) {
-                result.push_back(Exponent<Expression> { Imaginary {}, Real { -1.0 } }.Generalize());
+                result.push_back(Oasis::Multiply(Oasis::Real(-1), Oasis::Imaginary()).Generalize());
             }
             continue;
         }

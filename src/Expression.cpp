@@ -5,37 +5,24 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Imaginary.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Util.hpp"
 #include "Oasis/Variable.hpp"
 
-std::vector<long long> getAllFactors(long long n)
-{
-    std::vector<long long> answer;
-    for (long long i = 1; i * i <= n; i++) {
-        if (n % i == 0) {
-            answer.push_back(i);
-        }
-    }
-    if (std::abs(n) != 1) {
-        answer.push_back(std::abs(n));
-    }
-    return answer;
-}
-
 namespace Oasis {
 
 auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
 {
-    std::vector<std::unique_ptr<Expression>> results;
     std::vector<std::unique_ptr<Expression>> termsE;
+    std::vector<std::unique_ptr<Expression>> results;
     if (auto addCase = Add<Expression>::Specialize(*this); addCase != nullptr) {
         addCase->Flatten(termsE);
     } else {
         termsE.push_back(Copy());
     }
-    std::string varName = "x";
+    std::string varName = "";
     std::vector<std::unique_ptr<Expression>> posCoefficents;
     std::vector<std::unique_ptr<Expression>> negCoefficents;
     for (const auto& i : termsE) {
@@ -46,11 +33,6 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             coefficent = Real(1).Copy();
             variableName = variableCase->GetName();
             exponent = 1;
-            if (variableName != varName) {
-                coefficent = i->Copy();
-                variableName = varName;
-                exponent = 0;
-            }
         } else if (auto expCase = Exponent<Variable, Real>::Specialize(*i); expCase != nullptr) {
             coefficent = Real(1).Copy();
             variableName = expCase->GetMostSigOp().GetName();
@@ -111,69 +93,37 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
     if (coefficents.size() <= 1) {
         return {};
     }
-    std::vector<long long> termsC;
+    std::vector<Util::IntegerComplex> termsC;
     for (auto& i : coefficents) {
-        auto realCase = Real::Specialize(*i);
-        if (realCase == nullptr) {
-            break;
-        }
-        double value = realCase->GetValue();
-        if (!Util::isInt(value)) {
-            break;
+        double realValue = 0;
+        double imaginaryValue = 0;
+        if (auto realCase = Real::Specialize(*i); realCase != nullptr) {
+            realValue = realCase->GetValue();
+        } else if (i->Is<Imaginary>()) {
+            imaginaryValue = 1;
+        } else if (auto realPICase = Add<Real, Imaginary>::Specialize(*i); realPICase != nullptr) {
+            realValue = realPICase->GetMostSigOp().GetValue();
+            imaginaryValue = 1;
+        } else if (auto imaginaryCase = Multiply<Real, Imaginary>::Specialize(*i); imaginaryCase != nullptr) {
+            imaginaryValue = imaginaryCase->GetMostSigOp().GetValue();
+        } else if (auto complexCase = Add<Real, Multiply<Real, Imaginary>>::Specialize(*i); complexCase != nullptr) {
+            realValue = complexCase->GetMostSigOp().GetValue();
+            imaginaryValue = complexCase->GetLeastSigOp().GetMostSigOp().GetValue();
         } else {
-            termsC.push_back(lround(value));
+            break;
         }
+        if (!Util::isInt(realValue) || !Util::isInt(imaginaryValue)) {
+            break;
+        }
+        termsC.push_back(Util::IntegerComplex(lround(realValue), lround(imaginaryValue)));
     }
     if (termsC.size() == coefficents.size()) {
         std::reverse(termsC.begin(), termsC.end());
-        for (auto pv : getAllFactors(termsC.back())) {
-            for (auto qv : getAllFactors(termsC.front())) {
-                if (Util::gcf(pv, qv) == 1) {
-                    for (long long sign : { -1, 1 }) {
-                        bool doAdd = true;
-                        while (true) {
-                            long long mpv = pv * sign;
-                            std::vector<long long> newTermsC;
-                            long long h = 0;
-                            for (long long i : termsC) {
-                                h *= mpv;
-                                if (h % qv != 0) {
-                                    break;
-                                }
-                                h /= qv;
-                                h += i;
-                                newTermsC.push_back(h);
-                            }
-                            if (newTermsC.size() == termsC.size() && newTermsC.back() == 0) {
-                                termsC = newTermsC;
-                                if (doAdd) {
-                                    results.push_back(std::make_unique<Divide<Real>>(Real(1.0 * mpv), Real(1.0 * qv)));
-                                    doAdd = false;
-                                }
-                                do {
-                                    termsC.pop_back();
-                                } while (termsC.back() == 0);
-                                if (termsC.size() <= 1) {
-                                    break;
-                                }
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (termsC.size() <= 1) {
-                    break;
-                }
-            }
-            if (termsC.size() <= 1) {
-                break;
-            }
-        }
+        results = Util::getAllRationalPolynomialRoots(termsC);
         coefficents.clear();
         std::reverse(termsC.begin(), termsC.end());
         for (auto i : termsC) {
-            coefficents.push_back(Real(i * 1.0).Copy());
+            coefficents.push_back(i.getExpression());
         }
     }
     const Real n1(-1);

@@ -31,18 +31,19 @@ TEST_CASE("Symbolic Addition", "[Add][Symbolic]")
     Oasis::Add add {
         Oasis::Multiply {
             Oasis::Real { 1.0 },
-            Oasis::Variable { "x"} },
+            Oasis::Variable { "x" } },
         Oasis::Multiply {
-                Oasis::Real { 2.0 },
-                Oasis::Variable { "x" } }
-        };
+            Oasis::Real { 2.0 },
+            Oasis::Variable { "x" } }
+    };
 
     auto simplified = add.Simplify();
     REQUIRE(simplified->Is<Oasis::Multiply>());
 
     REQUIRE(Oasis::Multiply {
         Oasis::Real { 3.0 },
-        Oasis::Variable { "x" } }.Equals(*simplified));
+        Oasis::Variable { "x" } }
+                .Equals(*simplified));
 }
 
 /*
@@ -169,8 +170,7 @@ TEST_CASE("Specialization", "[Specialization]")
     REQUIRE(Oasis::Add<Oasis::Real>::Specialize(
         Oasis::Add<Oasis::Expression> {
             Oasis::Real {},
-            Oasis::Real {} }
-        ));
+            Oasis::Real {} }));
 }
 
 TEST_CASE("Imaginary Addition", "[Imaginary][Add]")
@@ -249,16 +249,14 @@ TEST_CASE("Add Associativity with wider tree", "[Add][Associativity]")
                 .Equals(*simplified2));
 }
 
-
 TEST_CASE("Add Operator Overload", "[Add][Operator Overload]")
 {
     const std::unique_ptr<Oasis::Expression> a = std::make_unique<Oasis::Real>(1.0);
     const std::unique_ptr<Oasis::Expression> b = std::make_unique<Oasis::Real>(2.0);
 
-    const auto sum = a+b;
+    const auto sum = a + b;
     auto realSum = Oasis::Real::Specialize(*sum);
 
     REQUIRE(realSum != nullptr);
     REQUIRE(realSum->GetValue() == 3.0);
-
 }
