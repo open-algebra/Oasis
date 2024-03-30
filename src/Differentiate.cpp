@@ -34,29 +34,13 @@ namespace Oasis {
             return (Differentiate<Expression, Expression>{isAdd->GetMostSigOp().GetLeastSigOp(), isAdd->GetLeastSigOp()}.Simplify());
         }
 
-        if (auto ImgCase = Add<Imaginary>::Specialize(simplifiedAdd); ImgCase != nullptr) {
-            return std::make_unique<Multiply<Real, Imaginary>>(Real { 2.0 }, Imaginary {});
+        // Differentiate exponent
+        if (auto exponentCase = Differentiate<Exponent<Expression>, Expression>::Specialize(simplifiedDifferentiate); exponentCase != nullptr) {
+            return std::make_unique<Multiply<Expression>>(exponentCase->GetMostSigOp().GetLeastSigOp(), Exponent<Expression, Expression>(exponentCase->GetMostSigOp().GetMostSigOp(), Add<Expression>(Real(-1), exponentCase->GetMostSigOp().GetMostSigOp())));
         }
 
-        if (auto ImgCase = Add<Multiply<Expression, Imaginary>, Imaginary>::Specialize(simplifiedAdd); ImgCase != nullptr) {
-            return std::make_unique<Multiply<Expression>>(
-                    *(Add { Real { 1.0 }, ImgCase->GetMostSigOp().GetMostSigOp() }.Simplify()), Imaginary {});
-        }
-
-        if (auto ImgCase = Add<Multiply<Expression, Imaginary>, Multiply<Expression, Imaginary>>::Specialize(simplifiedAdd); ImgCase != nullptr) {
-            return std::make_unique<Multiply<Expression>>(
-                    *(Add { ImgCase->GetLeastSigOp().GetMostSigOp(), ImgCase->GetMostSigOp().GetMostSigOp() }.Simplify()), Imaginary {});
-        }
-
-        // exponent + exponent
-        if (auto exponentCase = Add<Exponent<Expression>, Exponent<Expression>>::Specialize(simplifiedAdd); exponentCase != nullptr) {
-            if (exponentCase->GetMostSigOp().GetMostSigOp().Equals(exponentCase->GetLeastSigOp().GetMostSigOp()) && exponentCase->GetMostSigOp().GetLeastSigOp().Equals(exponentCase->GetLeastSigOp().GetLeastSigOp())) {
-                return std::make_unique<Multiply<Expression>>(Real { 2.0 }, exponentCase->GetMostSigOp());
-            }
-        }
-
-        // a*exponent + exponent
-        if (auto exponentCase = Add<Multiply<Expression, Exponent<Expression>>, Exponent<Expression>>::Specialize(simplifiedAdd); exponentCase != nullptr) {
+        // Differentiate a*exponent
+        if (auto exponentCase = Differentiate<Multiply<Expression, Exponent<Expression>>, Exponent<Expression>>::Specialize(simplifiedDifferentiate); exponentCase != nullptr) {
             if (exponentCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(exponentCase->GetLeastSigOp().GetMostSigOp()) && exponentCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp().Equals(exponentCase->GetLeastSigOp().GetLeastSigOp())) {
                 return std::make_unique<Multiply<Expression>>(*(Add<Expression> { exponentCase->GetMostSigOp().GetMostSigOp(), Real { 1.0 } }.Simplify()),
                                                               exponentCase->GetLeastSigOp());
