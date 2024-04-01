@@ -263,9 +263,11 @@ std::vector<IntegerComplex> getAllPrimeFactors(IntegerComplex n)
 }
 
 template <class T>
+concept LonglongOrIntegerComplex = std::is_same<T, long long>::value || std::is_same<T, IntegerComplex>::value;
+
+template <LonglongOrIntegerComplex T>
 std::vector<std::pair<T, T>> getAllFactorsDivs(T n, T n2)
 {
-    static_assert(std::is_same<T, long long>::value || std::is_same<T, IntegerComplex>::value, "Only long long and IntegerComplex are supported");
     std::vector<T> primeFactorsDuplicates = getAllPrimeFactors(n);
     std::vector<long long> maxFactor;
     std::vector<T> primeFactors;
@@ -341,27 +343,9 @@ std::vector<std::pair<T, T>> getAllFactorsDivs(T n, T n2)
     }
 }
 
-template <class T>
+template <LonglongOrIntegerComplex T>
 std::vector<std::unique_ptr<Expression>> getAllRationalPolynomialRootsT(std::vector<T>& R)
 {
-    static_assert(std::is_same<T, long long>::value || std::is_same<T, IntegerComplex>::value, "Only long long and IntegerComplex are supported");
-    if constexpr (std::is_same<T, IntegerComplex>::value) {
-        std::vector<long long> realV;
-        for (auto i : R) {
-            if (i.getImaginary() != 0) {
-                break;
-            }
-            realV.push_back(i.getReal());
-        }
-        if (R.size() == realV.size()) {
-            auto answer = getAllRationalPolynomialRootsT(realV);
-            R.clear();
-            for (auto i : realV) {
-                R.push_back(IntegerComplex(i));
-            }
-            return answer;
-        }
-    }
     std::vector<std::unique_ptr<Expression>> results;
     for (auto co : getAllFactorsDivs(R.back(), R.front())) {
         auto mpv = std::get<0>(co);
@@ -409,6 +393,21 @@ std::vector<std::unique_ptr<Expression>> getAllRationalPolynomialRootsT(std::vec
 }
 std::vector<std::unique_ptr<Expression>> getAllRationalPolynomialRoots(std::vector<IntegerComplex>& C)
 {
+    std::vector<long long> realV;
+    for (auto i : C) {
+        if (i.getImaginary() != 0) {
+            break;
+        }
+        realV.push_back(i.getReal());
+    }
+    if (C.size() == realV.size()) {
+        auto answer = getAllRationalPolynomialRootsT(realV);
+        C.clear();
+        for (auto i : realV) {
+            C.push_back(IntegerComplex(i));
+        }
+        return answer;
+    }
     return getAllRationalPolynomialRootsT(C);
 }
 } // Oasis::Util
