@@ -71,15 +71,15 @@ namespace Oasis {
             }
         }
 
-        return simplifiedAdd.Copy();
+        return simplifiedDifferentiate.Copy();
     }
 
-    auto Add<Expression>::ToString() const -> std::string
+    auto Differentiate<Expression>::ToString() const -> std::string
     {
-        return fmt::format("({} + {})", mostSigOp->ToString(), leastSigOp->ToString());
+        return fmt::format("(d/d{} ({}))", leastSigOp->ToString(), mostSigOp->ToString());
     }
 
-    auto Add<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
+    /*auto Add<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
     {
         std::unique_ptr<Expression> simplifiedAugend, simplifiedAddend;
 
@@ -132,7 +132,7 @@ namespace Oasis {
         }
 
         return simplifiedAdd.Copy();
-    }
+    }*/
 
     auto Differentiate<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Differentiate<Expression, Expression>>
     {
@@ -144,14 +144,14 @@ namespace Oasis {
         return std::make_unique<Differentiate>(dynamic_cast<const Differentiate&>(*otherGeneralized));
     }
 
-    auto Differentiate<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Add>
+    auto Differentiate<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Differentiate>
     {
-        if (!other.Is<Oasis::Add>()) {
+        if (!other.Is<Oasis::Differentiate>()) {
             return nullptr;
         }
 
         auto otherGeneralized = other.Generalize(subflow);
-        return std::make_unique<Add>(dynamic_cast<const Add&>(*otherGeneralized));
+        return std::make_unique<Differentiate>(dynamic_cast<const Differentiate&>(*otherGeneralized));
     }
 
 } // Oasis

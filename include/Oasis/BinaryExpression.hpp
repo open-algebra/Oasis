@@ -92,7 +92,10 @@ public:
 
         return std::make_unique<DerivedSpecialized>(copy);
     }
-
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> override
+    {
+        return Generalize()->Differentiate(differentiationVariable);
+    }
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final
     {
         if (this->GetType() != other.GetType()) {
