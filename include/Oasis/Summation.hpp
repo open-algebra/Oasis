@@ -3,44 +3,52 @@
 //
 #ifndef OASIS_SUMMATION_HPP
 #define OASIS_SUMMATION_HPP
+#include "fmt/core.h"
+
+#include "BinaryExpression.hpp"
 
 namespace Oasis {
-/**
-*The concept of a Capital-sigma notation for summation
-*@tparam lowBound is the starting iteration
-*@tparam upperBound is the ending iteration 
-*@tparam expression is the expression that is being summed
-*/
-template <IExpression lowBound, IExpression upperBound, IExpression expression>
-class Summation; 
 
-class Summation {
+template <IExpression lowBound, IExpression upperBound, IExpression exp>
+class Summation;
 
-public: 
+///@cond
+template<>
+class Summation<Expression Expression, Expression> : public BinaryExpression<Summation> {
+
     Summation() = default;
-    Summation(const Summation& other) { 
-        if(other.)
-    }
 
-    [[nodiscard]] auto HasLowerBound() const -> bool
-    {
-        return lowBound != nullptr;
-    }
+    Summation(const Summation<Expression, Expression, Expression>n& other)  = default;
 
-    [[nodiscard]] auto HasUpperBound() const -> bool
-    {
-        return upperBound != nullptr;
-    }
+    Summation(const Expression& lowBound, const Expression& upperBound, const Expression& exp);
 
+    [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
+    auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
+    [[nodiscard]] auto ToString() const -> std::string final;
 
+    static auto Specialize(const Expression& other) -> std::unique_ptr<Summation>;
+    static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Summation>;
+
+    EXPRESSION_TYPE(Summation)
+    EXPRESSION_CATEGORY(None)
 
 };
+/// @endcond
 
+/**
+*The Summation expression represents the sum of an expression from the lower Bound to the upper Bound
+*
+*@tparam lowBound is the lowerBound for the summation
+*@tparam upperBound is the upper Bound for the summation
+*@tparam exp is the expression that is being summed
+*/
 
+template<IExpression lowBound = Expression, IExpression upperBound = Expression, IExpression exp = Expression>
+class Summation : public BinaryExpression<Summation, lowBound, upperBound, exp> {
+    std::cout << "Are commits working" << std::endl;
+};
+blah
+}
 
-
-
-
-
-} //namespace Oasis
+#endif
