@@ -80,6 +80,7 @@ auto Integrate<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
+    // For Add Statments
 
     // Subtract Cases
 
@@ -297,7 +298,7 @@ auto Integrate<Expression>::Simplify() const -> std::unique_ptr<Expression>
             const Expression& differential = liketermsCase->GetLeastSigOp();
 
             return std::make_unique<Integrate<Multiply<Expression>, Expression>>(
-                Multiply<Expression>( *(Multiply<Expression>{ liketermsCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp(), liketermsCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp()}.Simplify()),
+                Multiply<Expression>( *(Multiply<Expression>{ liketermsCase->GetMostSigOp().GetMostSigOp().GetMostSigOp(), liketermsCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp()}.Simplify()),
                     *(Exponent<Expression>{ liketermsCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
                         *(Add{ liketermsCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp().GetLeastSigOp(), Real{1.0} }.Simplify()) }.Simplify()) ), differential );
         }
@@ -335,17 +336,62 @@ auto Integrate<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (liketermsCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp().Equals(liketermsCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().GetMostSigOp())) {
             const Expression& differential = liketermsCase->GetLeastSigOp();
 
-//            return std::make_unique<Integrate<Multiply<Expression>, Expression>>(
-//                Multiply<Expression>( *(Multiply<Expression>{ liketermsCasse->GetMostSigOp().GetMostSigOp().GetLeastSigOp(), liketermsCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp() }.Simplify()),
-//                    *(Exponent<Expression>{ liketermsCase->GetMostSigOp().GetMostSigOp().GetMostSigOp(),
-//                        *(Add<Expression>{ liketermsCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().GetLeastSigOp(), Real{1.0} }.Simplify()) }.Simplify()) ), differential );
+            return std::make_unique<Integrate<Multiply<Expression>, Expression>>(
+                Multiply<Expression>( *(Multiply<Expression>{ liketermsCase->GetMostSigOp().GetMostSigOp().GetMostSigOp(), liketermsCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp() }.Simplify()),
+                    *(Exponent<Expression>{ liketermsCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp(),
+                        *(Add<Expression>{ liketermsCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().GetLeastSigOp(), Real{1.0} }.Simplify()) }.Simplify()) ), differential );
         }
     }
 
+    if (auto liketermCase = Integrate<Multiply<Multiply<Exponent<Expression>, Expression>, Multiply<Expression>>, Expression>::Specialize(simplifiedIntegrate); liketermCase != nullptr) {
+        if (liketermCase->GetMostSigOp().GetMostSigOp().GetMostSigOp().GetMostSigOp().Equals(liketermCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp()) ) {
+            const Expression& differential = liketermCase->GetLeastSigOp();
+
+            return std::make_unique<Integrate<Multiply<Expression>, Expression>>(
+                Multiply<Expression>( *(Multiply<Expression>{ liketermCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp(), liketermCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp() }.Simplify()),
+                    *(Exponent<Expression>{ liketermCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp(),
+                        *(Add<Expression>{ liketermCase->GetMostSigOp().GetMostSigOp().GetMostSigOp().GetLeastSigOp(), Real{1.0} }.Simplify()) }) ), differential);
+        }
+        if (liketermCase->GetMostSigOp().GetMostSigOp().GetMostSigOp().GetMostSigOp().Equals(liketermCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp())) {
+            const Expression& differential = liketermCase->GetLeastSigOp();
+
+            return std::make_unique<Integrate<Multiply<Expression>, Expression>>(
+                Multiply<Expression>( *(Multiply<Expression>{ liketermCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp(), liketermCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp() }.Simplify()),
+                    *(Exponent<Expression>{ liketermCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
+                        *(Add<Expression>{ liketermCase->GetMostSigOp().GetMostSigOp().GetMostSigOp().GetLeastSigOp(), Real{1.0} }.Simplify()) }) ), differential);
+        }
+    }
+
+    // a*x^n * x^m = a * x^(n + m)
+    if (auto liketermCase = Integrate<Multiply<Multiply<Expression, Exponent<Expression>>, Exponent<Expression>>, Expression>::Specialize(simplifiedIntegrate); liketermCase != nullptr) {
+        if (liketermCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(liketermCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp())) {
+            const Expression& differential = liketermCase->GetLeastSigOp();
+
+            return std::make_unique<Integrate<Multiply<Expression>, Expression>>(
+                Multiply<Expression>( liketermCase->GetMostSigOp().GetMostSigOp().GetMostSigOp(),
+                    *(Exponent<Expression>{ liketermCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
+                        *(Add<Expression>{ liketermCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp().GetLeastSigOp(), liketermCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp() }.Simplify()) }.Simplify()) ), differential);
+        }
+    }
+
+    // a*x^n * b*x^n = a*b * x^(n + m)
+    if (auto liketermCase = Integrate<Multiply<Multiply<Expression, Exponent<Expression>>, Multiply<Expression, Exponent<Expression>>>, Expression>::Specialize(simplifiedIntegrate); liketermCase != nullptr) {
+        if (liketermCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(liketermCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp().GetMostSigOp())) {
+            const Expression& differential = liketermCase->GetLeastSigOp();
+
+            return std::make_unique<Integrate<Multiply<Expression>, Expression>>(
+                Multiply<Expression>( *(Multiply<Expression>{ liketermCase->GetMostSigOp().GetMostSigOp().GetMostSigOp(), liketermCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp() }.Simplify()),
+                    *(Exponent<Expression>{ liketermCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
+                        *(Add<Expression>{ liketermCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp().GetLeastSigOp(), liketermCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp().GetLeastSigOp() }.Simplify()) }.Simplify()) ), differential);
+        }
+    }
+
+    // For Multiply Statements
 
 
     // Divide Cases
 
+    if ()
 
 
 
