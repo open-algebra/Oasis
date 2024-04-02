@@ -350,7 +350,7 @@ auto Integrate<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return std::make_unique<Integrate<Multiply<Expression>, Expression>>(
                 Multiply<Expression>( *(Multiply<Expression>{ liketermCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp(), liketermCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp() }.Simplify()),
                     *(Exponent<Expression>{ liketermCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp(),
-                        *(Add<Expression>{ liketermCase->GetMostSigOp().GetMostSigOp().GetMostSigOp().GetLeastSigOp(), Real{1.0} }.Simplify()) }) ), differential);
+                        *(Add<Expression>{ liketermCase->GetMostSigOp().GetMostSigOp().GetMostSigOp().GetLeastSigOp(), Real{1.0} }.Simplify()) }.Simplify()) ), differential);
         }
         if (liketermCase->GetMostSigOp().GetMostSigOp().GetMostSigOp().GetMostSigOp().Equals(liketermCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp())) {
             const Expression& differential = liketermCase->GetLeastSigOp();
@@ -358,7 +358,7 @@ auto Integrate<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return std::make_unique<Integrate<Multiply<Expression>, Expression>>(
                 Multiply<Expression>( *(Multiply<Expression>{ liketermCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp(), liketermCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp() }.Simplify()),
                     *(Exponent<Expression>{ liketermCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
-                        *(Add<Expression>{ liketermCase->GetMostSigOp().GetMostSigOp().GetMostSigOp().GetLeastSigOp(), Real{1.0} }.Simplify()) }) ), differential);
+                        *(Add<Expression>{ liketermCase->GetMostSigOp().GetMostSigOp().GetMostSigOp().GetLeastSigOp(), Real{1.0} }.Simplify()) }.Simplify()) ), differential);
         }
     }
 
@@ -391,11 +391,27 @@ auto Integrate<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     // Divide Cases
 
-    if ()
+    if (auto realDivCase = Integrate<Divide<Real>, Expression>::Specialize(simplifiedIntegrate); realDivCase != nullptr) {
+        const Real& dividend = realDivCase->GetMostSigOp().GetMostSigOp();
+        const Real& divisor = realDivCase->GetMostSigOp().GetLeastSigOp();
+        const Expression& differential = realDivCase->GetLeastSigOp();
+
+        return std::make_unique<Integrate<Real, Expression>>( Real{ dividend.GetValue() / divisor.GetValue() }, differential );
+    }
+
+    // log(a) / log(b) = log[b](a)
+    if (auto logDivCase = Integrate<Divide<Log<Expression>, Log<Expression>>, Expression>::Specialize(simplifiedIntegrate); logDivCase != nullptr) {
+        if (logDivCase->GetMostSigOp().GetMostSigOp().GetMostSigOp().Equals(logDivCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp())) {
+            const IExpression auto& base = logDivCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp();
+            const IExpression auto& argument = logDivCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp();
+            const Expression& differential = logDivCase->GetLeastSigOp();
+
+            return std::make_unique<Integrate<Log<Expression>, Expression>>( Log<Expression>(base, argument), differential );
+        }
+    }
 
 
 
-    // simplifies expressions and combines like terms
 
 
 }
