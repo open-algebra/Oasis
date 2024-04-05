@@ -46,9 +46,22 @@ class Summation<Expression Expression, Expression> : public BinaryExpression<Sum
 
 template<IExpression lowBound = Expression, IExpression upperBound = Expression, IExpression exp = Expression>
 class Summation : public BinaryExpression<Summation, lowBound, upperBound, exp> {
-    std::cout << "Are commits working" << std::endl;
-};
-blah
-}
+    Summation(const Summation<lowBound, upperBound, exp>& other) : 
+    BinaryExpression<Summation, lowBound, upperBound, exp>(other) {};
 
+    Summation(const Expression& lowBound, const Expression& upperBound, const Expression& exp) :
+    BinaryExpression<Summation, lowBound, upperBound, exp>(lowBound, upperBound, exp) {};
+
+    [[nodiscard]] auto ToString() const -> std::string final
+    {
+        return fmt::format("∑^{}_{}({})", this->lowBound, this->upperBound, this->exp);
+    }
+
+    auto operator=(const Summation& other) -> Summation& = default;
+
+    EXPRESSION_TYPE(Summation);
+    EXPRESSION_CATEGORY(None);
+};
+
+}
 #endif
