@@ -13,7 +13,7 @@ set(Oasis_TESTS
     ExponentTests.cpp
     LogTests.cpp
     MultiplyTests.cpp
-        NegateTests.cpp
+    NegateTests.cpp
     PolynomialTests.cpp
     SubtractTests.cpp)
 
