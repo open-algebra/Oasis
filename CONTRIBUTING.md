@@ -40,7 +40,10 @@ We adopt a standard naming convention for pull request subject lines. Here are s
 
 ## Code Style
 
-We strive to follow WebKit's [coding style guidelines](https://webkit.org/code-style-guidelines/). Additionally, we use `clang-format` to keep the formatting of our C++ code consistent.
+We strive to follow WebKit's [coding style guidelines](https://webkit.org/code-style-guidelines/). Additionally, we use `clang-format` to keep the formatting of our C++ code consistent. Here are some additional guidelines this project follows:
+- We always use the trailing return syntax (Yes, WebKit says otherwise)
+- We try to reduce nesting as much as possible. For instance, prefer early return patterns.
+- Try to use the "declarative syntax" for building expressions. I.e, nested braced initialization.
 
 When it comes to coding style, consistency is extremely important. Be sure to follow the existing style, format, and naming convention in the file(s) you are modifying. This is also enforced by GitHub Actions workflows. Unfortunately, this is not as automatic as we'd like. To run these workflows, you need to manually run them from GitHub.
 
