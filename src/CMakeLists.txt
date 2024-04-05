@@ -14,6 +14,7 @@ set(Oasis_SOURCES
     Imaginary.cpp
     Log.cpp
     Multiply.cpp
+        Negate.cpp
     Real.cpp
     Subtract.cpp
     Undefined.cpp
@@ -30,8 +31,11 @@ set(Oasis_HEADERS
     ../include/Oasis/LeafExpression.hpp
     ../include/Oasis/Log.hpp
     ../include/Oasis/Multiply.hpp
+        ../include/Oasis/Negate.hpp
     ../include/Oasis/Real.hpp
     ../include/Oasis/Subtract.hpp
+        ../include/Oasis/UnaryExpression.hpp
+        ../include/Oasis/Undefined.hpp
     ../include/Oasis/Variable.hpp)
 
 # Adds a library target called "Oasis" to be built from source files.
