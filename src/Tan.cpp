@@ -1,5 +1,7 @@
 #include "Tan.hpp"
 #include "MathUtils.hpp"
+#include "Add.hpp"
+#include "Power.hpp"
 
 namespace Oasis {
 
@@ -46,8 +48,21 @@ namespace Oasis {
 
 
     std::unique_ptr<Expression> Tan::Derivative() const {
-        
-    }
+    // Represents the constant 1
+    auto one = MathUtils::createNumericExpression(1);
+    // Represents tan(x)^2, which is the operand of this Tan instance raised to the power of 2
+    auto tanSquared = std::make_unique<Power>(
+        operand->Copy(), // Copy the operand for use in the new expression
+        MathUtils::createNumericExpression(2) // The exponent 2
+    );
+    // Adds 1 and tan^2(x) together to form the derivative
+    auto derivative = std::make_unique<Add>(
+        std::move(one),
+        std::move(tanSquared)
+    );
+
+    return derivative;
+}
 
     auto Tan::ToString() const -> std::string {
         return "tan(" + operand->ToString() + ")";

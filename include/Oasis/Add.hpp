@@ -32,6 +32,10 @@ public:
     static auto Specialize(const Expression& other) -> std::unique_ptr<Add>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Add>;
 
+    Add(std::unique_ptr<Expression> left, std::unique_ptr<Expression> right);
+    std::unique_ptr<Expression> Simplify() const override;
+    std::string ToString() const override;
+    
     EXPRESSION_TYPE(Add)
     EXPRESSION_CATEGORY(Associative | Commutative)
 };
