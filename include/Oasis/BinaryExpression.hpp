@@ -101,7 +101,7 @@ public:
         SetLeastSigOp(leastSigOp);
     }
 
-    template<IExpression Op1T, IExpression Op2T, IExpression... OpsT>
+    template <IExpression Op1T, IExpression Op2T, IExpression... OpsT>
     BinaryExpression(const Op1T& op1, const Op2T& op2, const OpsT&... ops)
     {
         static_assert(IAssociativeAndCommutative<DerivedT>, "List initializer only supported for associative and commutative expressions");
@@ -110,7 +110,7 @@ public:
         std::vector<std::unique_ptr<Expression>> opsVec;
 
         for (auto opWrapper : std::vector<std::reference_wrapper<const Expression>> { static_cast<const Expression&>(op1), static_cast<const Expression&>(op2), (static_cast<const Expression&>(ops))... }) {
-            const Expression& operand= opWrapper.get();
+            const Expression& operand = opWrapper.get();
             opsVec.emplace_back(operand.Copy());
         }
 
