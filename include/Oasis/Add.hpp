@@ -20,10 +20,7 @@ template <>
 class Add<
     Expression, Expression> : public BinaryExpression<Add> {
 public:
-    Add() = default;
-    Add(const Add<Expression, Expression>& other) = default;
-
-    Add(const Expression& addend1, const Expression& addend2);
+    using BinaryExpression::BinaryExpression;
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;

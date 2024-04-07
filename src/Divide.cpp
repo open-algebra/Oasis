@@ -203,13 +203,17 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
+    auto dividend = numeratorVals.size() == 1 ? std::move(numeratorVals.front()) : BuildFromVector<Multiply>(numeratorVals);
+    auto divisor = denominatorVals.size() == 1 ? std::move(denominatorVals.front()) : BuildFromVector<Multiply>(denominatorVals);
+
     // rebuild subtrees
-    if (!numeratorVals.empty() && !denominatorVals.empty())
-        return Divide { *(BuildFromVector<Multiply>(numeratorVals)), *(BuildFromVector<Multiply>(denominatorVals)) }.Generalize();
-    else if (!numeratorVals.empty() && denominatorVals.empty())
-        return BuildFromVector<Multiply>(numeratorVals);
-    else
-        return Divide { Real { 1.0 }, *(BuildFromVector<Multiply>(denominatorVals)) }.Generalize();
+    if (!dividend && divisor)
+        return Divide { Real { 1.0 }, *divisor }.Copy();
+
+    if (dividend && !divisor)
+        return dividend;
+
+    return Divide { *dividend, *divisor }.Copy();
 }
 
 auto Divide<Expression>::ToString() const -> std::string
