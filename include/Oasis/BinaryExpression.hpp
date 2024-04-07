@@ -5,6 +5,7 @@
 #ifndef OASIS_BINARYEXPRESSION_HPP
 #define OASIS_BINARYEXPRESSION_HPP
 
+#include <functional>
 #include <list>
 
 #include "taskflow/taskflow.hpp"
@@ -98,6 +99,26 @@ public:
     {
         SetMostSigOp(mostSigOp);
         SetLeastSigOp(leastSigOp);
+    }
+
+    template<IExpression Op1T, IExpression Op2T, IExpression... OpsT>
+    BinaryExpression(const Op1T& op1, const Op2T& op2, const OpsT&... ops)
+    {
+        static_assert(IAssociativeAndCommutative<DerivedT>, "List initializer only supported for associative and commutative expressions");
+        static_assert(std::is_same_v<DerivedGeneralized, DerivedSpecialized>, "List initializer only supported for generalized expressions");
+
+        std::vector<std::unique_ptr<Expression>> opsVec;
+
+        for (auto opWrapper : std::vector<std::reference_wrapper<const Expression>> { static_cast<const Expression&>(op1), static_cast<const Expression&>(op2), (static_cast<const Expression&>(ops))... }) {
+            const Expression& operand= opWrapper.get();
+            opsVec.emplace_back(operand.Copy());
+        }
+
+        // build expression from vector
+        auto generalized = BuildFromVector<DerivedT>(opsVec);
+
+        SetLeastSigOp(generalized->GetLeastSigOp());
+        SetMostSigOp(generalized->GetMostSigOp());
     }
 
     [[nodiscard]] auto Copy() const -> std::unique_ptr<Expression> final
