@@ -61,16 +61,12 @@ TEST_CASE("Symbolic Division, equal variables", "[Division][Symbolic]")
         };
 
     auto simplified = div.Simplify();
-    REQUIRE(simplified->Is<Oasis::Real>());
-    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
-    REQUIRE(simplifiedReal.GetValue() == 2.0);
-
+    REQUIRE(simplified);
+    REQUIRE(simplified->Equals(Oasis::Real { 2.0 }));
 
     auto simplified2 = div2.Simplify();
-    CAPTURE(simplified2->ToString());
-    REQUIRE(simplified2->Is<Oasis::Real>());
-    auto simplifiedReal2 = dynamic_cast<Oasis::Real&>(*simplified2);
-    REQUIRE(simplifiedReal2.GetValue() == 2.0);
+    REQUIRE(simplified2);
+    REQUIRE(simplified2->Equals(Oasis::Real { 2.0 }));
 }
 
 

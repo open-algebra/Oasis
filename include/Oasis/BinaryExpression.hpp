@@ -28,6 +28,39 @@ template <typename T, typename... U>
 concept IsAnyOf = (std::same_as<T, U> || ...);
 
 /**
+ * Builds a reasonably balanced binary expression from a vector of operands.
+ * @tparam T The type of the binary expression, e.g. Add or Multiply.
+ * @param ops The vector of operands. Must have a minimum of 2 operands.
+ * @return A binary expression with the operands in the vector, or a nullptr if ops.size() <=1.
+ */
+template <template <typename, typename> typename T>
+    requires IAssociativeAndCommutative<T>
+auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std::unique_ptr<T<Expression, Expression>>
+{
+    if (ops.size() <= 1) {
+        return nullptr;
+    }
+
+    using GeneralizedT = T<Expression, Expression>;
+
+    std::list<std::unique_ptr<Expression>> opsList;
+    opsList.resize(ops.size());
+
+    std::transform(ops.begin(), ops.end(), opsList.begin(), [](const auto& op) { return op->Copy(); });
+
+    while (std::next(opsList.begin()) != opsList.end()) {
+        for (auto i = opsList.begin(); i != opsList.end() && std::next(i) != opsList.end();) {
+            auto node = std::make_unique<GeneralizedT>(**i, **std::next(i));
+            opsList.insert(i, std::move(node));
+            i = opsList.erase(i, std::next(i, 2));
+        }
+    }
+
+    auto* result = dynamic_cast<GeneralizedT*>(opsList.front().release());
+    return std::unique_ptr<GeneralizedT>(result);
+}
+
+/**
  * A binary expression.
  *
  * The BinaryExpression class is a base class for all binary expressions. It provides a common
@@ -433,34 +466,6 @@ protected:
     std::unique_ptr<MostSigOpT> mostSigOp;
     std::unique_ptr<LeastSigOpT> leastSigOp;
 };
-
-/**
- * Builds a reasonably balanced binary expression from a vector of operands.
- * @tparam T The type of the binary expression, e.g. Add and Multiply.
- * @param ops The vector of operands.
- * @return A binary expression with the operands in the vector.
- */
-template <template <typename, typename> typename T>
-    requires IAssociativeAndCommutative<T>
-auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std::unique_ptr<Expression>
-{
-    using GeneralizedT = T<Expression, Expression>;
-
-    std::list<std::unique_ptr<Expression>> opsList;
-    opsList.resize(ops.size());
-
-    std::transform(ops.begin(), ops.end(), opsList.begin(), [](const auto& op) { return op->Copy(); });
-
-    while (std::next(opsList.begin()) != opsList.end()) {
-        for (auto i = opsList.begin(); i != opsList.end() && std::next(i) != opsList.end();) {
-            auto node = std::make_unique<GeneralizedT>(**i, **std::next(i));
-            opsList.insert(i, std::move(node));
-            i = opsList.erase(i, std::next(i, 2));
-        }
-    }
-
-    return std::move(opsList.front());
-}
 
 #define IMPL_SPECIALIZE(Derived, FirstOp, SecondOp)                                                                      \
     static auto Specialize(const Expression& other) -> std::unique_ptr<Derived<FirstOp, SecondOp>>                       \
