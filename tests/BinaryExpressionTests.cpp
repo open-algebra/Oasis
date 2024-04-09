@@ -217,3 +217,23 @@ TEST_CASE("Equals follows associativity and commutativity")
         REQUIRE(add1.Equals(add2));
     }
 }
+
+TEST_CASE("Insert function works")
+{
+    Oasis::Add<Oasis::Expression> add {
+        Oasis::Real { 1 },
+        Oasis::Real { 2 }
+    };
+
+    add.Insert(Oasis::Real { 3 });
+
+    Oasis::Add expected {
+        Oasis::Real { 1 },
+        Oasis::Add {
+            Oasis::Real { 2 },
+            Oasis::Real { 3 }
+        }
+    };
+
+    REQUIRE(add.Equals(expected));
+}
