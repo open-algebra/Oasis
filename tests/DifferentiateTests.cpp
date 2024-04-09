@@ -68,100 +68,56 @@ TEST_CASE("Constant Rule Multiply", "[Differentiate][Multiply][Constant]")
 {
     Oasis::Variable var { "x" };
     Oasis::Multiply<Oasis::Real, Oasis::Variable> diff1 { Oasis::Real { 3.0f }, Oasis::Variable { var.GetName() } };
-    Oasis::Add<Oasis::Multiply<Oasis::Real, Oasis::Divide<Oasis::Exponent<Oasis::Variable, Oasis::Real>, Oasis::Real>>, Oasis::Variable> integral {
-        Oasis::Add {
-            Oasis::Multiply {
-                Oasis::Real { 3.0f },
-                Oasis::Divide {
-                    Oasis::Exponent { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } },
-                    Oasis::Real { 2.0f } },
-            },
-            Oasis::Variable {
-                "C" } }
-    };
+    Oasis::Real three {3.0};
 
-    auto ptr = integral.Simplify();
-    auto integrated = integrand.Integrate(var);
-    REQUIRE((integrated->Equals(*ptr)));
+    auto ptr = three.Simplify();
+    auto diffed = diff1.Differentiate(var);
+    REQUIRE((diffed->Equals(*ptr)));
 }
 
-TEST_CASE("Constant Rule Divide", "[Integrate][Divide][Constant]")
+TEST_CASE("Constant Rule Divide", "[Differentiate][Divide][Constant]")
 {
     Oasis::Variable var { "x" };
-    Oasis::Divide<Oasis::Variable, Oasis::Real> integrand { Oasis::Variable { var.GetName() }, Oasis::Real { 3.0f } };
-    Oasis::Add<Oasis::Multiply<Oasis::Divide<Oasis::Real>, Oasis::Exponent<Oasis::Variable, Oasis::Real>>, Oasis::Variable> integral {
-        Oasis::Add {
-            Oasis::Multiply {
-                Oasis::Divide {
-                    Oasis::Real { 1.0f }, Oasis::Real { 6.0f } },
-                Oasis::Exponent {
-                    Oasis::Variable { var.GetName() },
-                    Oasis::Real { 2.0f } } },
-            Oasis::Variable { "C" } }
-    };
-    auto integrated = integrand.Integrate(var);
-    auto simplified = integrated->Simplify();
+    Oasis::Divide<Oasis::Variable, Oasis::Real> diff1 { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
+    Oasis::Real half {0.5f};
+    auto diffed = diff1.Differentiate(var);
+    auto simplified = diffed->Simplify();
 
-    REQUIRE((simplified->Equals(*(integral.Simplify()))));
+    REQUIRE((simplified->Equals(*(half.Simplify()))));
 }
 
-TEST_CASE("Add Rule Different Terms", "[Integrate][Add][Different]")
+TEST_CASE("Add Rule Different Terms", "[Differentiate][Add][Different]")
 {
     Oasis::Variable var { "x" };
-    Oasis::Add<Oasis::Variable, Oasis::Real> integrand { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
+    Oasis::Add<Oasis::Variable, Oasis::Real>diff1 { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
 
-    Oasis::Add<Oasis::Add<Oasis::Divide<Oasis::Exponent<Oasis::Variable, Oasis::Real>, Oasis::Real>, Oasis::Multiply<Oasis::Real, Oasis::Variable>>, Oasis::Variable> integral {
-        Oasis::Add {
-            Oasis::Add {
-                Oasis::Divide {
-                    Oasis::Exponent { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } },
-                    Oasis::Real { 2.0f } },
-                Oasis::Multiply {
-                    Oasis::Real { 2.0f },
-                    Oasis::Variable { var.GetName() } } },
-            Oasis::Variable { "C" } }
-    };
-    auto integrated = integrand.Integrate(var);
-    auto simplified = integrated->Simplify();
+    Oasis::Real one {1};
+    auto diffed = diff1.Differentiate(var);
+    auto simplified = diffed->Simplify();
 
-    REQUIRE(simplified->Equals(*(integral.Simplify())));
+    REQUIRE(simplified->Equals(*(one.Simplify())));
 }
 
-TEST_CASE("Subtract Rule Different Terms", "[Integrate][Subtract][Different]")
+TEST_CASE("Subtract Rule Different Terms", "[Differentiate][Subtract][Different]")
 {
     Oasis::Variable var { "x" };
-    Oasis::Subtract<Oasis::Variable, Oasis::Real> integrand { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
+    Oasis::Subtract<Oasis::Variable, Oasis::Real> diff1 { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
+    Oasis::Real one {1};
+    auto diffed = diff1.Differentiate(var);
+    auto simplified = diffed->Simplify();
 
-    Oasis::Add<Oasis::Subtract<Oasis::Divide<Oasis::Exponent<Oasis::Variable, Oasis::Real>, Oasis::Real>, Oasis::Multiply<Oasis::Real, Oasis::Variable>>, Oasis::Variable> integral {
-        Oasis::Add {
-            Oasis::Subtract {
-                Oasis::Divide {
-                    Oasis::Exponent { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } },
-                    Oasis::Real { 2.0f } },
-                Oasis::Multiply {
-                    Oasis::Real { 2.0f },
-                    Oasis::Variable { var.GetName() } } },
-            Oasis::Variable { "C" } }
-    };
-    auto integrated = integrand.Integrate(var);
-    auto simplified = integrated->Simplify();
-
-    REQUIRE(simplified->Equals(*(integral.Simplify())));
+    REQUIRE(simplified->Equals(*(one.Simplify())));
 }
 
-TEST_CASE("Add Rule Like Terms", "[Integrate][Add][Like]")
+TEST_CASE("Add Rule Like Terms", "[Differentiate][Add][Like]")
 {
     Oasis::Variable var { "x" };
-    Oasis::Add<Oasis::Variable, Oasis::Variable> integrand { Oasis::Variable { var.GetName() }, Oasis::Variable { var.GetName() } };
+    Oasis::Add<Oasis::Variable, Oasis::Variable> diff1 { Oasis::Variable { var.GetName() }, Oasis::Variable { var.GetName() } };
 
-    Oasis::Add<Oasis::Exponent<Oasis::Variable, Oasis::Real>, Oasis::Variable> integral {
-        Oasis::Add {
-            Oasis::Exponent { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } },
-            Oasis::Variable { "C" } }
-    };
+    Oasis::Real two {2};
 
-    auto integrated = integrand.Integrate(var);
-    auto simplified = integrated->Simplify();
+    auto diffed = diff1.Differentiate(var);
+    auto simplified = diffed->Simplify();
 
-    REQUIRE(simplified->Equals(*(integral.Simplify())));
+    REQUIRE(simplified->Equals(*(two.Simplify())));
 }

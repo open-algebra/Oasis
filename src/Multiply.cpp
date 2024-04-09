@@ -252,7 +252,7 @@ auto Multiply<Expression>::Differentiate(const Expression& differentiationVariab
             auto differentiate = (*exp).Differentiate(differentiationVariable);
             if (auto add = Expression::Specialize(*differentiate); add != nullptr)
             {
-                return std::make_unique<Multiply<Real, Expression>>(Multiply<Real, Expression> { Multiply<Real, Expression> { Real { num.GetValue() }, add->GetMostSigOp() }})->Simplify();
+                return std::make_unique<Multiply<Real, Expression>>(Multiply<Real, Expression> { Real { num.GetValue() }, *(add->Simplify()) })->Simplify();
             }
 
         }

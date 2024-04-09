@@ -40,7 +40,7 @@ public:
     }
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> override
     {
-        return Generalize()->Integrate(differentiationVariable);
+        return Generalize()->Differentiate(differentiationVariable);
     }
 };
 
