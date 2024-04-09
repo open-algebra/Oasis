@@ -11,11 +11,6 @@
 
 namespace Oasis {
 
-Add<Expression>::Add(const Expression& addend1, const Expression& addend2)
-    : BinaryExpression(addend1, addend2)
-{
-}
-
 auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedAugend = mostSigOp ? mostSigOp->Simplify() : nullptr;

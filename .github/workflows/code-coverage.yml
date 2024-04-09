@@ -10,9 +10,6 @@ on:
     pull_request:
         branches: [ "master" ]
 
-permissions:
-  pull-requests: write
-
 jobs:
     collect-coverage:
         runs-on: ubuntu-latest
@@ -29,6 +26,13 @@ jobs:
             run: |
                 echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
                 echo "coverage-dir=${{ github.workspace }}/coverage" >> "$GITHUB_OUTPUT"
+                echo "pr-dir=${{ github.workspace }}/pr" >> "$GITHUB_OUTPUT"
+
+            # Saves the PR number to use in writing a comment on the PR.
+          - name: Save PR number
+            run: |
+                mkdir -p ${{ steps.strings.outputs.pr-dir }}
+                echo "${{ github.event.number }}" > ${{ steps.strings.outputs.pr-dir }}/issue_number
 
             # Installs LLVM 17 on the runner.
           - name: Install LLVM 17
@@ -77,19 +81,20 @@ jobs:
             shell: bash
             run: |
                 llvm-profdata-17 merge -sparse oasis.profraw -o oasis.profdata
-                llvm-cov-17 report -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ${{ github.workspace }}/src ${{ github.workspace }}/include > coverage.txt
+                llvm-cov-17 show -output-dir reports -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ${{ github.workspace }}/src ${{ github.workspace }}/include
 
             # Uploads the build, test, and code coverage artifacts.
-          - name: Comment on PR
-            uses: actions/github-script@v6
+          - name: Upload artifacts
+            uses: actions/upload-artifact@v3
             with:
-                script: |
-                    const fs = require('fs');
-                    const coverage_file = fs.readFileSync('${{ steps.strings.outputs.coverage-dir }}/coverage.txt');
-                    
-                    await github.rest.issues.createComment({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        issue_number: context.issue.number,
-                        body: '```\n' + coverage_file + '\n```'
-                    });
+                name: build-test-cover
+                path: |
+                    ${{ steps.strings.outputs.build-dir }}
+                    !${{ steps.strings.outputs.build-dir }}/_deps
+                    ${{ steps.strings.outputs.coverage-dir }}
+
+          - name: Upload PR number
+            uses: actions/upload-artifact@v3
+            with:
+                name: pr-number
+                path: ${{ steps.strings.outputs.pr-dir }}
