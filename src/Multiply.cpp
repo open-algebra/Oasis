@@ -9,11 +9,6 @@
 
 namespace Oasis {
 
-Multiply<Expression>::Multiply(const Expression& minuend, const Expression& subtrahend)
-    : BinaryExpression(minuend, subtrahend)
-{
-}
-
 auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedMultiplicand = mostSigOp->Simplify();

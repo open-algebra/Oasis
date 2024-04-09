@@ -1,16 +1,60 @@
 //
-// Created by Andrew Nazareth on 3/26/24.
+// Created by Matthew McCall on 3/29/24.
 //
 
-#ifndef OASIS_NEGATE_HPP
-#define OASIS_NEGATE_HPP
+#ifndef NEGATE_HPP
+#define NEGATE_HPP
 
-#include "Expression.hpp"
-#include "Subtract.hpp"
-#include "Add.hpp"
+#include "Multiply.hpp"
+#include "fmt/core.h"
+
+#include "UnaryExpression.hpp"
 
 namespace Oasis {
-    auto NegateSubtract(const std::unique_ptr<Subtract<Expression>> &expr) -> std::unique_ptr<Expression>;
-}
 
-#endif //OASIS_NEGATE_HPP
+template <typename OperandT>
+class Negate final : public UnaryExpression<Negate, OperandT> {
+public:
+    Negate() = default;
+    Negate(const Negate& other)
+        : UnaryExpression<Negate, OperandT>(other)
+    {
+    }
+
+    explicit Negate(const OperandT& operand)
+        : UnaryExpression<Negate, OperandT>(operand)
+    {
+    }
+
+    [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
+    {
+        return Multiply {
+            Real { -1.0 },
+            this->GetOperand()
+        }
+            .Simplify();
+    }
+
+    auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> override
+    {
+        return Multiply {
+            Real { -1.0 },
+            this->GetOperand()
+        }
+            .Simplify(subflow);
+    }
+
+    [[nodiscard]] auto ToString() const -> std::string override
+    {
+        return fmt::format("-({})", this->GetOperand().ToString());
+    }
+
+    IMPL_SPECIALIZE_UNARYEXPR(Negate, OperandT)
+
+    EXPRESSION_TYPE(Negate)
+    EXPRESSION_CATEGORY(None)
+};
+
+} // Oasis
+
+#endif // NEGATE_HPP
