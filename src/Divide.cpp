@@ -325,4 +325,25 @@ auto Divide<Expression>::Specialize(const Expression& other, tf::Subflow& subflo
     return std::make_unique<Divide>(dynamic_cast<const Divide&>(*otherGeneralized));
 }
 
+auto Divide<Expression>::Differentiate(const Oasis::Expression & differentiationVariable) -> std::unique_ptr<Expression> {
+    // Single differentiation variable
+    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
+        auto simplifiedDiv = this->Simplify();
+
+        // Constant case - differentiation over a divisor
+        if (auto constant = Divide<Real, Expression>::Specialize(*simplifiedDiv); constant != nullptr) {
+            auto exp = constant->GetLeastSigOp().Copy();
+            auto num = constant->GetMostSigOp();
+            auto differentiate = (*exp).Differentiate(differentiationVariable);
+            if (auto add = Expression::Specialize(*differentiate); add != nullptr)
+            {
+                return std::make_unique<Divide<Expression, Real>>(Divide<Expression, Real> {*(add->Simplify()), Real { num.GetValue() } })->Simplify();
+            }
+
+        }
+    }
+
+    return Copy();
+}
+
 } // Oasis
