@@ -6,6 +6,7 @@
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/Subtract.hpp"
 #include <map>
 #include <vector>
 
@@ -340,6 +341,19 @@ auto Divide<Expression>::Differentiate(const Oasis::Expression & differentiation
                 return std::make_unique<Divide<Expression, Real>>(Divide<Expression, Real> {*(add->Simplify()), Real { num.GetValue() } })->Simplify();
             }
 
+        }
+        //Quotient Rule: d/dx (f(x)/g(x)) = (g(x)f'(x)-f(x)g'(x))/(g(x)^2)
+        if (auto quotient = Divide<Expression, Expression>::Specialize(*simplifiedDiv); quotient != nullptr)
+        {
+            auto leftexp = quotient->GetMostSigOp().Copy();
+            auto rightexp = quotient->GetLeastSigOp().Copy();
+            auto leftDiff = leftexp->Differentiate(differentiationVariable);
+            auto rightDiff = rightexp->Differentiate(differentiationVariable);
+            auto mult1 = Multiply<Expression, Expression>(Multiply<Expression, Expression>{*(rightexp->Simplify()), *(leftDiff->Simplify())}).Simplify();
+            auto mult2 = Multiply<Expression, Expression>(Multiply<Expression, Expression>{*(leftexp->Simplify()), *(rightDiff->Simplify())}).Simplify();
+            auto numerator = Subtract<Expression, Expression>(Subtract<Expression, Expression>{*mult1, *mult2}).Simplify();
+            auto denomerator = Multiply<Expression, Expression>(Multiply<Expression, Expression>{*(rightexp->Simplify()), *(rightexp->Simplify())}).Simplify();
+            return Divide<Expression, Expression>({*(numerator->Simplify()), *(denomerator->Simplify())}).Simplify();
         }
     }
 
