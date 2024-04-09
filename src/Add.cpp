@@ -189,17 +189,17 @@ auto Add<Expression>::Differentiate(const Expression& differentiationVariable) -
             auto leftRef = adder->GetLeastSigOp().Copy();
             auto leftDifferentiate = leftRef->Differentiate(differentiationVariable);
 
-            auto specializedLeft = Add<Expression>::Specialize(*leftDifferentiate);
+            auto specializedLeft = Expression::Specialize(*leftDifferentiate);
             auto rightRef = adder->GetMostSigOp().Copy();
 
             auto rightDifferentiate = rightRef->Differentiate(differentiationVariable);
-            auto specializedRight = Add<Expression>::Specialize(*rightDifferentiate);
+            auto specializedRight = Expression::Specialize(*rightDifferentiate);
 
             if (specializedLeft == nullptr || specializedRight == nullptr)
             {
                 return Copy();
             }
-            return std::make_unique<Add<Expression, Expression>>(Add<Expression, Expression>{*(specializedLeft->GetMostSigOp().Copy()), *(specializedRight->GetLeastSigOp().Copy())})->Simplify();
+            return std::make_unique<Add<Expression, Expression>>(Add<Expression, Expression>{*(specializedLeft->Copy()), *(specializedRight->Copy())})->Simplify();
         }
         else
         {

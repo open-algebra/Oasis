@@ -59,8 +59,8 @@ TEST_CASE("Power Rule", "[Differentiate][Exponent][Power]")
         Oasis::Multiply {
             Oasis::Exponent { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } },
             Oasis::Real { 3.0f } }};
-    auto ptr = differentiate.Simplify();
-    auto diffed = diff1.Differentiate(var);
+    auto ptr = diff1.Simplify();
+    auto diffed = differentiate.Differentiate(var);
     REQUIRE((*diffed).Equals(*ptr));
 }
 
@@ -82,7 +82,6 @@ TEST_CASE("Constant Rule Divide", "[Differentiate][Divide][Constant]")
     Oasis::Real half {0.5f};
     auto diffed = diff1.Differentiate(var);
     auto simplified = diffed->Simplify();
-
     REQUIRE((simplified->Equals(*(half.Simplify()))));
 }
 

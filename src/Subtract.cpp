@@ -182,29 +182,29 @@ auto Subtract<Expression>::Specialize(const Expression& other, tf::Subflow& subf
 }
 auto Subtract<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
 {
-    // Single integration variable
+    // Single diff variable
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
         auto simplifiedSub = this->Simplify();
 
         // Make sure we're still subtracting
         if (auto adder = Subtract<Expression>::Specialize(*simplifiedSub); adder != nullptr) {
-            auto leftRef = adder->GetLeastSigOp().Copy();
-            auto leftDiff = leftRef->Differentiate(differentiationVariable);
-
-            auto specializedLeft = Add<Expression>::Specialize(*leftDiff);
-
-            auto rightRef = adder->GetMostSigOp().Copy();
+            auto rightRef = adder->GetLeastSigOp().Copy();
             auto rightDiff = rightRef->Differentiate(differentiationVariable);
 
-            auto specializedRight = Add<Expression>::Specialize(*rightDiff);
+            auto specializedRight = Expression::Specialize(*rightDiff);
+
+            auto leftRef = adder->GetMostSigOp().Copy();
+            auto leftDiff = leftRef->Differentiate(differentiationVariable);
+
+            auto specializedLeft = Expression::Specialize(*leftDiff);
 
             if (specializedLeft == nullptr || specializedRight == nullptr) {
                 return Copy();
             }
 
-            return std::make_unique<Subtract<Expression, Expression>>(Subtract<Expression> { *(specializedLeft->GetMostSigOp().Copy()), *(specializedRight->GetMostSigOp().Copy())})->Simplify();
+            return std::make_unique<Subtract<Expression, Expression>>(Subtract<Expression, Expression> { *(specializedLeft->Copy()), *(specializedRight->Copy())})->Simplify();
         }
-        // If not, use other integration technique
+        // If not, use other differentiation technique
         else {
             return simplifiedSub->Differentiate(differentiationVariable);
         }

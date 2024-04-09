@@ -331,8 +331,15 @@ auto Divide<Expression>::Differentiate(const Oasis::Expression & differentiation
         auto simplifiedDiv = this->Simplify();
 
         // Constant case - differentiation over a divisor
-        if (auto constant = Multiply<Expression, Real>::Specialize(*simplifiedDiv); constant != nullptr) {
-            return constant->Differentiate(differentiationVariable)->Simplify();
+        if (auto constant = Divide<Real, Expression>::Specialize(*simplifiedDiv); constant != nullptr) {
+            auto exp = constant->GetLeastSigOp().Copy();
+            auto num = constant->GetMostSigOp();
+            auto differentiate = (*exp).Differentiate(differentiationVariable);
+            if (auto add = Expression::Specialize(*differentiate); add != nullptr)
+            {
+                return std::make_unique<Divide<Expression, Real>>(Divide<Expression, Real> {*(add->Simplify()), Real { num.GetValue() } })->Simplify();
+            }
+
         }
     }
 
