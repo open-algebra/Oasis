@@ -92,10 +92,7 @@ public:
 
         return std::make_unique<DerivedSpecialized>(copy);
     }
-    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> override
-    {
-        return Generalize()->Differentiate(differentiationVariable);
-    }
+
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final
     {
         if (this->GetType() != other.GetType()) {
@@ -501,6 +498,7 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
         if (!other.Is<Oasis::Derived>()) {                                                                               \
             return nullptr;                                                                                              \
         }                                                                                                                \
+                                                                                                                         \
         auto specialized = std::make_unique<Derived<FirstOp, SecondOp>>();                                               \
                                                                                                                          \
         std::unique_ptr<Expression> otherGeneralized = other.Generalize();                                               \

@@ -34,7 +34,6 @@ public:
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Real>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Real>;
-    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
 
     auto operator=(const Real& other) -> Real& = default;
 

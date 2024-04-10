@@ -239,43 +239,4 @@ auto Multiply<Expression>::Specialize(const Expression& other, tf::Subflow& subf
     return std::make_unique<Multiply>(dynamic_cast<const Multiply&>(*otherGeneralized));
 }
 
-auto Multiply<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
-{
-    // Single integration variable
-    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
-        auto simplifiedMult = this->Simplify();
-
-        // Constant case - Constant number multiplied by differentiate
-        if (auto constant = Multiply<Real, Expression>::Specialize(*simplifiedMult); constant != nullptr) {
-            auto exp = constant->GetLeastSigOp().Copy();
-            auto num = constant->GetMostSigOp();
-            auto differentiate = (*exp).Differentiate(differentiationVariable);
-            if (auto add = Expression::Specialize(*differentiate); add != nullptr)
-            {
-                return std::make_unique<Multiply<Real, Expression>>(Multiply<Real, Expression> { Real { num.GetValue() }, *(add->Simplify()) })->Simplify();
-            }
-
-        }
-        //Product rule: d/dx (f(x)*g(x)) = f'(x)*g(x) + f(x)*g'(x)
-        else if (auto product = Multiply<Expression, Expression>::Specialize(*simplifiedMult); product != nullptr)
-        {
-            auto left = product->GetMostSigOp().Copy();
-            auto right = product->GetLeastSigOp().Copy();
-            auto ld = left->Differentiate(differentiationVariable);
-            auto rd = right->Differentiate(differentiationVariable);
-            auto add = Expression::Specialize(*ld);
-            auto add2 = Expression::Specialize(*rd);
-            if ((add != nullptr && add2 != nullptr))
-            {
-                return std::make_unique<Add<Multiply<Expression, Expression>,
-                        Multiply<Expression, Expression>>>(Add<Multiply<Expression, Expression>, Multiply<Expression,
-                                                           Expression>>{ Multiply<Expression, Expression> {*add,
-                                                                                                           *right}, Multiply<Expression, Expression>{*add2, *left}})->Simplify();
-            }
-        }
-    }
-
-    return Copy();
-}
-
 } // Oasis

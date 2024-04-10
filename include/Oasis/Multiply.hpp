@@ -28,7 +28,6 @@ public:
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto ToString() const -> std::string final;
-    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Multiply>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Multiply>;
