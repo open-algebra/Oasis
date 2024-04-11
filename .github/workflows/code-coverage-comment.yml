@@ -1,0 +1,81 @@
+# ##############################################################################
+# OASIS: Open Algebra Software for Inferring Solutions
+#
+# code-coverage-comment.yml
+# ##############################################################################
+
+name: Code Coverage Comment
+
+on:
+    workflow_run:
+        workflows: [ "Code Coverage" ]
+        types:
+          - completed
+
+permissions:
+    contents: read
+    issues: write
+    pull-requests: write
+
+jobs:
+    write-comment:
+        runs-on: ubuntu-latest
+        if: |
+            github.event.workflow_run.event == 'pull_request' &&
+            github.event.workflow_run.conclusion == 'success'
+
+        steps:
+            # Downloads the artifacts uploaded by the pull request workflow run.
+          - name: Download artifacts
+            uses: actions/github-script@v6
+            with:
+                script: |
+                    let artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        run_id: context.payload.workflow_run.id,
+                    });
+
+                    let matchArtifact1 = artifacts.data.artifacts.filter((artifact) => {
+                        return artifact.name == "pr-number"
+                    })[0];
+                    let download1 = await github.rest.actions.downloadArtifact({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        artifact_id: matchArtifact1.id,
+                        archive_format: 'zip',
+                    });
+
+                    let matchArtifact2 = artifacts.data.artifacts.filter((artifact) => {
+                        return artifact.name == "build-test-cover"
+                    })[0];
+                    let download2 = await github.rest.actions.downloadArtifact({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        artifact_id: matchArtifact2.id,
+                        archive_format: 'zip',
+                    });
+
+                    let fs = require('fs');
+                    fs.writeFileSync('${{github.workspace}}/pr-number.zip', Buffer.from(download1.data));
+                    fs.writeFileSync('${{github.workspace}}/build-test-cover.zip', Buffer.from(download2.data));
+
+            # Unzips the artifacts.
+          - name: Unzip artifacts
+            run: unzip \*.zip
+
+            # Writes a comment on the pull request.
+          - name: Comment on PR
+            uses: actions/github-script@v6
+            with:
+                script: |
+                    let fs = require('fs');
+                    let issue_number = Number(fs.readFileSync('./issue_number'));
+                    let coverage_file = fs.readFileSync('./coverage/reports/index.txt');
+                    
+                    await github.rest.issues.createComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: issue_number,
+                        body: '```\n' + coverage_file + '\n```'
+                    });

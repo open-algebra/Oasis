@@ -28,6 +28,8 @@ enum class ExpressionType {
     Divide,
     Exponent,
     Log,
+    Negate,
+    Sqrt,
 };
 
 /**
@@ -286,6 +288,10 @@ public:
     {                                                     \
         return category;                                  \
     }
+
+#define DECL_SPECIALIZE(type)                                                 \
+    static auto Specialize(const Expression& other) -> std::unique_ptr<type>; \
+    static auto Specialize(const Expression& other, tf::Subflow&) -> std::unique_ptr<type>;
 
 } // namespace Oasis
 

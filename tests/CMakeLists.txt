@@ -14,6 +14,7 @@ set(Oasis_TESTS
     IntegrateTests.cpp
     LogTests.cpp
     MultiplyTests.cpp
+    NegateTests.cpp
     PolynomialTests.cpp
     SubtractTests.cpp)
 
