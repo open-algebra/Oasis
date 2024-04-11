@@ -303,7 +303,13 @@ auto Add<Expression>::Integrate(const Expression& integrationVariable) -> std::u
                 return Copy();
             }
 
-            return std::make_unique<Add<Add<Expression, Expression>, Variable>>(Add<Add<Expression, Expression>, Variable> { Add<Expression, Expression> { *(specializedLeft->GetMostSigOp().Copy()), *(specializedRight->GetMostSigOp().Copy()) }, Variable { "C" } })->Simplify();
+            Add<Expression> add {
+                Add<Expression, Expression> {
+                    *(specializedLeft->GetMostSigOp().Copy()), *(specializedRight->GetMostSigOp().Copy()) },
+                Variable { "C" }
+            };
+
+            return add.Simplify();
         }
         // If not, use other integration technique
         else {

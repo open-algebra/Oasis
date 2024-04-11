@@ -180,12 +180,14 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) -> s
 
             if ((*variable).GetName() == expBase.GetName()) {
 
-                return std::make_unique<Add<Divide<Exponent<Variable, Real>, Real>, Variable>>(Add {
-                                                                                                   Divide {
-                                                                                                       Exponent<Variable, Real> { Variable { (*variable).GetName() }, Real { expPow.GetValue() + 1 } },
-                                                                                                       Real { expPow.GetValue() + 1 } },
-                                                                                                   Variable { "C" } })
-                    ->Simplify();
+                Add adder {
+                    Divide {
+                        Exponent<Variable, Real> { Variable { (*variable).GetName() }, Real { expPow.GetValue() + 1 } },
+                        Real { expPow.GetValue() + 1 } },
+                    Variable { "C" }
+                };
+
+                return adder.Simplify();
             }
         }
     }

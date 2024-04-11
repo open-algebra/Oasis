@@ -46,10 +46,12 @@ auto Real::Integrate(const Expression& integrationVariable) -> std::unique_ptr<E
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
         // Constant rule
         if (value != 0) {
-            return std::make_unique<Add<Multiply<Real, Variable>, Variable>>(Add {
-                                                                                 Multiply<Real, Variable> { Real { value }, Variable { (*variable).GetName() } },
-                                                                                 Variable { "C" } })
-                ->Simplify();
+
+            Add adder {
+                Multiply<Real, Variable> { Real { value }, Variable { (*variable).GetName() } },
+                Variable { "C" }
+            };
+            return adder.Simplify();
         }
 
         // Zero rule

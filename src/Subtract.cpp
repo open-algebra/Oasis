@@ -175,8 +175,12 @@ auto Subtract<Expression>::Integrate(const Expression& integrationVariable) -> s
             if (specializedLeft == nullptr || specializedRight == nullptr) {
                 return Copy();
             }
+            Add add { Subtract<Expression> {
+                          *(specializedLeft->GetMostSigOp().Copy()),
+                          *(specializedRight->GetMostSigOp().Copy()) },
+                Variable { "C" } };
 
-            return std::make_unique<Add<Subtract<Expression>, Variable>>(Add { Subtract<Expression> { *(specializedLeft->GetMostSigOp().Copy()), *(specializedRight->GetMostSigOp().Copy()) }, Variable { "C" } })->Simplify();
+            return add.Simplify();
         }
         // If not, use other integration technique
         else {
