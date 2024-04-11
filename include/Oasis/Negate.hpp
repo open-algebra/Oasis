@@ -9,6 +9,8 @@
 #include "fmt/core.h"
 
 #include "UnaryExpression.hpp"
+#include "Subtract.hpp"
+#include "Add.hpp"
 
 namespace Oasis {
 

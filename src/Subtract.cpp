@@ -71,10 +71,9 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    // expr1 - expr2 = expr1 + -expr2
-    return NegateSubtract(std::make_unique<Subtract<Expression>>(simplifiedSubtract));
+    return Add{*simplifiedMinuend, Multiply<Expression>{Real{-1}, *simplifiedSubtrahend}}.Simplify();
 
-    return simplifiedSubtract.Copy();
+//    return simplifiedSubtract.Copy();
 }
 
 auto Subtract<Expression>::ToString() const -> std::string

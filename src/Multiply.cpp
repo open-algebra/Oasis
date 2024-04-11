@@ -6,6 +6,8 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Subtract.hpp"
+#include "Oasis/Negate.hpp"
 
 namespace Oasis {
 
@@ -31,6 +33,11 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp())) {
             return std::make_unique<Exponent<Expression, Expression>>(exprCase->GetMostSigOp(), Real { 2.0 });
         }
+    }
+
+    if (auto negated = Multiply<Real, Subtract<Expression>>::Specialize(simplifiedMultiply); negated != nullptr) {
+        return Add{Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetMostSigOp()},
+                   Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetLeastSigOp()}}.Simplify();
     }
 
     if (auto exprCase = Multiply<Expression, Exponent<Expression, Expression>>::Specialize(simplifiedMultiply); exprCase != nullptr) {
@@ -150,6 +157,11 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
                     *(Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp().GetLeastSigOp(), exprCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp() }.Simplify()) });
         }
     }
+
+//    if (auto negate = Multiply<Real, Negate<Subtract<Expression>>>::Specialize(simplifiedMultiply); negate != nullptr){
+//        return Add{Multiply{negate->GetMostSigOp(), negate->GetLeastSigOp().GetOperand().GetMostSigOp()},
+//                   Multiply{negate->GetMostSigOp(), negate->GetLeastSigOp().GetOperand().GetLeastSigOp()}}.Simplify();
+//    }
 
     // multiply add like terms
     std::vector<std::unique_ptr<Expression>> multiplies;

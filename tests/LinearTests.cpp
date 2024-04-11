@@ -64,7 +64,7 @@ TEST_CASE("Linear Creation", "[Linear]")
 
 TEST_CASE("Linear Solve with subtraction", "[Linear][Subtract]")
 {
-    Oasis::Add add { // 4x - 7y + -5
+    Oasis::Add add1{ // 4x - 7y + -5
 
         Oasis::Subtract {
             Oasis::Multiply {
@@ -94,9 +94,10 @@ TEST_CASE("Linear Solve with subtraction", "[Linear][Subtract]")
 
     std::vector<std::unique_ptr<Oasis::Expression>> exprs;
 
-    exprs.push_back(add.Generalize());
-    exprs.push_back(add2.Generalize());
-    exprs.push_back(add3.Generalize());
+//    std::unique_ptr<Oasis::Expression> r = add1.Copy();
+    exprs.emplace_back(add1.Copy());
+//    exprs.push_back(add2.Copy());
+//    exprs.push_back(add3.Copy());
 
     auto result = Oasis::SolveLinearSystems(exprs);
 
