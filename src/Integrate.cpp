@@ -14,8 +14,8 @@
 
 namespace Oasis {
 
-Integrate<Expression>::Integrate(const Expression& integrandend, const Expression& differentialend)
-    : BinaryExpression(integrandend, differentialend)
+Integrate<Expression>::Integrate(const Expression& integrand, const Expression& differential)
+    : BinaryExpression(integrand, differential)
 {
 }
 
@@ -412,9 +412,102 @@ auto Integrate<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
 
 
+    // Rules
 
 
+
+
+
+
+
+
+
+    // Constant Rule
+    if (auto constCase = Integrate<Real, Variable>::Specialize(simplifiedIntegrate); constCase != nullptr) {
+        const Variable& differential = constCase->GetLeastSigOp();
+        const Real& integrand = constCase->GetMostSigOp();
+
+        return std::make_unique<Multiply<Real, Variable>>(integrand, differential);
+    }
+
+    // Power Rule
+    if (auto powerCase = Integrate<Exponent<Expression>, Variable>::Specialize(simplifiedIntegrate); powerCase != nullptr) {
+        const Variable& differential = powerCase->GetLeastSigOp();
+
+        if (powerCase->GetMostSigOp().GetMostSigOp().Equals(differential)) {
+
+            return std::make_unique<Multiply<Expression>>(
+                *(Divide<Expression>{ Real{1.0}, *(Add<Expression>{Real{1.0}, powerCase->GetMostSigOp().GetLeastSigOp()}.Simplify()) }.Simplify()),
+                    *(Exponent<Expression>{powerCase->GetMostSigOp().GetMostSigOp(), *(Add<Expression>{Real{1.0}, powerCase->GetMostSigOp().GetLeastSigOp()}.Simplify())}.Simplify()) );
+        }
+        else {
+            return std::make_unique<Multiply<Exponent<Expression>, Variable>>(powerCase->GetMostSigOp(), differential);
+        }
+    }
+
+    // Constant + Power Rule
+    if (auto powerCase = Integrate<Multiply<Expression, Exponent<Expression>>, Variable>::Specialize(simplifiedIntegrate); powerCase != nullptr) {
+        const Variable& differential = powerCase->GetLeastSigOp();
+
+        if (differential.Equals(powerCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp())) {
+
+            return std::make_unique<Multiply<Expression, Expression>>( powerCase->GetMostSigOp().GetMostSigOp(),
+                *(Multiply<Expression>{ *(Divide<Expression>{ Real{1.0}, *(Add<Expression>{powerCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp(), Real{1.0}}.Simplify()) }.Simplify()),
+                    *(Exponent<Expression>{ powerCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(), *(Add<Expression>{powerCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp(), Real{1.0}}.Simplify()) }.Simplify()) }.Simplify()) );
+        }
+        else {
+            return std::make_unique<Multiply<Multiply<Expression, Exponent<Expression>>, Variable>>(powerCase->GetMostSigOp(), differential);
+        }
+    }
+
+    if (auto powerCase = Integrate<Multiply<Exponent<Expression>, Expression>, Variable>::Specialize(simplifiedIntegrate); powerCase != nullptr) {
+        const Variable& differential = powerCase->GetLeastSigOp();
+
+        if (differential.Equals(powerCase->GetMostSigOp().GetMostSigOp().GetMostSigOp())) {
+
+            return std::make_unique<Multiply<Expression, Expression>>( powerCase->GetMostSigOp().GetLeastSigOp(),
+                *(Multiply<Expression>{ *(Divide<Expression>{ Real{1.0}, *(Add<Expression>{Real{1.0}, powerCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp()}.Simplify() )}.Simplify()),
+                    *(Exponent<Expression>{powerCase->GetMostSigOp().GetMostSigOp().GetMostSigOp(), *(Add<Expression>{Real{1.0}, powerCase->GetMostSigOp().GetMostSigOp().GetLeastSigOp()}.Simplify())}.Simplify()) }.Simplify()) );
+        }
+        else {
+            return std::make_unique<Multiply<Multiply<Exponent<Expression>, Expression>, Variable>>(powerCase->GetMostSigOp(), differential);
+        }
+    }
+
+    // U Substitution Rule
+
+    // Exponential Rule - a^x
+
+    // Natural Log Rule
+
+    // Euler's Number
+
+    // Trigonometric Rules
+
+    // Powers of Sin and Cos
+
+    // Integration by Parts
+
+    // Partial Fraction Decomposition
+
+
+
+
+    // Bounded or Unbounded
+
+
+
+
+
+
+    return simplifiedIntegrate.Copy();
 }
+
+//auto Integrate<Expression>::Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression>
+//{
+//
+//}
+
 
 auto Integrate<Expression>::ToString() const -> std::string
 {
@@ -423,8 +516,15 @@ auto Integrate<Expression>::ToString() const -> std::string
 
 auto Integrate<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
 {
-    // To be Implemented : Performs Integration on simplified Expression
     std::unique_ptr<Expression> simplifiedIntegrand, simplifiedDifferential;
+
+    // To be Implemented : Performs Integration on simplified Expression
+
+
+
+
+
+
 }
 
 auto Integrate<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Integrate<Expression, Expression>>
