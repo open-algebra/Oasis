@@ -278,12 +278,10 @@ auto Add<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
 
 auto Add<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
 {
-    //works for any number of vars
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr)
     {
         auto simplifiedAdd = this->Simplify();
-        if (auto adder = Add<Expression>::Specialize(*simplifiedAdd); adder != nullptr)
-        {
+        if (auto adder = Add<Expression>::Specialize(*simplifiedAdd); adder != nullptr) {
             auto leftRef = adder->GetLeastSigOp().Copy();
             auto leftDifferentiate = leftRef->Differentiate(differentiationVariable);
 
@@ -293,14 +291,11 @@ auto Add<Expression>::Differentiate(const Expression& differentiationVariable) -
             auto rightDifferentiate = rightRef->Differentiate(differentiationVariable);
             auto specializedRight = Expression::Specialize(*rightDifferentiate);
 
-            if (specializedLeft == nullptr || specializedRight == nullptr)
-            {
+            if (specializedLeft == nullptr || specializedRight == nullptr) {
                 return Copy();
             }
-            return std::make_unique<Add<Expression, Expression>>(Add<Expression, Expression>{*(specializedLeft->Copy()), *(specializedRight->Copy())})->Simplify();
-        }
-        else
-        {
+            return std::make_unique<Add<Expression, Expression>>(Add<Expression, Expression> { *(specializedLeft->Copy()), *(specializedRight->Copy()) })->Simplify();
+        } else {
             return simplifiedAdd->Differentiate(differentiationVariable)->Simplify();
         }
     }

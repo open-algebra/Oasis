@@ -3,13 +3,13 @@
 //
 
 #include "Oasis/Subtract.hpp"
+#include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Variable.hpp"
-#include "Oasis/Add.hpp"
 
 namespace Oasis {
 
@@ -175,7 +175,7 @@ auto Subtract<Expression>::Differentiate(const Expression& differentiationVariab
                 return Copy();
             }
 
-            return std::make_unique<Subtract<Expression, Expression>>(Subtract<Expression, Expression> { *(specializedLeft->Copy()), *(specializedRight->Copy())})->Simplify();
+            return std::make_unique<Subtract<Expression, Expression>>(Subtract<Expression, Expression> { *(specializedLeft->Copy()), *(specializedRight->Copy()) })->Simplify();
         }
         // If not, use other differentiation technique
         else {

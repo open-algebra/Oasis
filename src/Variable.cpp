@@ -3,10 +3,10 @@
 //
 
 #include "Oasis/Variable.hpp"
-#include "Oasis/Real.hpp"
 #include "Oasis/Add.hpp"
-#include "Oasis/Multiply.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Multiply.hpp"
+#include "Oasis/Real.hpp"
 
 namespace Oasis {
 
@@ -46,12 +46,12 @@ auto Variable::Differentiate(const Expression& differentiationVariable) -> std::
 
         // Power rule
         if (name == (*variable).GetName()) {
-            return std::make_unique<Real>(Real { 1.0f } )
-                    ->Simplify();
+            return std::make_unique<Real>(Real { 1.0f })
+                ->Simplify();
         }
 
         // Different variable, treat as constant
-        return std::make_unique<Real>(Real{0})
+        return std::make_unique<Real>(Real { 0 })
             ->Simplify();
     }
 

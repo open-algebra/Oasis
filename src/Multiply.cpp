@@ -15,16 +15,13 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     auto simplifiedMultiplier = leastSigOp->Simplify();
 
     Multiply simplifiedMultiply { *simplifiedMultiplicand, *simplifiedMultiplier };
-    if (auto onezerocase = Multiply<Real, Expression>::Specialize(simplifiedMultiply); onezerocase != nullptr)
-    {
+    if (auto onezerocase = Multiply<Real, Expression>::Specialize(simplifiedMultiply); onezerocase != nullptr) {
         const Real& multiplicand = onezerocase->GetMostSigOp();
         const Expression& multiplier = onezerocase->GetLeastSigOp();
-        if (multiplicand.GetValue() == 0)
-        {
-            return std::make_unique<Real>(Real{0});
+        if (multiplicand.GetValue() == 0) {
+            return std::make_unique<Real>(Real { 0 });
         }
-        if (multiplicand.GetValue() == 1)
-        {
+        if (multiplicand.GetValue() == 1) {
             return multiplier.Simplify();
         }
     }
@@ -354,27 +351,25 @@ auto Multiply<Expression>::Differentiate(const Expression& differentiationVariab
             auto exp = constant->GetLeastSigOp().Copy();
             auto num = constant->GetMostSigOp();
             auto differentiate = (*exp).Differentiate(differentiationVariable);
-            if (auto add = Expression::Specialize(*differentiate); add != nullptr)
-            {
+            if (auto add = Expression::Specialize(*differentiate); add != nullptr) {
                 return std::make_unique<Multiply<Real, Expression>>(Multiply<Real, Expression> { Real { num.GetValue() }, *(add->Simplify()) })->Simplify();
             }
 
         }
-        //Product rule: d/dx (f(x)*g(x)) = f'(x)*g(x) + f(x)*g'(x)
-        else if (auto product = Multiply<Expression, Expression>::Specialize(*simplifiedMult); product != nullptr)
-        {
+        // Product rule: d/dx (f(x)*g(x)) = f'(x)*g(x) + f(x)*g'(x)
+        else if (auto product = Multiply<Expression, Expression>::Specialize(*simplifiedMult); product != nullptr) {
             auto left = product->GetMostSigOp().Copy();
             auto right = product->GetLeastSigOp().Copy();
             auto ld = left->Differentiate(differentiationVariable);
             auto rd = right->Differentiate(differentiationVariable);
             auto add = Expression::Specialize(*ld);
             auto add2 = Expression::Specialize(*rd);
-            if ((add != nullptr && add2 != nullptr))
-            {
+            if ((add != nullptr && add2 != nullptr)) {
                 return std::make_unique<Add<Multiply<Expression, Expression>,
-                        Multiply<Expression, Expression>>>(Add<Multiply<Expression, Expression>, Multiply<Expression,
-                                                           Expression>>{ Multiply<Expression, Expression> {*add,
-                                                                                                           *right}, Multiply<Expression, Expression>{*add2, *left}})->Simplify();
+                    Multiply<Expression, Expression>>>(Add<Multiply<Expression, Expression>, Multiply<Expression, Expression>> { Multiply<Expression, Expression> { *add,
+                                                                                                                                     *right },
+                                                           Multiply<Expression, Expression> { *add2, *left } })
+                    ->Simplify();
             }
         }
     }
