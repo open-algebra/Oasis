@@ -193,7 +193,11 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    return BuildFromVector<Add>(vals);
+    if (auto vec = BuildFromVector<Add>(vals); vec != nullptr) {
+        return vec;
+    }
+
+    return simplifiedAdd.Copy();
 }
 
 auto Add<Expression>::ToString() const -> std::string
