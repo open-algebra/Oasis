@@ -315,11 +315,9 @@ auto Divide<Expression>::Differentiate(const Oasis::Expression & differentiation
         }
         //In case of simplify turning divide into mult
         if (auto constant = Multiply<Expression, Real>::Specialize(*simplifiedDiv); constant != nullptr) {
-            std::cout << "THERE!" << std::endl;
             auto exp = constant->GetMostSigOp().Copy();
             auto num = constant->GetLeastSigOp();
             auto differentiate = (*exp).Differentiate(differentiationVariable);
-            std::cout << "diff: " << differentiate->ToString() << std::endl;
             if (auto add = Expression::Specialize(*differentiate); add != nullptr)
             {
                 return std::make_unique<Multiply<Expression, Real>>(Multiply<Expression, Real> {*(add->Simplify()), Real { num.GetValue() } })->Simplify();
@@ -337,7 +335,6 @@ auto Divide<Expression>::Differentiate(const Oasis::Expression & differentiation
             auto mult2 = Multiply<Expression, Expression>(Multiply<Expression, Expression>{*(leftexp->Simplify()), *(rightDiff->Simplify())}).Simplify()->Simplify();
             auto numerator = Subtract<Expression, Expression>(Subtract<Expression, Expression>{*mult1, *mult2}).Simplify();
             auto denominator = Multiply<Expression, Expression>(Multiply<Expression, Expression>{*(rightexp->Simplify()), *(rightexp->Simplify())}).Simplify();
-            std::cout << "NUMERATOR: " << numerator->ToString() << " DENOMINATOR: " << denominator->ToString() << std::endl;
             return Divide<Expression, Expression>({*(numerator->Simplify()), *(denominator->Simplify())}).Simplify();
         }
     }

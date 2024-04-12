@@ -15,11 +15,22 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     auto simplifiedMultiplier = leastSigOp->Simplify();
 
     Multiply simplifiedMultiply { *simplifiedMultiplicand, *simplifiedMultiplier };
-
+    if (auto onezerocase = Multiply<Real, Expression>::Specialize(simplifiedMultiply); onezerocase != nullptr)
+    {
+        const Real& multiplicand = onezerocase->GetMostSigOp();
+        const Expression& multiplier = onezerocase->GetLeastSigOp();
+        if (multiplicand.GetValue() == 0)
+        {
+            return std::make_unique<Real>(Real{0});
+        }
+        if (multiplicand.GetValue() == 1)
+        {
+            return multiplier.Simplify();
+        }
+    }
     if (auto realCase = Multiply<Real>::Specialize(simplifiedMultiply); realCase != nullptr) {
         const Real& multiplicand = realCase->GetMostSigOp();
         const Real& multiplier = realCase->GetLeastSigOp();
-
         return std::make_unique<Real>(multiplicand.GetValue() * multiplier.GetValue());
     }
 

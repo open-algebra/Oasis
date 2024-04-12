@@ -147,3 +147,30 @@ TEST_CASE("Quotient Rule Like Terms", "[Differentiate][Divide][Like]")
 
     REQUIRE(simplified->Equals(*(answer.Simplify())));
 }
+
+TEST_CASE("Multiple Variables Differentiate", "[Differentiate][Multiply][Different]")
+{
+    Oasis::Variable x {"x"};
+    Oasis::Variable y {"y"};
+    Oasis::Multiply<Oasis::Variable, Oasis::Variable> xy
+    {Oasis::Variable {x.GetName()}, Oasis::Variable {y.GetName()}};
+    auto diffed = xy.Differentiate(x);
+    auto simplified = diffed->Simplify();
+    REQUIRE(simplified->Equals(*(y.Simplify())));
+}
+
+TEST_CASE("Multiple Variables + Real Differentiate", "[Differentiate][Multiply][Different]")
+{
+    Oasis::Variable x {"x"};
+    Oasis::Variable y {"y"};
+    Oasis::Multiply<Oasis::Variable, Oasis::Variable> xy
+            {Oasis::Variable {x.GetName()}, Oasis::Variable {y.GetName()}};
+
+    Oasis::Multiply<Oasis::Real, Oasis::Expression> threexy
+            {Oasis::Real {3}, *(xy.Copy())};
+    Oasis::Multiply<Oasis::Real, Oasis::Variable> threex
+            {Oasis::Real{3}, Oasis::Variable{x.GetName()}};
+    auto diffed = threexy.Differentiate(y);
+    auto simplified = diffed->Simplify();
+    REQUIRE(simplified->Equals(*(threex.Simplify())));
+}
