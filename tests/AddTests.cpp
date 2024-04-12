@@ -10,6 +10,8 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/Variable.hpp"
 
+#include <functional>
+
 TEST_CASE("Addition", "[Add]")
 {
     Oasis::Add add {
@@ -183,4 +185,100 @@ TEST_CASE("Imaginary Addition", "[Imaginary][Add]")
     auto spec1 = a1.Simplify();
 
     REQUIRE(Oasis::Multiply { Oasis::Real { 2.0 }, Oasis::Imaginary {} }.Equals(*spec1));
+}
+
+TEST_CASE("Addition Associativity", "[Add][Associative]")
+{
+    Oasis::Add assoc1 {
+        Oasis::Real { 2.0 },
+        Oasis::Add {
+            Oasis::Variable { "x" },
+            Oasis::Add {
+                Oasis::Add {
+                    Oasis::Real { 3.0 },
+                    Oasis::Variable { "x" } },
+                Oasis::Multiply {
+                    Oasis::Real { 4.0 },
+                    Oasis::Variable { "x" } } } }
+    };
+
+    auto simplified1 = assoc1.Simplify();
+
+    REQUIRE(Oasis::Add {
+        Oasis::Real { 5.0 },
+        Oasis::Multiply {
+            Oasis::Real { 6.0 },
+            Oasis::Variable { "x" } } }
+                .Equals(*simplified1));
+}
+
+TEST_CASE("Add Associativity with wider tree", "[Add][Associativity]")
+{
+    Oasis::Add assoc2 {
+        Oasis::Multiply {
+            Oasis::Real { 2.0 },
+            Oasis::Exponent {
+                Oasis::Variable { "x" },
+                Oasis::Real { 2.0 } } },
+        Oasis::Add {
+            Oasis::Exponent {
+                Oasis::Variable { "x" },
+                Oasis::Real { 2.0 } },
+            Oasis::Add {
+                Oasis::Add {
+                    Oasis::Real { 3.0 },
+                    Oasis::Variable { "x" } },
+                Oasis::Multiply {
+                    Oasis::Real { 4.0 },
+                    Oasis::Variable { "x" } } } }
+    };
+
+    auto simplified2 = assoc2.Simplify();
+
+    REQUIRE(Oasis::Add {
+        Oasis::Add {
+
+            Oasis::Multiply {
+                Oasis::Real { 3.0 },
+                Oasis::Exponent {
+                    Oasis::Variable { "x" },
+                    Oasis::Real { 2.0 } } },
+            Oasis::Real { 3.0 },
+        },
+        Oasis::Multiply {
+            Oasis::Real { 5.0 },
+            Oasis::Variable { "x" } } }
+                .Equals(*simplified2));
+}
+
+
+TEST_CASE("Add Operator Overload", "[Add][Operator Overload]")
+{
+    const std::unique_ptr<Oasis::Expression> a = std::make_unique<Oasis::Real>(1.0);
+    const std::unique_ptr<Oasis::Expression> b = std::make_unique<Oasis::Real>(2.0);
+
+    const auto sum = a+b;
+    auto realSum = Oasis::Real::Specialize(*sum);
+
+    REQUIRE(realSum != nullptr);
+    REQUIRE(realSum->GetValue() == 3.0);
+
+}
+
+TEST_CASE("Variadic Add Constructor", "[Add]")
+{
+    const Oasis::Add<> add {
+        Oasis::Real { 1.0 },
+        Oasis::Real { 2.0 },
+        Oasis::Real { 3.0 },
+        Oasis::Real { 4.0 },
+        Oasis::Multiply {
+            Oasis::Real { 5.0 },
+            Oasis::Real { 6.0 } }
+    };
+
+    const Oasis::Real expected { 40.0 };
+
+    const auto simplified = add.Simplify();
+    REQUIRE(expected.Equals(*simplified));
 }

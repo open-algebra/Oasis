@@ -19,10 +19,7 @@ class Multiply;
 template <>
 class Multiply<Expression, Expression> : public BinaryExpression<Multiply> {
 public:
-    Multiply() = default;
-    Multiply(const Multiply<Expression, Expression>& other) = default;
-
-    Multiply(const Expression& multiplicand, const Expression& multiplier);
+    using BinaryExpression::BinaryExpression;
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;

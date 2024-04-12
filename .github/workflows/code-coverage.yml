@@ -73,7 +73,7 @@ jobs:
             working-directory: ${{ steps.strings.outputs.build-dir }}
             run: >
                 LLVM_PROFILE_FILE="${{ steps.strings.outputs.coverage-dir }}/oasis.profraw"
-                ctest --build-config Debug
+                ./tests/OasisTests
 
             # Creates reports from the coverage data.
           - name: Report Coverage

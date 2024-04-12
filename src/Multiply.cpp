@@ -9,11 +9,6 @@
 
 namespace Oasis {
 
-Multiply<Expression>::Multiply(const Expression& minuend, const Expression& subtrahend)
-    : BinaryExpression(minuend, subtrahend)
-{
-}
-
 auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedMultiplicand = mostSigOp->Simplify();
@@ -155,7 +150,106 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    return simplifiedMultiply.Copy();
+    // multiply add like terms
+    std::vector<std::unique_ptr<Expression>> multiplies;
+    std::vector<std::unique_ptr<Expression>> vals;
+    simplifiedMultiply.Flatten(multiplies);
+    for (const auto& multiplicand : multiplies) {
+        size_t i = 0;
+        if (auto real = Real::Specialize(*multiplicand); real != nullptr) {
+            for (; i < vals.size(); i++) {
+                if (auto valI = Real::Specialize(*vals[i]); valI != nullptr) {
+                    vals[i] = Real { valI->GetValue() * real->GetValue() }.Generalize();
+                    break;
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                vals.push_back(multiplicand->Generalize());
+            }
+            continue;
+        }
+        // single i
+        if (auto img = Imaginary::Specialize(*multiplicand); img != nullptr) {
+            for (; i < vals.size(); i++) {
+                if (auto valI = Exponent<Imaginary, Expression>::Specialize(*vals[i]); valI != nullptr) {
+                    vals[i] = Exponent<Expression> { Imaginary {}, *(Add<Expression> { valI->GetLeastSigOp(), Real { 1.0 } }.Simplify()) }.Generalize();
+                    break;
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                vals.push_back(Exponent<Expression> { Imaginary {}, Real { 1.0 } }.Generalize());
+            }
+            continue;
+        }
+        // i^n
+        if (auto img = Exponent<Imaginary, Expression>::Specialize(*multiplicand); img != nullptr) {
+            for (; i < vals.size(); i++) {
+                if (auto valI = Exponent<Imaginary, Expression>::Specialize(*vals[i]); valI != nullptr) {
+                    vals[i] = Exponent<Expression> { Imaginary {}, *(Add<Expression> { valI->GetLeastSigOp(), img->GetLeastSigOp() }.Simplify()) }.Generalize();
+                    break;
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                // vals.push_back(Multiply<Expression> { img->GetMostSigOp(), Imaginary {} }.Generalize());
+                vals.push_back(img->Generalize());
+            }
+            continue;
+        }
+        // expr^n
+        if (auto expr = Exponent<Expression, Expression>::Specialize(*multiplicand); expr != nullptr) {
+            for (; i < vals.size(); i++) {
+                if (auto valI = Exponent<Expression, Expression>::Specialize(*vals[i]); valI != nullptr) {
+                    if (valI->GetMostSigOp().Equals(expr->GetMostSigOp())) {
+                        vals[i] = Exponent<Expression> { valI->GetMostSigOp(), *(Add<Expression> { valI->GetLeastSigOp(), expr->GetLeastSigOp() }.Simplify()) }.Generalize();
+                        break;
+                    }
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                // vals.push_back(Multiply<Expression> { img->GetMostSigOp(), Imaginary {} }.Generalize());
+                vals.push_back(expr->Generalize());
+            }
+            continue;
+        }
+        // single expr
+        if (auto expr = Expression::Specialize(*multiplicand); expr != nullptr) {
+            for (; i < vals.size(); i++) {
+                if (auto valI = Exponent<Expression, Expression>::Specialize(*vals[i]); valI != nullptr) {
+                    if (valI->GetMostSigOp().Equals(*expr)) {
+                        vals[i] = Exponent<Expression> { valI->GetMostSigOp(), *(Add<Expression> { valI->GetLeastSigOp(), Real { 1.0 } }.Simplify()) }.Generalize();
+                        break;
+                    }
+                }
+            }
+            if (i >= vals.size()) {
+                // check to make sure it is one thing only
+                vals.push_back(Exponent<Expression> { *expr, Real { 1.0 } }.Generalize());
+            }
+            continue;
+        }
+    }
+
+    // makes all expr^1 into expr
+    for (auto& val : vals) {
+        if (auto exp = Exponent<Expression, Real>::Specialize(*val); exp != nullptr) {
+            if (exp->GetLeastSigOp().GetValue() == 1.0) {
+                val = exp->GetMostSigOp().Generalize();
+            }
+        }
+        if (auto mul = Multiply<Real, Expression>::Specialize(*val); mul != nullptr) {
+            if (mul->GetMostSigOp().GetValue() == 1.0) {
+                val = mul->GetLeastSigOp().Generalize();
+            }
+        }
+    }
+
+    return BuildFromVector<Multiply>(vals);
+
+    // return simplifiedMultiply.Copy();
 }
 
 auto Multiply<Expression>::ToString() const -> std::string

@@ -27,51 +27,40 @@ TEST_CASE("Division", "[Divide]")
     REQUIRE(simplifiedReal.GetValue() == 1.0);
 }
 
-
 TEST_CASE("Symbolic Division, equal variables", "[Division][Symbolic]")
 {
-    Oasis::Divide div {
+    const Oasis::Divide div {
         Oasis::Multiply {
             Oasis::Real { 2.0 },
-            Oasis::Variable { "x"} },
+            Oasis::Variable { "x" } },
         Oasis::Multiply {
                 Oasis::Real { 1.0 },
-                Oasis::Variable { "x" } }
-        };
+            Oasis::Variable { "x" } }
+    };
 
 
-    Oasis::Divide div2 {
-        Oasis::Multiply {
+    const Oasis::Divide div2 {
+        Oasis::Multiply<> {
             Oasis::Real { 2.0 },
-            Oasis::Multiply {
-                Oasis::Variable{ "z" },
-                Oasis::Multiply{
-                    Oasis::Variable{ "y" },
-                    Oasis::Variable{ "x" }
-                }
-            } },
-        Oasis::Multiply {
-                Oasis::Real { 1.0 },
-                Oasis::Multiply {
-                    Oasis::Variable{ "y" },
-                    Oasis::Multiply{
-                        Oasis::Variable{ "x" },
-                        Oasis::Variable{ "z" }
-                    }
-            }   }
+            Oasis::Variable{ "z" },
+            Oasis::Variable{ "y" },
+            Oasis::Variable{ "x" }
+        },
+        Oasis::Multiply<> {
+            Oasis::Real { 1.0 },
+            Oasis::Variable{ "y" },
+            Oasis::Variable{ "x" },
+            Oasis::Variable{ "z" }
+            }
         };
 
     auto simplified = div.Simplify();
-    REQUIRE(simplified->Is<Oasis::Real>());
-    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
-    REQUIRE(simplifiedReal.GetValue() == 2.0);
-
+    REQUIRE(simplified);
+    REQUIRE(simplified->Equals(Oasis::Real { 2.0 }));
 
     auto simplified2 = div2.Simplify();
-    CAPTURE(simplified2->ToString());
-    REQUIRE(simplified2->Is<Oasis::Real>());
-    auto simplifiedReal2 = dynamic_cast<Oasis::Real&>(*simplified2);
-    REQUIRE(simplifiedReal2.GetValue() == 2.0);
+    REQUIRE(simplified2);
+    REQUIRE(simplified2->Equals(Oasis::Real { 2.0 }));
 }
 
 
@@ -116,7 +105,7 @@ TEST_CASE("Symbolic Division of Expressions", "[Division][Symbolic]")
                         Oasis::Variable { "z" },
                         Oasis::Real { 2 } },
                     Oasis::Real{ 1 }}},
-            Oasis::Real { 4.0 }   
+            Oasis::Real { 4.0 }
         },
         Oasis::Multiply {
                 Oasis::Real { 2.0 },
@@ -124,7 +113,6 @@ TEST_CASE("Symbolic Division of Expressions", "[Division][Symbolic]")
                     Oasis::Variable { "x" },
                     Oasis::Real { 1 } }}
         };
-
 
     auto simplified = div.Simplify();
 
@@ -193,7 +181,6 @@ TEST_CASE("Symbolic Division, equal exponents", "[Division][Symbolic]")
         Oasis::Variable { "y" } }.Equals(*simplified));
 }
 
-
 TEST_CASE("Generalized Division", "[Divide][Generalized]")
 {
     Oasis::Divide<Oasis::Expression> subtract {
@@ -224,4 +211,17 @@ TEST_CASE("Division Async", "[Divide][Async]")
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
     REQUIRE(simplifiedReal.GetValue() == 1.0);
+}
+
+TEST_CASE("Divide Operator Overload", "[Divide][Operator Overload]")
+{
+    const std::unique_ptr<Oasis::Expression> a = std::make_unique<Oasis::Real>(1.0);
+    const std::unique_ptr<Oasis::Expression> b = std::make_unique<Oasis::Real>(2.0);
+
+    const auto sum = b/a;
+    auto realSum = Oasis::Real::Specialize(*sum);
+
+    REQUIRE(realSum != nullptr);
+    REQUIRE(realSum->GetValue() == 2.0);
+
 }
