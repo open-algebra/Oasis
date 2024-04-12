@@ -94,10 +94,9 @@ TEST_CASE("Linear Solve with subtraction", "[Linear][Subtract]")
 
     std::vector<std::unique_ptr<Oasis::Expression>> exprs;
 
-//    std::unique_ptr<Oasis::Expression> r = add1.Copy();
     exprs.emplace_back(add1.Copy());
-//    exprs.push_back(add2.Copy());
-//    exprs.push_back(add3.Copy());
+    exprs.emplace_back(add2.Copy());
+    exprs.emplace_back(add3.Copy());
 
     auto result = Oasis::SolveLinearSystems(exprs);
 
@@ -111,7 +110,7 @@ TEST_CASE("Linear Solve with subtraction", "[Linear][Subtract]")
 
 TEST_CASE("Linear Solve with subtraction 2", "[Linear][Subtract]")
 {
-    Oasis::Add add{ // ((4x - (7y + 5)) + z)
+    Oasis::Add add1{ // ((4x - (7y + 5)) + z)
             Oasis::Subtract{
                     Oasis::Multiply{
                             Oasis::Real{4.0},
@@ -149,17 +148,16 @@ TEST_CASE("Linear Solve with subtraction 2", "[Linear][Subtract]")
     };
 
     std::vector<std::unique_ptr<Oasis::Expression>> exprs;
-
-    exprs.push_back(add.Generalize());
-    exprs.push_back(add2.Generalize());
-    exprs.push_back(add3.Generalize());
+    exprs.emplace_back(add1.Copy());
+    exprs.emplace_back(add2.Copy());
+    exprs.emplace_back(add3.Copy());
 
     auto result = Oasis::SolveLinearSystems(exprs);
 
     REQUIRE(result.find("x") != result.end());
     REQUIRE(result.find("y") != result.end());
     REQUIRE(result.find("z") != result.end());
-    REQUIRE_THAT(result.find("x")->second, Catch::Matchers::WithinAbs(3.0, EPSILON));
-    REQUIRE_THAT(result.find("y")->second, Catch::Matchers::WithinAbs(1.0, EPSILON));
-    REQUIRE_THAT(result.find("z")->second, Catch::Matchers::WithinAbs(7.0, EPSILON));
+    REQUIRE_THAT(result.find("x")->second, Catch::Matchers::WithinAbs(4.81818181818, EPSILON));
+    REQUIRE_THAT(result.find("y")->second, Catch::Matchers::WithinAbs(2.18181818181, EPSILON));
+    REQUIRE_THAT(result.find("z")->second, Catch::Matchers::WithinAbs(1.0, EPSILON));
 }
