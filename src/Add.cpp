@@ -278,8 +278,7 @@ auto Add<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
 
 auto Add<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
 {
-    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr)
-    {
+    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
         auto simplifiedAdd = this->Simplify();
         if (auto adder = Add<Expression>::Specialize(*simplifiedAdd); adder != nullptr) {
             auto leftRef = adder->GetLeastSigOp().Copy();
