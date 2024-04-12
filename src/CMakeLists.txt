@@ -35,14 +35,9 @@ set(Oasis_HEADERS
     ../include/Oasis/Negate.hpp
     ../include/Oasis/Real.hpp
     ../include/Oasis/Subtract.hpp
-<<<<<<< HEAD
     ../include/Oasis/Variable.hpp
-)
-=======
     ../include/Oasis/UnaryExpression.hpp
-    ../include/Oasis/Undefined.hpp
-    ../include/Oasis/Variable.hpp)
->>>>>>> 69e812d081121ce588385ecda33c1b1dd8b6221a
+    ../include/Oasis/Undefined.hpp)
 
 # Adds a library target called "Oasis" to be built from source files.
 add_library(Oasis ${Oasis_SOURCES} ${Oasis_HEADERS})
