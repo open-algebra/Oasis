@@ -31,7 +31,6 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (auto ImgCase = Multiply<Imaginary>::Specialize(simplifiedMultiply); ImgCase != nullptr) {
         return std::make_unique<Real>(-1.0);
     }
-
     if (auto exprCase = Multiply<Expression>::Specialize(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp())) {
             return std::make_unique<Exponent<Expression, Expression>>(exprCase->GetMostSigOp(), Real { 2.0 });

@@ -129,8 +129,15 @@ TEST_CASE("Quotient Rule Like Terms", "[Differentiate][Divide][Like]")
                                                Oasis::Real {2}},Oasis::Add<Oasis::Variable, Oasis::Real>
                                                        {Oasis::Variable {var.GetName() }, Oasis::Real
                                                        {3}}};
-    Oasis::Divide<Oasis::Real, Oasis::Multiply<Oasis::Expression, Oasis::Expression>> answer
-            {Oasis::Real {1}, Oasis::Multiply<Oasis::Expression, Oasis::Expression> {Oasis::Add<Oasis::Variable, Oasis::Real>
+    Oasis::Divide<Oasis::Expression, Oasis::Multiply<Oasis::Expression, Oasis::Expression>> answer
+            {Oasis::Subtract<Oasis::Multiply<Oasis::Add<Oasis::Variable, Oasis::Real>, Oasis::Real>>
+            {Oasis::Multiply<Oasis::Add<Oasis::Variable, Oasis::Real>, Oasis::Real>
+                    {Oasis::Add<Oasis::Variable, Oasis::Real> {Oasis::Variable {var.GetName()}, Oasis::Real {3}},
+                     Oasis::Real {1}},
+             Oasis::Multiply<Oasis::Add<Oasis::Variable, Oasis::Real>, Oasis::Real> {
+                Oasis::Add<Oasis::Variable, Oasis::Real> {Oasis::Variable {var.GetName()}, Oasis::Real {2}},
+                Oasis::Real {1}}},
+             Oasis::Multiply<Oasis::Expression, Oasis::Expression> {Oasis::Add<Oasis::Variable, Oasis::Real>
             {Oasis::Variable {var.GetName() }, Oasis::Real
             {3}}, Oasis::Add<Oasis::Variable, Oasis::Real>
             {Oasis::Variable {var.GetName() }, Oasis::Real
