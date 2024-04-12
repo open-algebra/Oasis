@@ -18,6 +18,7 @@ set(Oasis_SOURCES
     Real.cpp
     Subtract.cpp
     Undefined.cpp
+    Util.cpp
     Variable.cpp)
 
 set(Oasis_HEADERS
@@ -34,8 +35,7 @@ set(Oasis_HEADERS
     ../include/Oasis/Negate.hpp
     ../include/Oasis/Real.hpp
     ../include/Oasis/Subtract.hpp
-    ../include/Oasis/UnaryExpression.hpp
-    ../include/Oasis/Undefined.hpp
+    ../include/Oasis/Util.hpp
     ../include/Oasis/Variable.hpp)
 
 # Adds a library target called "Oasis" to be built from source files.

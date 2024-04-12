@@ -2,6 +2,7 @@
 // Created by Matthew McCall on 8/10/23.
 //
 #include "Oasis/Divide.hpp"
+#include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
@@ -85,7 +86,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 }
             }
             if (i >= result.size()) {
-                result.push_back(Exponent<Expression> { Imaginary {}, Real { -1.0 } }.Generalize());
+                result.push_back(Oasis::Multiply(Oasis::Real(-1), Oasis::Imaginary()).Generalize());
             }
             continue;
         }
@@ -153,6 +154,15 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 result[i] = Real { 1.0 }.Generalize();
                 break;
             }
+        }
+        if (auto complex = Add<Real, Multiply<Real, Imaginary>>::Specialize(*denom); complex != nullptr) {
+            const Real& realPrt = complex->GetMostSigOp();
+            double realPrtD = realPrt.GetValue();
+            const Multiply<Real, Imaginary>& imgPrt = complex->GetLeastSigOp();
+            double imgPrtD = imgPrt.GetMostSigOp().GetValue();
+            result.push_back(std::make_unique<Subtract<Real, Multiply<Real, Imaginary>>>(realPrt, imgPrt));
+            result.push_back(std::make_unique<Real>(1 / (realPrtD * realPrtD + imgPrtD * imgPrtD)));
+            continue;
         }
         if (i >= result.size()) {
             result.push_back(Exponent<Expression> { *denom, Real { -1.0 } }.Generalize());

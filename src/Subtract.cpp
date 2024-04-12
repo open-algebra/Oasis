@@ -3,6 +3,7 @@
 //
 
 #include "Oasis/Subtract.hpp"
+#include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
@@ -19,58 +20,7 @@ Subtract<Expression>::Subtract(const Expression& minuend, const Expression& subt
 
 auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
-    const auto simplifiedMinuend = mostSigOp ? mostSigOp->Simplify() : nullptr;
-    const auto simplifiedSubtrahend = leastSigOp ? leastSigOp->Simplify() : nullptr;
-
-    const Subtract simplifiedSubtract { *simplifiedMinuend, *simplifiedSubtrahend };
-
-    // 2 - 1 = 1
-    if (auto realCase = Subtract<Real>::Specialize(simplifiedSubtract); realCase != nullptr) {
-        const Real& minuend = realCase->GetMostSigOp();
-        const Real& subtrahend = realCase->GetLeastSigOp();
-
-        return std::make_unique<Real>(minuend.GetValue() - subtrahend.GetValue());
-    }
-
-    // x - x = 0
-    if (simplifiedMinuend->Equals(*simplifiedSubtrahend)) {
-        return std::make_unique<Real>(Real { 0.0 });
-    }
-
-    // ax - x = (a-1)x
-    if (const auto minusOneCase = Subtract<Multiply<>, Expression>::Specialize(simplifiedSubtract); minusOneCase != nullptr) {
-        if (minusOneCase->GetMostSigOp().GetLeastSigOp().Equals(minusOneCase->GetLeastSigOp())) {
-            const Subtract newCoefficient { minusOneCase->GetMostSigOp().GetMostSigOp(), Real { 1.0 } };
-            return Multiply { newCoefficient, minusOneCase->GetLeastSigOp() }.Simplify();
-        }
-    }
-
-    // x-ax = (1-a)x
-    if (const auto oneMinusCase = Subtract<Expression, Multiply<>>::Specialize(simplifiedSubtract); oneMinusCase != nullptr) {
-        if (oneMinusCase->GetMostSigOp().Equals(oneMinusCase->GetLeastSigOp().GetLeastSigOp())) {
-            const Subtract newCoefficient { Real { 1.0 }, oneMinusCase->GetLeastSigOp().GetMostSigOp() };
-            return Multiply { newCoefficient, oneMinusCase->GetMostSigOp() }.Simplify();
-        }
-    }
-
-    // ax-bx= (a-b)x
-    if (const auto coefficientCase = Subtract<Multiply<>>::Specialize(simplifiedSubtract); coefficientCase != nullptr) {
-        if (coefficientCase->GetMostSigOp().GetLeastSigOp().Equals(coefficientCase->GetLeastSigOp().GetLeastSigOp())) {
-            const Subtract newCoefficient { coefficientCase->GetMostSigOp().GetMostSigOp(), coefficientCase->GetLeastSigOp().GetMostSigOp() };
-            return Multiply { newCoefficient, coefficientCase->GetLeastSigOp().GetLeastSigOp() }.Simplify();
-        }
-    }
-
-    // log(a) - log(b) = log(a / b)
-    if (const auto logCase = Subtract<Log<>>::Specialize(simplifiedSubtract); logCase != nullptr) {
-        if (logCase->GetMostSigOp().GetMostSigOp().Equals(logCase->GetLeastSigOp().GetMostSigOp())) {
-            const IExpression auto& base = logCase->GetMostSigOp().GetMostSigOp();
-            const IExpression auto& argument = Divide({ logCase->GetMostSigOp().GetLeastSigOp(), logCase->GetLeastSigOp().GetLeastSigOp() });
-            return std::make_unique<Log<>>(base, argument);
-        }
-    }
-
-    return simplifiedSubtract.Copy();
+    return Add(*mostSigOp, Multiply(Real(-1), *leastSigOp)).Simplify();
 }
 
 auto Subtract<Expression>::ToString() const -> std::string

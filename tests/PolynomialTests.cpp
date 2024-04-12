@@ -11,6 +11,7 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
+#include "Oasis/Util.hpp"
 #include "Oasis/Variable.hpp"
 #include <set>
 #include <tuple>
@@ -49,6 +50,40 @@ TEST_CASE("7th degree polynomial with rational roots", "[factor][duplicateRoot]"
     }
 }
 
+TEST_CASE("7th degree polynomial with complex rational roots", "[factor][duplicateRoot][complex]")
+{
+    const double epsilon = std::pow(10, -5);
+    std::vector<std::unique_ptr<Oasis::Expression>> vec;
+    Oasis::Variable var("x");
+    long offset = -3;
+    //(-2 + x) (-5 i + x) (-5/3 - (9 i)/2 + x) (-3 - 4 i + x)^2 (-3/2 - (4 i)/3 + x) (-3 + 4 i + x)*36
+    std::vector<Oasis::Util::IntegerComplex> vecL = { Oasis::Util::IntegerComplex(116'250, 417'500), Oasis::Util::IntegerComplex(-521'775, -441'700), Oasis::Util::IntegerComplex(460'755, 39085),
+        Oasis::Util::IntegerComplex(-149'523, 90313), Oasis::Util::IntegerComplex(17853, -37255), Oasis::Util::IntegerComplex(714, 6791), Oasis::Util::IntegerComplex(-510, -534), Oasis::Util::IntegerComplex(36, 0) };
+    for (size_t i = 0; i < vecL.size(); i++) {
+        std::unique_ptr<Oasis::Expression> num = vecL[i].getExpression();
+        long exp = ((long)i) + offset;
+        if (exp < -1) {
+            vec.push_back(Oasis::Divide(*num, Oasis::Exponent(var, Oasis::Real(-exp * 1.0))).Copy());
+        } else if (exp == -1) {
+            vec.push_back(Oasis::Divide(*num, var).Copy());
+        } else if (exp == 0) {
+            vec.push_back(std::move(num));
+        } else if (exp == 1) {
+            vec.push_back(Oasis::Multiply(*num, var).Copy());
+        } else {
+            vec.push_back(Oasis::Multiply(*num, Oasis::Exponent(var, Oasis::Real(exp * 1.0))).Copy());
+        }
+    }
+    auto add = Oasis::BuildFromVector<Oasis::Add>(vec);
+    auto zeros = add->FindZeros();
+    REQUIRE(zeros.size() == 6);
+    for (auto& i : zeros) {
+        auto sub = add->SubstituteVariable(var, *i->Simplify());
+        auto simplified = sub->Simplify();
+        REQUIRE(Oasis::Util::abs(*simplified).GetValue() < epsilon);
+    }
+}
+
 TEST_CASE("imaginary linear polynomial")
 {
     Oasis::Add add {
@@ -58,10 +93,42 @@ TEST_CASE("imaginary linear polynomial")
     auto zeros = add.FindZeros();
     REQUIRE(zeros.size() == 1);
     if (zeros.size() == 1) {
-        std::cout << zeros[0]->ToString();
-        auto root = Oasis::Multiply<Oasis::Real, Oasis::Imaginary>::Specialize(*zeros[0]);
+        auto root = Oasis::Multiply<Oasis::Real, Oasis::Imaginary>::Specialize(*zeros[0]->Simplify());
         REQUIRE(root != nullptr);
         REQUIRE(root->GetMostSigOp().GetValue() == -1);
+    }
+}
+
+TEST_CASE("irrational cubic", "[cubicFormula]")
+{
+
+    const double epsilon = std::pow(10, -5);
+    std::vector<std::unique_ptr<Oasis::Expression>> vec;
+    long offset = -3;
+    std::vector<long> vecL = { -1, 1, 1, 1 };
+    Oasis::Variable var("x");
+    for (size_t i = 0; i < vecL.size(); i++) {
+        Oasis::Real num = Oasis::Real(vecL[i]);
+        long exp = ((long)i) + offset;
+        if (exp < -1) {
+            vec.push_back(Oasis::Divide(num, Oasis::Exponent(var, Oasis::Real(-exp))).Copy());
+        } else if (exp == -1) {
+            vec.push_back(Oasis::Divide(num, var).Copy());
+        } else if (exp == 0) {
+            vec.push_back(num.Copy());
+        } else if (exp == 1) {
+            vec.push_back(Oasis::Multiply(num, var).Copy());
+        } else {
+            vec.push_back(Oasis::Multiply(num, Oasis::Exponent(var, Oasis::Real(exp))).Copy());
+        }
+    }
+    auto add = Oasis::BuildFromVector<Oasis::Add>(vec);
+    auto zeros = add->FindZeros();
+    REQUIRE(zeros.size() == 3);
+    for (auto& i : zeros) {
+        auto sub = add->SubstituteVariable(var, *i->Simplify());
+        auto simplified = sub->Simplify();
+        REQUIRE(Oasis::Util::abs(*simplified).GetValue() < epsilon);
     }
 }
 
@@ -105,6 +172,37 @@ TEST_CASE("irrational quadratic", "[quadraticFormula]")
     REQUIRE(goalSet.size() == 0);
 }
 
+TEST_CASE("irrational quartic", "[quarticFormula]")
+{
+    const double epsilon = std::pow(10, -5);
+    std::vector<std::unique_ptr<Oasis::Expression>> vec;
+    long offset = -3;
+    std::vector<long> vecL = { -1, 1, 1, 1, 1 };
+    Oasis::Variable var("x");
+    for (size_t i = 0; i < vecL.size(); i++) {
+        Oasis::Real num = Oasis::Real(vecL[i]);
+        long exp = ((long)i) + offset;
+        if (exp < -1) {
+            vec.push_back(Oasis::Divide(num, Oasis::Exponent(var, Oasis::Real(-exp))).Copy());
+        } else if (exp == -1) {
+            vec.push_back(Oasis::Divide(num, var).Copy());
+        } else if (exp == 0) {
+            vec.push_back(num.Copy());
+        } else if (exp == 1) {
+            vec.push_back(Oasis::Multiply(num, var).Copy());
+        } else {
+            vec.push_back(Oasis::Multiply(num, Oasis::Exponent(var, Oasis::Real(exp))).Copy());
+        }
+    }
+    auto add = Oasis::BuildFromVector<Oasis::Add>(vec);
+    auto zeros = add->FindZeros();
+    REQUIRE(zeros.size() == 4);
+    for (auto& i : zeros) {
+        auto simplified = add->SubstituteVariable(var, *i)->Simplify();
+        REQUIRE(Oasis::Util::abs(*simplified).GetValue() < epsilon);
+    }
+}
+
 TEST_CASE("linear polynomial", "[factor]")
 {
     Oasis::Add add {
@@ -119,4 +217,4 @@ TEST_CASE("linear polynomial", "[factor]")
         REQUIRE(root->GetMostSigOp().GetValue() == -30);
         REQUIRE(root->GetLeastSigOp().GetValue() == 1);
     }
-}
+} //
