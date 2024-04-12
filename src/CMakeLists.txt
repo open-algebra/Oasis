@@ -12,14 +12,14 @@ set(Oasis_SOURCES
     Exponent.cpp
     Expression.cpp
     Imaginary.cpp
+    Linear.cpp
     Log.cpp
     Multiply.cpp
     Negate.cpp
     Real.cpp
     Subtract.cpp
     Undefined.cpp
-    Variable.cpp
-    Linear.cpp)
+    Variable.cpp)
 
 set(Oasis_HEADERS
     # cmake-format: sortable
