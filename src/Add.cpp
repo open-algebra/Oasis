@@ -278,7 +278,7 @@ auto Add<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
 
 auto Add<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
 {
-    //Single diff variable
+    //works for any number of vars
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr)
     {
         auto simplifiedAdd = this->Simplify();
