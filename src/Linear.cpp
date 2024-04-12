@@ -21,7 +21,7 @@ auto SolveLinearSystems(std::vector<std::unique_ptr<Expression>>& exprs) -> std:
     auto varMap = matrices.second;
 
     // get result vector from A^{-1}*b=x
-    Matrix1D x = A.inverse() * b;
+    Matrix1D x = SolveLinearSystems(A, b);
 
     std::map<std::string, double> values;
     for (auto& kv : varMap) {
@@ -68,5 +68,37 @@ auto ConstructMatrices(const std::vector<std::unique_ptr<Expression>>& exprs)
 
     return std::make_pair(std::make_pair(A, b), vars);
 }
+
+    auto SolveLinearSystems(MatrixXXD &matrix) -> Matrix1D { // row echelon form
+        size_t rows = matrix.rows();
+        size_t cols = matrix.cols() - 1;
+
+        if (rows != cols) return Matrix1D{}; // unsolvable
+
+        // create matrices A and b
+        MatrixXXD A(rows, cols);
+        Matrix1D b(rows);
+
+        for (size_t row = 0; row < rows; row++) {
+            for (size_t col = 0; col < cols; col++) {
+                A(row, col) = matrix(row, col);
+            }
+        }
+        for (size_t row = 0; row < rows; row++) {
+            b(row) = matrix(row, cols);
+        }
+
+        auto x = SolveLinearSystems(A, b);
+
+        return x;
+    }
+
+    auto SolveLinearSystems(MatrixXXD &matrixA, Matrix1D &matrixb) -> Matrix1D {
+        if (matrixA.rows() != matrixb.rows()) return Matrix1D{};
+
+        Matrix1D x = matrixA.inverse() * matrixb;
+
+        return x;
+    }
 
 }
