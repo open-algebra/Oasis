@@ -352,8 +352,9 @@ auto Divide<Expression>::Differentiate(const Oasis::Expression & differentiation
             auto mult1 = Multiply<Expression, Expression>(Multiply<Expression, Expression>{*(rightexp->Simplify()), *(leftDiff->Simplify())}).Simplify();
             auto mult2 = Multiply<Expression, Expression>(Multiply<Expression, Expression>{*(leftexp->Simplify()), *(rightDiff->Simplify())}).Simplify();
             auto numerator = Subtract<Expression, Expression>(Subtract<Expression, Expression>{*mult1, *mult2}).Simplify();
-            auto denomerator = Multiply<Expression, Expression>(Multiply<Expression, Expression>{*(rightexp->Simplify()), *(rightexp->Simplify())}).Simplify();
-            return Divide<Expression, Expression>({*(numerator->Simplify()), *(denomerator->Simplify())}).Simplify();
+            auto denominator = Multiply<Expression, Expression>(Multiply<Expression, Expression>{*(rightexp->Simplify()), *(rightexp->Simplify())}).Simplify();
+            std::cout << "NUMERATOR: " << numerator->ToString() << " DENOMINATOR: " << denominator->ToString() << std::endl;
+            return Divide<Expression, Expression>({*(numerator->Simplify()), *(denominator->Simplify())}).Simplify();
         }
     }
 
