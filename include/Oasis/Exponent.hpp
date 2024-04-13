@@ -35,7 +35,7 @@ public:
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Exponent>;
 
     EXPRESSION_TYPE(Exponent)
-    EXPRESSION_CATEGORY(0)
+    EXPRESSION_CATEGORY(BinExp)
 };
 /// @endcond
 
@@ -69,7 +69,7 @@ public:
     auto operator=(const Exponent& other) -> Exponent& = default;
 
     EXPRESSION_TYPE(Exponent)
-    EXPRESSION_CATEGORY(0)
+    EXPRESSION_CATEGORY(BinExp)
 };
 
 }

@@ -8,6 +8,7 @@
 #include <Oasis/Multiply.hpp>
 #include <Oasis/Subtract.hpp>
 #include <Oasis/Variable.hpp>
+#include <Oasis/LeafExpression.hpp>
 
 std::vector<long long> getAllFactors(long long n)
 {
@@ -285,6 +286,41 @@ auto Expression::StructurallyEquivalentAsync(const Expression& other) const -> b
     executor.run(taskflow).wait();
     return equivalent;
 }
+
+
+std::unique_ptr<Expression> Expression::Substitute(const Expression& before, const Expression& var, const Expression& val)
+{
+    auto isLeaf = LeafExpression<Expression>::Specialize(before);
+    if (isLeaf == nullptr)
+    {
+        const BinaryExpression<Expression, Expression>& binExp = dynamic_cast<const BinaryExpression<Expression, Expression>&>(before);
+        auto left = Expression::Substitute(*(binExp.GetMostSigOp()), var, val);
+        auto right = Expression::Substitute(*(binExp.GetLeastSigOp()), var, val);
+        auto comb = binExp.Copy();
+        comb.SetMostSigOp(left);
+        comb.SetLeastSigOp(right);
+        comb.Simplify();
+        return comb;
+    }
+    else
+    {
+        auto tmpvar = Variable::Specialize(var);
+        if (tmpvar == nullptr)
+        {
+            throw std::invalid_argument("Variable was not entered correctly");
+        }
+        if (auto nvar = Variable::Specialize(before); nvar != nullptr)
+        {
+            if (nvar->GetName() == tmpvar->GetName())
+            {
+                return val.Copy();
+            }
+            return nvar->Copy();
+        }
+        return before.Copy();
+    }
+}
+
 
 } // namespace Oasis
 std::unique_ptr<Oasis::Expression> operator+(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
