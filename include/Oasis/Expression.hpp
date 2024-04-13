@@ -29,7 +29,7 @@ enum class ExpressionType {
     Exponent,
     Log,
     Limit,
-    Differentiate,
+    Derivative,
     Negate,
     Sqrt,
 };

@@ -10,6 +10,7 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/Derivative.hpp"
 
 TEST_CASE("Nonzero number", "[Differentiate][Real][Nonzero]")
 {
@@ -173,4 +174,79 @@ TEST_CASE("Multiple Variables + Real Differentiate", "[Differentiate][Multiply][
     auto diffed = threexy.Differentiate(y);
     auto simplified = diffed->Simplify();
     REQUIRE(simplified->Equals(*(threex.Simplify())));
+}
+
+TEST_CASE("Derivative Wrapper Class Add", "[Differentiate][Add][Like]")
+{
+    Oasis::Variable x {"x"};
+    Oasis::Derivative<Oasis::Add<Oasis::Variable, Oasis::Real>, Oasis::Variable> diff1
+    {Oasis::Add<Oasis::Variable, Oasis::Real> {Oasis::Variable {x.GetName()},
+                                               Oasis::Real{2}}, Oasis::Variable {x.GetName()}};
+    Oasis::Real one {1};
+    auto diffed = diff1.Simplify();
+    REQUIRE(diffed->Equals(*(one.Simplify())));
+}
+
+TEST_CASE("Derivative Wrapper Class Subtract", "[Differentiate][Subtract][Like]")
+{
+    Oasis::Variable x {"x"};
+    Oasis::Derivative<Oasis::Subtract<Oasis::Variable, Oasis::Real>, Oasis::Variable> diff1
+            {Oasis::Subtract<Oasis::Variable, Oasis::Real> {Oasis::Variable {x.GetName()},
+                                                       Oasis::Real{2}}, Oasis::Variable {x.GetName()}};
+    Oasis::Real one {1};
+    auto diffed = diff1.Simplify();
+    REQUIRE(diffed->Equals(*(one.Simplify())));
+}
+
+TEST_CASE("Derivative Wrapper Class Multiply", "[Differentiate][Multiply][Like]")
+{
+    Oasis::Variable x {"x"};
+    Oasis::Derivative<Oasis::Multiply<Oasis::Variable, Oasis::Real>, Oasis::Variable> diff1
+            {Oasis::Multiply<Oasis::Variable, Oasis::Real> {Oasis::Variable {x.GetName()},
+                                                       Oasis::Real{2}}, Oasis::Variable {x.GetName()}};
+    Oasis::Real two {2};
+    auto diffed = diff1.Simplify();
+    REQUIRE(diffed->Equals(*(two.Simplify())));
+}
+
+TEST_CASE("Derivative Wrapper Class Divide", "[Differentiate][Divide][Like]")
+{
+    Oasis::Variable x {"x"};
+    Oasis::Derivative<Oasis::Divide<Oasis::Variable, Oasis::Real>, Oasis::Variable> diff1
+            {Oasis::Divide<Oasis::Variable, Oasis::Real> {Oasis::Variable {x.GetName()},
+                                                       Oasis::Real{2}}, Oasis::Variable {x.GetName()}};
+    Oasis::Real half {0.5f};
+    auto diffed = diff1.Simplify();
+    REQUIRE(diffed->Equals(*(half.Simplify())));
+}
+
+TEST_CASE("Derivative Wrapper Class Real", "[Differentiate][Real][Like]")
+{
+    Oasis::Variable x {"x"};
+    Oasis::Derivative<Oasis::Real, Oasis::Variable> diff1
+            {Oasis::Real {2}, Oasis::Variable {x.GetName()}};
+    Oasis::Real zero {0};
+    auto diffed = diff1.Simplify();
+    REQUIRE(diffed->Equals(*(zero.Simplify())));
+}
+
+TEST_CASE("Derivative Wrapper Class Variable", "[Differentiate][Variable][Like]")
+{
+    Oasis::Variable x {"x"};
+    Oasis::Derivative<Oasis::Variable, Oasis::Variable> diff1
+            {Oasis::Variable {x.GetName()}, Oasis::Variable {x.GetName()}};
+    Oasis::Real one {1};
+    auto diffed = diff1.Simplify();
+    REQUIRE(diffed->Equals(*(one.Simplify())));
+}
+
+TEST_CASE("Derivative Wrapper Class Exponent", "[Differentiate][Exponent][Like]")
+{
+    Oasis::Variable x {"x"};
+    Oasis::Derivative<Oasis::Exponent<Oasis::Variable, Oasis::Real>, Oasis::Variable> diff1
+            {Oasis::Exponent<Oasis::Variable, Oasis::Real> {Oasis::Variable {x.GetName()},
+                                                       Oasis::Real{2}}, Oasis::Variable {x.GetName()}};
+    Oasis::Multiply<Oasis::Variable, Oasis::Real> twox {Oasis::Variable {x.GetName()}, Oasis::Real {2}};
+    auto diffed = diff1.Simplify();
+    REQUIRE(diffed->Equals(*(twox.Simplify())));
 }
