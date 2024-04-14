@@ -8,6 +8,7 @@
 set(Oasis_SOURCES
     # cmake-format: sortable
     Add.cpp
+    Derivative.cpp
     Divide.cpp
     Exponent.cpp
     Expression.cpp
@@ -18,13 +19,13 @@ set(Oasis_SOURCES
     Real.cpp
     Subtract.cpp
     Undefined.cpp
-    Variable.cpp
-        Derivative.cpp)
+    Variable.cpp)
 
 set(Oasis_HEADERS
     # cmake-format: sortable
     ../include/Oasis/Add.hpp
     ../include/Oasis/BinaryExpression.hpp
+    ../include/Oasis/Derivative.hpp
     ../include/Oasis/Divide.hpp
     ../include/Oasis/Exponent.hpp
     ../include/Oasis/Expression.hpp
@@ -37,8 +38,7 @@ set(Oasis_HEADERS
     ../include/Oasis/Subtract.hpp
     ../include/Oasis/UnaryExpression.hpp
     ../include/Oasis/Undefined.hpp
-    ../include/Oasis/Variable.hpp
-        ../include/Oasis/Derivative.hpp)
+    ../include/Oasis/Variable.hpp)
 
 # Adds a library target called "Oasis" to be built from source files.
 add_library(Oasis ${Oasis_SOURCES} ${Oasis_HEADERS})
