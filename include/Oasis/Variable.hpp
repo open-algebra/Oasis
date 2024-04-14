@@ -27,7 +27,7 @@ public:
     [[nodiscard]] virtual auto Equals(const Expression& other) const -> bool final;
 
     EXPRESSION_TYPE(Variable)
-    EXPRESSION_CATEGORY(UnExp)
+    EXPRESSION_CATEGORY(0)
 
     /**
      * Gets the name of the variable.

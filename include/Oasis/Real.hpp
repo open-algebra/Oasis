@@ -22,7 +22,7 @@ public:
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final;
 
     EXPRESSION_TYPE(Real)
-    EXPRESSION_CATEGORY(UnExp)
+    EXPRESSION_CATEGORY(0)
 
     /**
      * Gets the value of the real number.

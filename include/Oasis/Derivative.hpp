@@ -34,7 +34,7 @@ namespace Oasis {
         static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Derivative>;
 
         EXPRESSION_TYPE(Derivative)
-        EXPRESSION_CATEGORY(BinExp)
+        EXPRESSION_CATEGORY(0)
     };
 /// @endcond
 
@@ -68,7 +68,7 @@ namespace Oasis {
         auto operator=(const Derivative& other) -> Derivative& = default;
 
         EXPRESSION_TYPE(Derivative)
-        EXPRESSION_CATEGORY(BinExp)
+        EXPRESSION_CATEGORY(0)
     };
 
 } // namespace Oasis

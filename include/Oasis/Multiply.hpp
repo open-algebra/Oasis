@@ -31,7 +31,7 @@ public:
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Multiply>;
 
     EXPRESSION_TYPE(Multiply)
-    EXPRESSION_CATEGORY(Associative | Commutative | BinExp)
+    EXPRESSION_CATEGORY(Associative | Commutative)
 };
 /// @endcond
 
@@ -65,7 +65,7 @@ public:
     auto operator=(const Multiply& other) -> Multiply& = default;
 
     EXPRESSION_TYPE(Multiply)
-    EXPRESSION_CATEGORY(Associative | Commutative | BinExp)
+    EXPRESSION_CATEGORY(Associative | Commutative)
 };
 
 } // Oasis

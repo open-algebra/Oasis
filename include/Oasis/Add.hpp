@@ -31,7 +31,7 @@ public:
     DECL_SPECIALIZE(Add)
 
     EXPRESSION_TYPE(Add)
-    EXPRESSION_CATEGORY(Associative | Commutative | BinExp)
+    EXPRESSION_CATEGORY(Associative | Commutative)
 };
 /// @endcond
 
@@ -65,7 +65,7 @@ public:
     auto operator=(const Add& other) -> Add& = default;
 
     EXPRESSION_TYPE(Add)
-    EXPRESSION_CATEGORY(Associative | Commutative | BinExp)
+    EXPRESSION_CATEGORY(Associative | Commutative)
 };
 
 } // namespace Oasis

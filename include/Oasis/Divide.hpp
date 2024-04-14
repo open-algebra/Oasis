@@ -34,7 +34,7 @@ public:
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Divide>;
 
     EXPRESSION_TYPE(Divide)
-    EXPRESSION_CATEGORY(BinExp)
+    EXPRESSION_CATEGORY(Associative | Commutative)
 };
 /// @endcond
 
@@ -68,7 +68,7 @@ public:
     auto operator=(const Divide& other) -> Divide& = default;
 
     EXPRESSION_TYPE(Divide)
-    EXPRESSION_CATEGORY(BinExp)
+    EXPRESSION_CATEGORY(None)
 };
 
 } // Oasis

@@ -34,7 +34,7 @@ public:
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Subtract>;
 
     EXPRESSION_TYPE(Subtract)
-    EXPRESSION_CATEGORY(BinExp)
+    EXPRESSION_CATEGORY(0)
 };
 /// @endcond
 
@@ -68,7 +68,7 @@ public:
     auto operator=(const Subtract& other) -> Subtract& = default;
 
     EXPRESSION_TYPE(Subtract)
-    EXPRESSION_CATEGORY(BinExp)
+    EXPRESSION_CATEGORY(None)
 };
 
 } // Oasis
