@@ -43,17 +43,14 @@ auto Variable::Specialize(const Expression& other, tf::Subflow&) -> std::unique_
 auto Variable::Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression>
 {
     auto varclone = Variable::Specialize(var);
-    if (varclone == nullptr)
-    {
+    if (varclone == nullptr) {
         throw std::invalid_argument("Variable was not a variable.");
     }
-    if (varclone->GetName() == GetName())
-    {
+    if (varclone->GetName() == GetName()) {
         return val.Copy();
     }
     return Copy();
 }
-
 
 auto Variable::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
 {

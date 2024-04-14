@@ -478,7 +478,7 @@ public:
     {
         std::unique_ptr<Expression> left = ((GetMostSigOp()).Copy())->Substitute(var, val);
         std::unique_ptr<Expression> right = ((GetLeastSigOp().Copy())->Substitute(var, val));
-        DerivedT<Expression, Expression> comb = DerivedT<Expression, Expression>{*left, *right};
+        DerivedT<Expression, Expression> comb = DerivedT<Expression, Expression> { *left, *right };
         auto ret = comb.Simplify();
         return ret;
     }
