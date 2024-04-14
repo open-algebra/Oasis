@@ -5,8 +5,8 @@
 #ifndef OASIS_VARIABLE_HPP
 #define OASIS_VARIABLE_HPP
 
-#include <string>
 #include <stdexcept>
+#include <string>
 
 #include "LeafExpression.hpp"
 
@@ -46,7 +46,6 @@ public:
     auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> override;
 
     auto operator=(const Variable& other) -> Variable& = default;
-
 
 private:
     std::string name {};
