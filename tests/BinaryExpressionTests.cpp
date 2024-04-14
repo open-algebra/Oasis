@@ -7,6 +7,7 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/Negate.hpp"
 
 TEST_CASE("Specialize Considers Commutative Property", "[Symbolic]")
 {
@@ -217,7 +218,7 @@ TEST_CASE("Equals follows associativity and commutativity")
         REQUIRE(add1.Equals(add2));
     }
 }
-TEST_CASE("Substitute", "[Substitute]")
+TEST_CASE("Substitute Binary", "[Substitute]")
 {
     Oasis::Add<Oasis::Multiply<Oasis::Real, Oasis::Variable>> before {
             Oasis::Multiply<Oasis::Real, Oasis::Variable> {
@@ -227,9 +228,23 @@ TEST_CASE("Substitute", "[Substitute]")
                     Oasis::Real { 3.0 },
                     Oasis::Variable { "x" } } }; // 2x+3x
 
-                    std::cout << "before: " << before.ToString() << std::endl;
                     auto after = before.Substitute(Oasis::Variable { "x" }, Oasis::Real { 4.0 }); // after should some std::unique_ptr<Expression> such that it equals 2(4) + 3(4)
                     Oasis::Real twenty {20};
-    std::cout << "after: " << after << std::endl;
     REQUIRE(after->Equals(*(twenty.Simplify())));
+}
+
+TEST_CASE("Substitute Unary", "[Substitute]")
+{
+    Oasis::Add<Oasis::Multiply<Oasis::Real, Oasis::Negate<Oasis::Variable>>,
+            Oasis::Multiply<Oasis::Real, Oasis::Variable>> before {
+            Oasis::Multiply<Oasis::Real, Oasis::Negate<Oasis::Variable>> {
+                    Oasis::Real { 2.0 },
+                    Oasis::Negate {Oasis::Variable { "x" } }},
+            Oasis::Multiply<Oasis::Real, Oasis::Variable> {
+                    Oasis::Real { 3.0 },
+                    Oasis::Variable { "x" } } }; // 2x+3x
+
+    auto after = before.Substitute(Oasis::Variable { "x" }, Oasis::Real { 4.0 }); // after should some std::unique_ptr<Expression> such that it equals 2(4) + 3(4)
+    Oasis::Real four {4};
+    REQUIRE(after->Equals(*(four.Simplify())));
 }

@@ -42,7 +42,6 @@ auto Variable::Specialize(const Expression& other, tf::Subflow&) -> std::unique_
 
 auto Variable::Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression>
 {
-    std::cout << "reached: " << GetName() << std::endl;
     auto varclone = Variable::Specialize(var);
     if (varclone == nullptr)
     {

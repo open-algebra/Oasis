@@ -95,8 +95,8 @@ public:
 
     auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> override
     {
-        std::unique_ptr<OperandT> right = OperandT::Specialize(*((GetOperand().Copy())->Substitute(var, val)));
-        auto comb = DerivedT<OperandT> {*right};
+        std::unique_ptr<Expression> right = ((GetOperand().Copy())->Substitute(var, val));
+        DerivedT<Expression> comb = DerivedT<Expression> {*right};
         auto ret = comb.Simplify();
         return ret;
     }
