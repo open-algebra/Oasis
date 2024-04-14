@@ -258,6 +258,7 @@ public:
      * @return Whether the two expressions are structurally equivalent.
      */
     [[nodiscard]] auto StructurallyEquivalentAsync(const Expression& other) const -> bool;
+    [[nodiscard]] virtual auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> = 0;
 
     /**
      * Converts this expression to a string.

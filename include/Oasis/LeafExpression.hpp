@@ -42,6 +42,10 @@ public:
     {
         return Generalize()->Differentiate(differentiationVariable);
     }
+    auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> override
+    {
+        return this->Copy();
+    }
 };
 
 } // Oasis

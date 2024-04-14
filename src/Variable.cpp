@@ -40,6 +40,22 @@ auto Variable::Specialize(const Expression& other, tf::Subflow&) -> std::unique_
     return other.Is<Variable>() ? std::make_unique<Variable>(dynamic_cast<const Variable&>(other)) : nullptr;
 }
 
+auto Variable::Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression>
+{
+    std::cout << "reached: " << GetName() << std::endl;
+    auto varclone = Variable::Specialize(var);
+    if (varclone == nullptr)
+    {
+        throw std::invalid_argument("Variable was not a variable.");
+    }
+    if (varclone->GetName() == GetName())
+    {
+        return val.Copy();
+    }
+    return Copy();
+}
+
+
 auto Variable::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
 {
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {

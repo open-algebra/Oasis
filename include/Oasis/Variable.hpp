@@ -6,6 +6,7 @@
 #define OASIS_VARIABLE_HPP
 
 #include <string>
+#include <stdexcept>
 
 #include "LeafExpression.hpp"
 
@@ -42,7 +43,10 @@ public:
     static auto Specialize(const Expression& other) -> std::unique_ptr<Variable>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Variable>;
 
+    auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> override;
+
     auto operator=(const Variable& other) -> Variable& = default;
+
 
 private:
     std::string name {};
