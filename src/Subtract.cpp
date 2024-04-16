@@ -176,8 +176,8 @@ auto Subtract<Expression>::Integrate(const Expression& integrationVariable) -> s
                 return Copy();
             }
             Add add { Subtract<Expression> {
-                          *(specializedLeft->GetMostSigOp().Copy()),
-                          *(specializedRight->GetMostSigOp().Copy()) },
+                          *(specializedRight->GetMostSigOp().Copy()),
+                          *(specializedLeft->GetMostSigOp().Copy()) },
                 Variable { "C" } };
 
             return add.Simplify();

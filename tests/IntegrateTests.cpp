@@ -159,9 +159,8 @@ TEST_CASE("Subtract Rule Different Terms", "[Integrate][Subtract][Different]")
             Oasis::Variable { "C" } }
     };
     auto integrated = integrand.Integrate(var);
-    auto simplified = integrated->Simplify();
 
-    REQUIRE(simplified->Equals(*(integral.Simplify())));
+    REQUIRE(integrated->Equals(*(integral.Simplify())));
 }
 
 TEST_CASE("Add Rule Like Terms", "[Integrate][Add][Like]")
