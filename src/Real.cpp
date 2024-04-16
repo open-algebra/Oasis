@@ -13,6 +13,11 @@ Real::Real(double value)
 {
 }
 
+auto Real::Differentiate(const Expression&) -> std::unique_ptr<Expression>
+{
+    return std::make_unique<Real>(0);
+}
+
 auto Real::Equals(const Expression& other) const -> bool
 {
     return other.Is<Real>() && value == dynamic_cast<const Real&>(other).value;

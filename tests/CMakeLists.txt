@@ -9,6 +9,7 @@ set(Oasis_TESTS
     # cmake-format: sortable
     AddTests.cpp
     BinaryExpressionTests.cpp
+    DifferentiateTests.cpp
     DivideTests.cpp
     ExponentTests.cpp
     LogTests.cpp
