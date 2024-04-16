@@ -14,11 +14,11 @@ class Summation;
 
 ///@cond
 template<>
-class Summation<Expression Expression, Expression> : public BinaryExpression<Summation> {
+class Summation<Expression, Expression> : public BinaryExpression<Summation> {
 
     Summation() = default;
 
-    Summation(const Summation<Expression, Expression, Expression>n& other)  = default;
+    Summation(const Summation<Expression, Expression>& other)  = default;
 
     Summation(const Expression& lowBound, const Expression& upperBound, const Expression& exp);
 
@@ -44,23 +44,25 @@ class Summation<Expression Expression, Expression> : public BinaryExpression<Sum
 *@tparam exp is the expression that is being summed
 */
 
-template<IExpression lowBound = Expression, IExpression upperBound = Expression, IExpression exp = Expression>
-class Summation : public BinaryExpression<Summation, lowBound, upperBound, exp> {
-    Summation(const Summation<lowBound, upperBound, exp>& other) : 
-    BinaryExpression<Summation, lowBound, upperBound, exp>(other) {};
+template<IExpression lowBound = Expression, IExpression upperBound = Expression>
+class Summation : public BinaryExpression<Summation, lowBound, upperBound> {
+    Summation(const Summation<lowBound, upperBound>& other, const Expression& exp) : 
+    BinaryExpression<Summation, lowBound, upperBound>(other), Expression(exp) {};
 
     Summation(const Expression& lowBound, const Expression& upperBound, const Expression& exp) :
-    BinaryExpression<Summation, lowBound, upperBound, exp>(lowBound, upperBound, exp) {};
+    BinaryExpression<Summation, lowBound, upperBound>(lowBound, upperBound), Expression(exp)  {};
 
     [[nodiscard]] auto ToString() const -> std::string final
     {
         return fmt::format("∑^{}_{}({})", this->lowBound, this->upperBound, this->exp);
     }
 
-    auto operator=(const Summation& other) -> Summation& = default;
+    auto operator=(const Summation& other, const Expression& exp) -> Summation& = default;
 
     EXPRESSION_TYPE(Summation);
     EXPRESSION_CATEGORY(None);
+
+    Expression exp;
 };
 
 }
