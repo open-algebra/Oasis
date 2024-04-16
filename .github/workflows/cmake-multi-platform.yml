@@ -28,9 +28,9 @@ jobs:
                 # c_compiler: [ clang-17, cl ]
 
                 include:
-                  # - os: ubuntu-latest
-                  #   c_compiler: gcc
-                  #   cpp_compiler: g++
+                  - os: ubuntu-latest
+                    c_compiler: gcc
+                    cpp_compiler: g++
                   - os: ubuntu-latest
                     c_compiler: clang-17
                     cpp_compiler: clang++-17
