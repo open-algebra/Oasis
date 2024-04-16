@@ -14,6 +14,8 @@ set(Oasis_SOURCES
     Imaginary.cpp
     Log.cpp
     Multiply.cpp
+    Parsers/SExpression/SExpression.cpp
+    Parsers/SExpression/SExpression.hpp
     Real.cpp
     Subtract.cpp
     Undefined.cpp
