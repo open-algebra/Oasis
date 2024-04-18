@@ -1,8 +1,9 @@
-#include "sin.hpp"
+#include "Sin.hpp"
 #include <cmath> // Only if you need to compute actual sin values, possibly for simplification or evaluation.
 #include <memory> // For std::unique_ptr
 #include <utility> // For std::move
-
+#include "MathUtils.hpp" // For MathUtils::isNumericConstant, MathUtils::toNumeric, MathUtils::createNumericExpression
+// uncomment after merge -- #include "Cos.hpp" 
 
 namespace Oasis {
 
@@ -29,8 +30,30 @@ auto Sin::StructurallyEquivalent(const Expression& other) const -> bool {
 
 
 std::unique_ptr<Expression> Sin::Simplify() const {
-    // Attempt to simplify the operand.
     auto simplifiedOperand = operand->Simplify();
+
+    // Checking if the operand is a numeric constant
+    if (MathUtils::isNumericConstant(simplifiedOperand)) {
+        double value = MathUtils::toNumeric(simplifiedOperand);
+        
+        // Simplifying sin(0) = 0
+        if (MathUtils::equals(value, 0)) {
+            return MathUtils::createNumericExpression(0);
+        }
+        // Simplifying sin(π) = 0
+        if (MathUtils::equals(value, M_PI)) {
+            return MathUtils::createNumericExpression(0);
+        }
+        // Simplifying sin(π/2) = 1
+        if (MathUtils::equals(value, M_PI / 2)) {
+            return MathUtils::createNumericExpression(1);
+        }
+        // Simplifying sin(3π/2) = -1
+        if (MathUtils::equals(value, 3 * M_PI / 2)) {
+            return MathUtils::createNumericExpression(-1);
+        }
+    }
+
     return std::make_unique<Sin>(std::move(simplifiedOperand));
 }
 
@@ -44,5 +67,9 @@ const Expression* Sin::GetOperandPtr() const {
     return operand.get();
 }
 
+
+std::unique_ptr<Expression> Sin::Derivative() const {
+    //return std::make_unique<Cos>(operand->Copy()); // uncomment after merge.
+}
 
 } // namespace Oasis

@@ -15,7 +15,8 @@ public:
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override;
     [[nodiscard]] auto ToString() const -> std::string override;
     [[nodiscard]] const Expression* GetOperandPtr() const;
-
+    [[nodiscard]] auto Derivative() const -> std::unique_ptr<Expression>;
+ 
     auto GetType() const -> ExpressionType override;
 
 private:
