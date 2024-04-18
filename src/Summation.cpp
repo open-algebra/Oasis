@@ -14,19 +14,21 @@ namespace Oasis {
 
     auto Summation<Expression>::Simplify() const -> std::unique_ptr<Expression> 
     {
-     const auto simplifiedSum = mostSigOp ? mostSigOp->Simplify() : nullptr;
-     const auto simplifiedExp = leastSigOp ? leastSigOp->Simplify() : nullptr;
+     const auto simplifiedLow = mostSigOp ? mostSigOp->Simplify() : nullptr;
+     const auto simplifiedUp = leastSigOp ? leastSigOp->Simplify() : nullptr;
 
-     if(!simplifiedSum  || !simplifiedExp) {
+     const auto simplifiedExp = exp.Simplify();
+
+     if(!simplifiedSum  || !simplifiedExp || !simplifiedExp) {
         return nullptr;
      }
 
-     const Summation simplifiedSummation { *simplifiedSum, *simplifiedExp };
+     return std::make_unique<Summation>(*simplifiedLow, *simplifiedUp, *simplifiedExp);
 
+    }
 
-
-
-
-
+    [[nodiscard]] auto ToString() const -> std::string final
+    {
+        return fmt::format("∑^{}_{}({})", this->lowBound, this->upperBound, this->exp);
     }
 }
