@@ -3,32 +3,31 @@
 //
 
 #include "Oasis/Summation.hpp"
-#include "Oasis/Add.hpp"
-#include "Oasis/Exponent.hpp"
-#include "Oasis/BinaryExpression.hpp"
-#include "Oasis/Multiply.hpp"
 
 namespace Oasis {
-    Summation<Expression>::Summation(const Expression& lowBound, const Expression& upperBound, const Expression& exp)
-     : BinaryExpression(lowBound, upperBound), Expression(exp) {}
 
-    auto Summation<Expression>::Simplify() const -> std::unique_ptr<Expression> 
-    {
-     const auto simplifiedLow = mostSigOp ? mostSigOp->Simplify() : nullptr;
-     const auto simplifiedUp = leastSigOp ? leastSigOp->Simplify() : nullptr;
+Summation::Summation(const Expression& lowBound, const Expression& upperBound, const Expression& exp)
+    : lowBound(lowBound), upperBound(upperBound), exp(exp) {}
 
-     const auto simplifiedExp = exp.Simplify();
+auto Summation::Simplify() const {
+    auto simplifiedLow = lowBound->Simplify();
+    auto simplifiedUp = upperBound->Simplify();
+    auto simplifiedExp = exp->Simplify();
 
-     if(!simplifiedSum  || !simplifiedExp || !simplifiedExp) {
-        return nullptr;
-     }
-
-     return std::make_unique<Summation>(*simplifiedLow, *simplifiedUp, *simplifiedExp);
-
-    }
-
-    [[nodiscard]] auto ToString() const -> std::string final
-    {
-        return fmt::format("∑^{}_{}({})", this->lowBound, this->upperBound, this->exp);
-    }
+    return std::make_unique<Summation>(*simplifiedLow, *simplfiiedUp, *simplifiedExp);
 }
+
+auto Summation::ToString() const {
+    return "∑^{" + lowBound->ToString() + "}_{" + upperBound->ToString() + "}(" + exp->ToString() + ")";
+}
+
+auto Summation::Evaluate() const {
+    std::unique_ptr<Summation> result = make_unique<Summation>();
+    for(auto i = lowBound->Evaluate(); i < upperBound -> Evaluate(); ++i) {
+        result = result + exp->Evaluate();
+    }
+
+    return result;
+}
+
+} // namespace Oasis
