@@ -164,6 +164,29 @@ auto Exponent<Expression>::Specialize(const Oasis::Expression& other) -> std::un
     return std::make_unique<Exponent>(dynamic_cast<const Exponent&>(*otherGeneralized));
 }
 
+auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+{
+    // variable diff
+    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
+        auto simplifiedExponent = this->Simplify();
+
+        std::unique_ptr<Expression> diff;
+        // Variable with a constant power
+        if (auto realExponent = Exponent<Variable, Real>::Specialize(*simplifiedExponent); realExponent != nullptr) {
+            const Variable& expBase = realExponent->GetMostSigOp();
+            const Real& expPow = realExponent->GetLeastSigOp();
+
+            if ((*variable).GetName() == expBase.GetName()) {
+                return Multiply<Expression, Expression> { Exponent<Variable, Real> { Variable { (*variable).GetName() }, Real { expPow.GetValue() - 1 } },
+                    Real { expPow.GetValue() } }
+                    .Simplify();
+            }
+        }
+    }
+
+    return Copy();
+}
+
 auto Exponent<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Exponent>
 {
     if (!other.Is<Oasis::Exponent>()) {

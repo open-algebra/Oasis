@@ -33,7 +33,7 @@ public:
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Log>;
 
     EXPRESSION_TYPE(Log)
-    EXPRESSION_CATEGORY(None)
+    EXPRESSION_CATEGORY(BinExp)
 };
 /// @endcond
 
@@ -67,7 +67,7 @@ public:
     auto operator=(const Log& other) -> Log& = default;
 
     EXPRESSION_TYPE(Log);
-    EXPRESSION_CATEGORY(None);
+    EXPRESSION_CATEGORY(BinExp);
 };
 
 } // Oasis
