@@ -41,6 +41,8 @@ enum ExpressionCategory : uint32_t {
     None = 0,
     Associative = 1,
     Commutative = 1 << 1,
+    BinExp = 1 << 2,
+    UnExp = 1 << 3,
 };
 
 // clang-format off
@@ -258,6 +260,7 @@ public:
      * @return Whether the two expressions are structurally equivalent.
      */
     [[nodiscard]] auto StructurallyEquivalentAsync(const Expression& other) const -> bool;
+    [[nodiscard]] virtual auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> = 0;
 
     /**
      * Converts this expression to a string.

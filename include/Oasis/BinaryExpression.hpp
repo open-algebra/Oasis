@@ -474,7 +474,14 @@ public:
             this->leastSigOp = std::move(op);
         }
     }
-
+    auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> override
+    {
+        std::unique_ptr<Expression> left = ((GetMostSigOp()).Copy())->Substitute(var, val);
+        std::unique_ptr<Expression> right = ((GetLeastSigOp().Copy())->Substitute(var, val));
+        DerivedT<Expression, Expression> comb = DerivedT<Expression, Expression> { *left, *right };
+        auto ret = comb.Simplify();
+        return ret;
+    }
     /**
      * Swaps the operands of this expression.
      * @return A new expression with the operands swapped.
