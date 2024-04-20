@@ -27,7 +27,7 @@ public:
     Integrate(const Expression& integrand, const Expression& differential);
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
-//    [[nodiscard]] auto Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression> /* final */;
+    [[nodiscard]] auto Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression> /* final */;
 
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
