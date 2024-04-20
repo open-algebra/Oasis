@@ -132,33 +132,50 @@ auto Integrate<Expression>::Simplify(const Expression& upper, const Expression& 
 
     if (auto constCase = Integrate<Divide<Real>, Variable>::Specialize(simplifiedIntegrate); constCase != nullptr) {
         Oasis::Divide constant{constCase->GetMostSigOp()};
-        auto constReal = constant.Simplify();
+        auto constReal = Real::Specialize(*constant.Simplify());
 
         auto upper_bound = Real::Specialize(upper);
         auto lower_bound = Real::Specialize(lower);
 
         if (upper_bound!= nullptr && lower_bound != nullptr) {
-//            return
+           return std::make_unique<Real>( (Real{*constReal}.GetValue() * upper_bound->GetValue()) - (Real{*constReal}.GetValue() * lower_bound->GetValue()) );
         }
         else if (upper_bound != nullptr && lower_bound == nullptr) {
-//            return
+            return std::make_unique<Subtract<Real, Expression>>( Real{ Real{*constReal}.GetValue() * upper_bound->GetValue() }, *Multiply<Expression>{ *(constReal), lower }.Simplify() );
         }
         else if (upper_bound == nullptr && lower_bound != nullptr) {
-//            return
+            return std::make_unique<Subtract<Expression, Real>>( *Multiply<Expression>{ *(constReal), upper }.Simplify(), Real{ Real{*constReal}.GetValue() * lower_bound->GetValue() } );
         }
-//        return
+        return std::make_unique<Subtract<Expression>>( *Multiply<Expression>{ *(constReal), upper }.Simplify(), *Multiply<Expression>{ *(constReal), lower }.Simplify());
     }
 
 
+    // Power Rule
+    if (auto powerCase = Integrate<Exponent<Expression>, Variable>::Specialize(simplifiedIntegrate); powerCase != nullptr) {
+        const Variable& differential = powerCase->GetLeastSigOp();
+        Oasis::Exponent exponent{powerCase->GetMostSigOp()};
+        auto integral = Add<Divide<Exponent<Variable, Real>, Real>, Variable>::Specialize(*exponent.Integrate(differential));
 
-//
-//    // Power Rule
-//    if (auto powerCase = Integrate<Exponent<Expression>, Variable>::Specialize(simplifiedIntegrate); powerCase != nullptr) {
-//        const Variable& differential = powerCase->GetLeastSigOp();
-//        Oasis::Exponent exponent{powerCase->GetMostSigOp()};
-//
-//        return exponent.Integrate(differential);
-//    }
+        auto upper_bound = Real::Specialize(upper);
+        auto lower_bound = Real::Specialize(lower);
+
+        if (upper_bound!= nullptr && lower_bound != nullptr) {
+
+//            const Real& divisor = integral->GetMostSigOp().GetLeastSigOp();
+//            const Real& power = integral->GetMostSigOp().GetMostSigOp().GetLeastSigOp();
+//            const IExpression<Real> auto& left = Exponent<Real>{ Real{upper_bound->GetValue()}, power };
+//            const IExpression<Real> auto& right = *Exponent<Real>{ Real{lower_bound->GetValue()}, power }.Simplify();
+
+//            return make_unique<Real>(  *Subtract<Real>{ *Divide<Real>{ left, divisor }.Simplify(), *Divide<Real>{ right, divisor }.Simplify() }.Simplify() );
+        }
+        else if (upper_bound != nullptr && lower_bound == nullptr) {
+
+        }
+        else if (upper_bound == nullptr && lower_bound != nullptr) {
+
+        }
+//        return
+    }
 //
 //    // Constant + Power Rule
 //    if (auto powerCase = Integrate<Multiply<Expression, Exponent<Expression>>, Variable>::Specialize(simplifiedIntegrate); powerCase != nullptr) {
