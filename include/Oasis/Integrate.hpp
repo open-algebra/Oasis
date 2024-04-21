@@ -7,8 +7,8 @@
 
 #include "fmt/core.h"
 
-#include "Expression.hpp"
 #include "BinaryExpression.hpp"
+#include "Expression.hpp"
 #include "Real.hpp"
 
 namespace Oasis {
@@ -16,9 +16,8 @@ namespace Oasis {
 template <IExpression Integrand, IExpression Differential>
 class Integrate;
 
-
 /// @cond
-template<>
+template <>
 class Integrate<Expression, Expression> : public BinaryExpression<Integrate> {
 public:
     Integrate() = default;
