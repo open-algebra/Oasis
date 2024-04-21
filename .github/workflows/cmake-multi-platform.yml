@@ -23,14 +23,14 @@ jobs:
             # Due to a bug in GCC (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111485), building with GCC is disabled.
             matrix:
                 os: [ ubuntu-latest, windows-latest ]
-                build_type: [ Release ]
-                # c_compiler: [ gcc, clang-17, cl ]
-                c_compiler: [ clang-17, cl ]
+                build_type: [ Release, Debug ]
+                c_compiler: [ gcc, clang-17, cl ]
+                # c_compiler: [ clang-17, cl ]
 
                 include:
-                  # - os: ubuntu-latest
-                  #   c_compiler: gcc
-                  #   cpp_compiler: g++
+                  - os: ubuntu-latest
+                    c_compiler: gcc
+                    cpp_compiler: g++
                   - os: ubuntu-latest
                     c_compiler: clang-17
                     cpp_compiler: clang++-17
@@ -45,6 +45,8 @@ jobs:
                     c_compiler: cl
                   - os: windows-latest
                     c_compiler: clang-17
+                  - os: windows-latest
+                    c_compiler: gcc
         steps:
             # Checks out the repository.
           - name: Checkout repository
@@ -99,7 +101,7 @@ jobs:
           - name: Upload artifacts
             uses: actions/upload-artifact@v3
             with:
-                name: build-${{ matrix.os }}
+                name: build-${{ matrix.os }}-${{ matrix.build_type }}-${{ matrix.c_compiler }}
                 path: |
                     ${{ steps.strings.outputs.build-dir }}
                     !${{ steps.strings.outputs.build-dir }}/_deps

@@ -4,6 +4,7 @@
 #include <concepts>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace tf {
 class Subflow;
@@ -28,6 +29,10 @@ enum class ExpressionType {
     Exponent,
     Log,
     Integrate,
+    Limit,
+    Derivative,
+    Negate,
+    Sqrt,
 };
 
 /**
@@ -37,6 +42,8 @@ enum ExpressionCategory : uint32_t {
     None = 0,
     Associative = 1,
     Commutative = 1 << 1,
+    BinExp = 1 << 2,
+    UnExp = 1 << 3,
 };
 
 // clang-format off
@@ -84,6 +91,12 @@ public:
     virtual auto Copy(tf::Subflow& subflow) const -> std::unique_ptr<Expression> = 0;
 
     /**
+     * Tries to differentiate this function.
+     * @return the differentiated expression.
+     */
+    [[nodiscard]] virtual auto Differentiate(const Expression&) -> std::unique_ptr<Expression>;
+
+    /**
      * Compares this expression to another expression for equality.
      *
      * Two expressions are equal if they are structurally equivalent and have the same value.
@@ -95,6 +108,13 @@ public:
      * @return Whether the two expressions are equal.
      */
     [[nodiscard]] virtual auto Equals(const Expression& other) const -> bool = 0;
+
+    /**
+     * The FindZeros function finds all rational real zeros, and up to 2 irrational/complex zeros of a polynomial. Currently assumes an expression of the form a+bx+cx^2+dx^3+... where a, b, c, d are a integers.
+     *
+     * @tparam origonalExpresion The expression for which all the factors will be found.
+     */
+    auto FindZeros() const -> std::vector<std::unique_ptr<Expression>>;
 
     /**
      * Gets the category of this expression.
@@ -248,6 +268,7 @@ public:
      * @return Whether the two expressions are structurally equivalent.
      */
     [[nodiscard]] auto StructurallyEquivalentAsync(const Expression& other) const -> bool;
+    [[nodiscard]] virtual auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> = 0;
 
     /**
      * Converts this expression to a string.
@@ -269,16 +290,20 @@ public:
         return ExpressionType::type;                \
     }
 
-#define EXPRESSION_CATEGORY(category)             \
-    auto GetCategory() const -> uint32_t override \
-    {                                             \
-        return category;                          \
-    }                                             \
-                                                  \
-    static auto GetStaticCategory() -> uint32_t   \
-    {                                             \
-        return category;                          \
+#define EXPRESSION_CATEGORY(category)                     \
+    auto GetCategory() const -> uint32_t override         \
+    {                                                     \
+        return category;                                  \
+    }                                                     \
+                                                          \
+    constexpr static auto GetStaticCategory() -> uint32_t \
+    {                                                     \
+        return category;                                  \
     }
+
+#define DECL_SPECIALIZE(type)                                                 \
+    static auto Specialize(const Expression& other) -> std::unique_ptr<type>; \
+    static auto Specialize(const Expression& other, tf::Subflow&) -> std::unique_ptr<type>;
 
 } // namespace Oasis
 

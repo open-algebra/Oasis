@@ -5,6 +5,7 @@
 #ifndef OASIS_BINARYEXPRESSION_HPP
 #define OASIS_BINARYEXPRESSION_HPP
 
+#include <functional>
 #include <list>
 
 #include "taskflow/taskflow.hpp"
@@ -22,10 +23,43 @@ template <typename MostSigOpT, typename LeastSigOpT, typename T>
 concept IOperand = std::is_same_v<T, MostSigOpT> || std::is_same_v<T, LeastSigOpT>;
 
 template <template <typename, typename> typename T>
-concept IAssociativeAndCommutative = IExpression<T<Expression, Expression>> && requires { (T<Expression, Expression>::GetStaticCategory() & (Associative | Commutative)) != 0; };
+concept IAssociativeAndCommutative = IExpression<T<Expression, Expression>> && ((T<Expression, Expression>::GetStaticCategory() & (Associative | Commutative)) == (Associative | Commutative));
 
 template <typename T, typename... U>
 concept IsAnyOf = (std::same_as<T, U> || ...);
+
+/**
+ * Builds a reasonably balanced binary expression from a vector of operands.
+ * @tparam T The type of the binary expression, e.g. Add or Multiply.
+ * @param ops The vector of operands. Must have a minimum of 2 operands.
+ * @return A binary expression with the operands in the vector, or a nullptr if ops.size() <=1.
+ */
+template <template <typename, typename> typename T>
+    requires IAssociativeAndCommutative<T>
+auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std::unique_ptr<T<Expression, Expression>>
+{
+    if (ops.size() <= 1) {
+        return nullptr;
+    }
+
+    using GeneralizedT = T<Expression, Expression>;
+
+    std::list<std::unique_ptr<Expression>> opsList;
+    opsList.resize(ops.size());
+
+    std::transform(ops.begin(), ops.end(), opsList.begin(), [](const auto& op) { return op->Copy(); });
+
+    while (std::next(opsList.begin()) != opsList.end()) {
+        for (auto i = opsList.begin(); i != opsList.end() && std::next(i) != opsList.end();) {
+            auto node = std::make_unique<GeneralizedT>(**i, **std::next(i));
+            opsList.insert(i, std::move(node));
+            i = opsList.erase(i, std::next(i, 2));
+        }
+    }
+
+    auto* result = dynamic_cast<GeneralizedT*>(opsList.front().release());
+    return std::unique_ptr<GeneralizedT>(result);
+}
 
 /**
  * A binary expression.
@@ -67,6 +101,26 @@ public:
         SetLeastSigOp(leastSigOp);
     }
 
+    template <IExpression Op1T, IExpression Op2T, IExpression... OpsT>
+    BinaryExpression(const Op1T& op1, const Op2T& op2, const OpsT&... ops)
+    {
+        static_assert(IAssociativeAndCommutative<DerivedT>, "List initializer only supported for associative and commutative expressions");
+        static_assert(std::is_same_v<DerivedGeneralized, DerivedSpecialized>, "List initializer only supported for generalized expressions");
+
+        std::vector<std::unique_ptr<Expression>> opsVec;
+
+        for (auto opWrapper : std::vector<std::reference_wrapper<const Expression>> { static_cast<const Expression&>(op1), static_cast<const Expression&>(op2), (static_cast<const Expression&>(ops))... }) {
+            const Expression& operand = opWrapper.get();
+            opsVec.emplace_back(operand.Copy());
+        }
+
+        // build expression from vector
+        auto generalized = BuildFromVector<DerivedT>(opsVec);
+
+        SetLeastSigOp(generalized->GetLeastSigOp());
+        SetMostSigOp(generalized->GetMostSigOp());
+    }
+
     [[nodiscard]] auto Copy() const -> std::unique_ptr<Expression> final
     {
         return std::make_unique<DerivedSpecialized>(*static_cast<const DerivedSpecialized*>(this));
@@ -92,7 +146,10 @@ public:
 
         return std::make_unique<DerivedSpecialized>(copy);
     }
-
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> override
+    {
+        return Generalize()->Differentiate(differentiationVariable);
+    }
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final
     {
         if (this->GetType() != other.GetType()) {
@@ -422,7 +479,14 @@ public:
             this->leastSigOp = std::move(op);
         }
     }
-
+    auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> override
+    {
+        std::unique_ptr<Expression> left = ((GetMostSigOp()).Copy())->Substitute(var, val);
+        std::unique_ptr<Expression> right = ((GetLeastSigOp().Copy())->Substitute(var, val));
+        DerivedT<Expression, Expression> comb = DerivedT<Expression, Expression> { *left, *right };
+        auto ret = comb.Simplify();
+        return ret;
+    }
     /**
      * Swaps the operands of this expression.
      * @return A new expression with the operands swapped.
@@ -439,41 +503,12 @@ protected:
     std::unique_ptr<LeastSigOpT> leastSigOp;
 };
 
-/**
- * Builds a reasonably balanced binary expression from a vector of operands.
- * @tparam T The type of the binary expression, e.g. Add and Multiply.
- * @param ops The vector of operands.
- * @return A binary expression with the operands in the vector.
- */
-template <template <typename, typename> typename T>
-    requires IAssociativeAndCommutative<T>
-auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std::unique_ptr<Expression>
-{
-    using GeneralizedT = T<Expression, Expression>;
-
-    std::list<std::unique_ptr<Expression>> opsList;
-    opsList.resize(ops.size());
-
-    std::transform(ops.begin(), ops.end(), opsList.begin(), [](const auto& op) { return op->Copy(); });
-
-    while (std::next(opsList.begin()) != opsList.end()) {
-        for (auto i = opsList.begin(); i != opsList.end() && std::next(i) != opsList.end();) {
-            auto node = std::make_unique<GeneralizedT>(**i, **std::next(i));
-            opsList.insert(i, std::move(node));
-            i = opsList.erase(i, std::next(i, 2));
-        }
-    }
-
-    return std::move(opsList.front());
-}
-
 #define IMPL_SPECIALIZE(Derived, FirstOp, SecondOp)                                                                      \
     static auto Specialize(const Expression& other) -> std::unique_ptr<Derived<FirstOp, SecondOp>>                       \
     {                                                                                                                    \
         if (!other.Is<Oasis::Derived>()) {                                                                               \
             return nullptr;                                                                                              \
         }                                                                                                                \
-                                                                                                                         \
         auto specialized = std::make_unique<Derived<FirstOp, SecondOp>>();                                               \
                                                                                                                          \
         std::unique_ptr<Expression> otherGeneralized = other.Generalize();                                               \

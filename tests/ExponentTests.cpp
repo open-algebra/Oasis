@@ -26,11 +26,53 @@ TEST_CASE("Zero Rule", "[Exponent][Zero]")
     REQUIRE(simplifiedReal.GetValue() == 1.0);
 }
 
+TEST_CASE("Second Zero Rule", "[Exponent][Zero]")
+{
+    Oasis::Exponent exponent {
+        Oasis::Real { 0.0 },
+        Oasis::Real { 5.0 }
+    };
+
+    auto simplified = exponent.Simplify();
+    REQUIRE(simplified->Is<Oasis::Real>());
+
+    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
+    REQUIRE(simplifiedReal.GetValue() == 0.0);
+}
+
 TEST_CASE("Symbolic Zero Rule", "[Exponent][Zero][Symbolic]")
 {
     Oasis::Exponent exponent {
         Oasis::Variable { "x" },
         Oasis::Real { 0.0 }
+    };
+
+    auto simplified = exponent.Simplify();
+    REQUIRE(simplified->Is<Oasis::Real>());
+
+    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
+    REQUIRE(simplifiedReal.GetValue() == 1.0);
+}
+
+TEST_CASE("Second Symbolic Zero Rule", "[Exponent][Zero][Symbolic]")
+{
+    Oasis::Exponent exponent {
+        Oasis::Real { 0.0 },
+        Oasis::Variable { "x" }
+    };
+
+    auto simplified = exponent.Simplify();
+    REQUIRE(simplified->Is<Oasis::Real>());
+
+    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
+    REQUIRE(simplifiedReal.GetValue() == 0.0);
+}
+
+TEST_CASE("Symbolic One Rule", "[Exponent][One][Symbolic]")
+{
+    Oasis::Exponent exponent {
+        Oasis::Real { 1.0 },
+        Oasis::Variable { "x" }
     };
 
     auto simplified = exponent.Simplify();
@@ -376,12 +418,11 @@ TEST_CASE("Subtraction of Exponents", "[Subtract][Exponent][Symbolic]")
     auto simplified4 = sub4.Simplify();
 
     REQUIRE(Oasis::Real { 0.0 }.Equals(*simplified));
-    REQUIRE(Oasis::Multiply {
+    REQUIRE((Oasis::Multiply {
         Oasis::Real { 1.0 },
         Oasis::Exponent {
             Oasis::Variable { "x" },
-            Oasis::Real { 2.0 } } }
-                .Equals(*simplified2));
+            Oasis::Real { 2.0 } } }).Simplify()->Equals(*simplified2));
     REQUIRE(Oasis::Multiply {
         Oasis::Real { -1.0 },
         Oasis::Exponent {
