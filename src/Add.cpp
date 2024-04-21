@@ -6,6 +6,7 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Integrate.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 
@@ -280,7 +281,7 @@ auto Add<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
     return std::make_unique<Add>(dynamic_cast<const Add&>(*otherGeneralized));
 }
 
-auto Add<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Add<Expression>::IntegrateExp(const Expression& integrationVariable) -> std::unique_ptr<Expression>
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
@@ -289,12 +290,12 @@ auto Add<Expression>::Integrate(const Expression& integrationVariable) -> std::u
         // Make sure we're still adder
         if (auto adder = Add<Expression>::Specialize(*simplifiedAdd); adder != nullptr) {
             auto leftRef = adder->GetLeastSigOp().Copy();
-            auto leftIntegral = leftRef->Integrate(integrationVariable);
+            auto leftIntegral = leftRef->IntegrateExp(integrationVariable);
 
             auto specializedLeft = Add<Expression>::Specialize(*leftIntegral);
 
             auto rightRef = adder->GetMostSigOp().Copy();
-            auto rightIntegral = rightRef->Integrate(integrationVariable);
+            auto rightIntegral = rightRef->IntegrateExp(integrationVariable);
 
             auto specializedRight = Add<Expression>::Specialize(*rightIntegral);
             if (specializedLeft == nullptr || specializedRight == nullptr) {
@@ -310,10 +311,12 @@ auto Add<Expression>::Integrate(const Expression& integrationVariable) -> std::u
         }
         // If not, use other integration technique
         else {
-            return simplifiedAdd->Integrate(integrationVariable)->Simplify();
+            return simplifiedAdd->IntegrateExp(integrationVariable)->Simplify();
         }
     }
-    return Copy();
+    Integrate<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+
+    return integral.Copy();
 }
 
 auto Add<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>

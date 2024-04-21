@@ -187,7 +187,7 @@ public:
      *
      * @return An indefinite integral of the expression added to a constant
      */
-    [[nodiscard]] virtual auto Integrate(const Expression&) -> std::unique_ptr<Expression>;
+    [[nodiscard]] virtual auto IntegrateExp(const Expression&) -> std::unique_ptr<Expression>;
 
     /**
      * Gets whether this expression is of a specific type.

@@ -7,6 +7,7 @@
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Integrate.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Variable.hpp"
@@ -185,7 +186,7 @@ auto Subtract<Expression>::Differentiate(const Expression& differentiationVariab
     return Copy();
 }
 
-auto Subtract<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Subtract<Expression>::IntegrateExp(const Expression& integrationVariable) -> std::unique_ptr<Expression>
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
@@ -194,12 +195,12 @@ auto Subtract<Expression>::Integrate(const Expression& integrationVariable) -> s
         // Make sure we're still subtracting
         if (auto adder = Subtract<Expression>::Specialize(*simplifiedSub); adder != nullptr) {
             auto leftRef = adder->GetLeastSigOp().Copy();
-            auto leftIntegral = leftRef->Integrate(integrationVariable);
+            auto leftIntegral = leftRef->IntegrateExp(integrationVariable);
 
             auto specializedLeft = Add<Expression>::Specialize(*leftIntegral);
 
             auto rightRef = adder->GetMostSigOp().Copy();
-            auto rightIntegral = rightRef->Integrate(integrationVariable);
+            auto rightIntegral = rightRef->IntegrateExp(integrationVariable);
 
             auto specializedRight = Add<Expression>::Specialize(*rightIntegral);
 
@@ -215,10 +216,12 @@ auto Subtract<Expression>::Integrate(const Expression& integrationVariable) -> s
         }
         // If not, use other integration technique
         else {
-            return simplifiedSub->Integrate(integrationVariable);
+            return simplifiedSub->IntegrateExp(integrationVariable);
         }
     }
-    return Copy();
+    Integrate<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+
+    return integral.Copy();
 }
 
 } // Oasis

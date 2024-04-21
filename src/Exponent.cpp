@@ -6,6 +6,7 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Integrate.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include <cmath>
@@ -166,7 +167,7 @@ auto Exponent<Expression>::Specialize(const Oasis::Expression& other) -> std::un
     return std::make_unique<Exponent>(dynamic_cast<const Exponent&>(*otherGeneralized));
 }
 
-auto Exponent<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Exponent<Expression>::IntegrateExp(const Expression& integrationVariable) -> std::unique_ptr<Expression>
 {
     // variable integration
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
@@ -192,7 +193,9 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) -> s
         }
     }
 
-    return Copy();
+    Integrate<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+
+    return integral.Copy();
 }
 
 auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>

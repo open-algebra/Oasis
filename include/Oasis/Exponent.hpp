@@ -31,7 +31,7 @@ public:
     [[nodiscard]] auto ToString() const -> std::string final;
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
 
-    [[nodiscard]] auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression> final;
+    [[nodiscard]] auto IntegrateExp(const Expression& integrationVariable) -> std::unique_ptr<Expression> final;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Exponent>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Exponent>;
