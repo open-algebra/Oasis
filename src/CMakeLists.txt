@@ -19,7 +19,8 @@ set(Oasis_SOURCES
     Real.cpp
     Subtract.cpp
     Undefined.cpp
-    Variable.cpp)
+    Variable.cpp
+    Integrate.cpp)
 
 set(Oasis_HEADERS
     # cmake-format: sortable
@@ -36,6 +37,7 @@ set(Oasis_HEADERS
     ../include/Oasis/Negate.hpp
     ../include/Oasis/Real.hpp
     ../include/Oasis/Subtract.hpp
+    ../include/Oasis/Integrate.hpp)
     ../include/Oasis/UnaryExpression.hpp
     ../include/Oasis/Undefined.hpp
     ../include/Oasis/Variable.hpp)

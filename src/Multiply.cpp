@@ -340,6 +340,29 @@ auto Multiply<Expression>::Specialize(const Expression& other, tf::Subflow& subf
     return std::make_unique<Multiply>(dynamic_cast<const Multiply&>(*otherGeneralized));
 }
 
+
+auto Multiply<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+{
+    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+        auto leftSide = mostSigOp->Simplify();
+        auto rightSide = leastSigOp->Simplify();
+
+        Multiply simplifiedMult = Multiply { *leftSide, *rightSide };
+
+        if (auto constant = Multiply<Real, Expression>::Specialize(simplifiedMult); constant != nullptr) {
+            auto exp = constant->GetLeastSigOp().Copy();
+            auto num = constant->GetMostSigOp();
+            auto integrated = (*exp).Integrate(integrationVariable);
+
+            if (auto add = Add<Expression, Variable>::Specialize(*integrated); constant != nullptr) {
+                return std::make_unique<Add<Multiply<Real, Expression>, Variable>>(Add<Multiply<Real, Expression>, Variable> { Multiply<Real, Expression> { Real { num.GetValue() }, add->GetMostSigOp() }, Variable { "C" } });
+                }
+        }
+    }
+
+    return Copy();
+}
+
 auto Multiply<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
 {
     // Single integration variable

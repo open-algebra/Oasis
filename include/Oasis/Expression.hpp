@@ -28,6 +28,7 @@ enum class ExpressionType {
     Divide,
     Exponent,
     Log,
+    Integrate,
     Limit,
     Derivative,
     Negate,
@@ -180,6 +181,13 @@ public:
      * @return The specialized expression, or `nullptr` if the expression cannot be specialized.
      */
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Expression>;
+
+    /**
+     * Attempts to integrate this expression using integration rules
+     *
+     * @return An indefinite integral of the expression added to a constant
+     */
+    [[nodiscard]] virtual auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>;
 
     /**
      * Gets whether this expression is of a specific type.
