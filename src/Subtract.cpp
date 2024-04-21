@@ -153,6 +153,37 @@ auto Subtract<Expression>::Specialize(const Expression& other, tf::Subflow& subf
     auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Subtract>(dynamic_cast<const Subtract&>(*otherGeneralized));
 }
+auto Subtract<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+{
+    // Single diff variable
+    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
+        auto simplifiedSub = this->Simplify();
+
+        // Make sure we're still subtracting
+        if (auto adder = Subtract<Expression>::Specialize(*simplifiedSub); adder != nullptr) {
+            auto rightRef = adder->GetLeastSigOp().Copy();
+            auto rightDiff = rightRef->Differentiate(differentiationVariable);
+
+            auto specializedRight = Expression::Specialize(*rightDiff);
+
+            auto leftRef = adder->GetMostSigOp().Copy();
+            auto leftDiff = leftRef->Differentiate(differentiationVariable);
+
+            auto specializedLeft = Expression::Specialize(*leftDiff);
+
+            if (specializedLeft == nullptr || specializedRight == nullptr) {
+                return Copy();
+            }
+
+            return std::make_unique<Subtract<Expression, Expression>>(Subtract<Expression, Expression> { *(specializedLeft->Copy()), *(specializedRight->Copy()) })->Simplify();
+        }
+        // If not, use other differentiation technique
+        else {
+            return simplifiedSub->Differentiate(differentiationVariable);
+        }
+    }
+    return Copy();
+}
 
 auto Subtract<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
 {

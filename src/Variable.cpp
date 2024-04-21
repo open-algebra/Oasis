@@ -7,6 +7,7 @@
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Real.hpp"
 
 namespace Oasis {
 
@@ -61,6 +62,36 @@ auto Variable::Integrate(const Expression& integrationVariable) -> std::unique_p
             Variable { "C" }
         };
         return adder.Simplify();
+    }
+
+    return Copy();
+}
+
+auto Variable::Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression>
+{
+    auto varclone = Variable::Specialize(var);
+    if (varclone == nullptr) {
+        throw std::invalid_argument("Variable was not a variable.");
+    }
+    if (varclone->GetName() == GetName()) {
+        return val.Copy();
+    }
+    return Copy();
+}
+
+auto Variable::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+{
+    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
+
+        // Power rule
+        if (name == (*variable).GetName()) {
+            return std::make_unique<Real>(Real { 1.0f })
+                ->Simplify();
+        }
+
+        // Different variable, treat as constant
+        return std::make_unique<Real>(Real { 0 })
+            ->Simplify();
     }
 
     return Copy();

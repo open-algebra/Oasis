@@ -27,11 +27,12 @@ public:
 
     [[nodiscard]] auto ToString() const -> std::string final;
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression> final;
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
 
     DECL_SPECIALIZE(Add)
 
     EXPRESSION_TYPE(Add)
-    EXPRESSION_CATEGORY(Associative | Commutative)
+    EXPRESSION_CATEGORY(Associative | Commutative | BinExp)
 };
 /// @endcond
 
@@ -65,7 +66,7 @@ public:
     auto operator=(const Add& other) -> Add& = default;
 
     EXPRESSION_TYPE(Add)
-    EXPRESSION_CATEGORY(Associative | Commutative)
+    EXPRESSION_CATEGORY(Associative | Commutative | BinExp)
 };
 
 } // namespace Oasis

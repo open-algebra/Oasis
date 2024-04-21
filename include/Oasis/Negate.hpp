@@ -52,7 +52,7 @@ public:
     IMPL_SPECIALIZE_UNARYEXPR(Negate, OperandT)
 
     EXPRESSION_TYPE(Negate)
-    EXPRESSION_CATEGORY(None)
+    EXPRESSION_CATEGORY(UnExp)
 };
 
 } // Oasis

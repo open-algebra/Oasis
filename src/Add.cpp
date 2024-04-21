@@ -297,11 +297,9 @@ auto Add<Expression>::Integrate(const Expression& integrationVariable) -> std::u
             auto rightIntegral = rightRef->Integrate(integrationVariable);
 
             auto specializedRight = Add<Expression>::Specialize(*rightIntegral);
-
             if (specializedLeft == nullptr || specializedRight == nullptr) {
                 return Copy();
             }
-
             Add<Expression> add {
                 Add<Expression, Expression> {
                     *(specializedLeft->GetMostSigOp().Copy()), *(specializedRight->GetMostSigOp().Copy()) },
@@ -313,6 +311,31 @@ auto Add<Expression>::Integrate(const Expression& integrationVariable) -> std::u
         // If not, use other integration technique
         else {
             return simplifiedAdd->Integrate(integrationVariable)->Simplify();
+        }
+    }
+    return Copy();
+}
+
+auto Add<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+{
+    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
+        auto simplifiedAdd = this->Simplify();
+        if (auto adder = Add<Expression>::Specialize(*simplifiedAdd); adder != nullptr) {
+            auto leftRef = adder->GetLeastSigOp().Copy();
+            auto leftDifferentiate = leftRef->Differentiate(differentiationVariable);
+
+            auto specializedLeft = Expression::Specialize(*leftDifferentiate);
+            auto rightRef = adder->GetMostSigOp().Copy();
+
+            auto rightDifferentiate = rightRef->Differentiate(differentiationVariable);
+            auto specializedRight = Expression::Specialize(*rightDifferentiate);
+
+            if (specializedLeft == nullptr || specializedRight == nullptr) {
+                return Copy();
+            }
+            return std::make_unique<Add<Expression, Expression>>(Add<Expression, Expression> { *(specializedLeft->Copy()), *(specializedRight->Copy()) })->Simplify();
+        } else {
+            return simplifiedAdd->Differentiate(differentiationVariable)->Simplify();
         }
     }
     return Copy();
