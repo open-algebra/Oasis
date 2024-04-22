@@ -22,7 +22,7 @@ public:
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final;
 
     EXPRESSION_TYPE(Real)
-    EXPRESSION_CATEGORY(0)
+    EXPRESSION_CATEGORY(UnExp)
 
     /**
      * Gets the value of the real number.
@@ -34,6 +34,7 @@ public:
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Real>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Real>;
+    [[nodiscard]] auto Differentiate(const Expression&) -> std::unique_ptr<Expression> final;
 
     auto operator=(const Real& other) -> Real& = default;
 

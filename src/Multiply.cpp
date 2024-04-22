@@ -9,29 +9,31 @@
 
 namespace Oasis {
 
-Multiply<Expression>::Multiply(const Expression& minuend, const Expression& subtrahend)
-    : BinaryExpression(minuend, subtrahend)
-{
-}
-
 auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedMultiplicand = mostSigOp->Simplify();
     auto simplifiedMultiplier = leastSigOp->Simplify();
 
     Multiply simplifiedMultiply { *simplifiedMultiplicand, *simplifiedMultiplier };
-
+    if (auto onezerocase = Multiply<Real, Expression>::Specialize(simplifiedMultiply); onezerocase != nullptr) {
+        const Real& multiplicand = onezerocase->GetMostSigOp();
+        const Expression& multiplier = onezerocase->GetLeastSigOp();
+        if (multiplicand.GetValue() == 0) {
+            return std::make_unique<Real>(Real { 0 });
+        }
+        if (multiplicand.GetValue() == 1) {
+            return multiplier.Simplify();
+        }
+    }
     if (auto realCase = Multiply<Real>::Specialize(simplifiedMultiply); realCase != nullptr) {
         const Real& multiplicand = realCase->GetMostSigOp();
         const Real& multiplier = realCase->GetLeastSigOp();
-
         return std::make_unique<Real>(multiplicand.GetValue() * multiplier.GetValue());
     }
 
     if (auto ImgCase = Multiply<Imaginary>::Specialize(simplifiedMultiply); ImgCase != nullptr) {
         return std::make_unique<Real>(-1.0);
     }
-
     if (auto exprCase = Multiply<Expression>::Specialize(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp())) {
             return std::make_unique<Exponent<Expression, Expression>>(exprCase->GetMostSigOp(), Real { 2.0 });
@@ -336,6 +338,43 @@ auto Multiply<Expression>::Specialize(const Expression& other, tf::Subflow& subf
 
     auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Multiply>(dynamic_cast<const Multiply&>(*otherGeneralized));
+}
+
+auto Multiply<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+{
+    // Single integration variable
+    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
+        auto simplifiedMult = this->Simplify();
+
+        // Constant case - Constant number multiplied by differentiate
+        if (auto constant = Multiply<Real, Expression>::Specialize(*simplifiedMult); constant != nullptr) {
+            auto exp = constant->GetLeastSigOp().Copy();
+            auto num = constant->GetMostSigOp();
+            auto differentiate = (*exp).Differentiate(differentiationVariable);
+            if (auto add = Expression::Specialize(*differentiate); add != nullptr) {
+                return std::make_unique<Multiply<Real, Expression>>(Multiply<Real, Expression> { Real { num.GetValue() }, *(add->Simplify()) })->Simplify();
+            }
+
+        }
+        // Product rule: d/dx (f(x)*g(x)) = f'(x)*g(x) + f(x)*g'(x)
+        else if (auto product = Multiply<Expression, Expression>::Specialize(*simplifiedMult); product != nullptr) {
+            auto left = product->GetMostSigOp().Copy();
+            auto right = product->GetLeastSigOp().Copy();
+            auto ld = left->Differentiate(differentiationVariable);
+            auto rd = right->Differentiate(differentiationVariable);
+            auto add = Expression::Specialize(*ld);
+            auto add2 = Expression::Specialize(*rd);
+            if ((add != nullptr && add2 != nullptr)) {
+                return std::make_unique<Add<Multiply<Expression, Expression>,
+                    Multiply<Expression, Expression>>>(Add<Multiply<Expression, Expression>, Multiply<Expression, Expression>> { Multiply<Expression, Expression> { *add,
+                                                                                                                                     *right },
+                                                           Multiply<Expression, Expression> { *add2, *left } })
+                    ->Simplify();
+            }
+        }
+    }
+
+    return Copy();
 }
 
 } // Oasis

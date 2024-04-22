@@ -11,11 +11,6 @@
 
 namespace Oasis {
 
-Add<Expression>::Add(const Expression& addend1, const Expression& addend2)
-    : BinaryExpression(addend1, addend2)
-{
-}
-
 auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedAugend = mostSigOp ? mostSigOp->Simplify() : nullptr;
@@ -28,6 +23,12 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         const Real& secondReal = realCase->GetLeastSigOp();
 
         return std::make_unique<Real>(firstReal.GetValue() + secondReal.GetValue());
+    }
+
+    if (auto zeroCase = Add<Real, Expression>::Specialize(simplifiedAdd); zeroCase != nullptr) {
+        if (zeroCase->GetMostSigOp().GetValue() == 0) {
+            return zeroCase->GetLeastSigOp().Generalize();
+        }
     }
 
     if (auto likeTermsCase = Add<Multiply<Real, Expression>>::Specialize(simplifiedAdd); likeTermsCase != nullptr) {
@@ -192,7 +193,11 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    return BuildFromVector<Add>(vals);
+    if (auto vec = BuildFromVector<Add>(vals); vec != nullptr) {
+        return vec;
+    }
+
+    return simplifiedAdd.Copy();
 }
 
 auto Add<Expression>::ToString() const -> std::string
@@ -273,6 +278,31 @@ auto Add<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
 
     auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Add>(dynamic_cast<const Add&>(*otherGeneralized));
+}
+
+auto Add<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+{
+    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
+        auto simplifiedAdd = this->Simplify();
+        if (auto adder = Add<Expression>::Specialize(*simplifiedAdd); adder != nullptr) {
+            auto leftRef = adder->GetLeastSigOp().Copy();
+            auto leftDifferentiate = leftRef->Differentiate(differentiationVariable);
+
+            auto specializedLeft = Expression::Specialize(*leftDifferentiate);
+            auto rightRef = adder->GetMostSigOp().Copy();
+
+            auto rightDifferentiate = rightRef->Differentiate(differentiationVariable);
+            auto specializedRight = Expression::Specialize(*rightDifferentiate);
+
+            if (specializedLeft == nullptr || specializedRight == nullptr) {
+                return Copy();
+            }
+            return std::make_unique<Add<Expression, Expression>>(Add<Expression, Expression> { *(specializedLeft->Copy()), *(specializedRight->Copy()) })->Simplify();
+        } else {
+            return simplifiedAdd->Differentiate(differentiationVariable)->Simplify();
+        }
+    }
+    return Copy();
 }
 
 } // Oasis

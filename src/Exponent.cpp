@@ -30,6 +30,14 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
+    if (auto zeroCase = Exponent<Real, Expression>::Specialize(simplifiedExponent); zeroCase != nullptr) {
+        const Real& base = zeroCase->GetMostSigOp();
+
+        if (base.GetValue() == 0.0) {
+            return std::make_unique<Real>(0.0);
+        }
+    }
+
     if (auto realCase = Exponent<Real>::Specialize(simplifiedExponent); realCase != nullptr) {
         const Real& base = realCase->GetMostSigOp();
         const Real& power = realCase->GetLeastSigOp();
@@ -37,10 +45,17 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return std::make_unique<Real>(pow(base.GetValue(), power.GetValue()));
     }
 
-    if (auto oneCase = Exponent<Variable, Real>::Specialize(simplifiedExponent); oneCase != nullptr) {
+    if (auto oneCase = Exponent<Expression, Real>::Specialize(simplifiedExponent); oneCase != nullptr) {
         const Real& power = oneCase->GetLeastSigOp();
         if (power.GetValue() == 1.0) {
-            return std::make_unique<Variable>(oneCase->GetMostSigOp());
+            return oneCase->GetMostSigOp().Copy();
+        }
+    }
+
+    if (auto oneCase = Exponent<Real, Expression>::Specialize(simplifiedExponent); oneCase != nullptr) {
+        const Real& base = oneCase->GetMostSigOp();
+        if (base.GetValue() == 1.0) {
+            return std::make_unique<Real>(1.0);
         }
     }
 
@@ -147,6 +162,29 @@ auto Exponent<Expression>::Specialize(const Oasis::Expression& other) -> std::un
 
     auto otherGeneralized = other.Generalize();
     return std::make_unique<Exponent>(dynamic_cast<const Exponent&>(*otherGeneralized));
+}
+
+auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+{
+    // variable diff
+    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
+        auto simplifiedExponent = this->Simplify();
+
+        std::unique_ptr<Expression> diff;
+        // Variable with a constant power
+        if (auto realExponent = Exponent<Variable, Real>::Specialize(*simplifiedExponent); realExponent != nullptr) {
+            const Variable& expBase = realExponent->GetMostSigOp();
+            const Real& expPow = realExponent->GetLeastSigOp();
+
+            if ((*variable).GetName() == expBase.GetName()) {
+                return Multiply<Expression, Expression> { Exponent<Variable, Real> { Variable { (*variable).GetName() }, Real { expPow.GetValue() - 1 } },
+                    Real { expPow.GetValue() } }
+                    .Simplify();
+            }
+        }
+    }
+
+    return Copy();
 }
 
 auto Exponent<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Exponent>

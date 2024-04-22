@@ -28,12 +28,13 @@ public:
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto ToString() const -> std::string final;
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Subtract>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Subtract>;
 
     EXPRESSION_TYPE(Subtract)
-    EXPRESSION_CATEGORY(0)
+    EXPRESSION_CATEGORY(BinExp)
 };
 /// @endcond
 
@@ -67,7 +68,7 @@ public:
     auto operator=(const Subtract& other) -> Subtract& = default;
 
     EXPRESSION_TYPE(Subtract)
-    EXPRESSION_CATEGORY(None)
+    EXPRESSION_CATEGORY(BinExp)
 };
 
 } // Oasis

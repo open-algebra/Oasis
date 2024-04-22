@@ -15,6 +15,13 @@ option(OASIS_BUILD_WITH_COVERAGE
        "Enables building Oasis with code coverage enabled" OFF)
 option(OASIS_BUILD_GUI "Enables building the GUI application" OFF)
 
+# Adds compiler flags for code coverage. Note that only the Clang compiler is
+# currently supported for code coverage.
+if(OASIS_BUILD_WITH_COVERAGE)
+    add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
+    add_link_options(-fprofile-instr-generate)
+endif()
+
 # Fetches dependencies and integrates them into the project.
 FetchContent_Declare(
     Catch2
