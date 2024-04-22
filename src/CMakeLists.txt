@@ -13,14 +13,14 @@ set(Oasis_SOURCES
     Exponent.cpp
     Expression.cpp
     Imaginary.cpp
+    Integrate.cpp
     Log.cpp
     Multiply.cpp
     Negate.cpp
     Real.cpp
     Subtract.cpp
     Undefined.cpp
-    Variable.cpp
-    Integrate.cpp)
+    Variable.cpp)
 
 set(Oasis_HEADERS
     # cmake-format: sortable
@@ -31,13 +31,13 @@ set(Oasis_HEADERS
     ../include/Oasis/Exponent.hpp
     ../include/Oasis/Expression.hpp
     ../include/Oasis/Imaginary.hpp
+    ../include/Oasis/Integrate.hpp
     ../include/Oasis/LeafExpression.hpp
     ../include/Oasis/Log.hpp
     ../include/Oasis/Multiply.hpp
     ../include/Oasis/Negate.hpp
     ../include/Oasis/Real.hpp
     ../include/Oasis/Subtract.hpp
-    ../include/Oasis/Integrate.hpp
     ../include/Oasis/UnaryExpression.hpp
     ../include/Oasis/Undefined.hpp
     ../include/Oasis/Variable.hpp)
