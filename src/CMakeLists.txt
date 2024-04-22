@@ -17,8 +17,7 @@ set(Oasis_SOURCES
     Log.cpp
     Multiply.cpp
     Negate.cpp
-#    Parsers/SExpression/SExpression.cpp
-#    Parsers/SExpression/SExpression.hpp
+    # Parsers/SExpression/SExpression.cpp Parsers/SExpression/SExpression.hpp
     Real.cpp
     Subtract.cpp
     Undefined.cpp
