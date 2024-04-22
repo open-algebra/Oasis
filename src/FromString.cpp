@@ -81,6 +81,7 @@ void processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::E
         Oasis::Exponent<> exponent;
         setOps(exponent, left, right);
         opExp = exponent.Copy();
+        break;
     }
     default:
         throw std::runtime_error("Unknown operator encountered: " + op);
