@@ -33,9 +33,9 @@ FetchContent_Declare(
     GIT_TAG 10.0.0)
 
 FetchContent_Declare(
-        tinyxml2
-        GIT_REPOSITORY https://github.com/leethomason/tinyxml2
-        GIT_TAG 10.0.0)
+    tinyxml2
+    GIT_REPOSITORY https://github.com/leethomason/tinyxml2
+    GIT_TAG 10.0.0)
 
 FetchContent_MakeAvailable(Catch2 fmt tinyxml2)
 

@@ -12,7 +12,7 @@ set(Oasis_TESTS
     DifferentiateTests.cpp
     DivideTests.cpp
     ExponentTests.cpp
-        InFixTests.cpp
+    InFixTests.cpp
     LogTests.cpp
     MathMLTests.cpp
     MultiplyTests.cpp

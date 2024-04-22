@@ -56,6 +56,7 @@ endif()
 
 target_compile_features(Oasis PUBLIC cxx_std_20)
 target_include_directories(Oasis PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
-target_link_libraries(Oasis PUBLIC fmt::fmt Eigen3::Eigen Taskflow tinyxml2::tinyxml2)
+target_link_libraries(Oasis PUBLIC fmt::fmt Eigen3::Eigen Taskflow
+                                   tinyxml2::tinyxml2)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${Oasis_SOURCES})
