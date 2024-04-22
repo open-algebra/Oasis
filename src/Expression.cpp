@@ -286,6 +286,18 @@ auto Expression::StructurallyEquivalentAsync(const Expression& other) const -> b
     return equivalent;
 }
 
+auto Expression::ToMathML() const -> std::string
+{
+    tinyxml2::XMLDocument doc;
+    auto* root = ToMathMLElement(doc);
+    doc.InsertFirstChild(root);
+
+    tinyxml2::XMLPrinter printer;
+    doc.Print(&printer);
+
+    return printer.CStr();
+}
+
 } // namespace Oasis
 std::unique_ptr<Oasis::Expression> operator+(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
 {
