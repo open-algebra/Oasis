@@ -1,6 +1,7 @@
 #ifndef OASIS_EXPRESSION_HPP
 #define OASIS_EXPRESSION_HPP
 
+#include <memory>
 #include <string>
 #include <vector>
 
