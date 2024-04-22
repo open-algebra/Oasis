@@ -12,10 +12,12 @@ set(Oasis_SOURCES
     Divide.cpp
     Exponent.cpp
     Expression.cpp
+    FromString.cpp
     Imaginary.cpp
     Log.cpp
     Multiply.cpp
     Negate.cpp
+    # Parsers/SExpression/SExpression.cpp Parsers/SExpression/SExpression.hpp
     Real.cpp
     Subtract.cpp
     Undefined.cpp
@@ -29,6 +31,7 @@ set(Oasis_HEADERS
     ../include/Oasis/Divide.hpp
     ../include/Oasis/Exponent.hpp
     ../include/Oasis/Expression.hpp
+    ../include/Oasis/FromString.hpp
     ../include/Oasis/Imaginary.hpp
     ../include/Oasis/LeafExpression.hpp
     ../include/Oasis/Log.hpp
@@ -52,6 +55,7 @@ endif()
 
 target_compile_features(Oasis PUBLIC cxx_std_20)
 target_include_directories(Oasis PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
-target_link_libraries(Oasis PUBLIC fmt::fmt Eigen3::Eigen Taskflow)
+target_link_libraries(Oasis PUBLIC fmt::fmt Eigen3::Eigen Taskflow
+                                   tinyxml2::tinyxml2)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${Oasis_SOURCES})

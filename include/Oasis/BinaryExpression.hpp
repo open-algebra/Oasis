@@ -262,7 +262,7 @@ public:
         return simplified;
     }
 
-    [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool override
+    [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool final
     {
         if (this->GetType() != other.GetType()) {
             return false;
@@ -290,7 +290,7 @@ public:
         return true;
     }
 
-    auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool override
+    auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool final
     {
         if (this->GetType() != other.GetType()) {
             return false;
@@ -493,7 +493,16 @@ public:
 
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 
-protected:
+    [[nodiscard]] std::string ToString() const override
+    {
+        return Generalize()->ToString();
+    }
+
+    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* override
+    {
+        return Generalize()->ToMathMLElement(doc);
+    }
+
     std::unique_ptr<MostSigOpT> mostSigOp;
     std::unique_ptr<LeastSigOpT> leastSigOp;
 };
