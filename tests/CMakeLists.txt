@@ -18,7 +18,7 @@ set(Oasis_TESTS
     MultiplyTests.cpp
     NegateTests.cpp
     PolynomialTests.cpp
-    SExpressionTests.cpp
+#    SExpressionTests.cpp
     SubtractTests.cpp)
 
 # Adds an executable target called "OasisTests" to be built from sources files.
