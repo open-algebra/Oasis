@@ -28,6 +28,10 @@ enum class ExpressionType {
     Divide,
     Exponent,
     Log,
+    Limit,
+    Derivative,
+    Negate,
+    Sqrt,
 };
 
 /**
@@ -37,6 +41,8 @@ enum ExpressionCategory : uint32_t {
     None = 0,
     Associative = 1,
     Commutative = 1 << 1,
+    BinExp = 1 << 2,
+    UnExp = 1 << 3,
 };
 
 // clang-format off
@@ -82,6 +88,12 @@ public:
      * @return A copy of this expression.
      */
     virtual auto Copy(tf::Subflow& subflow) const -> std::unique_ptr<Expression> = 0;
+
+    /**
+     * Tries to differentiate this function.
+     * @return the differentiated expression.
+     */
+    [[nodiscard]] virtual auto Differentiate(const Expression&) -> std::unique_ptr<Expression>;
 
     /**
      * Compares this expression to another expression for equality.
@@ -248,6 +260,7 @@ public:
      * @return Whether the two expressions are structurally equivalent.
      */
     [[nodiscard]] auto StructurallyEquivalentAsync(const Expression& other) const -> bool;
+    [[nodiscard]] virtual auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> = 0;
 
     /**
      * Converts this expression to a string.
@@ -292,6 +305,10 @@ public:
     {                                                     \
         return category;                                  \
     }
+
+#define DECL_SPECIALIZE(type)                                                 \
+    static auto Specialize(const Expression& other) -> std::unique_ptr<type>; \
+    static auto Specialize(const Expression& other, tf::Subflow&) -> std::unique_ptr<type>;
 
 } // namespace Oasis
 

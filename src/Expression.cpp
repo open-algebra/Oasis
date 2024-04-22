@@ -217,7 +217,10 @@ auto Expression::GetCategory() const -> uint32_t
 {
     return 0;
 }
-
+auto Expression::Differentiate(const Expression&) -> std::unique_ptr<Expression>
+{
+    return Copy();
+}
 auto Expression::GetType() const -> ExpressionType
 {
     return ExpressionType::None;

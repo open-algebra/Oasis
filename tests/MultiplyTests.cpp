@@ -4,6 +4,7 @@
 
 #include "catch2/catch_test_macros.hpp"
 
+#include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Multiply.hpp"
@@ -121,4 +122,23 @@ TEST_CASE("Multiply Operator Overload", "[Multiply][Operator Overload]")
 
     REQUIRE(realSum != nullptr);
     REQUIRE(realSum->GetValue() == 2.0);
+}
+
+TEST_CASE("Variadic Multiply Constructor", "[Multiply]")
+{
+    const Oasis::Multiply<> multiply {
+        Oasis::Real { 1.0 },
+        Oasis::Real { 2.0 },
+        Oasis::Real { 3.0 },
+        Oasis::Real { 4.0 },
+        Oasis::Add<> {
+            Oasis::Real { 5.0 },
+            Oasis::Real { 6.0 },
+                Oasis::Real { 7.0 }}
+    };
+
+    const Oasis::Real expected { 432.0 };
+
+    const auto simplified = multiply.Simplify();
+    REQUIRE(expected.Equals(*simplified));
 }

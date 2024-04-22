@@ -20,7 +20,7 @@ public:
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final;
 
     EXPRESSION_TYPE(Imaginary)
-    EXPRESSION_CATEGORY(0)
+    EXPRESSION_CATEGORY(UnExp)
 
     [[nodiscard]] auto ToString() const -> std::string final;
 

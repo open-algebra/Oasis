@@ -8,13 +8,15 @@
 set(Oasis_SOURCES
     # cmake-format: sortable
     Add.cpp
+    Derivative.cpp
     Divide.cpp
     Exponent.cpp
     Expression.cpp
-        FromString.cpp
+    FromString.cpp
     Imaginary.cpp
     Log.cpp
     Multiply.cpp
+    Negate.cpp
     Parsers/SExpression/SExpression.cpp
     Parsers/SExpression/SExpression.hpp
     Real.cpp
@@ -26,16 +28,20 @@ set(Oasis_HEADERS
     # cmake-format: sortable
     ../include/Oasis/Add.hpp
     ../include/Oasis/BinaryExpression.hpp
+    ../include/Oasis/Derivative.hpp
     ../include/Oasis/Divide.hpp
     ../include/Oasis/Exponent.hpp
     ../include/Oasis/Expression.hpp
-        ../include/Oasis/FromString.hpp
+    ../include/Oasis/FromString.hpp
     ../include/Oasis/Imaginary.hpp
     ../include/Oasis/LeafExpression.hpp
     ../include/Oasis/Log.hpp
     ../include/Oasis/Multiply.hpp
+    ../include/Oasis/Negate.hpp
     ../include/Oasis/Real.hpp
     ../include/Oasis/Subtract.hpp
+    ../include/Oasis/UnaryExpression.hpp
+    ../include/Oasis/Undefined.hpp
     ../include/Oasis/Variable.hpp)
 
 # Adds a library target called "Oasis" to be built from source files.
