@@ -28,7 +28,6 @@ TEST_CASE("ToMathML Works", "[MathML]")
     </mrow>
     <mrow>
         <mi>z</mi>
-        <mo>*</mo>
         <mi>w</mi>
     </mrow>
 </mfrac>

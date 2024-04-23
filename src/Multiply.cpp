@@ -273,16 +273,28 @@ auto Multiply<Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const -> 
     std::vector<std::unique_ptr<Expression>> ops;
     Flatten(ops);
 
+    bool omitAsterisk = true;
+
     for (const auto& op : ops) {
-        mrow->InsertEndChild(op->ToMathMLElement(doc));
-        // add * mo
-        tinyxml2::XMLElement* mo = doc.NewElement("mo");
-        mo->SetText("*");
-        mrow->InsertEndChild(mo);
+        omitAsterisk = op->Is<Real>() || op->Is<Variable>() || op->Is<Exponent>();
+        if (!omitAsterisk) break;
     }
 
-    // remove last mo
-    mrow->DeleteChild(mrow->LastChild());
+    for (const auto& op : ops) {
+        mrow->InsertEndChild(op->ToMathMLElement(doc));
+
+        if (!omitAsterisk) {
+            // add * mo
+            tinyxml2::XMLElement* mo = doc.NewElement("mo");
+            mo->SetText("*");
+            mrow->InsertEndChild(mo);
+        }
+    }
+
+    if (!omitAsterisk) {
+        // remove last mo
+        mrow->DeleteChild(mrow->LastChild());
+    }
 
     return mrow;
 }
