@@ -3,6 +3,7 @@
 //
 
 #include "../include/Oasis/Derivative.hpp"
+#include "MathML/Util.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
@@ -13,6 +14,7 @@
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Undefined.hpp"
 #include "string"
+
 #include <cmath>
 
 namespace Oasis {
@@ -53,6 +55,45 @@ auto Derivative<Expression>::ToString() const -> std::string
 {
     return fmt::format("(d({})/d{})", mostSigOp->ToString(), leastSigOp->ToString());
 }
+
+tinyxml2::XMLElement* Derivative<Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
+{
+    tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
+
+    tinyxml2::XMLElement* mfrac = doc.NewElement("mfrac");
+
+    tinyxml2::XMLElement* dNode = doc.NewElement("mo");
+    dNode->SetText("d");
+
+    tinyxml2::XMLElement* dXNode = doc.NewElement("mo");
+    dXNode->SetText("d");
+
+    auto [expElement, varElement] = mml::GetOpsAsMathMLPair(*this, doc);
+
+    tinyxml2::XMLElement* denominator = doc.NewElement("mrow");
+    denominator->InsertEndChild(dNode);
+    denominator->InsertEndChild(varElement);
+
+    mfrac->InsertEndChild(dXNode);
+    mfrac->InsertEndChild(denominator);
+
+    mrow->InsertEndChild(mfrac);
+
+    // (
+    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+    leftParen->SetText("(");
+
+    // )
+    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+    rightParen->SetText(")");
+
+    mrow->InsertEndChild(leftParen);
+    mrow->InsertEndChild(expElement);
+    mrow->InsertEndChild(rightParen);
+
+    return mrow;
+}
+
 auto Derivative<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Derivative<Expression, Expression>>
 {
     if (!other.Is<Oasis::Derivative>()) {

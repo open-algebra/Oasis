@@ -29,6 +29,7 @@ public:
     // auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto ToString() const -> std::string final;
+    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* override;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Derivative>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Derivative>;
