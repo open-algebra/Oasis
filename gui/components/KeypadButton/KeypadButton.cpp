@@ -28,6 +28,10 @@ KeypadButton::KeypadButton(wxFrame* parent, const wxWindowID id, wxString text)
     Init();
 }
 
+void KeypadButton::Init() {
+    SetMinSize(wxSize(MIN_BUTTON_WIDTH, MIN_BUTTON_HEIGHT));
+}
+
 void KeypadButton::paintEvent(wxPaintEvent &evt) {
     wxPaintDC dc(this);
     render(dc);
@@ -80,11 +84,14 @@ void KeypadButton::mouseLeftWindow(wxMouseEvent &event) {
     hovered = false;
     paintNow();
 }
-void KeypadButton::Init() {
-    SetMinSize(wxSize(MIN_BUTTON_WIDTH, MIN_BUTTON_HEIGHT));
-}
 
-void KeypadButton::mouseMoved(wxMouseEvent &event) {
+void KeypadButton::mouseMoved(wxMouseEvent& event)
+{
     hovered = true;
     paintNow();
+}
+
+wxString KeypadButton::getText()
+{
+    return text;
 }

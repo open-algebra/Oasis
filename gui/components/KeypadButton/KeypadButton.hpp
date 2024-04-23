@@ -23,7 +23,9 @@ public:
     void mouseDown(wxMouseEvent &event);
     void mouseReleased(wxMouseEvent &event);
     void mouseLeftWindow(wxMouseEvent &event);
-    void mouseMoved(wxMouseEvent &event);
+    void mouseMoved(wxMouseEvent& event);
+
+    [[nodiscard]] wxString getText();
 
     DECLARE_EVENT_TABLE()
 
