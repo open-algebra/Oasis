@@ -8,26 +8,48 @@
 #include <wx/splitter.h>
 #include <wx/webview.h>
 
-#include "ArithmeticView.hpp"
+#include <fmt/core.h>
 
+#include "Oasis/FromString.hpp"
 
 #include "../components/KeypadButton/KeypadButton.hpp"
+#include "ArithmeticView.hpp"
+
+namespace {
+
+std::string convertToInfix(const std::string& input) {
+    std::string result;
+    std::string operators = "+-*/^(),";
+
+    for (char ch : input) {
+        if (std::ranges::find(operators, ch) != operators.end()) {
+            result += ' ';
+            result += ch;
+            result += ' ';
+        } else {
+            result += ch;
+        }
+    }
+    return result;
+}
+
+}
 
 ArithmeticView::ArithmeticView()
     : wxFrame(nullptr, wxID_ANY, "Arithmetic")
 {
     auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-//    auto* splitter = new wxSplitterWindow(this, wxID_ANY);
-//    splitter->SetSashGravity(0.5);
-//    splitter->SetMinimumPaneSize(20);
+    auto* webView = wxWebView::New(this, wxID_ANY);
+    webView->SetPage("<html><body><h1>Welcome to OASIS!</h1></body></html>", "");
 
-//    mainSizer->Add(splitter, wxSizerFlags(1).Expand());
+    // Add a textfield
+    auto* textField = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
 
-    auto *webView = wxWebView::New(this, wxID_ANY);
-    webView->SetPage("<html><body><h1>Hello, world!</h1></body></html>", "");
+    CreateStatusBar();
+    SetStatusText("Welcome to OASIS!");
 
-    auto *keypad = new wxGridSizer(5, 4, 4, 4);
+    auto* keypad = new wxGridSizer(5, 4, 4, 4);
 
     auto* keyClear = new KeypadButton(this, wxID_ANY, "Clear");
     auto* keyLeftParens = new KeypadButton(this, wxID_ANY, "(");
@@ -71,11 +93,8 @@ ArithmeticView::ArithmeticView()
     keypad->Add(keyDot, wxSizerFlags().Expand());
     keypad->Add(keyEnter, wxSizerFlags().Expand());
 
-//    auto* keypadPanel = new wxPanel(this, wxID_ANY);
-//    keypadPanel->SetSizerAndFit(keypad);
-
-//    splitter->SplitVertically(webView, keypadPanel);
     mainSizer->Add(webView, wxSizerFlags(1).Expand());
+    mainSizer->Add(textField, wxSizerFlags().Expand().Border(wxALL, 4));
     mainSizer->Add(keypad, wxSizerFlags(1).Expand().Border(wxALL, 4));
 
     SetSizerAndFit(mainSizer);
@@ -88,11 +107,192 @@ ArithmeticView::ArithmeticView()
 
     SetMenuBar(menuBar);
 
-    Bind(wxEVT_MENU, [=](wxCommandEvent& event) {
-        wxMessageBox("Oasis GUI");
-    }, wxID_ABOUT);
+    Bind(wxEVT_MENU, [=](wxCommandEvent& event) { wxMessageBox("Oasis GUI"); }, wxID_ABOUT);
 
-    Bind(wxEVT_MENU, [=](wxCommandEvent& event) {
-        Close(true);
-    }, wxID_EXIT);
+    Bind(wxEVT_MENU, [=](wxCommandEvent& event) { Close(true); }, wxID_EXIT);
+
+    textField->Bind(wxEVT_TEXT, [this, webView](wxCommandEvent& evt) {
+        if (const auto textCtrl = dynamic_cast<wxTextCtrl*>(evt.GetEventObject())) {
+            currentInput = textCtrl->GetValue().ToStdString();
+            const std::string infix = convertToInfix(currentInput);
+
+            if (currentInput.empty()) {
+                return;
+            }
+
+            try {
+                currentExpression = Oasis::FromInFix(infix);
+            } catch (std::exception& e) {
+                SetStatusText(e.what());
+                return;
+            }
+
+            renderPage(webView);
+            SetStatusText("Successfully parsed input.");
+        }
+    });
+
+    keyClear->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
+        currentInput.clear();
+        textField->SetValue(currentInput);
+    });
+
+    keyLeftParens->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
+        currentInput += "(";
+        textField->SetValue(currentInput);
+    });
+
+    keyRightParens->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
+        currentInput += ")";
+        textField->SetValue(currentInput);
+    });
+
+    keyDivide->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
+        currentInput += "/";
+        textField->SetValue(currentInput);
+    });
+
+    for (const auto key : { key7, key8, key9, key4, key5, key6, key1, key2, key3, key0 }) {
+        key->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
+            if (auto button = dynamic_cast<KeypadButton*>(evt.GetEventObject())) {
+                currentInput += button->getText();
+                textField->SetValue(currentInput);
+            }
+        });
+    }
+
+    keySubtract->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
+        currentInput += "-";
+        textField->SetValue(currentInput);
+    });
+
+    keyAdd->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
+        currentInput += "+";
+        textField->SetValue(currentInput);
+    });
+
+    keyNegate->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
+        currentInput = "-" + currentInput;
+        textField->SetValue(currentInput);
+    });
+
+    keyDot->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
+        currentInput += ".";
+        textField->SetValue(currentInput);
+    });
+
+    keyMultiply->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
+        currentInput += "*";
+        textField->SetValue(currentInput);
+    });
+
+    keyEnter->Bind(wxEVT_LEFT_UP, [this, textField, webView](wxMouseEvent& evt) {
+        // Perform calculation or other actions based on currentInput and then clear currentInput
+        if (!currentExpression) {
+            SetStatusText("No expression to evaluate!");
+            return;
+        }
+
+        auto& [query, response] = history.emplace_back(std::move(currentExpression), currentExpression->Simplify());
+
+        tinyxml2::XMLElement* queryDiv = doc.NewElement("div");
+        // queryDiv->SetAttribute("style", "border-bottom: 1px dotted; text-align: right;");
+        queryDiv->SetAttribute("class", "query");
+
+        tinyxml2::XMLElement* queryMathML = query->ToMathMLElement(doc);
+
+        tinyxml2::XMLElement* queryMath = doc.NewElement("math");
+        queryMath->InsertFirstChild(queryMathML);
+
+        queryDiv->InsertEndChild(queryMath);
+        body->InsertEndChild(queryDiv);
+
+        tinyxml2::XMLElement* responseDiv = doc.NewElement("div");
+        // responseDiv->SetAttribute("style", "border-bottom: 1px dotted;");
+        responseDiv->SetAttribute("class", "response");
+
+        if (response == nullptr) {
+            tinyxml2::XMLText* errorText = doc.NewText("Error");
+            responseDiv->InsertEndChild(errorText);
+        } else {
+            tinyxml2::XMLElement* responseMathML = response->ToMathMLElement(doc);
+            tinyxml2::XMLElement* responseMath = doc.NewElement("math");
+            responseMath->InsertFirstChild(responseMathML);
+            responseDiv->InsertEndChild(responseMath);
+        }
+
+        body->InsertEndChild(responseDiv);
+
+        renderPage(webView);
+
+        // (Assuming currentInput holds a valid mathematical expression)
+        currentInput.clear();
+        textField->SetValue(currentInput);
+    });
+
+    // Create root element.
+    tinyxml2::XMLElement* root = doc.NewElement("html");
+    doc.InsertFirstChild(root);
+
+    // Add head element.
+    tinyxml2::XMLElement* head = doc.NewElement("head");
+
+
+// Create stylesheet element
+tinyxml2::XMLElement* style = doc.NewElement("style");
+tinyxml2::XMLText* cssText = doc.NewText(R"css(
+    div { padding: 0.5rem 0; }
+    .query { border-bottom: 1px dotted; text-align: right; }
+    .response { border-bottom: 1px dotted; }
+    #current { text-align: right; }
+)css");
+
+// Add CSS text to the style element
+style->InsertEndChild(cssText);
+
+// Add style element to the head element
+head->InsertEndChild(style);
+
+    root->InsertEndChild(head);
+
+    // Add body element.
+    body = doc.NewElement("body");
+    root->InsertEndChild(body);
+}
+
+void ArithmeticView::renderPage(wxWebView* webView)
+{
+        // Searching for the div with id "current"
+        tinyxml2::XMLElement* currentDiv = body->FirstChildElement("div");
+        while (currentDiv && (currentDiv->Attribute("id") == nullptr || std::string(currentDiv->Attribute("id")) != "current")) {
+            currentDiv = currentDiv->NextSiblingElement("div");
+        }
+
+        if (currentDiv) {
+            // If div with id "current" is found, delete it
+            body->DeleteChild(currentDiv);
+        }
+
+    // Current expression to MathML.
+    if (currentExpression) {
+        // Creating new div and expressionElement
+        tinyxml2::XMLElement* mathElement = doc.NewElement("math");
+        tinyxml2::XMLElement* expressionElement = currentExpression->ToMathMLElement(doc);
+
+        mathElement->InsertEndChild(expressionElement);
+        tinyxml2::XMLElement* div = doc.NewElement("div");
+        div->SetAttribute("id", "current");
+
+        div->InsertEndChild(mathElement);
+
+        // Adding new div with id "current" to the body
+        body->InsertEndChild(div);
+    }
+
+    // Print the XML document to a string.
+    tinyxml2::XMLPrinter printer;
+    doc.Print(&printer);
+
+    const std::string html_document = printer.CStr();
+    webView->SetPage(html_document, "");
 }

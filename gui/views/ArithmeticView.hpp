@@ -9,12 +9,22 @@
 
 #include "Oasis/Expression.hpp"
 
+class wxWebView;
+
 class ArithmeticView final : public wxFrame {
 public:
     ArithmeticView();
 
 private:
-    std::vector<std::unique_ptr<Oasis::Expression>> history;
+    std::string currentInput;
+    std::unique_ptr<Oasis::Expression> currentExpression;
+
+    std::vector<std::pair<std::unique_ptr<Oasis::Expression>, std::unique_ptr<Oasis::Expression>>> history;
+
+    tinyxml2::XMLDocument doc;
+    tinyxml2::XMLElement* body;
+
+    void renderPage(wxWebView* webView);
 };
 
 
