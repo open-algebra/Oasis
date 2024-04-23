@@ -15,6 +15,8 @@ set(Oasis_SOURCES
     FromString.cpp
     Imaginary.cpp
     Log.cpp
+    MathML/Util.cpp
+    MathML/Util.hpp
     Multiply.cpp
     Negate.cpp
     # Parsers/SExpression/SExpression.cpp Parsers/SExpression/SExpression.hpp
