@@ -261,6 +261,10 @@ auto FromInFix(const std::string& str) -> std::unique_ptr<Expression>
 
     // Process remaining ops
     while (!ops.empty()) {
+        if (ops.top() == "(") {
+            throw std::runtime_error("Mismatched parenthesis");
+        }
+
         processOp(ops, st);
     }
 
