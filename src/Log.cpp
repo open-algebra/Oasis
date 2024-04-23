@@ -4,6 +4,8 @@
 //
 
 #include "Oasis/Log.hpp"
+
+#include "MathML/Util.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Expression.hpp"
 #include "Oasis/Multiply.hpp"
@@ -84,10 +86,10 @@ tinyxml2::XMLElement* Log<Expression, Expression>::ToMathMLElement(tinyxml2::XML
     tinyxml2::XMLElement* const log = doc.NewElement("mi");
     log->SetText("log");
 
-    tinyxml2::XMLElement* const base = leastSigOp->ToMathMLElement(doc);
+    auto [baseElement, argElement] = mml::GetOpsAsMathMLPair(*this, doc);
 
     sub->InsertFirstChild(log);
-    sub->InsertEndChild(base);
+    sub->InsertEndChild(baseElement);
     mrow->InsertFirstChild(sub);
 
     // (
@@ -99,7 +101,7 @@ tinyxml2::XMLElement* Log<Expression, Expression>::ToMathMLElement(tinyxml2::XML
     rightParen->SetText(")");
 
     mrow->InsertEndChild(leftParen);
-    mrow->InsertEndChild(leastSigOp->ToMathMLElement(doc));
+    mrow->InsertEndChild(argElement);
     mrow->InsertEndChild(rightParen);
 
     return mrow;
