@@ -3,6 +3,8 @@
 //
 
 #include "Oasis/Subtract.hpp"
+
+#include "MathML/Util.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
@@ -83,7 +85,10 @@ tinyxml2::XMLElement* Subtract<Expression>::ToMathMLElement(tinyxml2::XMLDocumen
 {
     // mrow
     tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
-    mrow->InsertFirstChild(mostSigOp->ToMathMLElement(doc));
+
+    auto [minuendElement, subtrahendElement] = mml::GetOpsAsMathMLPair(*this, doc);
+
+    mrow->InsertFirstChild(minuendElement);
 
     // mo
     tinyxml2::XMLElement* const mo = doc.NewElement("mo");
@@ -95,7 +100,7 @@ tinyxml2::XMLElement* Subtract<Expression>::ToMathMLElement(tinyxml2::XMLDocumen
     leftParen->SetText("(");
     mrow->InsertEndChild(leftParen);
 
-    mrow->InsertEndChild(leastSigOp->ToMathMLElement(doc));
+    mrow->InsertEndChild(subtrahendElement);
 
     // )
     tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
