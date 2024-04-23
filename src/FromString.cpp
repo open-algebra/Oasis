@@ -42,15 +42,16 @@ void setOps(T& exp, const std::unique_ptr<Oasis::Expression>& op1, const std::un
 
 void processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::Expression>>& st)
 {
-    const auto right = std::move(st.top());
-    st.pop();
-    const auto left = std::move(st.top());
+    if (st.size() < 2) {
+        throw std::runtime_error("Invalid number of arguments");
+    }
+
+    const std::unique_ptr<Oasis::Expression> right = std::move(st.top());
     st.pop();
 
-    // if (ops.top() == "log") {
-    //     st.pop();
-    //     st.push(std::make_unique<Oasis::Log<>>(*left, *right));
-    // } else {
+    const std::unique_ptr<Oasis::Expression> left = std::move(st.top());
+    st.pop();
+
     const auto op = ops.top();
     assert(op.size() == 1);
 
@@ -94,6 +95,10 @@ void processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::E
 
 void processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const std::string& function_token)
 {
+    if (st.size() < 2) {
+        throw std::runtime_error("Invalid number of arguments");
+    }
+
     // If we have a function active, the second operand has just been pushed onto the stack
     auto second_operand = std::move(st.top());
     st.pop();
@@ -182,6 +187,10 @@ std::unique_ptr<Oasis::Expression> multiplyFromVariables(const std::vector<std::
         return std::make_unique<Oasis::Variable>(token);
     });
 
+    if (multiplicands.size() == 1) {
+        return std::move(multiplicands.front());
+    }
+
     return Oasis::BuildFromVector<Oasis::Multiply>(multiplicands);
 }
 
@@ -221,6 +230,11 @@ auto FromInFix(const std::string& str) -> std::unique_ptr<Expression>
             while (!ops.empty() && ops.top() != "(") {
                 processOp(ops, st);
             }
+
+            if (ops.empty() || ops.top() != "(") {
+                throw std::runtime_error("Mismatched parenthesis");
+            }
+
             ops.pop(); // pop '('
             if (!ops.empty() && is_function(ops.top())) {
                 std::string func = ops.top();

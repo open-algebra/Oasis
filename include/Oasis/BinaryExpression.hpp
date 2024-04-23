@@ -342,20 +342,24 @@ public:
      */
     auto Flatten(std::vector<std::unique_ptr<Expression>>& out) const -> void
     {
-        if (this->mostSigOp->template Is<DerivedT>()) {
-            auto generalizedMostSigOp = this->mostSigOp->Generalize();
-            const auto& mostSigOp = static_cast<const DerivedGeneralized&>(*generalizedMostSigOp);
-            mostSigOp.Flatten(out);
-        } else {
-            out.push_back(this->mostSigOp->Copy());
+        if (mostSigOp) {
+            if (this->mostSigOp->template Is<DerivedT>()) {
+                auto generalizedMostSigOp = this->mostSigOp->Generalize();
+                const auto& mostSigOp = static_cast<const DerivedGeneralized&>(*generalizedMostSigOp);
+                mostSigOp.Flatten(out);
+            } else {
+                out.push_back(this->mostSigOp->Copy());
+            }
         }
 
-        if (this->leastSigOp->template Is<DerivedT>()) {
-            auto generalizedLeastSigOp = this->leastSigOp->Generalize();
-            const auto& leastSigOp = static_cast<const DerivedGeneralized&>(*generalizedLeastSigOp);
-            leastSigOp.Flatten(out);
-        } else {
-            out.push_back(this->leastSigOp->Copy());
+        if (leastSigOp) {
+            if (this->leastSigOp->template Is<DerivedT>()) {
+                auto generalizedLeastSigOp = this->leastSigOp->Generalize();
+                const auto& leastSigOp = static_cast<const DerivedGeneralized&>(*generalizedLeastSigOp);
+                leastSigOp.Flatten(out);
+            } else {
+                out.push_back(this->leastSigOp->Copy());
+            }
         }
     }
 

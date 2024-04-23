@@ -6,6 +6,9 @@
 #define FROMSTRING_HPP
 
 namespace Oasis {
+
+class Expression;
+
 auto FromInFix(const std::string& str) -> std::unique_ptr<Expression>;
 
 }
