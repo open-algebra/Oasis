@@ -10,6 +10,7 @@
 #include "Oasis/Expression.hpp"
 
 class wxWebView;
+class wxTextCtrl;
 
 class ArithmeticView final : public wxFrame {
 public:
@@ -25,6 +26,7 @@ private:
     tinyxml2::XMLElement* body;
 
     void renderPage(wxWebView* webView);
+    void onEnter(wxWebView* webView, wxTextCtrl* textCtrl);
 };
 
 
