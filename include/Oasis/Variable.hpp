@@ -41,6 +41,7 @@ public:
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto IntegrateExp(const Expression& integrationVariable) -> std::unique_ptr<Expression> final;
+    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* final;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Variable>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Variable>;

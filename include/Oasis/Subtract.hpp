@@ -31,6 +31,7 @@ public:
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto IntegrateExp(const Expression& integrationVariable) -> std::unique_ptr<Expression> final;
+    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* final;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Subtract>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Subtract>;
@@ -58,11 +59,6 @@ public:
     Subtract(const MinuendT& addend1, const SubtrahendT& addend2)
         : BinaryExpression<Subtract, MinuendT, SubtrahendT>(addend1, addend2)
     {
-    }
-
-    [[nodiscard]] auto ToString() const -> std::string final
-    {
-        return fmt::format("({} - {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
     }
 
     IMPL_SPECIALIZE(Subtract, MinuendT, SubtrahendT)

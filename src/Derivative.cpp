@@ -68,7 +68,6 @@ auto Derivative<Expression>::Specialize(const Expression& other, tf::Subflow& su
     if (!other.Is<Oasis::Derivative>()) {
         return nullptr;
     }
-
     auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Derivative>(dynamic_cast<const Derivative&>(*otherGeneralized));
 }

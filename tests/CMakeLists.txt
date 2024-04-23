@@ -13,10 +13,13 @@ set(Oasis_TESTS
     DivideTests.cpp
     ExponentTests.cpp
     IntegrateTests.cpp
+    InFixTests.cpp
     LogTests.cpp
+    MathMLTests.cpp
     MultiplyTests.cpp
     NegateTests.cpp
     PolynomialTests.cpp
+    # SExpressionTests.cpp
     SubtractTests.cpp)
 
 # Adds an executable target called "OasisTests" to be built from sources files.

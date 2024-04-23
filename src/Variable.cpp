@@ -32,6 +32,13 @@ auto Variable::ToString() const -> std::string
     return name;
 }
 
+auto Variable::ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement*
+{
+    tinyxml2::XMLElement* const mi = doc.NewElement("mi");
+    mi->SetText(name.c_str());
+    return mi;
+}
+
 auto Variable::Specialize(const Expression& other) -> std::unique_ptr<Variable>
 {
     return other.Is<Variable>() ? std::make_unique<Variable>(dynamic_cast<const Variable&>(other)) : nullptr;
