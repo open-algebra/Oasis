@@ -6,6 +6,8 @@
 
 #include "Oasis/Real.hpp"
 
+#include <fmt/format.h>
+
 namespace Oasis {
 
 Real::Real(double value)
@@ -30,7 +32,7 @@ auto Real::GetValue() const -> double
 
 auto Real::ToString() const -> std::string
 {
-    return std::to_string(value);
+    return fmt::format("{:.5}", value);
 }
 
 auto Real::ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement*
