@@ -28,12 +28,15 @@ public:
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto ToString() const -> std::string final;
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
+
+    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* final;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Divide>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Divide>;
 
     EXPRESSION_TYPE(Divide)
-    EXPRESSION_CATEGORY(Associative | Commutative)
+    EXPRESSION_CATEGORY(BinExp)
 };
 /// @endcond
 
@@ -57,17 +60,12 @@ public:
     {
     }
 
-    [[nodiscard]] auto ToString() const -> std::string final
-    {
-        return fmt::format("({} + {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
-    }
-
     IMPL_SPECIALIZE(Divide, DividendT, DivisorT)
 
     auto operator=(const Divide& other) -> Divide& = default;
 
     EXPRESSION_TYPE(Divide)
-    EXPRESSION_CATEGORY(None)
+    EXPRESSION_CATEGORY(BinExp)
 };
 
 } // Oasis

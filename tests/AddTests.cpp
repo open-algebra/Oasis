@@ -10,6 +10,8 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/Variable.hpp"
 
+#include <functional>
+
 TEST_CASE("Addition", "[Add]")
 {
     Oasis::Add add {
@@ -261,4 +263,22 @@ TEST_CASE("Add Operator Overload", "[Add][Operator Overload]")
     REQUIRE(realSum != nullptr);
     REQUIRE(realSum->GetValue() == 3.0);
 
+}
+
+TEST_CASE("Variadic Add Constructor", "[Add]")
+{
+    const Oasis::Add<> add {
+        Oasis::Real { 1.0 },
+        Oasis::Real { 2.0 },
+        Oasis::Real { 3.0 },
+        Oasis::Real { 4.0 },
+        Oasis::Multiply {
+            Oasis::Real { 5.0 },
+            Oasis::Real { 6.0 } }
+    };
+
+    const Oasis::Real expected { 40.0 };
+
+    const auto simplified = add.Simplify();
+    REQUIRE(expected.Equals(*simplified));
 }

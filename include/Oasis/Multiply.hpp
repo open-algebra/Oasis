@@ -19,21 +19,21 @@ class Multiply;
 template <>
 class Multiply<Expression, Expression> : public BinaryExpression<Multiply> {
 public:
-    Multiply() = default;
-    Multiply(const Multiply<Expression, Expression>& other) = default;
-
-    Multiply(const Expression& multiplicand, const Expression& multiplier);
+    using BinaryExpression::BinaryExpression;
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto ToString() const -> std::string final;
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
+
+    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* override;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Multiply>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Multiply>;
 
     EXPRESSION_TYPE(Multiply)
-    EXPRESSION_CATEGORY(Associative | Commutative)
+    EXPRESSION_CATEGORY(Associative | Commutative | BinExp)
 };
 /// @endcond
 
@@ -57,17 +57,12 @@ public:
     {
     }
 
-    [[nodiscard]] auto ToString() const -> std::string final
-    {
-        return fmt::format("({} + {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
-    }
-
     IMPL_SPECIALIZE(Multiply, MultiplicandT, MultiplierT)
 
     auto operator=(const Multiply& other) -> Multiply& = default;
 
     EXPRESSION_TYPE(Multiply)
-    EXPRESSION_CATEGORY(Associative | Commutative)
+    EXPRESSION_CATEGORY(Associative | Commutative | BinExp)
 };
 
 } // Oasis

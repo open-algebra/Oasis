@@ -11,11 +11,6 @@
 
 namespace Oasis {
 
-Add<Expression>::Add(const Expression& addend1, const Expression& addend2)
-    : BinaryExpression(addend1, addend2)
-{
-}
-
 auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedAugend = mostSigOp ? mostSigOp->Simplify() : nullptr;
@@ -198,12 +193,38 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    return BuildFromVector<Add>(vals);
+    if (auto vec = BuildFromVector<Add>(vals); vec != nullptr) {
+        return vec;
+    }
+
+    return simplifiedAdd.Copy();
 }
 
 auto Add<Expression>::ToString() const -> std::string
 {
     return fmt::format("({} + {})", mostSigOp->ToString(), leastSigOp->ToString());
+}
+
+auto Add<Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement*
+{
+    // create mrow element
+    tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
+
+    std::vector<std::unique_ptr<Expression>> ops;
+    Flatten(ops);
+
+    for (const auto& op : ops) {
+        mrow->InsertEndChild(op->ToMathMLElement(doc));
+        // add + mo
+        tinyxml2::XMLElement* mo = doc.NewElement("mo");
+        mo->SetText("+");
+        mrow->InsertEndChild(mo);
+    }
+
+    // remove last mo
+    mrow->DeleteChild(mrow->LastChild());
+
+    return mrow;
 }
 
 auto Add<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
@@ -279,6 +300,31 @@ auto Add<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
 
     auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Add>(dynamic_cast<const Add&>(*otherGeneralized));
+}
+
+auto Add<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+{
+    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
+        auto simplifiedAdd = this->Simplify();
+        if (auto adder = Add<Expression>::Specialize(*simplifiedAdd); adder != nullptr) {
+            auto leftRef = adder->GetLeastSigOp().Copy();
+            auto leftDifferentiate = leftRef->Differentiate(differentiationVariable);
+
+            auto specializedLeft = Expression::Specialize(*leftDifferentiate);
+            auto rightRef = adder->GetMostSigOp().Copy();
+
+            auto rightDifferentiate = rightRef->Differentiate(differentiationVariable);
+            auto specializedRight = Expression::Specialize(*rightDifferentiate);
+
+            if (specializedLeft == nullptr || specializedRight == nullptr) {
+                return Copy();
+            }
+            return std::make_unique<Add<Expression, Expression>>(Add<Expression, Expression> { *(specializedLeft->Copy()), *(specializedRight->Copy()) })->Simplify();
+        } else {
+            return simplifiedAdd->Differentiate(differentiationVariable)->Simplify();
+        }
+    }
+    return Copy();
 }
 
 } // Oasis

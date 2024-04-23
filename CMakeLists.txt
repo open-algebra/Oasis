@@ -14,6 +14,13 @@ option(OASIS_BUILD_TESTS "Enables building unit tests for Oasis" ON)
 option(OASIS_BUILD_WITH_COVERAGE
        "Enables building Oasis with code coverage enabled" OFF)
 
+# Adds compiler flags for code coverage. Note that only the Clang compiler is
+# currently supported for code coverage.
+if(OASIS_BUILD_WITH_COVERAGE)
+    add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
+    add_link_options(-fprofile-instr-generate)
+endif()
+
 # Fetches dependencies and integrates them into the project.
 FetchContent_Declare(
     Catch2
@@ -25,7 +32,12 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/fmtlib/fmt.git
     GIT_TAG 10.0.0)
 
-FetchContent_MakeAvailable(Catch2 fmt)
+FetchContent_Declare(
+    tinyxml2
+    GIT_REPOSITORY https://github.com/leethomason/tinyxml2
+    GIT_TAG 10.0.0)
+
+FetchContent_MakeAvailable(Catch2 fmt tinyxml2)
 
 # Processes the CMakeLists.txt for dependencies that need special handling.
 add_subdirectory(cmake/FetchEigen)
