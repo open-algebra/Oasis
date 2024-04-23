@@ -5,6 +5,7 @@
 #include "Oasis/Exponent.hpp"
 
 #include "MathML/Util.hpp"
+#include "Oasis/Derivative.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
@@ -103,15 +104,33 @@ auto Exponent<Expression>::ToString() const -> std::string
     return fmt::format("({}^{})", mostSigOp->ToString(), leastSigOp->ToString());
 }
 
-tinyxml2::XMLElement* Exponent<Expression, Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
+tinyxml2::XMLElement* Exponent<Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
 {
     tinyxml2::XMLElement* element = doc.NewElement("msup");
 
     auto [baseElement, powerElement] = mml::GetOpsAsMathMLPair(*this, doc);
 
-    element->InsertEndChild(baseElement);
-    element->InsertEndChild(powerElement);
+    if (mostSigOp && !mostSigOp->Is<Real>() && !mostSigOp->Is<Variable>()) {
+        // (
+        tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+        leftParen->SetText("(");
 
+        // )
+        tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+        rightParen->SetText(")");
+
+        tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
+
+        mrow->InsertEndChild(leftParen);
+        mrow->InsertEndChild(baseElement);
+        mrow->InsertEndChild(rightParen);
+
+        element->InsertEndChild(mrow);
+    } else {
+        element->InsertEndChild(baseElement);
+    }
+
+    element->InsertEndChild(powerElement);
     return element;
 }
 
@@ -198,7 +217,7 @@ auto Exponent<Expression>::Differentiate(const Expression& differentiationVariab
         }
     }
 
-    return Copy();
+    return Derivative { *this, differentiationVariable }.Copy();
 }
 
 auto Exponent<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Exponent>
