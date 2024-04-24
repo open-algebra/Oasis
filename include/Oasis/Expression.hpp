@@ -33,6 +33,7 @@ enum class ExpressionType {
     Sinh,
     Cosh,
     Tanh,
+    GreaterThan,
 };
 
 /**
