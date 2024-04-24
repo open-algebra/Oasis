@@ -34,6 +34,7 @@ enum class ExpressionType {
     Cosh,
     Tanh,
     GreaterThan,
+    LessThan,
 };
 
 /**
