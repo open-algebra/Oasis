@@ -30,6 +30,8 @@ enum class ExpressionType {
     Sin,
     Arcsin,
     Tan,
+    Sinh,
+    Cosh,
 };
 
 /**
