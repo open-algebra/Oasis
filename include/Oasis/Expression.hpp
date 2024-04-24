@@ -32,6 +32,7 @@ enum class ExpressionType {
     Tan,
     Sinh,
     Cosh,
+    Tanh,
 };
 
 /**
