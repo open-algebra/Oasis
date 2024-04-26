@@ -3,6 +3,7 @@
 //
 
 #include "Oasis/Subtract.hpp"
+#include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
@@ -81,6 +82,32 @@ auto Subtract<Expression>::ToString() const -> std::string
     return fmt::format("({} - {})", mostSigOp->ToString(), leastSigOp->ToString());
 }
 
+tinyxml2::XMLElement* Subtract<Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
+{
+    // mrow
+    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+    mrow->InsertFirstChild(mostSigOp->ToMathMLElement(doc));
+
+    // mo
+    tinyxml2::XMLElement* const mo = doc.NewElement("mo");
+    mo->SetText("-");
+    mrow->InsertEndChild(mo);
+
+    // (
+    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+    leftParen->SetText("(");
+    mrow->InsertEndChild(leftParen);
+
+    mrow->InsertEndChild(leastSigOp->ToMathMLElement(doc));
+
+    // )
+    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+    rightParen->SetText(")");
+    mrow->InsertEndChild(rightParen);
+
+    return mrow;
+}
+
 auto Subtract<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
 {
     std::unique_ptr<Expression> simplifiedMinuend, simplifiedSubtrahend;
@@ -154,6 +181,37 @@ auto Subtract<Expression>::Specialize(const Expression& other, tf::Subflow& subf
 
     auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Subtract>(dynamic_cast<const Subtract&>(*otherGeneralized));
+}
+auto Subtract<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+{
+    // Single diff variable
+    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
+        auto simplifiedSub = this->Simplify();
+
+        // Make sure we're still subtracting
+        if (auto adder = Subtract<Expression>::Specialize(*simplifiedSub); adder != nullptr) {
+            auto rightRef = adder->GetLeastSigOp().Copy();
+            auto rightDiff = rightRef->Differentiate(differentiationVariable);
+
+            auto specializedRight = Expression::Specialize(*rightDiff);
+
+            auto leftRef = adder->GetMostSigOp().Copy();
+            auto leftDiff = leftRef->Differentiate(differentiationVariable);
+
+            auto specializedLeft = Expression::Specialize(*leftDiff);
+
+            if (specializedLeft == nullptr || specializedRight == nullptr) {
+                return Copy();
+            }
+
+            return std::make_unique<Subtract<Expression, Expression>>(Subtract<Expression, Expression> { *(specializedLeft->Copy()), *(specializedRight->Copy()) })->Simplify();
+        }
+        // If not, use other differentiation technique
+        else {
+            return simplifiedSub->Differentiate(differentiationVariable);
+        }
+    }
+    return Copy();
 }
 
 } // Oasis

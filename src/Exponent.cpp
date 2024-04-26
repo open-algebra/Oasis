@@ -101,6 +101,19 @@ auto Exponent<Expression>::ToString() const -> std::string
     return fmt::format("({}^{})", mostSigOp->ToString(), leastSigOp->ToString());
 }
 
+tinyxml2::XMLElement* Exponent<Expression, Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
+{
+    tinyxml2::XMLElement* element = doc.NewElement("msup");
+
+    tinyxml2::XMLElement* baseElement = mostSigOp->ToMathMLElement(doc);
+    tinyxml2::XMLElement* powerElement = leastSigOp->ToMathMLElement(doc);
+
+    element->InsertEndChild(baseElement);
+    element->InsertEndChild(powerElement);
+
+    return element;
+}
+
 auto Exponent<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
 {
     std::unique_ptr<Expression> simplifiedBase, simplifiedPower;
@@ -162,6 +175,29 @@ auto Exponent<Expression>::Specialize(const Oasis::Expression& other) -> std::un
 
     auto otherGeneralized = other.Generalize();
     return std::make_unique<Exponent>(dynamic_cast<const Exponent&>(*otherGeneralized));
+}
+
+auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+{
+    // variable diff
+    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
+        auto simplifiedExponent = this->Simplify();
+
+        std::unique_ptr<Expression> diff;
+        // Variable with a constant power
+        if (auto realExponent = Exponent<Variable, Real>::Specialize(*simplifiedExponent); realExponent != nullptr) {
+            const Variable& expBase = realExponent->GetMostSigOp();
+            const Real& expPow = realExponent->GetLeastSigOp();
+
+            if ((*variable).GetName() == expBase.GetName()) {
+                return Multiply<Expression, Expression> { Exponent<Variable, Real> { Variable { (*variable).GetName() }, Real { expPow.GetValue() - 1 } },
+                    Real { expPow.GetValue() } }
+                    .Simplify();
+            }
+        }
+    }
+
+    return Copy();
 }
 
 auto Exponent<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Exponent>

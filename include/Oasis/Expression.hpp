@@ -1,10 +1,11 @@
 #ifndef OASIS_EXPRESSION_HPP
 #define OASIS_EXPRESSION_HPP
 
-#include <concepts>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "tinyxml2.h"
 
 namespace tf {
 class Subflow;
@@ -28,6 +29,8 @@ enum class ExpressionType {
     Divide,
     Exponent,
     Log,
+    Limit,
+    Derivative,
     Negate,
     Sqrt,
 };
@@ -39,6 +42,8 @@ enum ExpressionCategory : uint32_t {
     None = 0,
     Associative = 1,
     Commutative = 1 << 1,
+    BinExp = 1 << 2,
+    UnExp = 1 << 3,
 };
 
 // clang-format off
@@ -84,6 +89,12 @@ public:
      * @return A copy of this expression.
      */
     virtual auto Copy(tf::Subflow& subflow) const -> std::unique_ptr<Expression> = 0;
+
+    /**
+     * Tries to differentiate this function.
+     * @return the differentiated expression.
+     */
+    [[nodiscard]] virtual auto Differentiate(const Expression&) -> std::unique_ptr<Expression>;
 
     /**
      * Compares this expression to another expression for equality.
@@ -250,12 +261,26 @@ public:
      * @return Whether the two expressions are structurally equivalent.
      */
     [[nodiscard]] auto StructurallyEquivalentAsync(const Expression& other) const -> bool;
+    [[nodiscard]] virtual auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> = 0;
 
     /**
      * Converts this expression to a string.
      * @return The string representation of this expression.
      */
     [[nodiscard]] virtual std::string ToString() const = 0;
+
+    /**
+     * Converts this expression to a MathML string.
+     * @return The MathML representation of this expression.
+     */
+    auto ToMathML() const -> std::string;
+
+    /**
+     *
+     * @param doc The XML document.
+     * @return The XML element.
+     */
+    virtual auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* = 0;
 
     virtual ~Expression() = default;
 };

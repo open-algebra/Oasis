@@ -9,13 +9,17 @@ set(Oasis_TESTS
     # cmake-format: sortable
     AddTests.cpp
     BinaryExpressionTests.cpp
+    DifferentiateTests.cpp
     DivideTests.cpp
     ExponentTests.cpp
+    InFixTests.cpp
     LinearTests.cpp
     LogTests.cpp
+    MathMLTests.cpp
     MultiplyTests.cpp
     NegateTests.cpp
     PolynomialTests.cpp
+    # SExpressionTests.cpp
     SubtractTests.cpp)
 
 # Adds an executable target called "OasisTests" to be built from sources files.

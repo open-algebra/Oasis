@@ -217,7 +217,10 @@ auto Expression::GetCategory() const -> uint32_t
 {
     return 0;
 }
-
+auto Expression::Differentiate(const Expression&) -> std::unique_ptr<Expression>
+{
+    return Copy();
+}
 auto Expression::GetType() const -> ExpressionType
 {
     return ExpressionType::None;
@@ -281,6 +284,18 @@ auto Expression::StructurallyEquivalentAsync(const Expression& other) const -> b
 
     executor.run(taskflow).wait();
     return equivalent;
+}
+
+auto Expression::ToMathML() const -> std::string
+{
+    tinyxml2::XMLDocument doc;
+    auto* root = ToMathMLElement(doc);
+    doc.InsertFirstChild(root);
+
+    tinyxml2::XMLPrinter printer;
+    doc.Print(&printer);
+
+    return printer.CStr();
 }
 
 } // namespace Oasis
