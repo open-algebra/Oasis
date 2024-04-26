@@ -158,3 +158,4 @@ docs/latex/
 
 # CMake Files
 CMakeSettings.json
+/.idea/vcs.xml

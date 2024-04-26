@@ -28,7 +28,7 @@ auto SolveLinearSystems(std::vector<std::unique_ptr<Expression>>& exprs) -> std:
         auto key = kv.first;
         auto index = kv.second;
 
-        values.insert(std::make_pair(key, x[index]));
+        values.insert(std::make_pair(key, x[Eigen::Index(index)]));
     }
 
     return values;
@@ -50,18 +50,18 @@ auto ConstructMatrices(const std::vector<std::unique_ptr<Expression>>& exprs)
         expr->Flatten(terms);
         for (auto& term : terms) {
             if (auto r = Real::Specialize(*term); r != nullptr) { // real number
-                b[row] = -1 * r->GetValue();
+                b[Eigen::Index(row)] = -1 * r->GetValue();
             } else if (auto v = Variable::Specialize(*term); v != nullptr) { // variable by itself (coefficient of 1)
                 std::pair<size_t, bool> keyloc = GetMapValue<std::string, size_t>(vars, v->GetName(), varCount);
                 if (keyloc.second)
                     varCount++;
-                A(row, keyloc.first) = 1;
+                A(Eigen::Index(row), Eigen::Index(keyloc.first)) = 1;
             } else if (auto exprV = Multiply<Real, Variable>::Specialize(*term); exprV != nullptr) {
                 // any expression times a variable
                 std::pair<size_t, bool> keyloc = GetMapValue<std::string, size_t>(vars, exprV->GetLeastSigOp().GetName(), varCount);
                 if (keyloc.second)
                     varCount++;
-                A(row, keyloc.first) = exprV->GetMostSigOp().GetValue();
+                A(Eigen::Index(row), Eigen::Index(keyloc.first)) = exprV->GetMostSigOp().GetValue();
             }
         }
     }
@@ -81,11 +81,11 @@ auto ConstructMatrices(const std::vector<std::unique_ptr<Expression>>& exprs)
 
         for (size_t row = 0; row < rows; row++) {
             for (size_t col = 0; col < cols; col++) {
-                A(row, col) = matrix(row, col);
+                A(Eigen::Index(row), Eigen::Index(col)) = matrix(Eigen::Index(row), Eigen::Index(col));
             }
         }
         for (size_t row = 0; row < rows; row++) {
-            b(row) = matrix(row, cols);
+            b(Eigen::Index(row)) = matrix(Eigen::Index(row), Eigen::Index(cols));
         }
 
         auto x = SolveLinearSystems(A, b);
