@@ -146,7 +146,10 @@ public:
 
         return std::make_unique<DerivedSpecialized>(copy);
     }
-
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> override
+    {
+        return Generalize()->Differentiate(differentiationVariable);
+    }
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final
     {
         if (this->GetType() != other.GetType()) {
@@ -259,7 +262,7 @@ public:
         return simplified;
     }
 
-    [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool override
+    [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool final
     {
         if (this->GetType() != other.GetType()) {
             return false;
@@ -287,7 +290,7 @@ public:
         return true;
     }
 
-    auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool override
+    auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool final
     {
         if (this->GetType() != other.GetType()) {
             return false;
@@ -471,7 +474,14 @@ public:
             this->leastSigOp = std::move(op);
         }
     }
-
+    auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> override
+    {
+        std::unique_ptr<Expression> left = ((GetMostSigOp()).Copy())->Substitute(var, val);
+        std::unique_ptr<Expression> right = ((GetLeastSigOp().Copy())->Substitute(var, val));
+        DerivedT<Expression, Expression> comb = DerivedT<Expression, Expression> { *left, *right };
+        auto ret = comb.Simplify();
+        return ret;
+    }
     /**
      * Swaps the operands of this expression.
      * @return A new expression with the operands swapped.
@@ -483,7 +493,16 @@ public:
 
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 
-protected:
+    [[nodiscard]] std::string ToString() const override
+    {
+        return Generalize()->ToString();
+    }
+
+    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* override
+    {
+        return Generalize()->ToMathMLElement(doc);
+    }
+
     std::unique_ptr<MostSigOpT> mostSigOp;
     std::unique_ptr<LeastSigOpT> leastSigOp;
 };
@@ -494,7 +513,6 @@ protected:
         if (!other.Is<Oasis::Derived>()) {                                                                               \
             return nullptr;                                                                                              \
         }                                                                                                                \
-                                                                                                                         \
         auto specialized = std::make_unique<Derived<FirstOp, SecondOp>>();                                               \
                                                                                                                          \
         std::unique_ptr<Expression> otherGeneralized = other.Generalize();                                               \

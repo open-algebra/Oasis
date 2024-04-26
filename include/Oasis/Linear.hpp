@@ -28,7 +28,7 @@ auto SolveLinearSystems(std::vector<std::unique_ptr<Expression>>& exprs) -> std:
  * @param matrix to solve (in row echelon form)
  * @return matrix of values that solves the input matrix
  */
-    auto SolveLinearSystems(MatrixXXD &matrix) -> Matrix1D;
+auto SolveLinearSystems(MatrixXXD& matrix) -> Matrix1D;
 
 /**
  * From the form Ax=b
@@ -36,14 +36,14 @@ auto SolveLinearSystems(std::vector<std::unique_ptr<Expression>>& exprs) -> std:
  * @param matrixb Matrix that holds constants
  * @return x matrix that solves the A and b matrices
  */
-    auto SolveLinearSystems(MatrixXXD &matrixA, Matrix1D &matrixb) -> Matrix1D;
+auto SolveLinearSystems(MatrixXXD& matrixA, Matrix1D& matrixb) -> Matrix1D;
 
 /**
  *
  * @param exprs A vector of simplified expressions
  * @return Dynamic Float matrix with the provided expressions inserted
  */
-    auto ConstructMatrices(const std::vector<std::unique_ptr<Expression>>& exprs)
+auto ConstructMatrices(const std::vector<std::unique_ptr<Expression>>& exprs)
     -> std::pair<std::pair<MatrixXXD, Matrix1D>, std::map<std::string, size_t>>;
 
 /**

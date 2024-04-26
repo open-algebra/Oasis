@@ -418,12 +418,11 @@ TEST_CASE("Subtraction of Exponents", "[Subtract][Exponent][Symbolic]")
     auto simplified4 = sub4.Simplify();
 
     REQUIRE(Oasis::Real { 0.0 }.Equals(*simplified));
-    REQUIRE(Oasis::Multiply {
+    REQUIRE((Oasis::Multiply {
         Oasis::Real { 1.0 },
         Oasis::Exponent {
             Oasis::Variable { "x" },
-            Oasis::Real { 2.0 } } }
-                .Equals(*simplified2));
+            Oasis::Real { 2.0 } } }).Simplify()->Equals(*simplified2));
     REQUIRE(Oasis::Multiply {
         Oasis::Real { -1.0 },
         Oasis::Exponent {

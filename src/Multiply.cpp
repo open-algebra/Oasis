@@ -6,8 +6,8 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
-#include "Oasis/Subtract.hpp"
 #include "Oasis/Negate.hpp"
+#include "Oasis/Subtract.hpp"
 
 namespace Oasis {
 
@@ -17,44 +17,51 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     auto simplifiedMultiplier = leastSigOp->Simplify();
 
     Multiply simplifiedMultiply { *simplifiedMultiplicand, *simplifiedMultiplier };
-
+    if (auto onezerocase = Multiply<Real, Expression>::Specialize(simplifiedMultiply); onezerocase != nullptr) {
+        const Real& multiplicand = onezerocase->GetMostSigOp();
+        const Expression& multiplier = onezerocase->GetLeastSigOp();
+        if (multiplicand.GetValue() == 0) {
+            return std::make_unique<Real>(Real { 0 });
+        }
+        if (multiplicand.GetValue() == 1) {
+            return multiplier.Simplify();
+        }
+    }
     if (auto realCase = Multiply<Real>::Specialize(simplifiedMultiply); realCase != nullptr) {
         const Real& multiplicand = realCase->GetMostSigOp();
         const Real& multiplier = realCase->GetLeastSigOp();
-
         return std::make_unique<Real>(multiplicand.GetValue() * multiplier.GetValue());
     }
 
     if (auto ImgCase = Multiply<Imaginary>::Specialize(simplifiedMultiply); ImgCase != nullptr) {
         return std::make_unique<Real>(-1.0);
     }
-
     if (auto exprCase = Multiply<Expression>::Specialize(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp())) {
             return std::make_unique<Exponent<Expression, Expression>>(exprCase->GetMostSigOp(), Real { 2.0 });
         }
     }
 
-//    Commented out to not cause massive problems with things that need factored expressions
-//    // c*(a-b)
-//    if (auto negated = Multiply<Real, Subtract<Expression>>::Specialize(simplifiedMultiply); negated != nullptr) {
-//        if (negated->GetMostSigOp().GetValue()<0){
-//            return Add{Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetMostSigOp()},
-//                       Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetLeastSigOp()}}.Simplify();
-//        } else if (negated->GetMostSigOp().GetValue()>0){
-//            return Subtract{Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetMostSigOp()},
-//                       Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetLeastSigOp()}}.Simplify();
-//        } else {
-//            return Real{0}.Copy();
-//        }
-//
-//    }
-//
-//    // c*(a+b)
-//    if (auto negated = Multiply<Real, Add<Expression>>::Specialize(simplifiedMultiply); negated != nullptr) {
-//        return Add{Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetMostSigOp()},
-//                   Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetLeastSigOp()}}.Simplify();
-//    }
+    //    Commented out to not cause massive problems with things that need factored expressions
+    //    // c*(a-b)
+    //    if (auto negated = Multiply<Real, Subtract<Expression>>::Specialize(simplifiedMultiply); negated != nullptr) {
+    //        if (negated->GetMostSigOp().GetValue()<0){
+    //            return Add{Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetMostSigOp()},
+    //                       Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetLeastSigOp()}}.Simplify();
+    //        } else if (negated->GetMostSigOp().GetValue()>0){
+    //            return Subtract{Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetMostSigOp()},
+    //                       Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetLeastSigOp()}}.Simplify();
+    //        } else {
+    //            return Real{0}.Copy();
+    //        }
+    //
+    //    }
+    //
+    //    // c*(a+b)
+    //    if (auto negated = Multiply<Real, Add<Expression>>::Specialize(simplifiedMultiply); negated != nullptr) {
+    //        return Add{Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetMostSigOp()},
+    //                   Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetLeastSigOp()}}.Simplify();
+    //    }
 
     if (auto exprCase = Multiply<Expression, Exponent<Expression, Expression>>::Specialize(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp())) {
@@ -174,10 +181,10 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-//    if (auto negate = Multiply<Real, Negate<Subtract<Expression>>>::Specialize(simplifiedMultiply); negate != nullptr){
-//        return Add{Multiply{negate->GetMostSigOp(), negate->GetLeastSigOp().GetOperand().GetMostSigOp()},
-//                   Multiply{negate->GetMostSigOp(), negate->GetLeastSigOp().GetOperand().GetLeastSigOp()}}.Simplify();
-//    }
+    //    if (auto negate = Multiply<Real, Negate<Subtract<Expression>>>::Specialize(simplifiedMultiply); negate != nullptr){
+    //        return Add{Multiply{negate->GetMostSigOp(), negate->GetLeastSigOp().GetOperand().GetMostSigOp()},
+    //                   Multiply{negate->GetMostSigOp(), negate->GetLeastSigOp().GetOperand().GetLeastSigOp()}}.Simplify();
+    //    }
 
     // multiply add like terms
     std::vector<std::unique_ptr<Expression>> multiplies;
@@ -286,6 +293,28 @@ auto Multiply<Expression>::ToString() const -> std::string
     return fmt::format("({} * {})", mostSigOp->ToString(), leastSigOp->ToString());
 }
 
+auto Multiply<Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement*
+{
+    // create mrow element
+    tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
+
+    std::vector<std::unique_ptr<Expression>> ops;
+    Flatten(ops);
+
+    for (const auto& op : ops) {
+        mrow->InsertEndChild(op->ToMathMLElement(doc));
+        // add * mo
+        tinyxml2::XMLElement* mo = doc.NewElement("mo");
+        mo->SetText("*");
+        mrow->InsertEndChild(mo);
+    }
+
+    // remove last mo
+    mrow->DeleteChild(mrow->LastChild());
+
+    return mrow;
+}
+
 auto Multiply<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
 {
     std::unique_ptr<Expression> simplifiedMultiplicand, simplifiedMultiplier;
@@ -359,6 +388,43 @@ auto Multiply<Expression>::Specialize(const Expression& other, tf::Subflow& subf
 
     auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Multiply>(dynamic_cast<const Multiply&>(*otherGeneralized));
+}
+
+auto Multiply<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+{
+    // Single integration variable
+    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
+        auto simplifiedMult = this->Simplify();
+
+        // Constant case - Constant number multiplied by differentiate
+        if (auto constant = Multiply<Real, Expression>::Specialize(*simplifiedMult); constant != nullptr) {
+            auto exp = constant->GetLeastSigOp().Copy();
+            auto num = constant->GetMostSigOp();
+            auto differentiate = (*exp).Differentiate(differentiationVariable);
+            if (auto add = Expression::Specialize(*differentiate); add != nullptr) {
+                return std::make_unique<Multiply<Real, Expression>>(Multiply<Real, Expression> { Real { num.GetValue() }, *(add->Simplify()) })->Simplify();
+            }
+
+        }
+        // Product rule: d/dx (f(x)*g(x)) = f'(x)*g(x) + f(x)*g'(x)
+        else if (auto product = Multiply<Expression, Expression>::Specialize(*simplifiedMult); product != nullptr) {
+            auto left = product->GetMostSigOp().Copy();
+            auto right = product->GetLeastSigOp().Copy();
+            auto ld = left->Differentiate(differentiationVariable);
+            auto rd = right->Differentiate(differentiationVariable);
+            auto add = Expression::Specialize(*ld);
+            auto add2 = Expression::Specialize(*rd);
+            if ((add != nullptr && add2 != nullptr)) {
+                return std::make_unique<Add<Multiply<Expression, Expression>,
+                    Multiply<Expression, Expression>>>(Add<Multiply<Expression, Expression>, Multiply<Expression, Expression>> { Multiply<Expression, Expression> { *add,
+                                                                                                                                     *right },
+                                                           Multiply<Expression, Expression> { *add2, *left } })
+                    ->Simplify();
+            }
+        }
+    }
+
+    return Copy();
 }
 
 } // Oasis

@@ -69,36 +69,40 @@ auto ConstructMatrices(const std::vector<std::unique_ptr<Expression>>& exprs)
     return std::make_pair(std::make_pair(A, b), vars);
 }
 
-    auto SolveLinearSystems(MatrixXXD &matrix) -> Matrix1D { // row echelon form
-        size_t rows = matrix.rows();
-        size_t cols = matrix.cols() - 1;
+auto SolveLinearSystems(MatrixXXD& matrix) -> Matrix1D
+{ // row echelon form
+    size_t rows = matrix.rows();
+    size_t cols = matrix.cols() - 1;
 
-        if (rows != cols) return Matrix1D{}; // unsolvable
+    if (rows != cols)
+        return Matrix1D {}; // unsolvable
 
-        // create matrices A and b
-        MatrixXXD A(rows, cols);
-        Matrix1D b(rows);
+    // create matrices A and b
+    MatrixXXD A(rows, cols);
+    Matrix1D b(rows);
 
-        for (size_t row = 0; row < rows; row++) {
-            for (size_t col = 0; col < cols; col++) {
-                A(Eigen::Index(row), Eigen::Index(col)) = matrix(Eigen::Index(row), Eigen::Index(col));
-            }
+    for (size_t row = 0; row < rows; row++) {
+        for (size_t col = 0; col < cols; col++) {
+            A(Eigen::Index(row), Eigen::Index(col)) = matrix(Eigen::Index(row), Eigen::Index(col));
         }
-        for (size_t row = 0; row < rows; row++) {
-            b(Eigen::Index(row)) = matrix(Eigen::Index(row), Eigen::Index(cols));
-        }
-
-        auto x = SolveLinearSystems(A, b);
-
-        return x;
+    }
+    for (size_t row = 0; row < rows; row++) {
+        b(Eigen::Index(row)) = matrix(Eigen::Index(row), Eigen::Index(cols));
     }
 
-    auto SolveLinearSystems(MatrixXXD &matrixA, Matrix1D &matrixb) -> Matrix1D {
-        if (matrixA.rows() != matrixb.rows()) return Matrix1D{};
+    auto x = SolveLinearSystems(A, b);
 
-        Matrix1D x = matrixA.inverse() * matrixb;
+    return x;
+}
 
-        return x;
-    }
+auto SolveLinearSystems(MatrixXXD& matrixA, Matrix1D& matrixb) -> Matrix1D
+{
+    if (matrixA.rows() != matrixb.rows())
+        return Matrix1D {};
+
+    Matrix1D x = matrixA.inverse() * matrixb;
+
+    return x;
+}
 
 }

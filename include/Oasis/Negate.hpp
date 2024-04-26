@@ -8,9 +8,9 @@
 #include "Multiply.hpp"
 #include "fmt/core.h"
 
-#include "UnaryExpression.hpp"
-#include "Subtract.hpp"
 #include "Add.hpp"
+#include "Subtract.hpp"
+#include "UnaryExpression.hpp"
 
 namespace Oasis {
 
@@ -51,10 +51,35 @@ public:
         return fmt::format("-({})", this->GetOperand().ToString());
     }
 
+    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* override
+    {
+        // mrow
+        tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+
+        // mo
+        tinyxml2::XMLElement* const mo = doc.NewElement("mo");
+        mo->SetText("-");
+        mrow->InsertEndChild(mo);
+
+        // (
+        tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+        leftParen->SetText("(");
+        mrow->InsertEndChild(leftParen);
+
+        mrow->InsertEndChild(this->op->ToMathMLElement(doc));
+
+        // )
+        tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+        rightParen->SetText(")");
+        mrow->InsertEndChild(rightParen);
+
+        return mrow;
+    }
+
     IMPL_SPECIALIZE_UNARYEXPR(Negate, OperandT)
 
     EXPRESSION_TYPE(Negate)
-    EXPRESSION_CATEGORY(None)
+    EXPRESSION_CATEGORY(UnExp)
 };
 
 } // Oasis

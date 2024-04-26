@@ -20,9 +20,11 @@ public:
     [[nodiscard]] auto Equals(const Expression&) const -> bool final { return false; }
 
     EXPRESSION_TYPE(None)
-    EXPRESSION_CATEGORY(0)
+    EXPRESSION_CATEGORY(UnExp)
 
     [[nodiscard]] auto ToString() const -> std::string final;
+
+    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* final;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Undefined>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Undefined>;

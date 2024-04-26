@@ -93,6 +93,14 @@ public:
         }
     }
 
+    auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> override
+    {
+        std::unique_ptr<Expression> right = ((GetOperand().Copy())->Substitute(var, val));
+        DerivedT<Expression> comb = DerivedT<Expression> { *right };
+        auto ret = comb.Simplify();
+        return ret;
+    }
+
 protected:
     std::unique_ptr<OperandT> op;
 };

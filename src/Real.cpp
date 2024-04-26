@@ -13,6 +13,11 @@ Real::Real(double value)
 {
 }
 
+auto Real::Differentiate(const Expression&) -> std::unique_ptr<Expression>
+{
+    return std::make_unique<Real>(0);
+}
+
 auto Real::Equals(const Expression& other) const -> bool
 {
     return other.Is<Real>() && value == dynamic_cast<const Real&>(other).value;
@@ -26,6 +31,13 @@ auto Real::GetValue() const -> double
 auto Real::ToString() const -> std::string
 {
     return std::to_string(value);
+}
+
+auto Real::ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement*
+{
+    tinyxml2::XMLElement* const element = doc.NewElement("mn");
+    element->SetText(ToString().c_str());
+    return element;
 }
 
 auto Real::Specialize(const Expression& other) -> std::unique_ptr<Real>

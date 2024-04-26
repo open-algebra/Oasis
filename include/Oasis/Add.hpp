@@ -26,11 +26,14 @@ public:
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto ToString() const -> std::string final;
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
+
+    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* final;
 
     DECL_SPECIALIZE(Add)
 
     EXPRESSION_TYPE(Add)
-    EXPRESSION_CATEGORY(Associative | Commutative)
+    EXPRESSION_CATEGORY(Associative | Commutative | BinExp)
 };
 /// @endcond
 
