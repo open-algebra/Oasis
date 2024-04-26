@@ -9,8 +9,8 @@
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
-#include "Oasis/Variable.hpp"
 #include "Oasis/Negate.hpp"
+#include "Oasis/Variable.hpp"
 
 namespace Oasis {
 
@@ -72,9 +72,9 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    return Add{*simplifiedMinuend, Multiply<Expression>{Real{-1}, *simplifiedSubtrahend}}.Simplify();
+    return Add { *simplifiedMinuend, Multiply<Expression> { Real { -1 }, *simplifiedSubtrahend } }.Simplify();
 
-//    return simplifiedSubtract.Copy();
+    //    return simplifiedSubtract.Copy();
 }
 
 auto Subtract<Expression>::ToString() const -> std::string
