@@ -23,7 +23,7 @@
 
 namespace {
 
-std::string convertToInfix(const std::string& input)
+std::string preprocessInput(const std::string& input)
 {
     std::string result;
     std::string operators = "+-*/^(),";
@@ -181,7 +181,7 @@ DefaultView::DefaultView()
     textField->Bind(wxEVT_TEXT, [this, webView](wxCommandEvent& evt) {
         if (const auto textCtrl = dynamic_cast<wxTextCtrl*>(evt.GetEventObject())) {
             currentInput = textCtrl->GetValue().ToStdString();
-            const std::string infix = convertToInfix(currentInput);
+            const std::string infix = preprocessInput(currentInput);
 
             if (currentInput.empty()) {
                 return;
