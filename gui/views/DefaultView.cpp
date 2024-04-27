@@ -13,7 +13,7 @@
 #include "Oasis/FromString.hpp"
 
 #include "../components/KeypadButton/KeypadButton.hpp"
-#include "ArithmeticView.hpp"
+#include "DefaultView.hpp"
 
 namespace {
 
@@ -36,19 +36,69 @@ std::string convertToInfix(const std::string& input)
 
 }
 
-ArithmeticView::ArithmeticView()
-    : wxFrame(nullptr, wxID_ANY, "Arithmetic")
+void DefaultView::setStyles(tinyxml2::XMLElement* style)
 {
+    style->DeleteChildren();
+
+    tinyxml2::XMLText* cssText = doc.NewText(R"css(
+    div { padding: 0.5rem 0; }
+    .query { border-bottom: 1px dotted; text-align: right; }
+    .response { border-bottom: 1px dotted; }
+    #current { text-align: right; }
+)css");
+
+    tinyxml2::XMLText* themeText;
+
+    if (wxSystemAppearance appearance = wxSystemSettings::GetAppearance(); appearance.IsDark()) {
+        themeText = doc.NewText(R"css(
+        body { background-color: black; color: white; }
+    )css");
+    } else {
+        themeText = doc.NewText(R"css(
+        body { background-color: white; color: black; }
+    )css");
+    }
+
+    // Add CSS text to the style element
+    style->InsertEndChild(cssText);
+    style->InsertEndChild(themeText);
+}
+DefaultView::DefaultView()
+    : wxFrame(nullptr, wxID_ANY, "OASIS")
+{
+    CreateStatusBar();
+    SetStatusText("Welcome to OASIS!");
+
     auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
     auto* webView = wxWebView::New(this, wxID_ANY);
-    webView->SetPage("<html><body><h1>Welcome to OASIS!</h1></body></html>", "");
+
+    auto* toolbarSizer = new wxBoxSizer(wxHORIZONTAL);
+    auto* derivativeButton = new wxButton(this, wxID_ANY, "d/dx");
+    auto* logarithmButton = new wxButton(this, wxID_ANY, "log");
+    auto* sinButton = new wxButton(this, wxID_ANY, "sin");
+    auto* cosButton = new wxButton(this, wxID_ANY, "cos");
+    auto* tanButton = new wxButton(this, wxID_ANY, "tan");
+
+    toolbarSizer->Add(derivativeButton);
+    toolbarSizer->AddSpacer(4);
+    toolbarSizer->Add(logarithmButton);
+    toolbarSizer->AddSpacer(4);
+    toolbarSizer->Add(sinButton);
+    toolbarSizer->AddSpacer(4);
+    toolbarSizer->Add(cosButton);
+    toolbarSizer->AddSpacer(4);
+    toolbarSizer->Add(tanButton);
 
     // Add a textfield
+    auto* textFieldSizer = new wxBoxSizer(wxHORIZONTAL);
+    auto* textFieldLabel = new wxStaticText(this, wxID_ANY, "Input:");
     auto* textField = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+    textField->SetHint("E.g. 2x+3x");
 
-    CreateStatusBar();
-    SetStatusText("Welcome to OASIS!");
+    textFieldSizer->Add(textFieldLabel, wxSizerFlags().Center());
+    textFieldSizer->AddSpacer(4);
+    textFieldSizer->Add(textField, wxSizerFlags(1).Expand());
 
     auto* keypad = new wxGridSizer(5, 4, 4, 4);
 
@@ -94,9 +144,10 @@ ArithmeticView::ArithmeticView()
     keypad->Add(keyDot, wxSizerFlags().Expand());
     keypad->Add(keyEnter, wxSizerFlags().Expand());
 
-    mainSizer->Add(webView, wxSizerFlags(1).Expand());
-    mainSizer->Add(textField, wxSizerFlags().Expand().Border(wxALL, 4));
-    mainSizer->Add(keypad, wxSizerFlags(1).Expand().Border(wxALL, 4));
+    mainSizer->Add(webView, wxSizerFlags(1).Expand().Border(wxDOWN));
+    mainSizer->Add(toolbarSizer, wxSizerFlags().Border(wxLEFT | wxRIGHT | wxDOWN));
+    mainSizer->Add(textFieldSizer, wxSizerFlags().Expand().Border(wxLEFT | wxRIGHT | wxDOWN));
+    mainSizer->Add(keypad, wxSizerFlags(1).Expand().Border(wxLEFT | wxRIGHT | wxDOWN));
 
     SetSizerAndFit(mainSizer);
 
@@ -128,6 +179,7 @@ ArithmeticView::ArithmeticView()
                 return;
             }
 
+            lastReloadReason = LastReloadReason::OnInputChanged;
             renderPage(webView);
             SetStatusText("Successfully parsed input.");
         }
@@ -191,6 +243,21 @@ ArithmeticView::ArithmeticView()
 
     keyEnter->Bind(wxEVT_LEFT_UP, [this, textField, webView](wxMouseEvent& evt) { onEnter(webView, textField); });
 
+    // Bind the event
+    webView->Bind(wxEVT_WEBVIEW_LOADED, [this, webView](wxWebViewEvent& event) {
+        if (lastReloadReason == LastReloadReason::ThemeChanged) {
+            webView->RunScriptAsync(fmt::format(R"(
+window.scrollTo(0,{});
+            )", lastScrollHeight));
+            return;
+        }
+
+        webView->RunScriptAsync(R"(
+document.body.style.overflow = 'hidden';
+document.getElementById('current').scrollIntoView();
+setTimeout(function(){document.body.style.overflow = 'auto';}, 500);)");
+    });
+
     // Create root element.
     tinyxml2::XMLElement* root = doc.NewElement("html");
     doc.InsertFirstChild(root);
@@ -200,27 +267,31 @@ ArithmeticView::ArithmeticView()
 
     // Create stylesheet element
     tinyxml2::XMLElement* style = doc.NewElement("style");
-    tinyxml2::XMLText* cssText = doc.NewText(R"css(
-    div { padding: 0.5rem 0; }
-    .query { border-bottom: 1px dotted; text-align: right; }
-    .response { border-bottom: 1px dotted; }
-    #current { text-align: right; }
-)css");
+    setStyles(style);
 
-    // Add CSS text to the style element
-    style->InsertEndChild(cssText);
+    Bind(wxEVT_SYS_COLOUR_CHANGED, [this, style, webView](wxSysColourChangedEvent&) {
+        setStyles(style);
+        this->lastReloadReason = LastReloadReason::ThemeChanged;
+        renderPage(webView);
+    });
 
     // Add style element to the head element
     head->InsertEndChild(style);
-
     root->InsertEndChild(head);
 
     // Add body element.
     body = doc.NewElement("body");
+
+    currentDiv = doc.NewElement("div");
+    currentDiv->SetAttribute("id", "current");
+    body->InsertEndChild(currentDiv);
+
     root->InsertEndChild(body);
+
+    renderPage(webView);
 }
 
-void ArithmeticView::onEnter(wxWebView* webView, wxTextCtrl* textCtrl)
+void DefaultView::onEnter(wxWebView* webView, wxTextCtrl* textCtrl)
 {
     // Perform calculation or other actions based on currentInput and then clear currentInput
     if (!currentExpression) {
@@ -231,7 +302,6 @@ void ArithmeticView::onEnter(wxWebView* webView, wxTextCtrl* textCtrl)
     auto& [query, response] = history.emplace_back(std::move(currentExpression), currentExpression->Simplify());
 
     tinyxml2::XMLElement* queryDiv = doc.NewElement("div");
-    // queryDiv->SetAttribute("style", "border-bottom: 1px dotted; text-align: right;");
     queryDiv->SetAttribute("class", "query");
 
     tinyxml2::XMLElement* queryMathML = query->ToMathMLElement(doc);
@@ -240,10 +310,15 @@ void ArithmeticView::onEnter(wxWebView* webView, wxTextCtrl* textCtrl)
     queryMath->InsertFirstChild(queryMathML);
 
     queryDiv->InsertEndChild(queryMath);
-    body->InsertEndChild(queryDiv);
+
+    if (currentDiv->PreviousSibling()) {
+        body->InsertAfterChild(currentDiv->PreviousSibling(), queryDiv);
+    } else {
+        body->InsertFirstChild(queryDiv);
+    }
+
 
     tinyxml2::XMLElement* responseDiv = doc.NewElement("div");
-    // responseDiv->SetAttribute("style", "border-bottom: 1px dotted;");
     responseDiv->SetAttribute("class", "response");
 
     if (response == nullptr) {
@@ -256,8 +331,9 @@ void ArithmeticView::onEnter(wxWebView* webView, wxTextCtrl* textCtrl)
         responseDiv->InsertEndChild(responseMath);
     }
 
-    body->InsertEndChild(responseDiv);
+    body->InsertAfterChild(queryDiv, responseDiv);
 
+    lastReloadReason = LastReloadReason::OnEnter;
     renderPage(webView);
 
     // (Assuming currentInput holds a valid mathematical expression)
@@ -265,33 +341,24 @@ void ArithmeticView::onEnter(wxWebView* webView, wxTextCtrl* textCtrl)
     textCtrl->SetValue(currentInput);
 }
 
-void ArithmeticView::renderPage(wxWebView* webView)
+void DefaultView::renderPage(wxWebView* webView)
 {
-    // Searching for the div with id "current"
-    tinyxml2::XMLElement* currentDiv = body->FirstChildElement("div");
-    while (currentDiv && (currentDiv->Attribute("id") == nullptr || std::string(currentDiv->Attribute("id")) != "current")) {
-        currentDiv = currentDiv->NextSiblingElement("div");
-    }
+    wxString scrollHeightStr;
+    webView->RunScript("document.documentElement.scrollHeight", &scrollHeightStr);
+    lastScrollHeight = std::stoi(scrollHeightStr.ToStdString());
 
-    if (currentDiv) {
-        // If div with id "current" is found, delete it
-        body->DeleteChild(currentDiv);
-    }
+    currentDiv->DeleteChildren();
 
     // Current expression to MathML.
     if (currentExpression) {
-        // Creating new div and expressionElement
+        // Creating new expressionElement
         tinyxml2::XMLElement* mathElement = doc.NewElement("math");
         tinyxml2::XMLElement* expressionElement = currentExpression->ToMathMLElement(doc);
 
         mathElement->InsertEndChild(expressionElement);
-        tinyxml2::XMLElement* div = doc.NewElement("div");
-        div->SetAttribute("id", "current");
 
-        div->InsertEndChild(mathElement);
-
-        // Adding new div with id "current" to the body
-        body->InsertEndChild(div);
+        // Adding new expressionElement to the currentDiv
+        currentDiv->InsertEndChild(mathElement);
     }
 
     // Print the XML document to a string.

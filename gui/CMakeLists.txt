@@ -4,10 +4,10 @@ find_package(wxWidgets REQUIRED COMPONENTS core base webview)
 
 set(OasisGUI_SOURCES
     main.cpp
-    views/ArithmeticView.cpp
-    views/ArithmeticView.hpp
     components/KeypadButton/KeypadButton.cpp
     components/KeypadButton/KeypadButton.hpp
+    views/DefaultView.cpp
+    views/DefaultView.hpp
 )
 
 if(wxWidgets_USE_FILE) # not defined in CONFIG mode

@@ -1,7 +1,7 @@
 //
 // Created by Matthew McCall on 2/16/24.
 //
-#include "views/ArithmeticView.hpp"
+#include "views/DefaultView.hpp"
 
 #include <wx/wxprec.h>
 
@@ -16,7 +16,7 @@ public:
 
 bool Application::OnInit()
 {
-    auto* arithmeticView = new  ArithmeticView();
+    auto* arithmeticView = new  DefaultView();
     return arithmeticView->Show(true);
 }
 

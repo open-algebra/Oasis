@@ -12,9 +12,10 @@
 class wxWebView;
 class wxTextCtrl;
 
-class ArithmeticView final : public wxFrame {
+class DefaultView final : public wxFrame {
 public:
-    ArithmeticView();
+    void setStyles(tinyxml2::XMLElement* style);
+    DefaultView();
 
 private:
     std::string currentInput;
@@ -24,9 +25,19 @@ private:
 
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLElement* body;
+    tinyxml2::XMLElement* currentDiv;
 
     void renderPage(wxWebView* webView);
     void onEnter(wxWebView* webView, wxTextCtrl* textCtrl);
+
+    enum class LastReloadReason {
+        OnEnter,
+        OnInputChanged,
+        ThemeChanged
+    };
+
+    LastReloadReason lastReloadReason = LastReloadReason::OnEnter;
+    int lastScrollHeight;
 };
 
 
