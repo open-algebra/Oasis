@@ -44,16 +44,17 @@ void KeypadButton::paintNow() {
 
 void KeypadButton::render(wxDC &dc) {
 
-    dc.SetPen(wxPen(wxColour(0, 0, 0, 64)));
+    dc.SetPen(wxPen(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW)));
 
-    if (pressedDown)
-        dc.SetBrush(wxBrush(wxColour(127, 127, 127, 64)));
-    else if (hovered)
-        dc.SetBrush(wxBrush(wxColour(255, 255, 255, 128)));
-    else
-        dc.SetBrush(wxBrush(wxColour(225, 225, 225, 64)));
+    if (pressedDown) {
+        dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW)));
+    } else if (hovered) {
+        dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT)));
+    } else {
+        dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE)));
+    }
 
-    const wxSize dcSize = dc.GetSize();
+    const wxSize dcSize = dc.DeviceToLogicalRel(dc.GetSize());
 
     if (lastSize != dcSize) {
         fontSize = computeFontSize(dcSize);
@@ -63,7 +64,9 @@ void KeypadButton::render(wxDC &dc) {
     dc.DrawRoundedRectangle(0, 0, dcSize.GetWidth(), dcSize.GetHeight(), 4);
     dc.SetFont(wxFont(fontSize, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
 
-    wxSize textSize = dc.GetTextExtent(text);
+    const wxSize textSize = dc.GetTextExtent(text);
+
+    dc.SetPen(wxPen(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNTEXT)));
     dc.DrawText(text, (dcSize.GetWidth() - textSize.GetWidth()) / 2, (dcSize.GetHeight() - textSize.GetHeight()) / 2);
 }
 

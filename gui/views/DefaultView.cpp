@@ -159,7 +159,7 @@ DefaultView::DefaultView()
 
     SetMenuBar(menuBar);
 
-    Bind(wxEVT_MENU, [=](wxCommandEvent& event) { wxMessageBox("Oasis GUI"); }, wxID_ABOUT);
+    Bind(wxEVT_MENU, [=](wxCommandEvent& event) { wxMessageBox("https://github.com/matthew-mccall/Oasis", "Open Algebra Software for Inferring Solutions", wxICON_INFORMATION); }, wxID_ABOUT);
 
     Bind(wxEVT_MENU, [=](wxCommandEvent& event) { Close(true); }, wxID_EXIT);
 
