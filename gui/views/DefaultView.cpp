@@ -344,7 +344,7 @@ void DefaultView::onEnter(wxWebView* webView, wxTextCtrl* textCtrl)
 void DefaultView::renderPage(wxWebView* webView)
 {
     wxString scrollHeightStr;
-    webView->RunScript("document.documentElement.scrollHeight", &scrollHeightStr);
+    webView->RunScript("window.scrollY", &scrollHeightStr);
     lastScrollHeight = std::stoi(scrollHeightStr.ToStdString());
 
     currentDiv->DeleteChildren();

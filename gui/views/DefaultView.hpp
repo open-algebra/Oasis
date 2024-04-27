@@ -37,7 +37,7 @@ private:
     };
 
     LastReloadReason lastReloadReason = LastReloadReason::OnEnter;
-    int lastScrollHeight;
+    int lastScrollHeight = 0;
 };
 
 
