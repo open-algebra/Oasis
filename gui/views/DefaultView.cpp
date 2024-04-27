@@ -2,11 +2,13 @@
 // Created by Matthew McCall on 2/16/24.
 //
 
+#include <wx/fs_mem.h>
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
 #include <wx/sizer.h>
 #include <wx/splitter.h>
 #include <wx/webview.h>
+#include <wx/webviewfshandler.h>
 
 #include <fmt/core.h>
 
@@ -14,6 +16,10 @@
 
 #include "../components/KeypadButton/KeypadButton.hpp"
 #include "DefaultView.hpp"
+
+#include <Fox.svg.hpp>
+#include <bootstrap.bundle.min.js.hpp>
+#include <bootstrap.min.css.hpp>
 
 namespace {
 
@@ -36,59 +42,53 @@ std::string convertToInfix(const std::string& input)
 
 }
 
-void DefaultView::setStyles(tinyxml2::XMLElement* style)
-{
-    style->DeleteChildren();
-
-    tinyxml2::XMLText* cssText = doc.NewText(R"css(
-    div { padding: 0.5rem 0; }
-    .query { border-bottom: 1px dotted; text-align: right; }
-    .response { border-bottom: 1px dotted; }
-    #current { text-align: right; }
-)css");
-
-    tinyxml2::XMLText* themeText;
-
-    if (wxSystemAppearance appearance = wxSystemSettings::GetAppearance(); appearance.IsDark()) {
-        themeText = doc.NewText(R"css(
-        body { background-color: black; color: white; }
-    )css");
-    } else {
-        themeText = doc.NewText(R"css(
-        body { background-color: white; color: black; }
-    )css");
-    }
-
-    // Add CSS text to the style element
-    style->InsertEndChild(cssText);
-    style->InsertEndChild(themeText);
-}
 DefaultView::DefaultView()
     : wxFrame(nullptr, wxID_ANY, "OASIS")
 {
+    wxFileSystem::AddHandler(new wxMemoryFSHandler);
+
+    const auto& foxSvg = Fox_svg::get();
+    wxMemoryFSHandler::AddFile("Fox.svg", foxSvg.data(), foxSvg.size());
+
+    const auto& bootstrapCss = bootstrap_min_css::get();
+    wxMemoryFSHandler::AddFile("bootstrap.min.css", bootstrapCss.data(), bootstrapCss.size());
+
+    const auto& bootstrapJs = bootstrap_bundle_min_js::get();
+    wxMemoryFSHandler::AddFile("bootstrap.bundle.min.js", bootstrapJs.data(), bootstrapJs.size());
+
     CreateStatusBar();
     SetStatusText("Welcome to OASIS!");
 
     auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    auto* webView = wxWebView::New(this, wxID_ANY);
+    auto* webView = wxWebView::New();
+
+#ifdef __APPLE__
+    webView->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewFSHandler("memory")));
+#endif
+
+    webView->Create(this, wxID_ANY);
+
+#ifndef __APPLE__
+    webView->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewFSHandler("memory")));
+#endif
 
     auto* toolbarSizer = new wxBoxSizer(wxHORIZONTAL);
     auto* derivativeButton = new wxButton(this, wxID_ANY, "d/dx");
     auto* logarithmButton = new wxButton(this, wxID_ANY, "log");
-    auto* sinButton = new wxButton(this, wxID_ANY, "sin");
-    auto* cosButton = new wxButton(this, wxID_ANY, "cos");
-    auto* tanButton = new wxButton(this, wxID_ANY, "tan");
+    // auto* sinButton = new wxButton(this, wxID_ANY, "sin");
+    // auto* cosButton = new wxButton(this, wxID_ANY, "cos");
+    // auto* tanButton = new wxButton(this, wxID_ANY, "tan");
 
     toolbarSizer->Add(derivativeButton);
     toolbarSizer->AddSpacer(4);
     toolbarSizer->Add(logarithmButton);
-    toolbarSizer->AddSpacer(4);
-    toolbarSizer->Add(sinButton);
-    toolbarSizer->AddSpacer(4);
-    toolbarSizer->Add(cosButton);
-    toolbarSizer->AddSpacer(4);
-    toolbarSizer->Add(tanButton);
+    // toolbarSizer->AddSpacer(4);
+    // toolbarSizer->Add(sinButton);
+    // toolbarSizer->AddSpacer(4);
+    // toolbarSizer->Add(cosButton);
+    // toolbarSizer->AddSpacer(4);
+    // toolbarSizer->Add(tanButton);
 
     // Add a textfield
     auto* textFieldSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -162,6 +162,21 @@ DefaultView::DefaultView()
     Bind(wxEVT_MENU, [=](wxCommandEvent& event) { wxMessageBox("https://github.com/matthew-mccall/Oasis", "Open Algebra Software for Inferring Solutions", wxICON_INFORMATION); }, wxID_ABOUT);
 
     Bind(wxEVT_MENU, [=](wxCommandEvent& event) { Close(true); }, wxID_EXIT);
+
+
+    derivativeButton->Bind(wxEVT_BUTTON, [this, textField](wxCommandEvent& evt)
+    {
+        currentInput += "dd(";
+        textField->SetValue(currentInput);
+        textField->SetInsertionPointEnd();
+    });
+
+    logarithmButton->Bind(wxEVT_BUTTON, [this, textField](wxCommandEvent& evt)
+    {
+        currentInput += "log(";
+        textField->SetValue(currentInput);
+        textField->SetInsertionPointEnd();
+    });
 
     textField->Bind(wxEVT_TEXT, [this, webView](wxCommandEvent& evt) {
         if (const auto textCtrl = dynamic_cast<wxTextCtrl*>(evt.GetEventObject())) {
@@ -254,8 +269,8 @@ window.scrollTo(0,{});
 
         webView->RunScriptAsync(R"(
 document.body.style.overflow = 'hidden';
-document.getElementById('current').scrollIntoView();
-setTimeout(function(){document.body.style.overflow = 'auto';}, 500);)");
+document.getElementById('current').scrollIntoView({behavior: 'instant'});
+setTimeout(function(){document.body.style.overflow = 'auto';}, 0);)");
     });
 
     // Create root element.
@@ -265,26 +280,50 @@ setTimeout(function(){document.body.style.overflow = 'auto';}, 500);)");
     // Add head element.
     tinyxml2::XMLElement* head = doc.NewElement("head");
 
-    // Create stylesheet element
-    tinyxml2::XMLElement* style = doc.NewElement("style");
-    setStyles(style);
+    // Add Bootstrap CSS link to the head element
+    tinyxml2::XMLElement* bootstrapCssLink = doc.NewElement("link");
 
-    Bind(wxEVT_SYS_COLOUR_CHANGED, [this, style, webView](wxSysColourChangedEvent&) {
-        setStyles(style);
+    bootstrapCssLink->SetAttribute("rel", "stylesheet");
+    bootstrapCssLink->SetAttribute("href", "memory:bootstrap.min.css");
+
+    head->InsertEndChild(bootstrapCssLink);
+
+    Bind(wxEVT_SYS_COLOUR_CHANGED, [this, root, webView](wxSysColourChangedEvent&) {
         this->lastReloadReason = LastReloadReason::ThemeChanged;
+
+        if (wxSystemAppearance appearance = wxSystemSettings::GetAppearance(); appearance.IsDark())
+        {
+            root->SetAttribute("data-bs-theme", "dark");
+        }
+        else
+        {
+            root->SetAttribute("data-bs-theme", "light");
+        }
+
         renderPage(webView);
     });
 
     // Add style element to the head element
-    head->InsertEndChild(style);
     root->InsertEndChild(head);
 
     // Add body element.
     body = doc.NewElement("body");
 
+    currentDivWrapper = doc.NewElement("div");
+    currentDivWrapper->SetAttribute("class", "d-flex justify-content-end mx-2"); // Set div as flexbox to align items with padding and shadow
+
     currentDiv = doc.NewElement("div");
+    currentDiv->SetAttribute("class", "d-inline-flex p-2 text-bg-primary rounded border shadow"); // Set div as inline-flex to make it takes as much width as necessary with padding and shadow
     currentDiv->SetAttribute("id", "current");
-    body->InsertEndChild(currentDiv);
+    currentDivWrapper->InsertEndChild(currentDiv);
+
+    body->InsertEndChild(currentDivWrapper);
+
+    // Add Bootstrap JS script to the body element
+    tinyxml2::XMLElement* bootstrapJsScript = doc.NewElement("script");
+    bootstrapJsScript->SetAttribute("src", "memory:bootstrap.bundle.min.js");
+
+    body->InsertEndChild(bootstrapJsScript);
 
     root->InsertEndChild(body);
 
@@ -301,37 +340,53 @@ void DefaultView::onEnter(wxWebView* webView, wxTextCtrl* textCtrl)
 
     auto& [query, response] = history.emplace_back(std::move(currentExpression), currentExpression->Simplify());
 
-    tinyxml2::XMLElement* queryDiv = doc.NewElement("div");
-    queryDiv->SetAttribute("class", "query");
+    tinyxml2::XMLElement* queryRightAlign = doc.NewElement("div");
+    queryRightAlign->SetAttribute("class", "d-flex justify-content-end mb-2 mx-2"); // Set div as flexbox to align items with padding and shadow
+
+    tinyxml2::XMLElement* queryCard = doc.NewElement("div");
+    queryCard->SetAttribute("class", "d-inline-flex p-2 text-bg-primary rounded border shadow"); // Set div as inline-flex to make it takes as much width as necessary with padding and shadow
 
     tinyxml2::XMLElement* queryMathML = query->ToMathMLElement(doc);
-
     tinyxml2::XMLElement* queryMath = doc.NewElement("math");
+
     queryMath->InsertFirstChild(queryMathML);
+    queryCard->InsertEndChild(queryMath);
 
-    queryDiv->InsertEndChild(queryMath);
+    queryRightAlign->InsertEndChild(queryCard);
 
-    if (currentDiv->PreviousSibling()) {
-        body->InsertAfterChild(currentDiv->PreviousSibling(), queryDiv);
+    if (currentDivWrapper->PreviousSibling()) {
+        body->InsertAfterChild(currentDivWrapper->PreviousSibling(), queryRightAlign);
     } else {
-        body->InsertFirstChild(queryDiv);
+        queryRightAlign->SetAttribute("class", "d-flex justify-content-end m-2"); // Set div as flexbox to align items with padding and shadow
+        body->InsertFirstChild(queryRightAlign);
     }
 
+    tinyxml2::XMLElement* responseLeftAlign = doc.NewElement("div");
+    responseLeftAlign->SetAttribute("class", "d-flex justify-content-begin align-items-center mb-2 mx-2");
 
-    tinyxml2::XMLElement* responseDiv = doc.NewElement("div");
-    responseDiv->SetAttribute("class", "response");
+    tinyxml2::XMLElement* responseCard = doc.NewElement("div");
+    responseCard->SetAttribute("class", "d-inline-flex p-2 bg-text-light rounded border shadow mx-2");
+
+    tinyxml2::XMLElement* responseAvatar = doc.NewElement("img");
+    responseAvatar->SetAttribute("src", "memory:Fox.svg");
+    responseAvatar->SetAttribute("class", "mr-3");
+    responseAvatar->SetAttribute("width", "30");
+    responseAvatar->SetAttribute("height", "30");
+    responseLeftAlign->InsertEndChild(responseAvatar);
 
     if (response == nullptr) {
         tinyxml2::XMLText* errorText = doc.NewText("Error");
-        responseDiv->InsertEndChild(errorText);
+        responseCard->InsertEndChild(errorText);
     } else {
         tinyxml2::XMLElement* responseMathML = response->ToMathMLElement(doc);
         tinyxml2::XMLElement* responseMath = doc.NewElement("math");
         responseMath->InsertFirstChild(responseMathML);
-        responseDiv->InsertEndChild(responseMath);
+        responseCard->InsertEndChild(responseMath);
     }
 
-    body->InsertAfterChild(queryDiv, responseDiv);
+    responseLeftAlign->InsertEndChild(responseCard);
+
+    body->InsertAfterChild(queryRightAlign, responseLeftAlign);
 
     lastReloadReason = LastReloadReason::OnEnter;
     renderPage(webView);

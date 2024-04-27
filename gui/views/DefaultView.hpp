@@ -26,6 +26,7 @@ private:
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLElement* body;
     tinyxml2::XMLElement* currentDiv;
+    tinyxml2::XMLElement* currentDivWrapper;
 
     void renderPage(wxWebView* webView);
     void onEnter(wxWebView* webView, wxTextCtrl* textCtrl);

@@ -1,0 +1,13 @@
+#include "${EMBED_OUTPUT_INCLUDE_NAME}"
+
+namespace {
+
+std::array<std::uint8_t, ${DATA_SIZE}> s_data = {
+${DATA}
+};
+
+}
+
+namespace ${EMBED_FILENAME_CPPNAME} {
+    const std::array<std::uint8_t, ${DATA_SIZE}> &get() { return s_data; }
+}

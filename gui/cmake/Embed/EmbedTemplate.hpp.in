@@ -1,0 +1,11 @@
+#ifndef ${EMBED_FILENAME_CPPNAME}_HPP
+#define ${EMBED_FILENAME_CPPNAME}_HPP
+
+#include <array>
+#include <cstdint>
+
+namespace ${EMBED_FILENAME_CPPNAME} {
+    const std::array<std::uint8_t, ${DATA_SIZE}> &get();
+}
+
+#endif // ${EMBED_FILENAME_MACRO}_HPP
