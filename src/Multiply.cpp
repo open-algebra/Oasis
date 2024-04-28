@@ -22,7 +22,7 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (auto onezerocase = Multiply<Real, Expression>::Specialize(simplifiedMultiply); onezerocase != nullptr) {
         const Real& multiplicand = onezerocase->GetMostSigOp();
         const Expression& multiplier = onezerocase->GetLeastSigOp();
-        if (abs(multiplicand.GetValue()) <= EPSILON) {
+        if (std::abs(multiplicand.GetValue()) <= EPSILON) {
             return std::make_unique<Real>(Real { 0.0 });
         }
         if (multiplicand.GetValue() == 1) {
