@@ -6,7 +6,7 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
-#include "Oasis/Integrate.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 
@@ -49,7 +49,7 @@ auto Variable::Specialize(const Expression& other, tf::Subflow&) -> std::unique_
     return other.Is<Variable>() ? std::make_unique<Variable>(dynamic_cast<const Variable&>(other)) : nullptr;
 }
 
-auto Variable::IntegrateExp(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Variable::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
 {
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
 
@@ -72,7 +72,7 @@ auto Variable::IntegrateExp(const Expression& integrationVariable) -> std::uniqu
         return adder.Simplify();
     }
 
-    Integrate<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
 
     return integral.Copy();
 }

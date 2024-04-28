@@ -6,7 +6,7 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
-#include "Oasis/Integrate.hpp"
+#include "Oasis/Integral.hpp"
 
 namespace Oasis {
 
@@ -363,7 +363,7 @@ auto Multiply<Expression>::Specialize(const Expression& other, tf::Subflow& subf
     return std::make_unique<Multiply>(dynamic_cast<const Multiply&>(*otherGeneralized));
 }
 
-auto Multiply<Expression>::IntegrateExp(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Multiply<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
@@ -373,7 +373,7 @@ auto Multiply<Expression>::IntegrateExp(const Expression& integrationVariable) -
         if (auto constant = Multiply<Real, Expression>::Specialize(*simplifiedMult); constant != nullptr) {
             auto exp = constant->GetLeastSigOp().Copy();
             auto num = constant->GetMostSigOp();
-            auto integrated = exp->IntegrateExp(integrationVariable);
+            auto integrated = exp->Integrate(integrationVariable);
 
             if (auto add = Add<Expression, Variable>::Specialize(*integrated); add != nullptr) {
                 Add<Multiply<Real, Expression>, Variable> adder {
@@ -386,7 +386,7 @@ auto Multiply<Expression>::IntegrateExp(const Expression& integrationVariable) -
             }
         }
     }
-    Integrate<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
 
     return integral.Copy();
 }

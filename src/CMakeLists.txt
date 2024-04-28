@@ -14,7 +14,7 @@ set(Oasis_SOURCES
     Expression.cpp
     FromString.cpp
     Imaginary.cpp
-    Integrate.cpp
+    Integral.cpp
     Log.cpp
     Multiply.cpp
     Negate.cpp
@@ -34,14 +34,13 @@ set(Oasis_HEADERS
     ../include/Oasis/Expression.hpp
     ../include/Oasis/FromString.hpp
     ../include/Oasis/Imaginary.hpp
-    ../include/Oasis/Integrate.hpp
+    ../include/Oasis/Integral.hpp
     ../include/Oasis/LeafExpression.hpp
     ../include/Oasis/Log.hpp
     ../include/Oasis/Multiply.hpp
     ../include/Oasis/Negate.hpp
     ../include/Oasis/Real.hpp
     ../include/Oasis/Subtract.hpp
-    ../include/Oasis/Integrate.hpp
     ../include/Oasis/UnaryExpression.hpp
     ../include/Oasis/Undefined.hpp
     ../include/Oasis/Variable.hpp)

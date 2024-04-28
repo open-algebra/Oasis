@@ -8,7 +8,7 @@
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 
-TEST_CASE("Nonzero number", "[IntegrateExp][Real][Nonzero]")
+TEST_CASE("Nonzero number", "[Integrate][Real][Nonzero]")
 {
     Oasis::Add<Oasis::Multiply<Oasis::Real, Oasis::Variable>, Oasis::Variable> integral {
         Oasis::Multiply {
@@ -20,21 +20,21 @@ TEST_CASE("Nonzero number", "[IntegrateExp][Real][Nonzero]")
     Oasis::Real base { 2.0f };
     Oasis::Variable var { "x" };
 
-    auto integrated = base.IntegrateExp(var);
+    auto integrated = base.Integrate(var);
     REQUIRE(integral.Equals(*integrated));
 }
 
-TEST_CASE("Zero", "[IntegrateExp][Real][Zero]")
+TEST_CASE("Zero", "[Integrate][Real][Zero]")
 {
     Oasis::Variable constant { "C" };
     Oasis::Real zero { 0.0f };
     Oasis::Variable var { "x" };
 
-    auto integrated = zero.IntegrateExp(var);
+    auto integrated = zero.Integrate(var);
     REQUIRE(constant.Equals(*integrated));
 }
 
-TEST_CASE("Same Variable", "[IntegrateExp][Variable][Same]")
+TEST_CASE("Same Variable", "[Integrate][Variable][Same]")
 {
     Oasis::Variable var { "x" };
     Oasis::Add<Oasis::Divide<Oasis::Exponent<Oasis::Variable, Oasis::Real>, Oasis::Real>, Oasis::Variable> integral {
@@ -45,11 +45,11 @@ TEST_CASE("Same Variable", "[IntegrateExp][Variable][Same]")
     };
 
     auto ptr = integral.Simplify();
-    auto integrated = var.IntegrateExp(var);
+    auto integrated = var.Integrate(var);
     REQUIRE(ptr->Equals(*integrated));
 }
 
-TEST_CASE("Different Variable", "[IntegrateExp][Variable][Different]")
+TEST_CASE("Different Variable", "[Integrate][Variable][Different]")
 {
     Oasis::Variable var { "x" };
     Oasis::Variable var2 { "y" };
@@ -60,11 +60,11 @@ TEST_CASE("Different Variable", "[IntegrateExp][Variable][Different]")
         Oasis::Variable { "C" }
     };
 
-    auto integrated = var2.IntegrateExp(var);
+    auto integrated = var2.Integrate(var);
     REQUIRE(integral.Equals(*integrated));
 }
 
-TEST_CASE("Power Rule", "[IntegrateExp][Exponent][Power]")
+TEST_CASE("Power Rule", "[Integrate][Exponent][Power]")
 {
     Oasis::Variable var { "x" };
     Oasis::Exponent<Oasis::Variable, Oasis::Real> integrand { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
@@ -75,11 +75,11 @@ TEST_CASE("Power Rule", "[IntegrateExp][Exponent][Power]")
         Oasis::Variable { "C" } } };
     auto ptr = integral.Simplify();
 
-    auto integrated = integrand.IntegrateExp(var);
+    auto integrated = integrand.Integrate(var);
     REQUIRE((*integrated).Equals(*ptr));
 }
 
-TEST_CASE("Constant Rule Multiply", "[IntegrateExp][Multiply][Constant]")
+TEST_CASE("Constant Rule Multiply", "[Integrate][Multiply][Constant]")
 {
     Oasis::Variable var { "x" };
     Oasis::Multiply<Oasis::Real, Oasis::Variable> integrand { Oasis::Real { 3.0f }, Oasis::Variable { var.GetName() } };
@@ -96,11 +96,11 @@ TEST_CASE("Constant Rule Multiply", "[IntegrateExp][Multiply][Constant]")
     };
 
     auto ptr = integral.Simplify();
-    auto integrated = integrand.IntegrateExp(var);
+    auto integrated = integrand.Integrate(var);
     REQUIRE((integrated->Equals(*ptr)));
 }
 
-TEST_CASE("Constant Rule Divide", "[IntegrateExp][Divide][Constant]")
+TEST_CASE("Constant Rule Divide", "[Integrate][Divide][Constant]")
 {
     Oasis::Variable var { "x" };
     Oasis::Divide<Oasis::Variable, Oasis::Real> integrand { Oasis::Variable { var.GetName() }, Oasis::Real { 3.0f } };
@@ -114,13 +114,13 @@ TEST_CASE("Constant Rule Divide", "[IntegrateExp][Divide][Constant]")
                     Oasis::Real { 2.0f } } },
             Oasis::Variable { "C" } }
     };
-    auto integrated = integrand.IntegrateExp(var);
+    auto integrated = integrand.Integrate(var);
     auto simplified = integrated->Simplify();
 
     REQUIRE((simplified->Equals(*(integral.Simplify()))));
 }
 
-TEST_CASE("Add Rule Different Terms", "[IntegrateExp][Add][Different]")
+TEST_CASE("Add Rule Different Terms", "[Integrate][Add][Different]")
 {
     Oasis::Variable var { "x" };
     Oasis::Add<Oasis::Variable, Oasis::Real> integrand { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
@@ -136,13 +136,13 @@ TEST_CASE("Add Rule Different Terms", "[IntegrateExp][Add][Different]")
                     Oasis::Variable { var.GetName() } } },
             Oasis::Variable { "C" } }
     };
-    auto integrated = integrand.IntegrateExp(var);
+    auto integrated = integrand.Integrate(var);
     auto simplified = integrated->Simplify();
 
     REQUIRE(simplified->Equals(*(integral.Simplify())));
 }
 
-TEST_CASE("Subtract Rule Different Terms", "[IntegrateExp][Subtract][Different]")
+TEST_CASE("Subtract Rule Different Terms", "[Integrate][Subtract][Different]")
 {
     Oasis::Variable var { "x" };
     Oasis::Subtract<Oasis::Variable, Oasis::Real> integrand { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
@@ -158,12 +158,12 @@ TEST_CASE("Subtract Rule Different Terms", "[IntegrateExp][Subtract][Different]"
                     Oasis::Variable { var.GetName() } } },
             Oasis::Variable { "C" } }
     };
-    auto integrated = integrand.IntegrateExp(var);
+    auto integrated = integrand.Integrate(var);
 
     REQUIRE(integrated->Equals(*(integral.Simplify())));
 }
 
-TEST_CASE("Add Rule Like Terms", "[IntegrateExp][Add][Like]")
+TEST_CASE("Add Rule Like Terms", "[Integrate][Add][Like]")
 {
     Oasis::Variable var { "x" };
     Oasis::Add<Oasis::Variable, Oasis::Variable> integrand { Oasis::Variable { var.GetName() }, Oasis::Variable { var.GetName() } };
@@ -174,7 +174,7 @@ TEST_CASE("Add Rule Like Terms", "[IntegrateExp][Add][Like]")
             Oasis::Variable { "C" } }
     };
 
-    auto integrated = integrand.IntegrateExp(var);
+    auto integrated = integrand.Integrate(var);
     auto simplified = integrated->Simplify();
 
     REQUIRE(simplified->Equals(*(integral.Simplify())));

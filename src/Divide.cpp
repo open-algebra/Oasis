@@ -5,7 +5,7 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
-#include "Oasis/Integrate.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Subtract.hpp"
@@ -308,7 +308,7 @@ auto Divide<Expression>::Specialize(const Expression& other, tf::Subflow& subflo
     return std::make_unique<Divide>(dynamic_cast<const Divide&>(*otherGeneralized));
 }
 
-auto Divide<Expression>::IntegrateExp(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Divide<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
@@ -316,11 +316,11 @@ auto Divide<Expression>::IntegrateExp(const Expression& integrationVariable) -> 
 
         // Constant case - Integrand over a divisor
         if (auto constant = Multiply<Expression, Real>::Specialize(*simplifiedDiv); constant != nullptr) {
-            return constant->IntegrateExp(integrationVariable)->Simplify();
+            return constant->Integrate(integrationVariable)->Simplify();
         }
     }
 
-    Integrate<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
 
     return integral.Copy();
 }

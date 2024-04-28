@@ -7,7 +7,7 @@
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
-#include "Oasis/Integrate.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Variable.hpp"
@@ -212,7 +212,7 @@ auto Subtract<Expression>::Differentiate(const Expression& differentiationVariab
     return Copy();
 }
 
-auto Subtract<Expression>::IntegrateExp(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Subtract<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
@@ -221,12 +221,12 @@ auto Subtract<Expression>::IntegrateExp(const Expression& integrationVariable) -
         // Make sure we're still subtracting
         if (auto adder = Subtract<Expression>::Specialize(*simplifiedSub); adder != nullptr) {
             auto leftRef = adder->GetLeastSigOp().Copy();
-            auto leftIntegral = leftRef->IntegrateExp(integrationVariable);
+            auto leftIntegral = leftRef->Integrate(integrationVariable);
 
             auto specializedLeft = Add<Expression>::Specialize(*leftIntegral);
 
             auto rightRef = adder->GetMostSigOp().Copy();
-            auto rightIntegral = rightRef->IntegrateExp(integrationVariable);
+            auto rightIntegral = rightRef->Integrate(integrationVariable);
 
             auto specializedRight = Add<Expression>::Specialize(*rightIntegral);
 
@@ -242,10 +242,10 @@ auto Subtract<Expression>::IntegrateExp(const Expression& integrationVariable) -
         }
         // If not, use other integration technique
         else {
-            return simplifiedSub->IntegrateExp(integrationVariable);
+            return simplifiedSub->Integrate(integrationVariable);
         }
     }
-    Integrate<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
 
     return integral.Copy();
 }

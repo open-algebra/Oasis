@@ -244,9 +244,9 @@ public:
         return Generalize()->Simplify();
     }
 
-    [[nodiscard]] auto IntegrateExp(const Expression& integrationVariable) -> std::unique_ptr<Expression> override
+    [[nodiscard]] auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression> override
     {
-        return Generalize()->IntegrateExp(integrationVariable);
+        return Generalize()->Integrate(integrationVariable);
     }
 
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> override
