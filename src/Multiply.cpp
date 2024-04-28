@@ -9,6 +9,8 @@
 #include "Oasis/Negate.hpp"
 #include "Oasis/Subtract.hpp"
 
+#define EPSILON 10E-6
+
 namespace Oasis {
 
 auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
@@ -20,8 +22,8 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (auto onezerocase = Multiply<Real, Expression>::Specialize(simplifiedMultiply); onezerocase != nullptr) {
         const Real& multiplicand = onezerocase->GetMostSigOp();
         const Expression& multiplier = onezerocase->GetLeastSigOp();
-        if (multiplicand.GetValue() == 0) {
-            return std::make_unique<Real>(Real { 0 });
+        if (abs(multiplicand.GetValue()) <= EPSILON) {
+            return std::make_unique<Real>(Real{0.0});
         }
         if (multiplicand.GetValue() == 1) {
             return multiplier.Simplify();

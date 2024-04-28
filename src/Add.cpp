@@ -9,6 +9,8 @@
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 
+#define EPSILON 10E-6
+
 namespace Oasis {
 
 auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
@@ -135,6 +137,7 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (auto var = Multiply<Expression, Variable>::Specialize(*addend); var != nullptr) {
             for (; i < vals.size(); i++) {
                 if (auto valI = Multiply<Expression, Variable>::Specialize(*vals[i]); valI != nullptr) {
+                    // if (auto zeroCase = Multiply<Real, Expression>::Specialize(*valI); zeroCase != nullptr) {}
                     if (valI->GetLeastSigOp().GetName() == var->GetLeastSigOp().GetName()) {
                         vals[i] = Multiply<Expression> { *(Add<Expression> { valI->GetMostSigOp(), var->GetMostSigOp() }.Simplify()), valI->GetLeastSigOp() }.Generalize();
                         break;
@@ -193,7 +196,23 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    if (auto vec = BuildFromVector<Add>(vals); vec != nullptr) {
+    // filter out zero-equivalent expressions
+    std::vector<std::unique_ptr<Expression>> avals;
+    for (auto &val: vals) {
+        if (auto real = Real::Specialize(*val); real != nullptr) {
+            if (abs(real->GetValue()) <= EPSILON) {
+                continue;
+            }
+        }
+        if (auto mul = Multiply<Real, Expression>::Specialize(*val); mul != nullptr) {
+            if (abs(mul->GetMostSigOp().GetValue()) <= EPSILON) {
+                continue;
+            }
+        }
+        avals.push_back(val->Generalize());
+    }
+
+    if (auto vec = BuildFromVector<Add>(avals); vec != nullptr) {
         return vec;
     }
 
