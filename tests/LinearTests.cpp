@@ -55,10 +55,15 @@ TEST_CASE("Linear Creation", "[Linear]")
     auto result = Oasis::SolveLinearSystems(exprs);
 
     REQUIRE(result.find("x") != result.end());
-    REQUIRE_THAT(result.find("x")->second, Catch::Matchers::WithinAbs(3.0, EPSILON));
     REQUIRE(result.find("y") != result.end());
-    REQUIRE_THAT(result.find("y")->second, Catch::Matchers::WithinAbs(-2.0, EPSILON));
     REQUIRE(result.find("z") != result.end());
+
+    std::cout << "x: " << result.find("x")->second << std::endl;
+    std::cout << "y: " << result.find("y")->second << std::endl;
+    std::cout << "z: " << result.find("z")->second << std::endl;
+
+    REQUIRE_THAT(result.find("x")->second, Catch::Matchers::WithinAbs(3.0, EPSILON));
+    REQUIRE_THAT(result.find("y")->second, Catch::Matchers::WithinAbs(-2.0, EPSILON));
     REQUIRE_THAT(result.find("z")->second, Catch::Matchers::WithinAbs(-1.0, EPSILON));
 }
 
@@ -101,10 +106,15 @@ TEST_CASE("Linear Solve with subtraction", "[Linear][Subtract]")
     auto result = Oasis::SolveLinearSystems(exprs);
 
     REQUIRE(result.find("x") != result.end());
-    REQUIRE_THAT(result.find("x")->second, Catch::Matchers::WithinAbs(3.0, EPSILON));
     REQUIRE(result.find("y") != result.end());
-    REQUIRE_THAT(result.find("y")->second, Catch::Matchers::WithinAbs(1.0, EPSILON));
     REQUIRE(result.find("z") != result.end());
+
+    std::cout << "x: " << result.find("x")->second << std::endl;
+    std::cout << "y: " << result.find("y")->second << std::endl;
+    std::cout << "z: " << result.find("z")->second << std::endl;
+
+    REQUIRE_THAT(result.find("x")->second, Catch::Matchers::WithinAbs(3.0, EPSILON));
+    REQUIRE_THAT(result.find("y")->second, Catch::Matchers::WithinAbs(1.0, EPSILON));
     REQUIRE_THAT(result.find("z")->second, Catch::Matchers::WithinAbs(7.0, EPSILON));
 }
 
