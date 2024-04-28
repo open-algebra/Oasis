@@ -21,6 +21,20 @@ auto SolveLinearSystems(std::vector<std::unique_ptr<Expression>>& exprs) -> std:
     auto b = matrices.first.second;
     auto varMap = matrices.second;
 
+    std::cout << "Matrix A" << std::endl;
+    for (Eigen::Index r = 0; r < A.rows(); r++) {
+        for (Eigen::Index c = 0; c < A.cols(); c++) {
+            std::cout << A(r, c) << "  ";
+        }
+        std::cout << std::endl;
+    }
+
+    std::cout << "Matrix B" << std::endl;
+    for (Eigen::Index c = 0; c < b.rows(); c++) {
+        std::cout << b(c) << std::endl;
+    }
+    std::cout << std::endl;
+
     // get result vector from A^{-1}*b=x
     Matrix1D x = SolveLinearSystems(A, b);
 
