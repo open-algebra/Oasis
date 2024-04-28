@@ -44,7 +44,7 @@ auto SolveLinearSystems(MatrixXXD& matrixA, Matrix1D& matrixb) -> Matrix1D;
  * @return Dynamic Float matrix with the provided expressions inserted
  */
 auto ConstructMatrices(const std::vector<std::unique_ptr<Expression>>& exprs)
-    -> std::pair<std::pair<MatrixXXD, Matrix1D>, std::map<std::string, size_t>>;
+    -> std::pair<std::pair<MatrixXXD, Matrix1D>, std::map<std::string, Eigen::Index>>;
 
 /**
  *

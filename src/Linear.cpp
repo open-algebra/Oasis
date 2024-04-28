@@ -14,6 +14,7 @@ auto SolveLinearSystems(std::vector<std::unique_ptr<Expression>>& exprs) -> std:
 {
     for (auto& expr : exprs) {
         expr = expr->Simplify();
+        std::cout << expr->ToString() << std::endl;
     }
     auto matrices = ConstructMatrices(exprs);
     auto A = matrices.first.first;
@@ -35,7 +36,7 @@ auto SolveLinearSystems(std::vector<std::unique_ptr<Expression>>& exprs) -> std:
 }
 
 auto ConstructMatrices(const std::vector<std::unique_ptr<Expression>>& exprs)
-    -> std::pair<std::pair<MatrixXXD, Matrix1D>, std::map<std::string, size_t>>
+-> std::pair<std::pair<MatrixXXD, Matrix1D>, std::map<std::string, Eigen::Index>>
 {
     size_t numRows = exprs.size();
     size_t numCols = exprs.size();
@@ -43,7 +44,7 @@ auto ConstructMatrices(const std::vector<std::unique_ptr<Expression>>& exprs)
     MatrixXXD A(numRows, numCols);
     Matrix1D b(numRows);
     size_t varCount = 0;
-    std::map<std::string, size_t> vars; // variable name, column in matrix
+    std::map<std::string, Eigen::Index> vars; // variable name, column in matrix
     for (size_t row = 0; row < exprs.size(); row++) {
         std::vector<std::unique_ptr<Expression>> terms;
         auto expr = Add<Expression>::Specialize(*exprs[row]);
@@ -52,13 +53,15 @@ auto ConstructMatrices(const std::vector<std::unique_ptr<Expression>>& exprs)
             if (auto r = Real::Specialize(*term); r != nullptr) { // real number
                 b[Eigen::Index(row)] = -1 * r->GetValue();
             } else if (auto v = Variable::Specialize(*term); v != nullptr) { // variable by itself (coefficient of 1)
-                std::pair<size_t, bool> keyloc = GetMapValue<std::string, size_t>(vars, v->GetName(), varCount);
+                std::pair<size_t, bool> keyloc = GetMapValue<std::string, Eigen::Index>(vars, v->GetName(), varCount);
                 if (keyloc.second)
                     varCount++;
                 A(Eigen::Index(row), Eigen::Index(keyloc.first)) = 1;
             } else if (auto exprV = Multiply<Real, Variable>::Specialize(*term); exprV != nullptr) {
                 // any expression times a variable
-                std::pair<size_t, bool> keyloc = GetMapValue<std::string, size_t>(vars, exprV->GetLeastSigOp().GetName(), varCount);
+                std::pair<size_t, bool> keyloc = GetMapValue<std::string, Eigen::Index>(vars,
+                                                                                        exprV->GetLeastSigOp().GetName(),
+                                                                                        varCount);
                 if (keyloc.second)
                     varCount++;
                 A(Eigen::Index(row), Eigen::Index(keyloc.first)) = exprV->GetMostSigOp().GetValue();
