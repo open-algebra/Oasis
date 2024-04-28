@@ -10,10 +10,14 @@ embed_file(FILEPATH assets/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js)
 
 set(OasisGUI_SOURCES
     main.cpp
+    components/FunctionBuilder/FunctionBuilder.cpp
+    components/FunctionBuilder/FunctionBuilder.hpp
     components/KeypadButton/KeypadButton.cpp
     components/KeypadButton/KeypadButton.hpp
     views/DefaultView.cpp
     views/DefaultView.hpp
+        InputPreprocessor.cpp
+        InputPreprocessor.hpp
 )
 
 if(wxWidgets_USE_FILE) # not defined in CONFIG mode

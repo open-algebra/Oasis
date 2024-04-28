@@ -14,7 +14,6 @@ class wxTextCtrl;
 
 class DefaultView final : public wxFrame {
 public:
-    void setStyles(tinyxml2::XMLElement* style);
     DefaultView();
 
 private:

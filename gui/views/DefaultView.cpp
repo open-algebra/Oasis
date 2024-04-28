@@ -6,7 +6,6 @@
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
 #include <wx/sizer.h>
-#include <wx/splitter.h>
 #include <wx/webview.h>
 #include <wx/webviewfshandler.h>
 
@@ -14,33 +13,14 @@
 
 #include "Oasis/FromString.hpp"
 
+#include "../InputPreprocessor.hpp"
 #include "../components/KeypadButton/KeypadButton.hpp"
+#include "../components/FunctionBuilder/FunctionBuilder.hpp"
 #include "DefaultView.hpp"
 
 #include <Fox.svg.hpp>
 #include <bootstrap.bundle.min.js.hpp>
 #include <bootstrap.min.css.hpp>
-
-namespace {
-
-std::string preprocessInput(const std::string& input)
-{
-    std::string result;
-    std::string operators = "+-*/^(),";
-
-    for (char ch : input) {
-        if (std::ranges::find(operators, ch) != operators.end()) {
-            result += ' ';
-            result += ch;
-            result += ' ';
-        } else {
-            result += ch;
-        }
-    }
-    return result;
-}
-
-}
 
 DefaultView::DefaultView()
     : wxFrame(nullptr, wxID_ANY, "OASIS")
@@ -154,15 +134,68 @@ DefaultView::DefaultView()
     auto* menuHelp = new wxMenu;
     menuHelp->Append(wxID_ABOUT);
 
+    auto* menuFunctions = new wxMenu;
+    wxMenuItem* itemDerivative = menuFunctions->Append(wxID_ANY, "Derivative...");
+    wxMenuItem* itemLogarithm = menuFunctions->Append(wxID_ANY, "Logarithm...");
+
     auto* menuBar = new wxMenuBar;
+    auto* menuView = new wxMenu;
+
+    menuView->Append(wxID_ZOOM_IN, "Zoom In");
+    menuView->Append(wxID_ZOOM_OUT, "Zoom Out");
+    menuView->Append(wxID_ZOOM_100, "Reset Zoom");
+
+    menuBar->Append(menuFunctions, "&Functions");
+    menuBar->Append(menuView, "&View");
     menuBar->Append(menuHelp, "&Help");
 
     SetMenuBar(menuBar);
 
     Bind(wxEVT_MENU, [=](wxCommandEvent& event) { wxMessageBox("https://github.com/matthew-mccall/Oasis", "Open Algebra Software for Inferring Solutions", wxICON_INFORMATION); }, wxID_ABOUT);
-
     Bind(wxEVT_MENU, [=](wxCommandEvent& event) { Close(true); }, wxID_EXIT);
 
+    Bind(wxEVT_MENU, [=](wxCommandEvent& event)
+    {
+        auto derivativeBuilder = FunctionBuilder(this, wxID_ANY, "Derivative Builder", "dd", "Function", "Variable");
+        if (derivativeBuilder.ShowModal() != wxID_OK) {
+            return;
+        }
+
+        currentInput += derivativeBuilder.getComposedFunction();
+        textField->SetValue(currentInput);
+        textField->SetInsertionPointEnd();
+    }, itemDerivative->GetId());
+
+    Bind(wxEVT_MENU, [=](wxCommandEvent& event)
+    {
+        auto logBuilder = FunctionBuilder(this, wxID_ANY, "Logarithm Builder", "log", "Base", "Argument");
+        if (logBuilder.ShowModal() != wxID_OK) {
+            return;
+        }
+
+        currentInput += logBuilder.getComposedFunction();
+        textField->SetValue(currentInput);
+        textField->SetInsertionPointEnd();
+    }, itemLogarithm->GetId());
+
+
+    Bind(wxEVT_MENU, [=](wxCommandEvent& event)
+    {
+        webView->SetZoomType(wxWEBVIEW_ZOOM_TYPE_LAYOUT);
+        webView->SetZoomFactor(webView->GetZoomFactor() + 0.1f);
+    }, wxID_ZOOM_IN);
+
+    Bind(wxEVT_MENU, [=](wxCommandEvent& event)
+    {
+        webView->SetZoomType(wxWEBVIEW_ZOOM_TYPE_LAYOUT);
+        webView->SetZoomFactor(webView->GetZoomFactor() - 0.1f);
+    }, wxID_ZOOM_OUT);
+
+    Bind(wxEVT_MENU, [=](wxCommandEvent& event)
+    {
+        webView->SetZoomType(wxWEBVIEW_ZOOM_TYPE_LAYOUT);
+        webView->SetZoom(wxWEBVIEW_ZOOM_MEDIUM);
+    }, wxID_ZOOM_100);
 
     derivativeButton->Bind(wxEVT_BUTTON, [this, textField](wxCommandEvent& evt)
     {
