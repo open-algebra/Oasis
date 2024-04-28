@@ -198,7 +198,7 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     // filter out zero-equivalent expressions
     std::vector<std::unique_ptr<Expression>> avals;
-    for (auto &val: vals) {
+    for (auto& val : vals) {
         if (auto real = Real::Specialize(*val); real != nullptr) {
             if (abs(real->GetValue()) <= EPSILON) {
                 continue;
