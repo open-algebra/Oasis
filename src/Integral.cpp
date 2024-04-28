@@ -148,7 +148,7 @@ auto Integral<Expression>::ToString() const -> std::string
     return fmt::format("({} + {})", mostSigOp->ToString(), leastSigOp->ToString());
 }
 
-auto Integral<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
+auto Integral<Expression>::Simplify(tf::Subflow&) const -> std::unique_ptr<Expression>
 {
     std::unique_ptr<Expression> simplifiedIntegrand, simplifiedDifferential;
 
