@@ -200,12 +200,12 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
     std::vector<std::unique_ptr<Expression>> avals;
     for (auto& val : vals) {
         if (auto real = Real::Specialize(*val); real != nullptr) {
-            if (abs(real->GetValue()) <= EPSILON) {
+            if (std::abs(real->GetValue()) <= EPSILON) {
                 continue;
             }
         }
         if (auto mul = Multiply<Real, Expression>::Specialize(*val); mul != nullptr) {
-            if (abs(mul->GetMostSigOp().GetValue()) <= EPSILON) {
+            if (std::abs(mul->GetMostSigOp().GetValue()) <= EPSILON) {
                 continue;
             }
         }

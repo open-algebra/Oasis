@@ -85,10 +85,11 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
                        .Simplify();
         return Add { *simplifiedMinuend, *RHS }.Simplify();
     } else {
-        return simplifiedSubtract.Copy();
+//        return simplifiedSubtract.Copy();
+        return Add{*simplifiedMinuend, *(negated.Simplify())}.Simplify();
     }
 
-    // return Add { *simplifiedMinuend, *(negated.Simplify()) }.Simplify();
+
 }
 
 auto Subtract<Expression>::ToString() const -> std::string

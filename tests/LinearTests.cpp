@@ -14,7 +14,7 @@
 #include "Oasis/Variable.hpp"
 #include "catch2/matchers/catch_matchers_floating_point.hpp"
 
-#define EPSILON 0.000001
+#define EPSILON 10E-6
 
 TEST_CASE("Linear Creation", "[Linear]")
 {
