@@ -26,76 +26,7 @@ auto Integral<Expression>::Simplify() const -> std::unique_ptr<Expression>
     auto simplifiedIntegrand = mostSigOp ? mostSigOp->Simplify() : nullptr;
     auto simplifiedDifferential = leastSigOp ? leastSigOp->Simplify() : nullptr;
 
-    Integral simplifiedIntegrate { *simplifiedIntegrand, *simplifiedDifferential };
-
-    // Unbounded Integration Rules
-
-    // Constant Rule
-    if (auto constCase = Integral<Real, Variable>::Specialize(simplifiedIntegrate); constCase != nullptr) {
-        const Variable& differential = constCase->GetLeastSigOp();
-        Oasis::Real constant { constCase->GetMostSigOp() };
-
-        return constant.Integrate(differential);
-    }
-
-    if (auto constCase = Integral<Divide<Real>, Variable>::Specialize(simplifiedIntegrate); constCase != nullptr) {
-        const Variable& differential = constCase->GetLeastSigOp();
-        Oasis::Divide constant { constCase->GetMostSigOp() };
-        auto constReal = constant.Simplify();
-
-        return constReal->Integrate(differential);
-    }
-
-    // Power Rule
-    if (auto powerCase = Integral<Exponent<Expression>, Variable>::Specialize(simplifiedIntegrate); powerCase != nullptr) {
-        const Variable& differential = powerCase->GetLeastSigOp();
-        Oasis::Exponent exponent { powerCase->GetMostSigOp() };
-
-        return exponent.Integrate(differential);
-    }
-
-    // Constant + Power Rule
-    if (auto powerCase = Integral<Multiply<Expression, Exponent<Expression>>, Variable>::Specialize(simplifiedIntegrate); powerCase != nullptr) {
-        const Variable& differential = powerCase->GetLeastSigOp();
-        Oasis::Exponent exponent { powerCase->GetMostSigOp().GetLeastSigOp() };
-        auto integration = exponent.Integrate(differential);
-
-        return std::make_unique<Multiply<Expression>>(powerCase->GetMostSigOp().GetMostSigOp(), (*integration));
-    }
-
-    if (auto powerCase = Integral<Multiply<Exponent<Expression>, Expression>, Variable>::Specialize(simplifiedIntegrate); powerCase != nullptr) {
-        const Variable& differential = powerCase->GetLeastSigOp();
-        Oasis::Exponent exponent { powerCase->GetMostSigOp().GetMostSigOp() };
-        auto integration = exponent.Integrate(differential);
-
-        return std::make_unique<Multiply<Expression>>(powerCase->GetMostSigOp().GetLeastSigOp(), (*integration));
-    }
-
-    // U Substitution Rule
-    // Needs Differentiation Implementation for U-Sub
-
-    // Exponential Rule - a^x
-    // Needs Euler's Number for Exponential Functions
-
-    // Natural Log Rule
-    // Needs Euler's Number for Exponential Functions
-
-    // Euler's Number
-    // Needs Euler's Number for Exponential Functions
-
-    // Trigonometric Rules
-    // Needs Trig for Exponential Functions
-
-    // Powers of Sin and Cos
-    // Needs Trig for Exponential Functions
-
-    // Integration by Parts
-    // Needs Trig and Euler's Number
-
-    // Partial Fraction Decomposition
-    // Work in Progress
-
-    return simplifiedIntegrate.Copy();
+    return simplifiedIntegrand->Integrate(*simplifiedDifferential);
 }
 
 auto Integral<Expression>::Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression>
