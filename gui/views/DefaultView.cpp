@@ -355,7 +355,7 @@ setTimeout(function(){document.body.style.overflow = 'auto';}, 0);)");
     body = doc.NewElement("body");
 
     currentDivWrapper = doc.NewElement("div");
-    currentDivWrapper->SetAttribute("class", "d-flex justify-content-end mx-2"); // Set div as flexbox to align items with padding and shadow
+    currentDivWrapper->SetAttribute("class", "d-flex justify-content-end m-2"); // Set div as flexbox to align items with padding and shadow
 
     currentDiv = doc.NewElement("div");
     currentDiv->SetAttribute("class", "d-inline-flex p-2 text-bg-primary rounded border shadow"); // Set div as inline-flex to make it takes as much width as necessary with padding and shadow
@@ -386,10 +386,10 @@ void DefaultView::onEnter(wxWebView* webView, wxTextCtrl* textCtrl)
     auto& [query, response] = history.emplace_back(std::move(currentExpression), currentExpression->Simplify());
 
     tinyxml2::XMLElement* queryRightAlign = doc.NewElement("div");
-    queryRightAlign->SetAttribute("class", "d-flex justify-content-end mb-2 mx-2"); // Set div as flexbox to align items with padding and shadow
+    queryRightAlign->SetAttribute("class", "d-flex justify-content-end mt-2 mx-2"); // Set div as flexbox to align items with padding and shadow
 
     tinyxml2::XMLElement* queryCard = doc.NewElement("div");
-    queryCard->SetAttribute("class", "d-inline-flex p-2 text-bg-primary rounded border shadow"); // Set div as inline-flex to make it takes as much width as necessary with padding and shadow
+    queryCard->SetAttribute("class", "d-inline-flex p-2 text-bg-primary rounded shadow"); // Set div as inline-flex to make it takes as much width as necessary with padding and shadow
 
     query->Serialize(mathMLSerializer);
     tinyxml2::XMLElement* queryMathML = mathMLSerializer.GetResult();
@@ -403,22 +403,26 @@ void DefaultView::onEnter(wxWebView* webView, wxTextCtrl* textCtrl)
     if (currentDivWrapper->PreviousSibling()) {
         body->InsertAfterChild(currentDivWrapper->PreviousSibling(), queryRightAlign);
     } else {
-        queryRightAlign->SetAttribute("class", "d-flex justify-content-end m-2"); // Set div as flexbox to align items with padding and shadow
         body->InsertFirstChild(queryRightAlign);
     }
 
     tinyxml2::XMLElement* responseLeftAlign = doc.NewElement("div");
-    responseLeftAlign->SetAttribute("class", "d-flex justify-content-begin align-items-center mb-2 mx-2");
+    responseLeftAlign->SetAttribute("class", "d-flex justify-content-begin align-items-center mt-2 mx-2");
 
     tinyxml2::XMLElement* responseCard = doc.NewElement("div");
-    responseCard->SetAttribute("class", "d-inline-flex p-2 bg-text-light rounded border shadow mx-2");
+    responseCard->SetAttribute("class", "d-inline-flex p-2 bg-text-light rounded border shadow");
+
+    tinyxml2::XMLElement* avatarWrapper = doc.NewElement("div");
+    avatarWrapper->SetAttribute("class", "me-2 p-1 d-inline bg-light border rounded");
 
     tinyxml2::XMLElement* responseAvatar = doc.NewElement("img");
     responseAvatar->SetAttribute("src", "memory:Fox.svg");
     responseAvatar->SetAttribute("class", "mr-3");
     responseAvatar->SetAttribute("width", "30");
     responseAvatar->SetAttribute("height", "30");
-    responseLeftAlign->InsertEndChild(responseAvatar);
+    avatarWrapper->InsertEndChild(responseAvatar);
+
+    responseLeftAlign->InsertEndChild(avatarWrapper);
 
     if (response == nullptr) {
         tinyxml2::XMLText* errorText = doc.NewText("Error");
