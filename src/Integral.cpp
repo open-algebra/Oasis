@@ -146,7 +146,6 @@ auto Integral<Expression>::Simplify(const Expression& upper, const Expression& l
         */
 }
 
-
 auto Integral<Expression>::Simplify(tf::Subflow&) const -> std::unique_ptr<Expression>
 {
     std::unique_ptr<Expression> simplifiedIntegrand, simplifiedDifferential;

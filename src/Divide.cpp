@@ -5,8 +5,8 @@
 #include <map>
 #include <vector>
 
-#include "Oasis/Divide.hpp"
 #include "Oasis/Add.hpp"
+#include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
