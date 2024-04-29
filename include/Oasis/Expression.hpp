@@ -191,6 +191,12 @@ public:
     [[nodiscard]] virtual auto Integrate(const Expression&) -> std::unique_ptr<Expression>;
 
     /**
+     * Attempts to integrate this expression using integration rules
+     *
+     * @return A solved definite integral of the expression
+     */
+    [[nodiscard]] virtual auto Integrate(const Expression&, const Expression&, const Expression&) -> std::unique_ptr<Expression>;
+    /**
      * Gets whether this expression is of a specific type.
      *
      * @tparam T The type to check against.
