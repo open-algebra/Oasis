@@ -14,6 +14,7 @@ set(Oasis_SOURCES
     Expression.cpp
     FromString.cpp
     Imaginary.cpp
+    Linear.cpp
     Log.cpp
     Multiply.cpp
     Negate.cpp
@@ -33,6 +34,7 @@ set(Oasis_HEADERS
     ../include/Oasis/FromString.hpp
     ../include/Oasis/Imaginary.hpp
     ../include/Oasis/LeafExpression.hpp
+    ../include/Oasis/Linear.hpp
     ../include/Oasis/Log.hpp
     ../include/Oasis/Multiply.hpp
     ../include/Oasis/Negate.hpp
