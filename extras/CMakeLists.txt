@@ -1,7 +1,16 @@
-set(Oasis_EXTRAS_SOURCES src/MathMLSerializer.cpp src/InFixSerializer.cpp)
+set(Oasis_EXTRAS_SOURCES
+        # cmake-format: sortable
+        src/FromString.cpp
+        src/MathMLSerializer.cpp
+        src/InFixSerializer.cpp
+)
 
-set(Oasis_EXTRAS_HEADERS include/Oasis/MathMLSerializer.hpp
-                         include/Oasis/InFixSerializer.hpp)
+set(Oasis_EXTRAS_HEADERS
+        # cmake-format: sortable
+        include/Oasis/FromString.hpp
+        include/Oasis/MathMLSerializer.hpp
+        include/Oasis/InFixSerializer.hpp
+)
 
 add_library(OasisExtras ${Oasis_EXTRAS_SOURCES} ${Oasis_EXTRAS_HEADERS})
 add_library(Oasis::Extras ALIAS OasisExtras)

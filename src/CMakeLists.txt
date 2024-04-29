@@ -12,7 +12,6 @@ set(Oasis_SOURCES
     Divide.cpp
     Exponent.cpp
     Expression.cpp
-    FromString.cpp
     Imaginary.cpp
     Linear.cpp
     Log.cpp
@@ -31,7 +30,6 @@ set(Oasis_HEADERS
     ../include/Oasis/Divide.hpp
     ../include/Oasis/Exponent.hpp
     ../include/Oasis/Expression.hpp
-    ../include/Oasis/FromString.hpp
     ../include/Oasis/Imaginary.hpp
     ../include/Oasis/LeafExpression.hpp
     ../include/Oasis/Linear.hpp

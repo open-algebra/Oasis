@@ -6,17 +6,17 @@
 #include <sstream>
 #include <stack>
 
-#include <Oasis/Add.hpp>
-#include <Oasis/Divide.hpp>
-#include <Oasis/Exponent.hpp>
-#include <Oasis/Log.hpp>
-#include <Oasis/Multiply.hpp>
-#include <Oasis/Real.hpp>
-#include <Oasis/Subtract.hpp>
+#include <../../include/Oasis/Add.hpp>
+#include <../../include/Oasis/Divide.hpp>
+#include <../../include/Oasis/Exponent.hpp>
+#include <../../include/Oasis/Log.hpp>
+#include <../../include/Oasis/Multiply.hpp>
+#include <../../include/Oasis/Real.hpp>
+#include <../../include/Oasis/Subtract.hpp>
 
 #include "Oasis/FromString.hpp"
 
-#include "Oasis/Derivative.hpp"
+#include "../../include/Oasis/Derivative.hpp"
 
 namespace {
 

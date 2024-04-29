@@ -12,7 +12,6 @@ set(Oasis_TESTS
     DifferentiateTests.cpp
     DivideTests.cpp
     ExponentTests.cpp
-    InFixTests.cpp
     LinearTests.cpp
     LogTests.cpp
     MultiplyTests.cpp

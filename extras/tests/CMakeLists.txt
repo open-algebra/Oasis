@@ -1,5 +1,6 @@
 # These variables MUST be modified whenever a new test file is added.
 set(Oasis_EXTRAS_TESTS # cmake-format: sortable
+                       InFixTests.cpp
                        MathMLTests.cpp)
 
 # Adds an executable target called "OasisTests" to be built from sources files.
