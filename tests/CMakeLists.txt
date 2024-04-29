@@ -14,8 +14,8 @@ set(Oasis_TESTS
     ExponentTests.cpp
     IntegrateTests.cpp
     InFixTests.cpp
+    LinearTests.cpp
     LogTests.cpp
-    MathMLTests.cpp
     MultiplyTests.cpp
     NegateTests.cpp
     PolynomialTests.cpp
@@ -32,7 +32,6 @@ else()
     target_compile_options(OasisTests PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_library(Oasis::Oasis ALIAS Oasis)
 target_link_libraries(OasisTests PRIVATE Oasis::Oasis Catch2::Catch2WithMain)
 
 # Automatically registers the tests with CTest.

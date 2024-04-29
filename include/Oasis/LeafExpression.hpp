@@ -6,6 +6,7 @@
 #define OASIS_LEAFEXPRESSION_HPP
 
 #include "Expression.hpp"
+#include "Serialization.hpp"
 
 namespace Oasis {
 
@@ -45,6 +46,13 @@ public:
     auto Substitute(const Expression&, const Expression&) -> std::unique_ptr<Expression> override
     {
         return this->Copy();
+    }
+
+    void Serialize(SerializationVisitor& visitor) const override
+    {
+        const auto generalized = Generalize();
+        const auto& derivedGeneralized = dynamic_cast<const DerivedT&>(*generalized);
+        visitor.Serialize(derivedGeneralized);
     }
 };
 

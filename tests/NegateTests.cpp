@@ -5,6 +5,10 @@
 #include "catch2/catch_test_macros.hpp"
 
 #include <Oasis/Negate.hpp>
+#include "Oasis/Subtract.hpp"
+#include "Oasis/Add.hpp"
+#include "Oasis/Variable.hpp"
+#include "Oasis/Real.hpp"
 
 TEST_CASE("Negate", "[Negate]")
 {

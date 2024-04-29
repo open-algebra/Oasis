@@ -6,6 +6,7 @@
 #define UNARYEXPRESSION_HPP
 
 #include "Expression.hpp"
+#include "Serialization.hpp"
 
 namespace Oasis {
 
@@ -99,6 +100,13 @@ public:
         DerivedT<Expression> comb = DerivedT<Expression> { *right };
         auto ret = comb.Simplify();
         return ret;
+    }
+
+    void Serialize(SerializationVisitor& visitor) const override
+    {
+        const auto generalized = Generalize();
+        const auto& derivedGeneralized = dynamic_cast<const DerivedGeneralized&>(*generalized);
+        visitor.Serialize(derivedGeneralized);
     }
 
 protected:

@@ -37,7 +37,6 @@ public:
      */
     [[nodiscard]] auto GetName() const -> std::string;
 
-    [[nodiscard]] auto ToString() const -> std::string final;
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>;

@@ -5,8 +5,6 @@
 #include <string>
 #include <vector>
 
-#include "tinyxml2.h"
-
 namespace tf {
 class Subflow;
 }
@@ -14,6 +12,7 @@ class Subflow;
 namespace Oasis {
 
 class Expression;
+class SerializationVisitor;
 
 /**
  * The type of an expression.
@@ -272,23 +271,11 @@ public:
     [[nodiscard]] virtual auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> = 0;
 
     /**
-     * Converts this expression to a string.
-     * @return The string representation of this expression.
-     */
-    [[nodiscard]] virtual std::string ToString() const = 0;
-
-    /**
-     * Converts this expression to a MathML string.
-     * @return The MathML representation of this expression.
-     */
-    auto ToMathML() const -> std::string;
-
-    /**
+     * This function serializes the expression object.
      *
-     * @param doc The XML document.
-     * @return The XML element.
+     * @param visitor The serializer class object to write the Expression data.
      */
-    virtual auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* = 0;
+    virtual void Serialize(SerializationVisitor& visitor) const = 0;
 
     virtual ~Expression() = default;
 };
