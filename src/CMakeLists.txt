@@ -15,8 +15,6 @@ set(Oasis_SOURCES
     Imaginary.cpp
     Linear.cpp
     Log.cpp
-    MathML/Util.cpp
-    MathML/Util.hpp
     Multiply.cpp
     Negate.cpp
     Real.cpp
