@@ -48,7 +48,8 @@ add_library(OasisHeaders INTERFACE)
 add_library(Oasis::Headers ALIAS OasisHeaders)
 
 target_compile_features(OasisHeaders INTERFACE cxx_std_20)
-target_include_directories(OasisHeaders INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_include_directories(OasisHeaders
+                           INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 target_link_libraries(OasisHeaders INTERFACE Taskflow)
 target_sources(OasisHeaders INTERFACE ${Oasis_HEADERS})
 
