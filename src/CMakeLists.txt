@@ -43,8 +43,17 @@ set(Oasis_HEADERS
     ../include/Oasis/Undefined.hpp
     ../include/Oasis/Variable.hpp)
 
+# Adds a header-only library target called "OasisHeaders"
+add_library(OasisHeaders INTERFACE)
+add_library(Oasis::Headers ALIAS OasisHeaders)
+
+target_compile_features(OasisHeaders INTERFACE cxx_std_20)
+target_include_directories(OasisHeaders INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_link_libraries(OasisHeaders INTERFACE Taskflow)
+target_sources(OasisHeaders INTERFACE ${Oasis_HEADERS})
+
 # Adds a library target called "Oasis" to be built from source files.
-add_library(Oasis ${Oasis_SOURCES} ${Oasis_HEADERS})
+add_library(Oasis ${Oasis_SOURCES})
 add_library(Oasis::Oasis ALIAS Oasis)
 
 if(MSVC)
@@ -56,6 +65,6 @@ endif()
 
 target_compile_features(Oasis PUBLIC cxx_std_20)
 target_include_directories(Oasis PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
-target_link_libraries(Oasis PUBLIC Eigen3::Eigen Taskflow)
+target_link_libraries(Oasis PUBLIC Oasis::Headers Eigen3::Eigen)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${Oasis_SOURCES})
