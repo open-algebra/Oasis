@@ -2,8 +2,7 @@
 // Created by bachia on 4/12/2024.
 //
 
-#include "../include/Oasis/Derivative.hpp"
-#include "MathML/Util.hpp"
+#include "Oasis/Derivative.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
@@ -13,9 +12,9 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Undefined.hpp"
-#include "string"
 
 #include <cmath>
+#include <string>
 
 namespace Oasis {
 Derivative<Expression>::Derivative(const Expression& exp, const Expression& var)
@@ -50,10 +49,6 @@ auto Derivative<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return expCase->Differentiate(*simplifiedVar);
     }
     return simplifiedExpression->Differentiate(*simplifiedVar);
-}
-auto Derivative<Expression>::ToString() const -> std::string
-{
-    return fmt::format("(d({})/d{})", mostSigOp->ToString(), leastSigOp->ToString());
 }
 
 auto Derivative<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Derivative<Expression, Expression>>

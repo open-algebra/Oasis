@@ -2,13 +2,12 @@
 // Created by Andrew Nazareth on 9/19/23.
 //
 
-#include "Oasis/Exponent.hpp"
+#include <cmath>
 
-#include "MathML/Util.hpp"
+#include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
-#include <cmath>
 
 namespace Oasis {
 
@@ -96,11 +95,6 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     return simplifiedExponent.Copy();
-}
-
-auto Exponent<Expression>::ToString() const -> std::string
-{
-    return fmt::format("({}^{})", mostSigOp->ToString(), leastSigOp->ToString());
 }
 
 auto Exponent<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>

@@ -4,7 +4,6 @@
 
 #include "Oasis/Subtract.hpp"
 
-#include "MathML/Util.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
@@ -74,11 +73,6 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     return simplifiedSubtract.Copy();
-}
-
-auto Subtract<Expression>::ToString() const -> std::string
-{
-    return fmt::format("({} - {})", mostSigOp->ToString(), leastSigOp->ToString());
 }
 
 auto Subtract<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>

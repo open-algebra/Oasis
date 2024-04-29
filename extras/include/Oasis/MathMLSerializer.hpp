@@ -5,6 +5,8 @@
 #ifndef MATHMLSERIALIZER_HPP
 #define MATHMLSERIALIZER_HPP
 
+#include <tinyxml2.h>
+
 #include "Oasis/BinaryExpression.hpp"
 #include "Oasis/Serialization.hpp"
 

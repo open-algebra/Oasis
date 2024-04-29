@@ -2,6 +2,8 @@
 // Created by Matthew McCall on 4/28/24.
 //
 
+#include <fmt/core.h>
+
 #include "Oasis/InFixSerializer.hpp"
 
 #include "Oasis/Real.hpp"
@@ -19,7 +21,7 @@ namespace Oasis {
 
 void InFixSerializer::Serialize(const Real& real)
 {
-    result = std::to_string(real.GetValue());
+    result = fmt::format("{:.5}", real.GetValue());
 }
 
 void InFixSerializer::Serialize(const Imaginary& imaginary)

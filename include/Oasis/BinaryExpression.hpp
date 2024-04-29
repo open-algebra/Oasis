@@ -494,11 +494,6 @@ public:
 
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 
-    [[nodiscard]] std::string ToString() const override
-    {
-        return Generalize()->ToString();
-    }
-
     void Serialize(SerializationVisitor& visitor) const override
     {
         const auto generalized = Generalize();

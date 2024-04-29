@@ -1,17 +1,17 @@
 //
 // Created by Matthew McCall on 8/10/23.
 //
-#include "Oasis/Divide.hpp"
 
-#include "MathML/Util.hpp"
+#include <map>
+#include <vector>
+
+#include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
-#include <map>
-#include <vector>
 
 namespace Oasis {
 
@@ -216,11 +216,6 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return dividend;
 
     return Divide { *dividend, *divisor }.Copy();
-}
-
-auto Divide<Expression>::ToString() const -> std::string
-{
-    return fmt::format("({} / {})", mostSigOp->ToString(), leastSigOp->ToString());
 }
 
 auto Divide<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>

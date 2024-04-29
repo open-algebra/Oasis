@@ -260,11 +260,6 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     // return simplifiedMultiply.Copy();
 }
 
-auto Multiply<Expression>::ToString() const -> std::string
-{
-    return fmt::format("({} * {})", mostSigOp->ToString(), leastSigOp->ToString());
-}
-
 auto Multiply<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
 {
     std::unique_ptr<Expression> simplifiedMultiplicand, simplifiedMultiplier;

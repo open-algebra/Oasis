@@ -200,11 +200,6 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return simplifiedAdd.Copy();
 }
 
-auto Add<Expression>::ToString() const -> std::string
-{
-    return fmt::format("({} + {})", mostSigOp->ToString(), leastSigOp->ToString());
-}
-
 auto Add<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
 {
     std::unique_ptr<Expression> simplifiedAugend, simplifiedAddend;

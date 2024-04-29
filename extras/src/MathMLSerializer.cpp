@@ -2,18 +2,21 @@
 // Created by Matthew McCall on 4/28/24.
 //
 
+#include <fmt/format.h>
+
 #include "Oasis/MathMLSerializer.hpp"
 
 #include "Oasis/Add.hpp"
-#include "Oasis/Subtract.hpp"
-#include "Oasis/Multiply.hpp"
+#include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Log.hpp"
+#include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
-#include "Oasis/Derivative.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
+
 
 namespace Oasis {
 
@@ -24,7 +27,7 @@ MathMLSerializer::MathMLSerializer(tinyxml2::XMLDocument& doc) : doc(doc)
 void MathMLSerializer::Serialize(const Real& real)
 {
     result = doc.NewElement("mn");
-    result->SetText(std::to_string(real.GetValue()).c_str());
+    result->SetText(fmt::format("{:.5}", real.GetValue()).c_str());
 }
 
 void MathMLSerializer::Serialize(const Imaginary& imaginary)

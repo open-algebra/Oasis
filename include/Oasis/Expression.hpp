@@ -5,8 +5,6 @@
 #include <string>
 #include <vector>
 
-#include "tinyxml2.h"
-
 namespace tf {
 class Subflow;
 }
@@ -265,16 +263,10 @@ public:
     [[nodiscard]] virtual auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> = 0;
 
     /**
-     * Converts this expression to a string.
-     * @return The string representation of this expression.
+     * This function serializes the expression object.
+     *
+     * @param visitor The serializer class object to write the Expression data.
      */
-    [[nodiscard]] virtual std::string ToString() const = 0;
-
-     /**
-      * This function serializes the expression object.
-      *
-      * @param visitor The serializer class object to write the Expression data.
-      */
     virtual void Serialize(SerializationVisitor& visitor) const = 0;
 
     virtual ~Expression() = default;
