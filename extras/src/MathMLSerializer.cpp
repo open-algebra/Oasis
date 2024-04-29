@@ -148,12 +148,14 @@ void MathMLSerializer::Serialize(const Divide<>& divide)
 
 void MathMLSerializer::Serialize(const Exponent<>& exponent)
 {
-    result = doc.NewElement("msup");
+    tinyxml2::XMLElement* msup = doc.NewElement("msup");
 
     auto [baseElement, powerElement] = GetOpsAsMathMLPair(exponent);
 
-    result->InsertEndChild(baseElement);
-    result->InsertEndChild(powerElement);
+    msup->InsertEndChild(baseElement);
+    msup->InsertEndChild(powerElement);
+
+    result = msup;
 }
 
 void MathMLSerializer::Serialize(const Log<>& log)
@@ -230,10 +232,10 @@ void MathMLSerializer::Serialize(const Derivative<>& derivative)
     auto [expElement, varElement] = GetOpsAsMathMLPair(derivative);
 
     tinyxml2::XMLElement* denominator = doc.NewElement("mrow");
-    denominator->InsertEndChild(dNode);
+    denominator->InsertEndChild(dXNode);
     denominator->InsertEndChild(varElement);
 
-    mfrac->InsertEndChild(dXNode);
+    mfrac->InsertEndChild(dNode);
     mfrac->InsertEndChild(denominator);
 
     mrow->InsertEndChild(mfrac);
