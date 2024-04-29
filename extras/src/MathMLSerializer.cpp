@@ -152,7 +152,26 @@ void MathMLSerializer::Serialize(const Exponent<>& exponent)
 
     auto [baseElement, powerElement] = GetOpsAsMathMLPair(exponent);
 
-    msup->InsertEndChild(baseElement);
+    if (exponent.HasMostSigOp() && !exponent.GetMostSigOp().Is<Real>() && !exponent.GetMostSigOp().Is<Variable>()) {
+        // (
+        tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+        leftParen->SetText("(");
+
+        // )
+        tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+        rightParen->SetText(")");
+
+        tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
+
+        mrow->InsertEndChild(leftParen);
+        mrow->InsertEndChild(baseElement);
+        mrow->InsertEndChild(rightParen);
+
+        msup->InsertEndChild(mrow);
+    } else {
+        msup->InsertEndChild(baseElement);
+    }
+
     msup->InsertEndChild(powerElement);
 
     result = msup;
