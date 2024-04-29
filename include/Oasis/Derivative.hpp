@@ -5,11 +5,8 @@
 #ifndef OASIS_DERIVATIVE_HPP
 #define OASIS_DERIVATIVE_HPP
 
-#include "fmt/core.h"
-
 #include "BinaryExpression.hpp"
 #include "Expression.hpp"
-#include "Real.hpp"
 
 namespace Oasis {
 
@@ -27,9 +24,6 @@ public:
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
     // auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
-
-    [[nodiscard]] auto ToString() const -> std::string final;
-    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* override;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Derivative>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Derivative>;
@@ -57,11 +51,6 @@ public:
     Derivative(const Exp& exp, const Var& var)
         : BinaryExpression<Derivative, Exp, Var>(exp, var)
     {
-    }
-
-    [[nodiscard]] auto ToString() const -> std::string final
-    {
-        return fmt::format("(d/d{}({}))", this->leastSigOp->ToString(), this->mostSigOp->ToString());
     }
 
     IMPL_SPECIALIZE(Derivative, Exp, Var)

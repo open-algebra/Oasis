@@ -6,8 +6,6 @@
 
 #include "Oasis/Real.hpp"
 
-#include <fmt/format.h>
-
 namespace Oasis {
 
 Real::Real(double value)
@@ -28,18 +26,6 @@ auto Real::Equals(const Expression& other) const -> bool
 auto Real::GetValue() const -> double
 {
     return value;
-}
-
-auto Real::ToString() const -> std::string
-{
-    return fmt::format("{:.5}", value);
-}
-
-auto Real::ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement*
-{
-    tinyxml2::XMLElement* const element = doc.NewElement("mn");
-    element->SetText(ToString().c_str());
-    return element;
 }
 
 auto Real::Specialize(const Expression& other) -> std::unique_ptr<Real>

@@ -3,14 +3,13 @@
 //
 
 #include "Oasis/Subtract.hpp"
-
-#include "MathML/Util.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Negate.hpp"
 #include "Oasis/Variable.hpp"
 
 namespace Oasis {
@@ -73,41 +72,22 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    return simplifiedSubtract.Copy();
-}
-
-auto Subtract<Expression>::ToString() const -> std::string
-{
-    return fmt::format("({} - {})", mostSigOp->ToString(), leastSigOp->ToString());
-}
-
-tinyxml2::XMLElement* Subtract<Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
-{
-    // mrow
-    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
-
-    auto [minuendElement, subtrahendElement] = mml::GetOpsAsMathMLPair(*this, doc);
-
-    mrow->InsertFirstChild(minuendElement);
-
-    // mo
-    tinyxml2::XMLElement* const mo = doc.NewElement("mo");
-    mo->SetText("-");
-    mrow->InsertEndChild(mo);
-
-    // (
-    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
-    leftParen->SetText("(");
-    mrow->InsertEndChild(leftParen);
-
-    mrow->InsertEndChild(subtrahendElement);
-
-    // )
-    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
-    rightParen->SetText(")");
-    mrow->InsertEndChild(rightParen);
-
-    return mrow;
+    // makes subtraction into addition because it is easier to deal with
+    auto negated = Multiply<Expression> { Real { -1 }, *simplifiedSubtrahend };
+    if (auto added = Add<Expression>::Specialize(negated.GetLeastSigOp()); added != nullptr) {
+        auto RHS = Add { *(Multiply<Expression> { Real { -1.0 }, added->GetMostSigOp() }.Simplify()),
+            *(Multiply<Expression> { Real { -1.0 }, added->GetLeastSigOp() }.Simplify()) }
+                       .Simplify();
+        return Add { *simplifiedMinuend, *RHS }.Simplify();
+    } else if (auto subtracted = Subtract<Expression>::Specialize(negated.GetLeastSigOp()); subtracted != nullptr) {
+        auto RHS = Add { *(Multiply<Expression> { Real { -1.0 }, added->GetMostSigOp() }.Simplify()),
+            *(added->GetLeastSigOp().Simplify()) }
+                       .Simplify();
+        return Add { *simplifiedMinuend, *RHS }.Simplify();
+    } else {
+        //        return simplifiedSubtract.Copy();
+        return Add { *simplifiedMinuend, *(negated.Simplify()) }.Simplify();
+    }
 }
 
 auto Subtract<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>

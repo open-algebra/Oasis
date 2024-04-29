@@ -2,14 +2,14 @@
 // Created by Andrew Nazareth on 9/19/23.
 //
 
+#include <cmath>
+
 #include "Oasis/Exponent.hpp"
 
-#include "MathML/Util.hpp"
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
-#include <cmath>
 
 namespace Oasis {
 
@@ -97,41 +97,6 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     return simplifiedExponent.Copy();
-}
-
-auto Exponent<Expression>::ToString() const -> std::string
-{
-    return fmt::format("({}^{})", mostSigOp->ToString(), leastSigOp->ToString());
-}
-
-tinyxml2::XMLElement* Exponent<Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
-{
-    tinyxml2::XMLElement* element = doc.NewElement("msup");
-
-    auto [baseElement, powerElement] = mml::GetOpsAsMathMLPair(*this, doc);
-
-    if (mostSigOp && !mostSigOp->Is<Real>() && !mostSigOp->Is<Variable>()) {
-        // (
-        tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
-        leftParen->SetText("(");
-
-        // )
-        tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
-        rightParen->SetText(")");
-
-        tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
-
-        mrow->InsertEndChild(leftParen);
-        mrow->InsertEndChild(baseElement);
-        mrow->InsertEndChild(rightParen);
-
-        element->InsertEndChild(mrow);
-    } else {
-        element->InsertEndChild(baseElement);
-    }
-
-    element->InsertEndChild(powerElement);
-    return element;
 }
 
 auto Exponent<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>

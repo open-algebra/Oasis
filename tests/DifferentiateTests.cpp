@@ -124,7 +124,8 @@ TEST_CASE("Add Rule Like Terms", "[Differentiate][Add][Like]")
 
 TEST_CASE("Quotient Rule Like Terms", "[Differentiate][Divide][Like]")
 {
-    Oasis::Variable var { "x"};
+    Oasis::Variable var{"x"}; // dx
+    // derivative of [(x + 2)/(x + 3)]
     Oasis::Divide<Oasis::Add<Oasis::Variable, Oasis::Real>, Oasis::Add<Oasis::Variable, Oasis::Real>> diff1
     {Oasis::Add<Oasis::Variable, Oasis::Real> {Oasis::Variable {var.GetName() },
                                                Oasis::Real {2}},Oasis::Add<Oasis::Variable, Oasis::Real>
@@ -135,10 +136,10 @@ TEST_CASE("Quotient Rule Like Terms", "[Differentiate][Divide][Like]")
             {Oasis::Multiply<Oasis::Add<Oasis::Variable, Oasis::Real>, Oasis::Real>
                     {Oasis::Add<Oasis::Variable, Oasis::Real> {Oasis::Variable {var.GetName()}, Oasis::Real {3}},
                      Oasis::Real {1}},
-             Oasis::Multiply<Oasis::Add<Oasis::Variable, Oasis::Real>, Oasis::Real> {
+             Oasis::Multiply<Oasis::Add<Oasis::Variable, Oasis::Real>, Oasis::Real>{
                 Oasis::Add<Oasis::Variable, Oasis::Real> {Oasis::Variable {var.GetName()}, Oasis::Real {2}},
                 Oasis::Real {1}}},
-             Oasis::Multiply<Oasis::Expression, Oasis::Expression> {Oasis::Add<Oasis::Variable, Oasis::Real>
+             Oasis::Multiply<Oasis::Expression, Oasis::Expression>{Oasis::Add<Oasis::Variable, Oasis::Real>
             {Oasis::Variable {var.GetName() }, Oasis::Real
             {3}}, Oasis::Add<Oasis::Variable, Oasis::Real>
             {Oasis::Variable {var.GetName() }, Oasis::Real
@@ -146,7 +147,9 @@ TEST_CASE("Quotient Rule Like Terms", "[Differentiate][Divide][Like]")
     auto diffed = diff1.Differentiate(var);
     auto simplified = diffed->Simplify();
 
-    REQUIRE(simplified->Equals(*(answer.Simplify())));
+    auto simplifiedAns = answer.Simplify();
+
+    REQUIRE(simplified->Equals(*(simplifiedAns)));
 }
 
 TEST_CASE("Multiple Variables Differentiate", "[Differentiate][Multiply][Different]")

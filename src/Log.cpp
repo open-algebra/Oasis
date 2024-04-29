@@ -4,8 +4,6 @@
 //
 
 #include "Oasis/Log.hpp"
-
-#include "MathML/Util.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Expression.hpp"
 #include "Oasis/Multiply.hpp"
@@ -68,43 +66,6 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
 auto Log<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
 {
     return Copy(subflow);
-}
-
-auto Log<Expression>::ToString() const -> std::string
-{
-    return fmt::format("log({}, {})", mostSigOp->ToString(), leastSigOp->ToString());
-}
-
-tinyxml2::XMLElement* Log<Expression, Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
-{
-    // mrow
-    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
-
-    // log
-    tinyxml2::XMLElement* const sub = doc.NewElement("msub");
-
-    tinyxml2::XMLElement* const log = doc.NewElement("mi");
-    log->SetText("log");
-
-    auto [baseElement, argElement] = mml::GetOpsAsMathMLPair(*this, doc);
-
-    sub->InsertFirstChild(log);
-    sub->InsertEndChild(baseElement);
-    mrow->InsertFirstChild(sub);
-
-    // (
-    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
-    leftParen->SetText("(");
-
-    // )
-    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
-    rightParen->SetText(")");
-
-    mrow->InsertEndChild(leftParen);
-    mrow->InsertEndChild(argElement);
-    mrow->InsertEndChild(rightParen);
-
-    return mrow;
 }
 
 auto Log<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Log>

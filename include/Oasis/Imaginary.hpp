@@ -22,10 +22,6 @@ public:
     EXPRESSION_TYPE(Imaginary)
     EXPRESSION_CATEGORY(UnExp)
 
-    [[nodiscard]] auto ToString() const -> std::string final;
-
-    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* final;
-
     static auto Specialize(const Expression& other) -> std::unique_ptr<Imaginary>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Imaginary>;
 };

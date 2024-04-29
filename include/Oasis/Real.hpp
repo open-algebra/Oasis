@@ -30,10 +30,6 @@ public:
      */
     [[nodiscard]] auto GetValue() const -> double;
 
-    [[nodiscard]] auto ToString() const -> std::string final;
-
-    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* final;
-
     static auto Specialize(const Expression& other) -> std::unique_ptr<Real>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Real>;
     [[nodiscard]] auto Differentiate(const Expression&) -> std::unique_ptr<Expression> final;

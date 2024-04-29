@@ -13,10 +13,9 @@
 #include <Oasis/Multiply.hpp>
 #include <Oasis/Real.hpp>
 #include <Oasis/Subtract.hpp>
+#include <Oasis/Derivative.hpp>
 
 #include "Oasis/FromString.hpp"
-
-#include "Oasis/Derivative.hpp"
 
 namespace {
 
