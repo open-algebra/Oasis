@@ -5,8 +5,6 @@
 #ifndef OASIS_INTEGRATE_HPP
 #define OASIS_INTEGRATE_HPP
 
-#include "fmt/core.h"
-
 #include "BinaryExpression.hpp"
 #include "Expression.hpp"
 #include "Real.hpp"
@@ -29,8 +27,6 @@ public:
     [[nodiscard]] auto Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression> /* final */;
 
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
-
-    [[nodiscard]] auto ToString() const -> std::string final;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Integral>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Integral>;
@@ -58,11 +54,6 @@ public:
     Integral(const IntegrandT& integrand, const DifferentialT& differential)
         : BinaryExpression<Integral, IntegrandT, DifferentialT>(integrand, differential)
     {
-    }
-
-    [[nodiscard]] auto ToString() const -> std::string final
-    {
-        return fmt::format("({} + {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
     }
 
     IMPL_SPECIALIZE(Integral, IntegrandT, DifferentialT)
