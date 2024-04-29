@@ -107,19 +107,30 @@ void MathMLSerializer::Serialize(const Multiply<>& multiply)
     std::vector<std::unique_ptr<Expression>> ops;
     multiply.Flatten(ops);
 
+    bool omitAsterisk = true;
+
+    for (const auto& op : ops) {
+        omitAsterisk = op->Is<Real>() || op->Is<Variable>() || op->Is<Exponent>();
+        if (!omitAsterisk) break;
+    }
+
     for (const auto& op : ops) {
         op->Serialize(*this);
         tinyxml2::XMLElement* opElement = GetResult();
-
         mrow->InsertEndChild(opElement);
-        // add + mo
+
+        if (omitAsterisk) continue;
+
         tinyxml2::XMLElement* mo = doc.NewElement("mo");
         mo->SetText("*");
         mrow->InsertEndChild(mo);
     }
 
-    // remove last mo
-    mrow->DeleteChild(mrow->LastChild());
+    if (!omitAsterisk) {
+        // remove last mo
+        mrow->DeleteChild(mrow->LastChild());
+    }
+
     result = mrow;
 }
 
