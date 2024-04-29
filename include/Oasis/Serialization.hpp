@@ -58,4 +58,4 @@ public:
 
 }
 
-#endif //OASIS_SERIALIZATION_HPP
+#endif // OASIS_SERIALIZATION_HPP
