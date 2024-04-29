@@ -14,6 +14,7 @@ class Subflow;
 namespace Oasis {
 
 class Expression;
+class SerializationVisitor;
 
 /**
  * The type of an expression.
@@ -269,18 +270,12 @@ public:
      */
     [[nodiscard]] virtual std::string ToString() const = 0;
 
-    /**
-     * Converts this expression to a MathML string.
-     * @return The MathML representation of this expression.
-     */
-    auto ToMathML() const -> std::string;
-
-    /**
-     *
-     * @param doc The XML document.
-     * @return The XML element.
-     */
-    virtual auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* = 0;
+     /**
+      * This function serializes the expression object.
+      *
+      * @param visitor The serializer class object to write the Expression data.
+      */
+    virtual void Serialize(SerializationVisitor& visitor) const = 0;
 
     virtual ~Expression() = default;
 };

@@ -40,6 +40,7 @@ set(Oasis_HEADERS
     ../include/Oasis/Multiply.hpp
     ../include/Oasis/Negate.hpp
     ../include/Oasis/Real.hpp
+    ../include/Oasis/Serialization.hpp
     ../include/Oasis/Subtract.hpp
     ../include/Oasis/UnaryExpression.hpp
     ../include/Oasis/Undefined.hpp
@@ -47,6 +48,7 @@ set(Oasis_HEADERS
 
 # Adds a library target called "Oasis" to be built from source files.
 add_library(Oasis ${Oasis_SOURCES} ${Oasis_HEADERS})
+add_library(Oasis::Oasis ALIAS Oasis)
 
 if(MSVC)
     target_compile_options(Oasis PRIVATE /W3 /WX)

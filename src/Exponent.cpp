@@ -3,6 +3,8 @@
 //
 
 #include "Oasis/Exponent.hpp"
+
+#include "MathML/Util.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
@@ -99,19 +101,6 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
 auto Exponent<Expression>::ToString() const -> std::string
 {
     return fmt::format("({}^{})", mostSigOp->ToString(), leastSigOp->ToString());
-}
-
-tinyxml2::XMLElement* Exponent<Expression, Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
-{
-    tinyxml2::XMLElement* element = doc.NewElement("msup");
-
-    tinyxml2::XMLElement* baseElement = mostSigOp->ToMathMLElement(doc);
-    tinyxml2::XMLElement* powerElement = leastSigOp->ToMathMLElement(doc);
-
-    element->InsertEndChild(baseElement);
-    element->InsertEndChild(powerElement);
-
-    return element;
 }
 
 auto Exponent<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>

@@ -3,6 +3,7 @@
 //
 
 #include "../include/Oasis/Derivative.hpp"
+#include "MathML/Util.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
@@ -13,6 +14,7 @@
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Undefined.hpp"
 #include "string"
+
 #include <cmath>
 
 namespace Oasis {
@@ -53,6 +55,7 @@ auto Derivative<Expression>::ToString() const -> std::string
 {
     return fmt::format("(d({})/d{})", mostSigOp->ToString(), leastSigOp->ToString());
 }
+
 auto Derivative<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Derivative<Expression, Expression>>
 {
     if (!other.Is<Oasis::Derivative>()) {

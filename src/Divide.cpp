@@ -2,6 +2,8 @@
 // Created by Matthew McCall on 8/10/23.
 //
 #include "Oasis/Divide.hpp"
+
+#include "MathML/Util.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
@@ -130,23 +132,23 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             for (; i < result.size(); i++) {
                 if (auto resExpr = Exponent<Expression, Expression>::Specialize(*result[i]); resExpr != nullptr) {
                     if (expExpr->GetMostSigOp().Equals(resExpr->GetMostSigOp())) {
-                        result[i] = Exponent { expExpr->GetMostSigOp(), *(Subtract { resExpr->GetLeastSigOp(), expExpr->GetLeastSigOp() }.Simplify()) }.Generalize();
+                        result[i] = Exponent { expExpr->GetMostSigOp(), *(Subtract { resExpr->GetLeastSigOp(), expExpr->GetLeastSigOp() }.Simplify()) }.Simplify();
                         break;
                     }
                 } else if (result[i]->Equals(expExpr->GetMostSigOp())) {
-                    result[i] = Exponent { expExpr->GetMostSigOp(), *(Subtract { Real { 1.0 }, resExpr->GetLeastSigOp() }.Simplify()) }.Generalize();
+                    result[i] = Exponent { expExpr->GetMostSigOp(), *(Subtract { Real { 1.0 }, resExpr->GetLeastSigOp() }.Simplify()) }.Simplify();
                     break;
                 }
             }
             if (i >= result.size()) {
-                result.push_back(Exponent<Expression> { expExpr->GetMostSigOp(), Multiply { Real { -1.0 }, expExpr->GetLeastSigOp() } }.Generalize());
+                result.push_back(Exponent<Expression> { expExpr->GetMostSigOp(), Multiply { Real { -1.0 }, expExpr->GetLeastSigOp() } }.Simplify());
             }
             continue;
         }
         for (; i < result.size(); i++) {
             if (auto resExpr = Exponent<Expression, Expression>::Specialize(*result[i]); resExpr != nullptr) {
                 if (denom->Equals(resExpr->GetMostSigOp())) {
-                    result[i] = Exponent { *denom, *(Subtract { resExpr->GetLeastSigOp(), Real { 1.0 } }.Simplify()) }.Generalize();
+                    result[i] = Exponent { *denom, *(Subtract { resExpr->GetLeastSigOp(), Real { 1.0 } }.Simplify()) }.Simplify();
                     break;
                 }
             } else if (result[i]->Equals(*denom)) {
@@ -219,16 +221,6 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 auto Divide<Expression>::ToString() const -> std::string
 {
     return fmt::format("({} / {})", mostSigOp->ToString(), leastSigOp->ToString());
-}
-
-tinyxml2::XMLElement* Divide<Expression, Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
-{
-    tinyxml2::XMLElement* element = doc.NewElement("mfrac");
-
-    element->InsertEndChild(mostSigOp->ToMathMLElement(doc));
-    element->InsertEndChild(leastSigOp->ToMathMLElement(doc));
-
-    return element;
 }
 
 auto Divide<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>

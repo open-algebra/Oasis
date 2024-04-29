@@ -205,28 +205,6 @@ auto Add<Expression>::ToString() const -> std::string
     return fmt::format("({} + {})", mostSigOp->ToString(), leastSigOp->ToString());
 }
 
-auto Add<Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement*
-{
-    // create mrow element
-    tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
-
-    std::vector<std::unique_ptr<Expression>> ops;
-    Flatten(ops);
-
-    for (const auto& op : ops) {
-        mrow->InsertEndChild(op->ToMathMLElement(doc));
-        // add + mo
-        tinyxml2::XMLElement* mo = doc.NewElement("mo");
-        mo->SetText("+");
-        mrow->InsertEndChild(mo);
-    }
-
-    // remove last mo
-    mrow->DeleteChild(mrow->LastChild());
-
-    return mrow;
-}
-
 auto Add<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
 {
     std::unique_ptr<Expression> simplifiedAugend, simplifiedAddend;

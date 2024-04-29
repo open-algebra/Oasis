@@ -11,14 +11,6 @@ auto Undefined::ToString() const -> std::string
     return "Undefined";
 }
 
-auto Undefined::ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement*
-{
-    tinyxml2::XMLElement* const mtext = doc.NewElement("mtext");
-    mtext->SetText("Undefined");
-
-    return mtext;
-}
-
 auto Undefined::Specialize(const Expression& other) -> std::unique_ptr<Undefined>
 {
     return other.Is<Undefined>() ? std::make_unique<Undefined>() : nullptr;

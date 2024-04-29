@@ -17,13 +17,6 @@ auto Imaginary::ToString() const -> std::string
     return "i";
 }
 
-auto Imaginary::ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement*
-{
-    tinyxml2::XMLElement* const element = doc.NewElement("mi");
-    element->SetText(ToString().c_str());
-    return element;
-}
-
 auto Imaginary::Specialize(const Expression& other) -> std::unique_ptr<Imaginary>
 {
     return other.Is<Imaginary>() ? std::make_unique<Imaginary>(dynamic_cast<const Imaginary&>(other)) : nullptr;

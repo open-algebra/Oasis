@@ -73,38 +73,6 @@ auto Log<Expression>::ToString() const -> std::string
     return fmt::format("log({}, {})", mostSigOp->ToString(), leastSigOp->ToString());
 }
 
-tinyxml2::XMLElement* Log<Expression, Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
-{
-    // mrow
-    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
-
-    // log
-    tinyxml2::XMLElement* const sub = doc.NewElement("msub");
-
-    tinyxml2::XMLElement* const log = doc.NewElement("mi");
-    log->SetText("log");
-
-    tinyxml2::XMLElement* const base = leastSigOp->ToMathMLElement(doc);
-
-    sub->InsertFirstChild(log);
-    sub->InsertEndChild(base);
-    mrow->InsertFirstChild(sub);
-
-    // (
-    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
-    leftParen->SetText("(");
-
-    // )
-    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
-    rightParen->SetText(")");
-
-    mrow->InsertEndChild(leftParen);
-    mrow->InsertEndChild(leastSigOp->ToMathMLElement(doc));
-    mrow->InsertEndChild(rightParen);
-
-    return mrow;
-}
-
 auto Log<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Log>
 {
     if (!other.Is<Oasis::Log>()) {

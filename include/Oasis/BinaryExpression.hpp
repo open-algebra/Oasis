@@ -11,6 +11,7 @@
 #include "taskflow/taskflow.hpp"
 
 #include "Expression.hpp"
+#include "Serialization.hpp"
 
 namespace Oasis {
 /**
@@ -498,9 +499,11 @@ public:
         return Generalize()->ToString();
     }
 
-    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* override
+    void Serialize(SerializationVisitor& visitor) const override
     {
-        return Generalize()->ToMathMLElement(doc);
+        const auto generalized = Generalize();
+        const auto& derivedGeneralized = dynamic_cast<const DerivedGeneralized&>(*generalized);
+        visitor.Serialize(derivedGeneralized);
     }
 
     std::unique_ptr<MostSigOpT> mostSigOp;

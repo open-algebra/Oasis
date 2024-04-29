@@ -1,12 +1,10 @@
-//
-// Created by Matthew McCall on 3/26/24.
-//
 #include "catch2/catch_test_macros.hpp"
 
 #include <Oasis/Add.hpp>
 #include <Oasis/Divide.hpp>
 #include <Oasis/Multiply.hpp>
 #include <Oasis/Variable.hpp>
+#include <Oasis/MathMLSerializer.hpp>
 
 TEST_CASE("ToMathML Works", "[MathML]")
 {
@@ -19,7 +17,17 @@ TEST_CASE("ToMathML Works", "[MathML]")
             Oasis::Variable { "w" } }
     };
 
-    auto mathml = divide.ToMathML();
+    tinyxml2::XMLDocument doc;
+    Oasis::MathMLSerializer serializer(doc);
+
+    divide.Serialize(serializer);
+    doc.InsertEndChild(serializer.GetResult());
+
+    tinyxml2::XMLPrinter printer;
+    doc.Print(&printer);
+
+    std::string mathml(printer.CStr());
+
     std::string expected = R"(<mfrac>
     <mrow>
         <mi>x</mi>
@@ -34,5 +42,5 @@ TEST_CASE("ToMathML Works", "[MathML]")
 </mfrac>
 )";
 
-    REQUIRE(mathml == expected);
+    REQUIRE(expected == mathml);
 }
