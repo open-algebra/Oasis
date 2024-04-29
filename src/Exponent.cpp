@@ -2,6 +2,8 @@
 // Created by Andrew Nazareth on 9/19/23.
 //
 
+#include <cmath>
+
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
@@ -9,7 +11,6 @@
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
-#include <cmath>
 
 namespace Oasis {
 
@@ -97,24 +98,6 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     return simplifiedExponent.Copy();
-}
-
-auto Exponent<Expression>::ToString() const -> std::string
-{
-    return fmt::format("({}^{})", mostSigOp->ToString(), leastSigOp->ToString());
-}
-
-tinyxml2::XMLElement* Exponent<Expression, Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
-{
-    tinyxml2::XMLElement* element = doc.NewElement("msup");
-
-    tinyxml2::XMLElement* baseElement = mostSigOp->ToMathMLElement(doc);
-    tinyxml2::XMLElement* powerElement = leastSigOp->ToMathMLElement(doc);
-
-    element->InsertEndChild(baseElement);
-    element->InsertEndChild(powerElement);
-
-    return element;
 }
 
 auto Exponent<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>

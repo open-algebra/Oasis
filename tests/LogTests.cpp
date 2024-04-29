@@ -98,8 +98,12 @@ TEST_CASE("Log of Exponentiation", "[Log][Exponent]")
     };
 
     auto base5of5toX_Simplified = base5of5toX.Simplify();
-    REQUIRE((base5of5toX_Simplified->Is<Oasis::Variable>() || (base5of5toX_Simplified->ToString() == "(x * 1.000000)")));
-    
+    auto simplifiedSpecialized = Oasis::Multiply<Oasis::Real, Oasis::Variable>::Specialize(*base5of5toX_Simplified);
+
+    REQUIRE(simplifiedSpecialized != nullptr);
+    REQUIRE_THAT(simplifiedSpecialized->GetMostSigOp().GetValue(), Catch::Matchers::WithinAbs(1.0, EPSILON));
+    REQUIRE(simplifiedSpecialized->GetLeastSigOp().Equals(Oasis::Variable { "x" }));
+
     //log[5](x^x) = xlog[5](x)
     Oasis::Log logOfExp {
         Oasis::Real { 5.0 },

@@ -47,7 +47,6 @@ TEST_CASE("Symbolic Addition", "[Add][Symbolic]")
         Oasis::Variable { "x" } }.Equals(*simplified));
 }
 
-/*
 TEST_CASE("Symbolic Addition, variable case", "[Add][Symbolic]")
 {
     Oasis::Add add {
@@ -60,7 +59,6 @@ TEST_CASE("Symbolic Addition, variable case", "[Add][Symbolic]")
         };
 
     auto simplified = add.Simplify();
-    REQUIRE(simplified->Is<Oasis::Multiply<Oasis::Expression>>());
 
     REQUIRE(Oasis::Add {
         Oasis::Real { 1.0 },
@@ -68,7 +66,6 @@ TEST_CASE("Symbolic Addition, variable case", "[Add][Symbolic]")
             Oasis::Real { 3.0 },
             Oasis::Variable { "x" } }}.Equals(*simplified));
 }
-*/
 
 TEST_CASE("Generalized Addition", "[Add][Generalized]")
 {

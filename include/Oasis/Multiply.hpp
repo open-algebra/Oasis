@@ -5,8 +5,6 @@
 #ifndef OASIS_MULTIPLY_HPP
 #define OASIS_MULTIPLY_HPP
 
-#include "fmt/core.h"
-
 #include "BinaryExpression.hpp"
 #include "Real.hpp"
 
@@ -24,7 +22,6 @@ public:
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
-    [[nodiscard]] auto ToString() const -> std::string final;
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression> final;

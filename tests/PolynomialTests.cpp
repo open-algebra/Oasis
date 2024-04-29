@@ -58,7 +58,6 @@ TEST_CASE("imaginary linear polynomial")
     auto zeros = add.FindZeros();
     REQUIRE(zeros.size() == 1);
     if (zeros.size() == 1) {
-        std::cout << zeros[0]->ToString();
         auto root = Oasis::Multiply<Oasis::Real, Oasis::Imaginary>::Specialize(*zeros[0]);
         REQUIRE(root != nullptr);
         REQUIRE(root->GetMostSigOp().GetValue() == -1);
