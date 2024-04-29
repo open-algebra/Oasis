@@ -174,9 +174,12 @@ auto Exponent<Expression>::Differentiate(const Expression& differentiationVariab
             const Variable& expBase = realExponent->GetMostSigOp();
             const Real& expPow = realExponent->GetLeastSigOp();
 
-            if ((*variable).GetName() == expBase.GetName()) {
-                return Multiply<Expression, Expression> { Exponent<Variable, Real> { Variable { (*variable).GetName() }, Real { expPow.GetValue() - 1 } },
-                    Real { expPow.GetValue() } }
+            if (variable->GetName() == expBase.GetName()) {
+                return Multiply {
+                    Real { expPow.GetValue() },
+                    Exponent {
+                        Variable { variable->GetName() },
+                        Real { expPow.GetValue() - 1 } } }
                     .Simplify();
             }
         }
