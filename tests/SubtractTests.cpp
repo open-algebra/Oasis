@@ -99,5 +99,4 @@ TEST_CASE("Simplify Equation with subtraction", "[Subtract]") {
     };
 
     auto simplified = add1.Simplify();
-    std::cout << simplified->ToString() << std::endl;
 }

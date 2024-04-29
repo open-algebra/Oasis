@@ -81,7 +81,6 @@ TEST_CASE("Symbolic Division, unequal variables", "[Division][Symbolic]")
 
     auto simplified = div.Simplify();
 
-    CAPTURE(simplified->ToString());
     REQUIRE(Oasis::Divide {
         Oasis::Multiply {
             Oasis::Real { 2.0 },
@@ -116,7 +115,6 @@ TEST_CASE("Symbolic Division of Expressions", "[Division][Symbolic]")
 
     auto simplified = div.Simplify();
 
-    CAPTURE(simplified->ToString());
     REQUIRE(Oasis::Multiply {
         Oasis::Real{ 2 },
         Oasis::Add{
@@ -145,7 +143,6 @@ TEST_CASE("Symbolic Division, unequal exponents", "[Division][Symbolic]")
 
     auto simplified = div.Simplify();
 
-    CAPTURE(simplified->ToString());
     REQUIRE(Oasis::Divide {
         Oasis::Multiply {
             Oasis::Real { 2.0 },
@@ -171,7 +168,6 @@ TEST_CASE("Symbolic Division, equal exponents", "[Division][Symbolic]")
 
     auto simplified = div.Simplify();
 
-    CAPTURE(simplified->ToString());
     REQUIRE(Oasis::Divide {
         Oasis::Multiply {
             Oasis::Real { 2.0 },

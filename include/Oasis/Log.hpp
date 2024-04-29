@@ -5,8 +5,6 @@
 #ifndef OASIS_LOG_HPP
 #define OASIS_LOG_HPP
 
-#include "fmt/core.h"
-
 #include "BinaryExpression.hpp"
 #include "Real.hpp"
 
@@ -26,10 +24,6 @@ public:
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
-
-    [[nodiscard]] auto ToString() const -> std::string final;
-
-    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* override;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Log>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Log>;
@@ -57,11 +51,6 @@ public:
     Log(const BaseT& base, const ArgumentT& argument)
         : BinaryExpression<Log, BaseT, ArgumentT>(base, argument)
     {
-    }
-
-    [[nodiscard]] auto ToString() const -> std::string final
-    {
-        return fmt::format("log({}, {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
     }
 
     IMPL_SPECIALIZE(Log, BaseT, ArgumentT);

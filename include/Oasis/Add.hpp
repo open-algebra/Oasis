@@ -5,8 +5,6 @@
 #ifndef OASIS_ADD_HPP
 #define OASIS_ADD_HPP
 
-#include "fmt/core.h"
-
 #include "BinaryExpression.hpp"
 #include "Real.hpp"
 
@@ -25,10 +23,7 @@ public:
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
-    [[nodiscard]] auto ToString() const -> std::string final;
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
-
-    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* final;
 
     DECL_SPECIALIZE(Add)
 
@@ -55,11 +50,6 @@ public:
     Add(const AugendT& addend1, const AddendT& addend2)
         : BinaryExpression<Add, AugendT, AddendT>(addend1, addend2)
     {
-    }
-
-    [[nodiscard]] auto ToString() const -> std::string final
-    {
-        return fmt::format("({} + {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
     }
 
     IMPL_SPECIALIZE(Add, AugendT, AddendT)

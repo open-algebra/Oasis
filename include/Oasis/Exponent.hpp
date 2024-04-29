@@ -5,10 +5,7 @@
 #ifndef OASIS_EXPONENT_HPP
 #define OASIS_EXPONENT_HPP
 
-#include "fmt/core.h"
-
 #include "BinaryExpression.hpp"
-#include "Real.hpp"
 #include "Variable.hpp"
 
 namespace Oasis {
@@ -28,10 +25,7 @@ public:
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
-    [[nodiscard]] auto ToString() const -> std::string final;
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
-
-    auto ToMathMLElement(tinyxml2::XMLDocument& doc) const -> tinyxml2::XMLElement* final;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Exponent>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Exponent>;

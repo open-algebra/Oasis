@@ -3,6 +3,7 @@
 //
 
 #include "Oasis/Subtract.hpp"
+
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
@@ -88,37 +89,6 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
         //        return simplifiedSubtract.Copy();
         return Add { *simplifiedMinuend, *(negated.Simplify()) }.Simplify();
     }
-}
-
-auto Subtract<Expression>::ToString() const -> std::string
-{
-    return fmt::format("({} - {})", mostSigOp->ToString(), leastSigOp->ToString());
-}
-
-tinyxml2::XMLElement* Subtract<Expression>::ToMathMLElement(tinyxml2::XMLDocument& doc) const
-{
-    // mrow
-    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
-    mrow->InsertFirstChild(mostSigOp->ToMathMLElement(doc));
-
-    // mo
-    tinyxml2::XMLElement* const mo = doc.NewElement("mo");
-    mo->SetText("-");
-    mrow->InsertEndChild(mo);
-
-    // (
-    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
-    leftParen->SetText("(");
-    mrow->InsertEndChild(leftParen);
-
-    mrow->InsertEndChild(leastSigOp->ToMathMLElement(doc));
-
-    // )
-    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
-    rightParen->SetText(")");
-    mrow->InsertEndChild(rightParen);
-
-    return mrow;
 }
 
 auto Subtract<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>

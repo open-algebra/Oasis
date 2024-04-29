@@ -12,13 +12,11 @@ set(Oasis_SOURCES
     Divide.cpp
     Exponent.cpp
     Expression.cpp
-    FromString.cpp
     Imaginary.cpp
     Linear.cpp
     Log.cpp
     Multiply.cpp
     Negate.cpp
-    # Parsers/SExpression/SExpression.cpp Parsers/SExpression/SExpression.hpp
     Real.cpp
     Subtract.cpp
     Undefined.cpp
@@ -32,7 +30,6 @@ set(Oasis_HEADERS
     ../include/Oasis/Divide.hpp
     ../include/Oasis/Exponent.hpp
     ../include/Oasis/Expression.hpp
-    ../include/Oasis/FromString.hpp
     ../include/Oasis/Imaginary.hpp
     ../include/Oasis/LeafExpression.hpp
     ../include/Oasis/Linear.hpp
@@ -40,13 +37,25 @@ set(Oasis_HEADERS
     ../include/Oasis/Multiply.hpp
     ../include/Oasis/Negate.hpp
     ../include/Oasis/Real.hpp
+    ../include/Oasis/Serialization.hpp
     ../include/Oasis/Subtract.hpp
     ../include/Oasis/UnaryExpression.hpp
     ../include/Oasis/Undefined.hpp
     ../include/Oasis/Variable.hpp)
 
+# Adds a header-only library target called "OasisHeaders"
+add_library(OasisHeaders INTERFACE)
+add_library(Oasis::Headers ALIAS OasisHeaders)
+
+target_compile_features(OasisHeaders INTERFACE cxx_std_20)
+target_include_directories(OasisHeaders
+                           INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_link_libraries(OasisHeaders INTERFACE Taskflow)
+target_sources(OasisHeaders INTERFACE ${Oasis_HEADERS})
+
 # Adds a library target called "Oasis" to be built from source files.
-add_library(Oasis ${Oasis_SOURCES} ${Oasis_HEADERS})
+add_library(Oasis ${Oasis_SOURCES})
+add_library(Oasis::Oasis ALIAS Oasis)
 
 if(MSVC)
     target_compile_options(Oasis PRIVATE /W3 /WX)
@@ -57,7 +66,6 @@ endif()
 
 target_compile_features(Oasis PUBLIC cxx_std_20)
 target_include_directories(Oasis PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
-target_link_libraries(Oasis PUBLIC fmt::fmt Eigen3::Eigen Taskflow
-                                   tinyxml2::tinyxml2)
+target_link_libraries(Oasis PUBLIC Oasis::Headers Eigen3::Eigen)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${Oasis_SOURCES})
