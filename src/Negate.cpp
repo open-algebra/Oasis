@@ -5,4 +5,5 @@
 #include "Oasis/Negate.hpp"
 
 namespace Oasis {
+
 } // Oasis

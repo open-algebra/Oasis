@@ -8,6 +8,8 @@
 #include "Multiply.hpp"
 #include "fmt/core.h"
 
+#include "Add.hpp"
+#include "Subtract.hpp"
 #include "UnaryExpression.hpp"
 
 namespace Oasis {

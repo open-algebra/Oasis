@@ -13,6 +13,7 @@ set(Oasis_TESTS
     DivideTests.cpp
     ExponentTests.cpp
     InFixTests.cpp
+    LinearTests.cpp
     LogTests.cpp
     MathMLTests.cpp
     MultiplyTests.cpp
