@@ -56,7 +56,18 @@ auto ConstructMatrices(const std::vector<std::unique_ptr<Expression>>& exprs)
     size_t numCols = exprs.size();
 
     MatrixXXD A(numRows, numCols);
+    std::cout << "Matrix A (before populating)" << std::endl;
+    for (Eigen::Index r = 0; r < A.rows(); r++) {
+        for (Eigen::Index c = 0; c < A.cols(); c++) {
+            std::cout << A(r, c) << "  ";
+        }
+        std::cout << std::endl;
+    }
     Matrix1D b(numRows);
+    std::cout << "Matrix B (before populating)" << std::endl;
+    for (Eigen::Index c = 0; c < b.rows(); c++) {
+        std::cout << b(c) << std::endl;
+    }
     size_t varCount = 0;
     std::map<std::string, Eigen::Index> vars; // variable name, column in matrix
     for (size_t row = 0; row < exprs.size(); row++) {
