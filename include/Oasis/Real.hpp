@@ -6,7 +6,6 @@
 #define OASIS_REAL_HPP
 
 #include "LeafExpression.hpp"
-#include "Variable.hpp"
 
 namespace Oasis {
 
