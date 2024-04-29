@@ -50,7 +50,7 @@ auto SolveLinearSystems(std::vector<std::unique_ptr<Expression>>& exprs) -> std:
 }
 
 auto ConstructMatrices(const std::vector<std::unique_ptr<Expression>>& exprs)
--> std::pair<std::pair<MatrixXXD, Matrix1D>, std::map<std::string, Eigen::Index>>
+    -> std::pair<std::pair<MatrixXXD, Matrix1D>, std::map<std::string, Eigen::Index>>
 {
     size_t numRows = exprs.size();
     size_t numCols = exprs.size();
@@ -85,8 +85,8 @@ auto ConstructMatrices(const std::vector<std::unique_ptr<Expression>>& exprs)
             } else if (auto exprV = Multiply<Real, Variable>::Specialize(*term); exprV != nullptr) {
                 // any expression times a variable
                 std::pair<size_t, bool> keyloc = GetMapValue<std::string, Eigen::Index>(vars,
-                                                                                        exprV->GetLeastSigOp().GetName(),
-                                                                                        varCount);
+                    exprV->GetLeastSigOp().GetName(),
+                    varCount);
                 if (keyloc.second)
                     varCount++;
                 A(Eigen::Index(row), Eigen::Index(keyloc.first)) = exprV->GetMostSigOp().GetValue();
