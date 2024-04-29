@@ -2,14 +2,16 @@
 // Created by Matthew McCall on 2/16/24.
 //
 
+#include <fmt/core.h>
+
+#include <tinyxml2.h>
+
 #include <wx/fs_mem.h>
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
 #include <wx/sizer.h>
 #include <wx/webview.h>
 #include <wx/webviewfshandler.h>
-
-#include <fmt/core.h>
 
 #include "Oasis/FromString.hpp"
 
@@ -308,6 +310,16 @@ setTimeout(function(){document.body.style.overflow = 'auto';}, 0);)");
 
     // Create root element.
     tinyxml2::XMLElement* root = doc.NewElement("html");
+
+    if (wxSystemAppearance appearance = wxSystemSettings::GetAppearance(); appearance.IsDark())
+    {
+        root->SetAttribute("data-bs-theme", "dark");
+    }
+    else
+    {
+        root->SetAttribute("data-bs-theme", "light");
+    }
+
     doc.InsertFirstChild(root);
 
     // Add head element.
@@ -379,7 +391,8 @@ void DefaultView::onEnter(wxWebView* webView, wxTextCtrl* textCtrl)
     tinyxml2::XMLElement* queryCard = doc.NewElement("div");
     queryCard->SetAttribute("class", "d-inline-flex p-2 text-bg-primary rounded border shadow"); // Set div as inline-flex to make it takes as much width as necessary with padding and shadow
 
-    tinyxml2::XMLElement* queryMathML = query->ToMathMLElement(doc);
+    query->Serialize(mathMLSerializer);
+    tinyxml2::XMLElement* queryMathML = mathMLSerializer.GetResult();
     tinyxml2::XMLElement* queryMath = doc.NewElement("math");
 
     queryMath->InsertFirstChild(queryMathML);
@@ -411,7 +424,8 @@ void DefaultView::onEnter(wxWebView* webView, wxTextCtrl* textCtrl)
         tinyxml2::XMLText* errorText = doc.NewText("Error");
         responseCard->InsertEndChild(errorText);
     } else {
-        tinyxml2::XMLElement* responseMathML = response->ToMathMLElement(doc);
+        response->Serialize(mathMLSerializer);
+        tinyxml2::XMLElement* responseMathML = mathMLSerializer.GetResult();
         tinyxml2::XMLElement* responseMath = doc.NewElement("math");
         responseMath->InsertFirstChild(responseMathML);
         responseCard->InsertEndChild(responseMath);
@@ -441,7 +455,9 @@ void DefaultView::renderPage(wxWebView* webView)
     if (currentExpression) {
         // Creating new expressionElement
         tinyxml2::XMLElement* mathElement = doc.NewElement("math");
-        tinyxml2::XMLElement* expressionElement = currentExpression->ToMathMLElement(doc);
+
+        currentExpression->Serialize(mathMLSerializer);
+        tinyxml2::XMLElement* expressionElement = mathMLSerializer.GetResult();
 
         mathElement->InsertEndChild(expressionElement);
 

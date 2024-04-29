@@ -8,6 +8,7 @@
 #include "wx/frame.h"
 
 #include "Oasis/Expression.hpp"
+#include "Oasis/MathMLSerializer.hpp"
 
 class wxWebView;
 class wxTextCtrl;
@@ -26,6 +27,8 @@ private:
     tinyxml2::XMLElement* body;
     tinyxml2::XMLElement* currentDiv;
     tinyxml2::XMLElement* currentDivWrapper;
+
+    Oasis::MathMLSerializer mathMLSerializer { doc };
 
     void renderPage(wxWebView* webView);
     void onEnter(wxWebView* webView, wxTextCtrl* textCtrl);

@@ -14,10 +14,10 @@ set(OasisGUI_SOURCES
     components/FunctionBuilder/FunctionBuilder.hpp
     components/KeypadButton/KeypadButton.cpp
     components/KeypadButton/KeypadButton.hpp
+    InputPreprocessor.cpp
+    InputPreprocessor.hpp
     views/DefaultView.cpp
     views/DefaultView.hpp
-        InputPreprocessor.cpp
-        InputPreprocessor.hpp
 )
 
 if(wxWidgets_USE_FILE) # not defined in CONFIG mode
@@ -25,4 +25,4 @@ if(wxWidgets_USE_FILE) # not defined in CONFIG mode
 endif()
 
 add_executable(OasisGUI ${OasisGUI_SOURCES})
-target_link_libraries(OasisGUI Oasis::Oasis ${wxWidgets_LIBRARIES} Fox_svg bootstrap_min_css bootstrap_bundle_min_js)
+target_link_libraries(OasisGUI Oasis::Oasis Oasis::Extras ${wxWidgets_LIBRARIES} Fox_svg bootstrap_min_css bootstrap_bundle_min_js)

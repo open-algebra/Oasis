@@ -48,7 +48,7 @@ if(OASIS_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-if(OASIS_BUILD_EXTRAS)
+if(OASIS_BUILD_EXTRAS OR OASIS_BUILD_GUI)
     add_subdirectory(extras)
 endif()
 

@@ -13,6 +13,7 @@
 #include "../../InputPreprocessor.hpp"
 #include "Oasis/Expression.hpp"
 #include "Oasis/FromString.hpp"
+#include "Oasis/MathMLSerializer.hpp"
 
 #include <fmt/format.h>
 #include <tinyxml2.h>
@@ -41,7 +42,10 @@ std::string updatePreview(wxWebView* webView, wxTextCtrl* firstArgInput, wxTextC
 
     try {
         auto expression = Oasis::FromInFix(preprocessedInput);
-        tinyxml2::XMLElement* expressionElement = expression->ToMathMLElement(doc);
+
+        Oasis::MathMLSerializer mathmlSerializer { doc };
+        expression->Serialize(mathmlSerializer);
+        tinyxml2::XMLElement* expressionElement = mathmlSerializer.GetResult();
 
         tinyxml2::XMLElement* math = doc.NewElement("math");
         div->InsertEndChild(math);
