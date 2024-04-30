@@ -68,6 +68,13 @@ jobs:
                 --config Debug
                 --target OasisTests
 
+          - name: Build OasisExtrasTests
+            run: >
+                cmake
+                --build ${{ steps.strings.outputs.build-dir }}
+                --config Debug
+                --target OasisExtrasTests
+
             # Runs the tests registered to CTest by CMake.
           - name: Collect Coverage
             working-directory: ${{ steps.strings.outputs.build-dir }}
