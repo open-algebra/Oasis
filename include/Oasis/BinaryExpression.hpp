@@ -26,9 +26,6 @@ concept IOperand = std::is_same_v<T, MostSigOpT> || std::is_same_v<T, LeastSigOp
 template <template <typename, typename> typename T>
 concept IAssociativeAndCommutative = IExpression<T<Expression, Expression>> && ((T<Expression, Expression>::GetStaticCategory() & (Associative | Commutative)) == (Associative | Commutative));
 
-template <typename T, typename... U>
-concept IsAnyOf = (std::same_as<T, U> || ...);
-
 /**
  * Builds a reasonably balanced binary expression from a vector of operands.
  * @tparam T The type of the binary expression, e.g. Add or Multiply.
