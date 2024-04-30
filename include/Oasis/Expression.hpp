@@ -67,9 +67,6 @@ concept IExpression = (requires(T, const Expression& other, tf::Subflow& subflow
 } && std::derived_from<T, Expression>) || std::is_same_v<T, Expression>;
 // clang-format on
 
-template <typename T, typename... U>
-concept IsAnyOf = (std::same_as<T, U> || ...);
-
 /**
  * Checks if type T is same as any of the provided types in U.
  *
