@@ -71,6 +71,16 @@ template <typename T, typename... U>
 concept IsAnyOf = (std::same_as<T, U> || ...);
 
 /**
+ * Checks if type T is same as any of the provided types in U.
+ *
+ * @tparam T The type to compare against.
+ * @tparam U The comparision types.
+ * @return true if T is same as any type in U, false otherwise.
+ */
+template <typename T, typename... U>
+concept IsAnyOf = (std::same_as<T, U> || ...);
+
+/**
  * An expression.
  *
  * Expressions are a tree-like structure that represent mathematical expressions. They can be
@@ -96,7 +106,7 @@ public:
      * Tries to differentiate this function.
      * @return the differentiated expression.
      */
-    [[nodiscard]] virtual auto Differentiate(const Expression&) -> std::unique_ptr<Expression>;
+    [[nodiscard]] virtual auto Differentiate(const Expression&) const -> std::unique_ptr<Expression>;
 
     /**
      * Compares this expression to another expression for equality.

@@ -160,7 +160,7 @@ auto Exponent<Expression>::Specialize(const Oasis::Expression& other) -> std::un
     return std::make_unique<Exponent>(dynamic_cast<const Exponent&>(*otherGeneralized));
 }
 
-auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // variable diff
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {

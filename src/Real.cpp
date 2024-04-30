@@ -13,7 +13,7 @@ Real::Real(double value)
 {
 }
 
-auto Real::Differentiate(const Expression&) -> std::unique_ptr<Expression>
+auto Real::Differentiate(const Expression&) const -> std::unique_ptr<Expression>
 {
     return std::make_unique<Real>(0);
 }

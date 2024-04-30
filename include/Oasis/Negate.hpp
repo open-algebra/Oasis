@@ -42,6 +42,15 @@ public:
             .Simplify(subflow);
     }
 
+    [[nodiscard]] auto Differentiate(const Expression& var) const -> std::unique_ptr<Expression> override
+    {
+        const std::unique_ptr<Expression> operandDerivative = this->GetOperand().Differentiate(var);
+        return Negate<Expression> {
+            *operandDerivative
+        }
+            .Simplify();
+    }
+
     IMPL_SPECIALIZE_UNARYEXPR(Negate, OperandT)
 
     EXPRESSION_TYPE(Negate)

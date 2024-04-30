@@ -144,7 +144,7 @@ public:
 
         return std::make_unique<DerivedSpecialized>(copy);
     }
-    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> override
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> override
     {
         return Generalize()->Differentiate(differentiationVariable);
     }
