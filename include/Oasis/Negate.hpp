@@ -47,7 +47,8 @@ public:
         const std::unique_ptr<Expression> operandDerivative = this->GetOperand().Differentiate(var);
         return Negate<Expression> {
             *operandDerivative
-        }.Simplify();
+        }
+            .Simplify();
     }
 
     IMPL_SPECIALIZE_UNARYEXPR(Negate, OperandT)
