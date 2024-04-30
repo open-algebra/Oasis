@@ -9,11 +9,10 @@
 
 namespace Oasis {
 
-template<IExpression OperandT, IExpression LowerBoundT, IExpression UpperBoundT>
+template <IExpression OperandT, IExpression LowerBoundT, IExpression UpperBoundT>
 class DefiniteIntegral : public TernaryExpression<DefiniteIntegral, OperandT, LowerBoundT, UpperBoundT> {
-
 };
 
 } // Oasis
 
-#endif //DEFINITEINTEGRAL_HPP
+#endif // DEFINITEINTEGRAL_HPP

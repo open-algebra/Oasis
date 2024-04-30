@@ -10,10 +10,9 @@
 #include "Expression.hpp"
 #include "Serialization.hpp"
 
-namespace Oasis
-{
+namespace Oasis {
 
-template <template<IExpression, IExpression, IExpression> class DerivedT, IExpression OperandT, IExpression LowerBoundT = Expression, IExpression UpperBoundT = LowerBoundT>
+template <template <IExpression, IExpression, IExpression> class DerivedT, IExpression OperandT, IExpression LowerBoundT = Expression, IExpression UpperBoundT = LowerBoundT>
 class TernaryExpression : public Expression {
 
     using DerivedSpecialized = DerivedT<OperandT, LowerBoundT, UpperBoundT>;
@@ -58,8 +57,7 @@ public:
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final
     {
 
-        if (const auto otherExpression = DerivedSpecialized::Specialize(other); otherExpression != nullptr)
-        {
+        if (const auto otherExpression = DerivedSpecialized::Specialize(other); otherExpression != nullptr) {
             return HasOperand() == otherExpression->HasOperand()
                 && HasLowerBound() == otherExpression->HasLowerBound()
                 && HasUpperBound() == otherExpression->HasUpperBound();
@@ -103,7 +101,8 @@ public:
 
     template <typename T>
         requires IsAnyOf<T, OperandT, Expression>
-    void SetOperand(const T& expr) {
+    void SetOperand(const T& expr)
+    {
         if constexpr (std::is_same_v<T, OperandT>) {
             operand = std::make_unique<OperandT>(expr);
         } else {
@@ -113,7 +112,8 @@ public:
 
     template <typename T>
         requires IsAnyOf<T, LowerBoundT, Expression>
-    void SetLowerBound(const T& expr) {
+    void SetLowerBound(const T& expr)
+    {
         if constexpr (std::is_same_v<T, LowerBoundT>) {
             lowerBound = std::make_unique<LowerBoundT>(expr);
         } else {
@@ -123,7 +123,8 @@ public:
 
     template <typename T>
         requires IsAnyOf<T, UpperBoundT, Expression>
-    void SetUpperBound(const T& expr) {
+    void SetUpperBound(const T& expr)
+    {
         if constexpr (std::is_same_v<T, UpperBoundT>) {
             upperBound = std::make_unique<UpperBoundT>(expr);
         } else {
@@ -157,4 +158,4 @@ private:
 
 }
 
-#endif //OASIS_TERNARYEXPRESSION_HPP
+#endif // OASIS_TERNARYEXPRESSION_HPP
