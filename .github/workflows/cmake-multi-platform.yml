@@ -75,6 +75,7 @@ jobs:
                 -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
                 -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+                -DOASIS_BUILD_EXTRAS=ON
                 -Dtinyxml2_BUILD_TESTING=OFF
 
             # Builds Oasis with the given configuration.
