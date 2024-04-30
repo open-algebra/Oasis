@@ -108,11 +108,13 @@ void processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const s
         Oasis::Log<> log;
         setOps(log, first_operand, second_operand);
         func = log.Copy();
-    } else if (function_token == "dd") {
+    }
+    else if (function_token == "dd") {
         Oasis::Derivative<> dd;
         setOps(dd, first_operand, second_operand);
         func = dd.Copy();
-    } else {
+    }
+    else {
         throw std::runtime_error("Unknown function encountered: " + function_token);
     }
 

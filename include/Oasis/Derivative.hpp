@@ -6,7 +6,6 @@
 #define OASIS_DERIVATIVE_HPP
 
 #include "BinaryExpression.hpp"
-#include "Expression.hpp"
 
 namespace Oasis {
 
@@ -23,7 +22,9 @@ public:
     Derivative(const Expression& Exp, const Expression& Var);
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
-    // auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
+    auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
+
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> override;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Derivative>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Derivative>;
@@ -34,26 +35,26 @@ public:
 /// @endcond
 
 /**
- * The Derivative expression Derivatives the expression given
+ * The Derivative class template calculates the derivative of given expressions.
  *
- * @tparam Exp The expression to be Derived.
- * @tparam Var The variable to be Derived on.
+ * @tparam DependentT The expression type that the derivative will be calculated of.
+ * @tparam IndependentT The type of the variable with respect to which the derivative will be calculated.
  */
-template <IExpression Exp = Expression, IExpression Var = Exp>
-class Derivative : public BinaryExpression<Derivative, Exp, Var> {
+template <IExpression DependentT = Expression, IExpression IndependentT = DependentT>
+class Derivative : public BinaryExpression<Derivative, DependentT, IndependentT> {
 public:
     Derivative() = default;
-    Derivative(const Derivative<Exp, Var>& other)
-        : BinaryExpression<Derivative, Exp, Var>(other)
+    Derivative(const Derivative<DependentT, IndependentT>& other)
+        : BinaryExpression<Derivative, DependentT, IndependentT>(other)
     {
     }
 
-    Derivative(const Exp& exp, const Var& var)
-        : BinaryExpression<Derivative, Exp, Var>(exp, var)
+    Derivative(const DependentT& exp, const IndependentT& var)
+        : BinaryExpression<Derivative, DependentT, IndependentT>(exp, var)
     {
     }
 
-    IMPL_SPECIALIZE(Derivative, Exp, Var)
+    IMPL_SPECIALIZE(Derivative, DependentT, IndependentT)
 
     auto operator=(const Derivative& other) -> Derivative& = default;
 
