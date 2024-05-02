@@ -5,13 +5,13 @@
 #ifndef DEFINITEINTEGRAL_HPP
 #define DEFINITEINTEGRAL_HPP
 
-#include "TernaryExpression.hpp"
+#include "BoundedBinaryExpression.hpp"
 
 namespace Oasis {
 
-template <IExpression OperandT, IExpression LowerBoundT, IExpression UpperBoundT>
-class DefiniteIntegral : public TernaryExpression<DefiniteIntegral, OperandT, LowerBoundT, UpperBoundT> {
-};
+template<IExpression OperandT, IExpression VariableT, IExpression LowerBoundT, IExpression UpperBoundT>
+class DefiniteIntegral final : BoundedBinaryExpression<DefiniteIntegral, OperandT, VariableT, LowerBoundT, UpperBoundT>
+{};
 
 } // Oasis
 

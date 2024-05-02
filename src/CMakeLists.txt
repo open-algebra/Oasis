@@ -8,7 +8,7 @@
 set(Oasis_SOURCES
     # cmake-format: sortable
     Add.cpp
-    DefiniteIntegral.cpp
+#    DefiniteIntegral.cpp
     Derivative.cpp
     Divide.cpp
     Exponent.cpp
@@ -20,6 +20,7 @@ set(Oasis_SOURCES
     Negate.cpp
     Real.cpp
     Subtract.cpp
+#    Summation.cpp
     Undefined.cpp
     Variable.cpp)
 
@@ -27,7 +28,10 @@ set(Oasis_HEADERS
     # cmake-format: sortable
     ../include/Oasis/Add.hpp
     ../include/Oasis/BinaryExpression.hpp
-    ../include/Oasis/DefiniteIntegral.hpp
+    ../include/Oasis/BoundedBinaryExpression.hpp
+    ../include/Oasis/BoundedExpression.hpp
+    ../include/Oasis/BoundedUnaryExpression.hpp
+#    ../include/Oasis/DefiniteIntegral.hpp
     ../include/Oasis/Derivative.hpp
     ../include/Oasis/Divide.hpp
     ../include/Oasis/Exponent.hpp
@@ -41,7 +45,7 @@ set(Oasis_HEADERS
     ../include/Oasis/Real.hpp
     ../include/Oasis/Serialization.hpp
     ../include/Oasis/Subtract.hpp
-    ../include/Oasis/TernaryExpression.hpp
+#    ../include/Oasis/Summation.hpp
     ../include/Oasis/UnaryExpression.hpp
     ../include/Oasis/Undefined.hpp
     ../include/Oasis/Variable.hpp)

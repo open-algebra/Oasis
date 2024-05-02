@@ -2,26 +2,27 @@
 // Created by Matthew McCall on 4/30/24.
 //
 
-#ifndef OASIS_TERNARYEXPRESSION_HPP
-#define OASIS_TERNARYEXPRESSION_HPP
+#ifndef OASIS_BOUNDEDUNARYEXPRESSION_HPP
+#define OASIS_BOUNDEDUNARYEXPRESSION_HPP
 
 #include <cassert>
 
+#include "Bounds.hpp"
 #include "Expression.hpp"
 #include "Serialization.hpp"
 
 namespace Oasis {
 
 template <template <IExpression, IExpression, IExpression> class DerivedT, IExpression OperandT, IExpression LowerBoundT = Expression, IExpression UpperBoundT = LowerBoundT>
-class TernaryExpression : public Expression {
+class BoundedUnaryExpression : public BoundedExpression<LowerBoundT, UpperBoundT> {
 
     using DerivedSpecialized = DerivedT<OperandT, LowerBoundT, UpperBoundT>;
     using DerivedGeneralized = DerivedT<Expression, Expression, Expression>;
 
 public:
-    TernaryExpression() = default;
+    BoundedUnaryExpression() = default;
 
-    TernaryExpression(const TernaryExpression& other)
+    BoundedUnaryExpression(const BoundedUnaryExpression& other)
     {
         if (other.HasOperand())
             SetOperand(other.GetOperand());
@@ -31,7 +32,7 @@ public:
             SetUpperBound(other.GetUpperBound());
     }
 
-    TernaryExpression(const OperandT& operand, const LowerBoundT& lowerBound, const UpperBoundT& upperBound)
+    BoundedUnaryExpression(const OperandT& operand, const LowerBoundT& lowerBound, const UpperBoundT& upperBound)
     {
         SetOperand(operand);
         SetLowerBound(lowerBound);
@@ -51,7 +52,7 @@ public:
 
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> override
     {
-        return Generalize()->Differentiate(differentiationVariable);
+        return this->Generalize()->Differentiate(differentiationVariable);
     }
 
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final
@@ -59,8 +60,8 @@ public:
 
         if (const auto otherExpression = DerivedSpecialized::Specialize(other); otherExpression != nullptr) {
             return HasOperand() == otherExpression->HasOperand()
-                && HasLowerBound() == otherExpression->HasLowerBound()
-                && HasUpperBound() == otherExpression->HasUpperBound();
+                && this->HasLowerBound() == otherExpression->HasLowerBound()
+                && this->HasUpperBound() == otherExpression->HasUpperBound();
         }
 
         return false;
@@ -77,28 +78,6 @@ public:
         return *operand;
     }
 
-    [[nodiscard]] auto HasLowerBound() const -> bool
-    {
-        return lowerBound != nullptr;
-    }
-
-    [[nodiscard]] auto GetLowerBound() const -> const LowerBoundT&
-    {
-        assert(HasLowerBound() && "LowerBound is not set.");
-        return *lowerBound;
-    }
-
-    [[nodiscard]] auto HasUpperBound() const -> bool
-    {
-        return upperBound != nullptr;
-    }
-
-    [[nodiscard]] auto GetUpperBound() const -> const UpperBoundT&
-    {
-        assert(HasUpperBound() && "UpperBound is not set.");
-        return *upperBound;
-    }
-
     template <typename T>
         requires IsAnyOf<T, OperandT, Expression>
     void SetOperand(const T& expr)
@@ -110,52 +89,28 @@ public:
         }
     }
 
-    template <typename T>
-        requires IsAnyOf<T, LowerBoundT, Expression>
-    void SetLowerBound(const T& expr)
-    {
-        if constexpr (std::is_same_v<T, LowerBoundT>) {
-            lowerBound = std::make_unique<LowerBoundT>(expr);
-        } else {
-            lowerBound = expr.Copy();
-        }
-    }
-
-    template <typename T>
-        requires IsAnyOf<T, UpperBoundT, Expression>
-    void SetUpperBound(const T& expr)
-    {
-        if constexpr (std::is_same_v<T, UpperBoundT>) {
-            upperBound = std::make_unique<UpperBoundT>(expr);
-        } else {
-            upperBound = expr.Copy();
-        }
-    }
-
     auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> override
     {
         std::unique_ptr<Expression> newOperand = operand->Substitute(var, val);
-        std::unique_ptr<Expression> newLowerBound = lowerBound->Substitute(var, val);
-        std::unique_ptr<Expression> newUpperBound = upperBound->Substitute(var, val);
+        std::unique_ptr<Expression> newLowerBound = this->GetLowerBound().Substitute(var, val);
+        std::unique_ptr<Expression> newUpperBound = this->GetUpperBound().Substitute(var, val);
         DerivedGeneralized substituted = DerivedGeneralized { operand, newLowerBound, newUpperBound };
         return substituted.Copy();
     }
 
-    auto operator=(const TernaryExpression& other) -> TernaryExpression& = default;
+    auto operator=(const BoundedUnaryExpression& other) -> BoundedUnaryExpression& = default;
 
     void Serialize(SerializationVisitor& visitor) const override
     {
-        const auto generalized = Generalize();
+        const auto generalized = this->Generalize();
         const auto& derivedGeneralized = dynamic_cast<const DerivedGeneralized&>(*generalized);
         visitor.Serialize(derivedGeneralized);
     }
 
 private:
     std::unique_ptr<OperandT> operand;
-    std::unique_ptr<LowerBoundT> lowerBound;
-    std::unique_ptr<UpperBoundT> upperBound;
 };
 
 }
 
-#endif // OASIS_TERNARYEXPRESSION_HPP
+#endif // OASIS_BOUNDEDUNARYEXPRESSION_HPP
