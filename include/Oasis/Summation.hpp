@@ -11,9 +11,8 @@ namespace Oasis {
 
 template <IExpression OperandT, IExpression LowerBoundT, IExpression UpperBoundT>
 class Summation : public BoundedUnaryExpression<Summation, OperandT, LowerBoundT, UpperBoundT> {
-
 };
 
 } // Oasis
 
-#endif //OASIS_SUMMATION_HPP
+#endif // OASIS_SUMMATION_HPP

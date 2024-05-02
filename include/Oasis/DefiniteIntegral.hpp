@@ -9,9 +9,8 @@
 
 namespace Oasis {
 
-template<IExpression OperandT, IExpression VariableT, IExpression LowerBoundT, IExpression UpperBoundT>
-class DefiniteIntegral final : BoundedBinaryExpression<DefiniteIntegral, OperandT, VariableT, LowerBoundT, UpperBoundT>
-{};
+template <IExpression OperandT, IExpression VariableT, IExpression LowerBoundT, IExpression UpperBoundT>
+class DefiniteIntegral final : BoundedBinaryExpression<DefiniteIntegral, OperandT, VariableT, LowerBoundT, UpperBoundT> { };
 
 } // Oasis
 

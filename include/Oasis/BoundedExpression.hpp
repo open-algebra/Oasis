@@ -81,4 +81,4 @@ private:
 
 } // Oasis
 
-#endif //OAISIS_BOUNDEDEXPRESSION_HPP
+#endif // OAISIS_BOUNDEDEXPRESSION_HPP
