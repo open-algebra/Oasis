@@ -55,6 +55,8 @@ DefaultView::DefaultView()
     webView->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewFSHandler("memory")));
 #endif
 
+    auto* inputSizer = new wxBoxSizer(wxVERTICAL);
+
     auto* toolbarSizer = new wxBoxSizer(wxHORIZONTAL);
     auto* derivativeButton = new wxButton(this, wxID_ANY, "d/dx");
     auto* logarithmButton = new wxButton(this, wxID_ANY, "log");
@@ -126,10 +128,12 @@ DefaultView::DefaultView()
     keypad->Add(keyDot, wxSizerFlags().Expand());
     keypad->Add(keyEnter, wxSizerFlags().Expand());
 
-    mainSizer->Add(webView, wxSizerFlags(1).Expand().Border(wxDOWN));
-    mainSizer->Add(toolbarSizer, wxSizerFlags().Border(wxLEFT | wxRIGHT | wxDOWN));
-    mainSizer->Add(textFieldSizer, wxSizerFlags().Expand().Border(wxLEFT | wxRIGHT | wxDOWN));
-    mainSizer->Add(keypad, wxSizerFlags(1).Expand().Border(wxLEFT | wxRIGHT | wxDOWN));
+    inputSizer->Add(toolbarSizer, wxSizerFlags().Border(wxUP | wxDOWN));
+    inputSizer->Add(textFieldSizer, wxSizerFlags().Expand().Border(wxDOWN));
+    inputSizer->Add(keypad, wxSizerFlags(1).Expand().Border(wxDOWN));
+
+    mainSizer->Add(webView, wxSizerFlags(1).Expand());
+    mainSizer->Add(inputSizer, wxSizerFlags(1).Expand().Border(wxLEFT | wxRIGHT));
 
     SetSizerAndFit(mainSizer);
 
@@ -142,6 +146,19 @@ DefaultView::DefaultView()
 
     auto* menuBar = new wxMenuBar;
     auto* menuView = new wxMenu;
+
+    // Create a "Layout" submenu
+    auto* layoutSubMenu = new wxMenu;
+
+    // "Vertical" menu item
+    auto* verticalMenuItem = layoutSubMenu->AppendRadioItem(wxID_ANY, "Vertical");
+    verticalMenuItem->Check(true); // Make this the default option
+
+    // "Horizontal" menu item
+    auto* horizontalMenuItem = layoutSubMenu->AppendRadioItem(wxID_ANY, "Horizontal");
+
+    // Add the "Layout" submenu to the "View" menu
+    menuView->AppendSubMenu(layoutSubMenu, "Layout");
 
     menuView->Append(wxID_ZOOM_IN, "Zoom In");
     menuView->Append(wxID_ZOOM_OUT, "Zoom Out");
@@ -198,6 +215,46 @@ DefaultView::DefaultView()
         webView->SetZoomType(wxWEBVIEW_ZOOM_TYPE_LAYOUT);
         webView->SetZoom(wxWEBVIEW_ZOOM_MEDIUM);
     }, wxID_ZOOM_100);
+
+
+    // Bind events to the menu items
+    Bind(wxEVT_MENU, [=](wxCommandEvent& event)
+    {
+        // Use VERTICAL layout
+        mainSizer->SetOrientation(wxVERTICAL);
+        verticalMenuItem->Check(true);
+
+        // Save the current window size
+        wxSize currentSize = this->GetSize();
+
+        // Swap the width and height values of the window size
+        currentSize.Set(currentSize.GetHeight(), currentSize.GetWidth());
+
+        // Set the new size to the window
+        this->SetSize(currentSize);
+
+        Fit();
+        // Layout();
+    }, verticalMenuItem->GetId());
+
+    Bind(wxEVT_MENU, [=](wxCommandEvent& event)
+    {
+        // Use HORIZONTAL layout
+        mainSizer->SetOrientation(wxHORIZONTAL);
+        horizontalMenuItem->Check(true);
+
+        // Save the current window size
+        wxSize currentSize = this->GetSize();
+
+        // Swap the width and height values of the window size
+        currentSize.Set(currentSize.GetHeight(), currentSize.GetWidth());
+
+        // Set the new size to the window
+        this->SetSize(currentSize);
+
+        Fit();
+        // Layout();
+    }, horizontalMenuItem->GetId());
 
     derivativeButton->Bind(wxEVT_BUTTON, [this, textField](wxCommandEvent& evt)
     {
