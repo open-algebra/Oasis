@@ -1,5 +1,5 @@
 //
-//Created by Andrew Choi on 4/2/24
+// Created by Andrew Choi on 4/2/24
 //
 
 #include "Oasis/Summation.hpp"
@@ -7,9 +7,14 @@
 namespace Oasis {
 
 Summation::Summation(const Expression& lowBound, const Expression& upperBound, const Expression& exp)
-    : lowBound(lowBound), upperBound(upperBound), exp(exp) {}
+    : lowBound(lowBound)
+    , upperBound(upperBound)
+    , exp(exp)
+{
+}
 
-auto Summation::Simplify() const {
+auto Summation::Simplify() const
+{
     auto simplifiedLow = lowBound->Simplify();
     auto simplifiedUp = upperBound->Simplify();
     auto simplifiedExp = exp->Simplify();
@@ -19,13 +24,15 @@ auto Summation::Simplify() const {
     return std::make_unique<Summation>(*simplifiedLow, *simplfiiedUp, *simplifiedExp);
 }
 
-auto Summation::ToString() const {
+auto Summation::ToString() const
+{
     return "∑^{" + lowBound->ToString() + "}_{" + upperBound->ToString() + "}(" + exp->ToString() + ")";
 }
 
-auto Summation::Evaluate() const {
+auto Summation::Evaluate() const
+{
     std::unique_ptr<Summation> result = make_unique<Summation>();
-    for(auto i = lowBound->Evaluate(); i < upperBound -> Evaluate(); ++i) {
+    for (auto i = lowBound->Evaluate(); i < upperBound->Evaluate(); ++i) {
         result = result + exp->Evaluate();
     }
 

@@ -17,10 +17,8 @@ public:
 
     auto Evaluate() const;
 
-
-
 private:
-    Expression lowBound;  // Lower bound for the summation
+    Expression lowBound; // Lower bound for the summation
     Expression upperBound; // Upper bound for the summation
     Expression exp; // Expression being summed
 };
