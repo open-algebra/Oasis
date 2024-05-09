@@ -14,6 +14,8 @@ auto Summation::Simplify() const {
     auto simplifiedUp = upperBound->Simplify();
     auto simplifiedExp = exp->Simplify();
 
+    Evaluate();
+
     return std::make_unique<Summation>(*simplifiedLow, *simplfiiedUp, *simplifiedExp);
 }
 
