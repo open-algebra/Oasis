@@ -107,28 +107,28 @@ void MathMLSerializer::Serialize(const Multiply<>& multiply)
     std::vector<std::unique_ptr<Expression>> ops;
     multiply.Flatten(ops);
 
-    bool omitAsterisk = true;
+    ops.front()->Serialize(*this);
+    tinyxml2::XMLElement* firstOpElement = GetResult();
+    mrow->InsertEndChild(firstOpElement);
 
-    for (const auto& op : ops) {
-        omitAsterisk = op->Is<Real>() || op->Is<Variable>() || op->Is<Exponent>();
-        if (!omitAsterisk) break;
-    }
-
-    for (const auto& op : ops) {
-        op->Serialize(*this);
-        tinyxml2::XMLElement* opElement = GetResult();
-        mrow->InsertEndChild(opElement);
-
-        if (omitAsterisk) continue;
+    for (int i = 1; i < ops.size(); ++i) {
+        const auto& leftOp = ops[i - 1];
+        const auto& rightOp = ops[i];
 
         tinyxml2::XMLElement* mo = doc.NewElement("mo");
         mo->SetText("*");
-        mrow->InsertEndChild(mo);
-    }
 
-    if (!omitAsterisk) {
-        // remove last mo
-        mrow->DeleteChild(mrow->LastChild());
+        if(leftOp->Is<Real>() && rightOp->Is<Real>()) {
+            mrow->InsertEndChild(mo);
+        } else if (auto rightExp = Exponent<>::Specialize(*rightOp); rightExp != nullptr) {
+            mrow->InsertEndChild(mo);
+        } else {
+            doc.DeleteNode(mo);
+        }
+
+        ops[i]->Serialize(*this);
+        tinyxml2::XMLElement* opElement = GetResult();
+        mrow->InsertEndChild(opElement);
     }
 
     result = mrow;
