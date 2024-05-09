@@ -128,12 +128,16 @@ DefaultView::DefaultView()
     keypad->Add(keyDot, wxSizerFlags().Expand());
     keypad->Add(keyEnter, wxSizerFlags().Expand());
 
-    inputSizer->Add(toolbarSizer, wxSizerFlags().Border(wxUP | wxDOWN));
-    inputSizer->Add(textFieldSizer, wxSizerFlags().Expand().Border(wxDOWN));
-    inputSizer->Add(keypad, wxSizerFlags(1).Expand().Border(wxDOWN));
+    inputSizer->Add(toolbarSizer, wxSizerFlags());
+    inputSizer->AddSpacer(4);
+    inputSizer->Add(textFieldSizer, wxSizerFlags().Expand());
+    inputSizer->AddSpacer(4);
+    inputSizer->Add(keypad, wxSizerFlags(1).Expand());
+    inputSizer->AddSpacer(4);
 
     mainSizer->Add(webView, wxSizerFlags(1).Expand());
-    mainSizer->Add(inputSizer, wxSizerFlags(1).Expand().Border(wxLEFT | wxRIGHT));
+    mainSizer->AddSpacer(4);
+    mainSizer->Add(inputSizer, wxSizerFlags(1).Expand().HorzBorder());
 
     SetSizerAndFit(mainSizer);
 
@@ -368,7 +372,7 @@ setTimeout(function(){document.body.style.overflow = 'auto';}, 0);)");
     // Create root element.
     tinyxml2::XMLElement* root = doc.NewElement("html");
 
-    if (wxSystemAppearance appearance = wxSystemSettings::GetAppearance(); appearance.IsDark())
+    if (wxSystemSettings::GetAppearance().IsDark())
     {
         root->SetAttribute("data-bs-theme", "dark");
     }

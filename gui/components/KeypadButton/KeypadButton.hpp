@@ -37,6 +37,7 @@ private:
     bool hovered;
     wxString text;
     wxSize lastSize;
+    wxPoint lastMousePos;
     int fontSize = 0;
     static int computeFontSize(const wxSize& dcSize) ;
 };

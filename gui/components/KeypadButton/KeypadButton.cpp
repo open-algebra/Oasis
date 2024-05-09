@@ -44,29 +44,30 @@ void KeypadButton::paintNow() {
 
 void KeypadButton::render(wxDC &dc) {
 
-    dc.SetPen(wxPen(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW)));
+    const wxSize dcSize = dc.DeviceToLogicalRel(dc.GetSize());
+    // dc.SetPen(wxPen(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW), 2));
+    dc.SetPen(wxPen(wxColour(127, 127, 127, 32), 2));
+    dc.SetBrush(wxBrush(wxTransparentColor));
+
+    if (hovered) {
+        const wxColour spotlightColor = wxSystemSettings::GetAppearance().IsDark() ? wxColour(255, 255, 255, 32) : *wxWHITE;
+        dc.GradientFillConcentric(wxRect(dcSize * 2), spotlightColor, wxColour(255, 255, 255, wxALPHA_TRANSPARENT), lastMousePos);
+        dc.DrawRectangle(1, 1, dcSize.GetWidth() - 1, dcSize.GetHeight() - 1);
+    }
 
     if (pressedDown) {
         dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW)));
-    } else if (hovered) {
-        dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT)));
-    } else {
-        dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE)));
+        dc.DrawRectangle(1, 1, dcSize.GetWidth() - 1, dcSize.GetHeight() - 1);
     }
-
-    const wxSize dcSize = dc.DeviceToLogicalRel(dc.GetSize());
 
     if (lastSize != dcSize) {
         fontSize = computeFontSize(dcSize);
         lastSize = dcSize;
     }
 
-    dc.DrawRoundedRectangle(0, 0, dcSize.GetWidth(), dcSize.GetHeight(), 4);
-    dc.SetFont(wxFont(fontSize, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-
     const wxSize textSize = dc.GetTextExtent(text);
-
     dc.SetPen(wxPen(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNTEXT)));
+    dc.SetFont(wxFont(fontSize, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
     dc.DrawText(text, (dcSize.GetWidth() - textSize.GetWidth()) / 2, (dcSize.GetHeight() - textSize.GetHeight()) / 2);
 }
 
@@ -91,6 +92,7 @@ void KeypadButton::mouseLeftWindow(wxMouseEvent &event) {
 void KeypadButton::mouseMoved(wxMouseEvent& event)
 {
     hovered = true;
+    lastMousePos = event.GetPosition();
     paintNow();
 }
 
