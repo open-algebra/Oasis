@@ -158,3 +158,6 @@ docs/latex/
 
 # CMake Files
 CMakeSettings.json
+.vscode/c_cpp_properties.json
+tests/Testing/Temporary/CTestCostData.txt
+tests/Testing/Temporary/LastTest.log
