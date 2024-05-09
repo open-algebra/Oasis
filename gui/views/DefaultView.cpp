@@ -89,11 +89,11 @@ DefaultView::DefaultView()
     auto* keyClear = new KeypadButton(this, wxID_ANY, "Clear");
     auto* keyLeftParens = new KeypadButton(this, wxID_ANY, "(");
     auto* keyRightParens = new KeypadButton(this, wxID_ANY, ")");
-    auto* keyDivide = new KeypadButton(this, wxID_ANY, "÷");
+    auto* keyDivide = new KeypadButton(this, wxID_ANY, "\u00F7");
     auto* key7 = new KeypadButton(this, wxID_ANY, "7");
     auto* key8 = new KeypadButton(this, wxID_ANY, "8");
     auto* key9 = new KeypadButton(this, wxID_ANY, "9");
-    auto* keyMultiply = new KeypadButton(this, wxID_ANY, "*");
+    auto* keyMultiply = new KeypadButton(this, wxID_ANY, "\u00D7");
     auto* key4 = new KeypadButton(this, wxID_ANY, "4");
     auto* key5 = new KeypadButton(this, wxID_ANY, "5");
     auto* key6 = new KeypadButton(this, wxID_ANY, "6");
@@ -145,8 +145,8 @@ DefaultView::DefaultView()
     menuHelp->Append(wxID_ABOUT);
 
     auto* menuFunctions = new wxMenu;
-    wxMenuItem* itemDerivative = menuFunctions->Append(wxID_ANY, "Derivative...");
-    wxMenuItem* itemLogarithm = menuFunctions->Append(wxID_ANY, "Logarithm...");
+    const wxMenuItem* itemDerivative = menuFunctions->Append(wxID_ANY, "Derivative...");
+    const wxMenuItem* itemLogarithm = menuFunctions->Append(wxID_ANY, "Logarithm...");
 
     auto* menuBar = new wxMenuBar;
     auto* menuView = new wxMenu;

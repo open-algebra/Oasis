@@ -116,7 +116,7 @@ void MathMLSerializer::Serialize(const Multiply<>& multiply)
         const auto& rightOp = ops[i];
 
         tinyxml2::XMLElement* mo = doc.NewElement("mo");
-        mo->SetText("*");
+        mo->SetText("\u00D7");
 
         if(leftOp->Is<Real>() && rightOp->Is<Real>()) {
             mrow->InsertEndChild(mo);
