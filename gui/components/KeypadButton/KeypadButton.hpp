@@ -17,7 +17,7 @@ public:
     void paintEvent(wxPaintEvent &evt);
     void paintNow();
 
-    void render(wxDC &dc);
+    void render(wxClientDC& dc);
 
     // some useful events
     void mouseDown(wxMouseEvent &event);

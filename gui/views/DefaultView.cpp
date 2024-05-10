@@ -128,6 +128,7 @@ DefaultView::DefaultView()
     keypad->Add(keyDot, wxSizerFlags().Expand());
     keypad->Add(keyEnter, wxSizerFlags().Expand());
 
+    inputSizer->AddSpacer(4);
     inputSizer->Add(toolbarSizer, wxSizerFlags());
     inputSizer->AddSpacer(4);
     inputSizer->Add(textFieldSizer, wxSizerFlags().Expand());
@@ -136,7 +137,6 @@ DefaultView::DefaultView()
     inputSizer->AddSpacer(4);
 
     mainSizer->Add(webView, wxSizerFlags(1).Expand());
-    mainSizer->AddSpacer(4);
     mainSizer->Add(inputSizer, wxSizerFlags(1).Expand().HorzBorder());
 
     SetSizerAndFit(mainSizer);
@@ -259,6 +259,29 @@ DefaultView::DefaultView()
         Fit();
         // Layout();
     }, horizontalMenuItem->GetId());
+
+    Bind(wxEVT_MOTION, [=](wxMouseEvent& evt) {
+        keyClear->paintNow();
+        keyLeftParens->paintNow();
+        keyRightParens->paintNow();
+        keyDivide->paintNow();
+        key7->paintNow();
+        key8->paintNow();
+        key9->paintNow();
+        key4->paintNow();
+        key5->paintNow();
+        key6->paintNow();
+        key1->paintNow();
+        key2->paintNow();
+        key3->paintNow();
+        key0->paintNow();
+        keySubtract->paintNow();
+        keyAdd->paintNow();
+        keyNegate->paintNow();
+        keyDot->paintNow();
+        keyMultiply->paintNow();
+        keyEnter->paintNow();
+    });
 
     derivativeButton->Bind(wxEVT_BUTTON, [this, textField](wxCommandEvent& evt)
     {
