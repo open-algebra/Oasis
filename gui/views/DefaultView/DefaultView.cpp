@@ -2,9 +2,9 @@
 // Created by Matthew McCall on 2/16/24.
 //
 
-#include <fmt/core.h>
+#include "fmt/core.h"
 
-#include <tinyxml2.h>
+#include "tinyxml2.h"
 
 #include <wx/fs_mem.h>
 #include <wx/menu.h>
@@ -15,14 +15,16 @@
 
 #include "Oasis/FromString.hpp"
 
-#include "../InputPreprocessor.hpp"
-#include "../components/KeypadButton/KeypadButton.hpp"
-#include "../components/FunctionBuilder/FunctionBuilder.hpp"
+#include "components/FunctionBuilder/FunctionBuilder.hpp"
+#include "components/KeypadButton/KeypadButton.hpp"
+#include "views/PreferencesPanel/PreferencesPanel.hpp"
+
+#include "InputPreprocessor.hpp"
 #include "DefaultView.hpp"
 
-#include <Fox.svg.hpp>
-#include <bootstrap.bundle.min.js.hpp>
-#include <bootstrap.min.css.hpp>
+#include "Fox.svg.hpp"
+#include "bootstrap.bundle.min.js.hpp"
+#include "bootstrap.min.css.hpp"
 
 DefaultView::DefaultView()
     : wxFrame(nullptr, wxID_ANY, "OASIS")
@@ -141,6 +143,9 @@ DefaultView::DefaultView()
 
     SetSizerAndFit(mainSizer);
 
+    auto* menuFile = new wxMenu;
+    menuFile->Append(wxID_PREFERENCES);
+
     auto* menuHelp = new wxMenu;
     menuHelp->Append(wxID_ABOUT);
 
@@ -168,11 +173,19 @@ DefaultView::DefaultView()
     menuView->Append(wxID_ZOOM_OUT, "Zoom Out");
     menuView->Append(wxID_ZOOM_100, "Reset Zoom");
 
+    menuBar->Append(menuFile, "&File");
     menuBar->Append(menuFunctions, "&Functions");
     menuBar->Append(menuView, "&View");
     menuBar->Append(menuHelp, "&Help");
 
     SetMenuBar(menuBar);
+
+    Bind(wxEVT_MENU, [=](wxCommandEvent&) {
+        auto preferencesPanel = PreferencesPanel(this, wxID_ANY);
+        if (preferencesPanel.ShowModal() != wxID_OK) {
+            return;
+        }
+    });
 
     Bind(wxEVT_MENU, [=](wxCommandEvent& event) { wxMessageBox("https://github.com/matthew-mccall/Oasis", "Open Algebra Software for Inferring Solutions", wxICON_INFORMATION); }, wxID_ABOUT);
     Bind(wxEVT_MENU, [=](wxCommandEvent& event) { Close(true); }, wxID_EXIT);

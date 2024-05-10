@@ -1,7 +1,7 @@
 //
 // Created by Matthew McCall on 2/16/24.
 //
-#include "views/DefaultView.hpp"
+#include "views/DefaultView/DefaultView.hpp"
 
 #include <wx/wxprec.h>
 

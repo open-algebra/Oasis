@@ -16,8 +16,10 @@ set(OasisGUI_SOURCES
     components/KeypadButton/KeypadButton.hpp
     InputPreprocessor.cpp
     InputPreprocessor.hpp
-    views/DefaultView.cpp
-    views/DefaultView.hpp
+    views/DefaultView/DefaultView.cpp
+    views/DefaultView/DefaultView.hpp
+    views/PreferencesPanel/PreferencesPanel.cpp
+    views/PreferencesPanel/PreferencesPanel.hpp
 )
 
 if(wxWidgets_USE_FILE) # not defined in CONFIG mode
@@ -25,4 +27,5 @@ if(wxWidgets_USE_FILE) # not defined in CONFIG mode
 endif()
 
 add_executable(OasisGUI ${OasisGUI_SOURCES})
+target_include_directories(OasisGUI PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(OasisGUI Oasis::Oasis Oasis::Extras ${wxWidgets_LIBRARIES} Fox_svg bootstrap_min_css bootstrap_bundle_min_js)
