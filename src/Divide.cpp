@@ -293,7 +293,7 @@ auto Divide<Expression>::Specialize(const Expression& other, tf::Subflow& subflo
     return std::make_unique<Divide>(dynamic_cast<const Divide&>(*otherGeneralized));
 }
 
-auto Divide<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Divide<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // Single differentiation variable
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {

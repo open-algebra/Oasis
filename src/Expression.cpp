@@ -217,7 +217,7 @@ auto Expression::GetCategory() const -> uint32_t
 {
     return 0;
 }
-auto Expression::Differentiate(const Expression&) -> std::unique_ptr<Expression>
+auto Expression::Differentiate(const Expression&) const -> std::unique_ptr<Expression>
 {
     return Copy();
 }

@@ -4,9 +4,9 @@
 
 #include <cmath>
 
-#include "Oasis/Exponent.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
+#include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
@@ -172,23 +172,23 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) -> s
         Exponent simplifiedExponent { *simplifiedBase, *simplifiedPower };
 
         if (auto realExponent = Exponent<Variable, Real>::Specialize(simplifiedExponent); realExponent != nullptr) {
-        const Variable& expBase = realExponent->GetMostSigOp();
+            const Variable& expBase = realExponent->GetMostSigOp();
             const Real& expPow = realExponent->GetLeastSigOp();
 
             if ((*variable).GetName() == expBase.GetName()) {
-            return std::make_unique<Add<Divide<Exponent<Variable, Real>, Real>, Variable>>(Add {
+                return std::make_unique<Add<Divide<Exponent<Variable, Real>, Real>, Variable>>(Add {
                     Divide {
                         Exponent<Variable, Real> { Variable { (*variable).GetName() }, Real { expPow.GetValue() + 1 } },
                         Real { expPow.GetValue() + 1 } },
                     Variable { "C" } });
-                    }
+            }
         }
     }
 
     return Copy();
 }
 
-auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // variable diff
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {

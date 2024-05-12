@@ -70,7 +70,7 @@ auto Variable::Substitute(const Expression& var, const Expression& val) -> std::
     return Copy();
 }
 
-auto Variable::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Variable::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
 
