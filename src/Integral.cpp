@@ -36,7 +36,7 @@ auto Integral<Expression>::Simplify(const Expression& upper, const Expression& l
     auto simplifiedIntegrand = mostSigOp ? mostSigOp->Simplify() : nullptr;
     auto simplifiedDifferential = leastSigOp ? leastSigOp->Simplify() : nullptr;
 
-    return simplifiedIntegrand->Integrate(*simplifiedDifferential, upper, lower);
+    return simplifiedIntegrand->IntegrateWithBounds(*simplifiedDifferential, upper, lower);
     /*
         Integral simplifiedIntegrate { *simplifiedIntegrand, *simplifiedDifferential };
 

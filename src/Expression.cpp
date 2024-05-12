@@ -255,7 +255,7 @@ auto Expression::Integrate(const Expression& variable) -> std::unique_ptr<Expres
     return integral.Copy();
 }
 
-auto Expression::Integrate(const Expression& variable, const Expression&, const Expression&) -> std::unique_ptr<Expression>
+auto Expression::IntegrateWithBounds(const Expression& variable, const Expression&, const Expression&) -> std::unique_ptr<Expression>
 {
     Integral<Expression, Expression> integral { *(this->Copy()), *(variable.Copy()) };
 
