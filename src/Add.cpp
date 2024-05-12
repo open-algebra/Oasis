@@ -333,7 +333,7 @@ auto Add<Expression>::Integrate(const Expression& integrationVariable) -> std::u
     return integral.Copy();
 }
 
-auto Add<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Add<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
         auto simplifiedAdd = this->Simplify();

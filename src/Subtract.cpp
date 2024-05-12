@@ -166,7 +166,7 @@ auto Subtract<Expression>::Specialize(const Expression& other, tf::Subflow& subf
     auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Subtract>(dynamic_cast<const Subtract&>(*otherGeneralized));
 }
-auto Subtract<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Subtract<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // Single diff variable
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {

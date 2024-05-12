@@ -312,7 +312,7 @@ auto Divide<Expression>::Integrate(const Expression& integrationVariable) -> std
     return integral.Copy();
 }
 
-auto Divide<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Divide<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // Single differentiation variable
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {

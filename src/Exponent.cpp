@@ -194,7 +194,7 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) -> s
     return integral.Copy();
 }
 
-auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // variable diff
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {

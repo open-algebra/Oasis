@@ -394,7 +394,7 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) -> s
     return integral.Copy();
 }
 
-auto Multiply<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Multiply<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
