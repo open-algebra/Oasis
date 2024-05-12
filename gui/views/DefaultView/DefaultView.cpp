@@ -26,6 +26,10 @@
 #include "bootstrap.bundle.min.js.hpp"
 #include "bootstrap.min.css.hpp"
 
+#include "index.html.hpp"
+#include "index.css.hpp"
+#include "index.js.hpp"
+
 DefaultView::DefaultView()
     : wxFrame(nullptr, wxID_ANY, "OASIS")
 {
@@ -39,6 +43,15 @@ DefaultView::DefaultView()
 
     const auto& bootstrapJs = bootstrap_bundle_min_js::get();
     wxMemoryFSHandler::AddFile("bootstrap.bundle.min.js", bootstrapJs.data(), bootstrapJs.size());
+
+    const auto& indexHTML = index_html::get();
+    wxMemoryFSHandler::AddFile("index.html", indexHTML.data(), indexHTML.size());
+
+    const auto& indexJS = index_js::get();
+    wxMemoryFSHandler::AddFile("/assets/index.js", indexJS.data(), indexJS.size());
+
+    const auto& indexCSS = index_css::get();
+    wxMemoryFSHandler::AddFile("/assets/index.css", indexCSS.data(), indexCSS.size());
 
     CreateStatusBar();
     SetStatusText("Welcome to OASIS!");
