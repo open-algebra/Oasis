@@ -2,6 +2,9 @@
 // Created by Matthew McCall on 2/16/24.
 //
 
+#include <fstream>
+#include <vector>
+
 #include "fmt/core.h"
 
 #include "tinyxml2.h"
@@ -15,6 +18,7 @@
 
 #include "Oasis/FromString.hpp"
 
+#include "components/EquationViewer/EquationViewer.hpp"
 #include "components/FunctionBuilder/FunctionBuilder.hpp"
 #include "components/KeypadButton/KeypadButton.hpp"
 #include "views/PreferencesPanel/PreferencesPanel.hpp"
@@ -22,36 +26,58 @@
 #include "InputPreprocessor.hpp"
 #include "DefaultView.hpp"
 
-#include "Fox.svg.hpp"
-#include "bootstrap.bundle.min.js.hpp"
-#include "bootstrap.min.css.hpp"
+std::string ExpressionToMathMLStr(const std::unique_ptr<Oasis::Expression>& expr)
+{
+    tinyxml2::XMLDocument doc;
+    Oasis::MathMLSerializer serializer { doc };
+    tinyxml2::XMLPrinter printer;
 
-#include "index.html.hpp"
-#include "index.css.hpp"
-#include "index.js.hpp"
+    tinyxml2::XMLElement* mathElement = doc.NewElement("math");
+    doc.InsertFirstChild(mathElement);
+
+    expr->Serialize(serializer);
+    tinyxml2::XMLElement* queryElement = serializer.GetResult();
+    mathElement->InsertFirstChild(queryElement);
+
+    doc.Print(&printer);
+    return printer.CStr();
+}
+
+std::string ReadFileIntoString(const std::string& path) {
+    std::ifstream f(path, std::ios::in | std::ios::binary);
+    if (!f) {
+        // Handle file open failure
+        return "";
+    }
+
+    // Obtain the size of the file
+    const auto sz = std::filesystem::file_size(path);
+
+    // Create a buffer
+    std::string result(sz, '\0');
+
+    // Read the whole file into the buffer
+    f.read(result.data(), sz);
+
+    return result;
+}
 
 DefaultView::DefaultView()
     : wxFrame(nullptr, wxID_ANY, "OASIS")
 {
     wxFileSystem::AddHandler(new wxMemoryFSHandler);
 
-    const auto& foxSvg = Fox_svg::get();
-    wxMemoryFSHandler::AddFile("Fox.svg", foxSvg.data(), foxSvg.size());
+    const auto& indexHTML = ReadFileIntoString("assets/index.html");
+    wxMemoryFSHandler::AddFile("index.html", indexHTML);
 
-    const auto& bootstrapCss = bootstrap_min_css::get();
-    wxMemoryFSHandler::AddFile("bootstrap.min.css", bootstrapCss.data(), bootstrapCss.size());
+    const auto& bootstrapJS = ReadFileIntoString("assets/bootstrap-5.3.3-dist/js/bootstrap.bundle.js");
+    wxMemoryFSHandler::AddFile("bootstrap.bundle.js", bootstrapJS);
 
-    const auto& bootstrapJs = bootstrap_bundle_min_js::get();
-    wxMemoryFSHandler::AddFile("bootstrap.bundle.min.js", bootstrapJs.data(), bootstrapJs.size());
+    const auto& bootstrapCSS = ReadFileIntoString("assets/bootstrap-5.3.3-dist/css/bootstrap.css");
+    wxMemoryFSHandler::AddFile("bootstrap.css", bootstrapCSS);
 
-    const auto& indexHTML = index_html::get();
-    wxMemoryFSHandler::AddFile("index.html", indexHTML.data(), indexHTML.size());
-
-    const auto& indexJS = index_js::get();
-    wxMemoryFSHandler::AddFile("/assets/index.js", indexJS.data(), indexJS.size());
-
-    const auto& indexCSS = index_css::get();
-    wxMemoryFSHandler::AddFile("/assets/index.css", indexCSS.data(), indexCSS.size());
+    const auto& indexJS = ReadFileIntoString("assets/index.js");
+    wxMemoryFSHandler::AddFile("index.js", indexJS);
 
     CreateStatusBar();
     SetStatusText("Welcome to OASIS!");
@@ -64,11 +90,24 @@ DefaultView::DefaultView()
     webView->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewFSHandler("memory")));
 #endif
 
-    webView->Create(this, wxID_ANY);
+    webView->Create(this, wxID_ANY, "memory:index.html");
 
 #ifndef __APPLE__
     webView->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewFSHandler("memory")));
 #endif
+
+    webView->Bind(wxEVT_WEBVIEW_ERROR, [=](wxWebViewEvent& evt) {
+        wxMessageBox("Error: " + evt.GetString(), "Error", wxICON_ERROR);
+    });
+
+#ifndef NDEBUG
+    webView->EnableAccessToDevTools();
+#endif
+
+    viewer_.setWebView(webView);
+    viewer_.LoadIndex();
+    // webView->LoadURL("memory:/assets/index.js");
+    // webView->SetPage(std::string { indexHTML.begin(), indexHTML.end() }, "memory:/");
 
     auto* inputSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -323,7 +362,7 @@ DefaultView::DefaultView()
         textField->SetInsertionPointEnd();
     });
 
-    textField->Bind(wxEVT_TEXT, [this, webView](wxCommandEvent& evt) {
+    textField->Bind(wxEVT_TEXT, [this](wxCommandEvent& evt) {
         if (const auto textCtrl = dynamic_cast<wxTextCtrl*>(evt.GetEventObject())) {
             currentInput = textCtrl->GetValue().ToStdString();
             const std::string infix = preprocessInput(currentInput);
@@ -340,12 +379,15 @@ DefaultView::DefaultView()
             }
 
             lastReloadReason = LastReloadReason::OnInputChanged;
-            renderPage(webView);
+
+            const std::string currentMathML = ExpressionToMathMLStr(currentExpression);
+            viewer_.setCurrentEntry(currentMathML);
+
             SetStatusText("Successfully parsed input.");
         }
     });
 
-    textField->Bind(wxEVT_TEXT_ENTER, [this, textField, webView](wxCommandEvent& evt) { onEnter(webView, textField); });
+    textField->Bind(wxEVT_TEXT_ENTER, [this, textField](wxCommandEvent& evt) { onEnter(viewer_, textField); });
 
     keyClear->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
         currentInput.clear();
@@ -401,188 +443,19 @@ DefaultView::DefaultView()
         textField->SetValue(currentInput);
     });
 
-    keyEnter->Bind(wxEVT_LEFT_UP, [this, textField, webView](wxMouseEvent& evt) { onEnter(webView, textField); });
-
-    // Bind the event
-    webView->Bind(wxEVT_WEBVIEW_LOADED, [this, webView](wxWebViewEvent& event) {
-        if (lastReloadReason == LastReloadReason::ThemeChanged) {
-            webView->RunScriptAsync(fmt::format(R"(
-window.scrollTo(0,{});
-            )", lastScrollHeight));
-            return;
-        }
-
-        webView->RunScriptAsync(R"(
-document.body.style.overflow = 'hidden';
-document.getElementById('current').scrollIntoView({behavior: 'instant'});
-setTimeout(function(){document.body.style.overflow = 'auto';}, 0);)");
-    });
-
-    // Create root element.
-    tinyxml2::XMLElement* root = doc.NewElement("html");
-
-    if (wxSystemSettings::GetAppearance().IsDark())
-    {
-        root->SetAttribute("data-bs-theme", "dark");
-    }
-    else
-    {
-        root->SetAttribute("data-bs-theme", "light");
-    }
-
-    doc.InsertFirstChild(root);
-
-    // Add head element.
-    tinyxml2::XMLElement* head = doc.NewElement("head");
-
-    // Add Bootstrap CSS link to the head element
-    tinyxml2::XMLElement* bootstrapCssLink = doc.NewElement("link");
-
-    bootstrapCssLink->SetAttribute("rel", "stylesheet");
-    bootstrapCssLink->SetAttribute("href", "memory:bootstrap.min.css");
-
-    head->InsertEndChild(bootstrapCssLink);
-
-    Bind(wxEVT_SYS_COLOUR_CHANGED, [this, root, webView](wxSysColourChangedEvent&) {
-        this->lastReloadReason = LastReloadReason::ThemeChanged;
-
-        if (wxSystemAppearance appearance = wxSystemSettings::GetAppearance(); appearance.IsDark())
-        {
-            root->SetAttribute("data-bs-theme", "dark");
-        }
-        else
-        {
-            root->SetAttribute("data-bs-theme", "light");
-        }
-
-        renderPage(webView);
-    });
-
-    // Add style element to the head element
-    root->InsertEndChild(head);
-
-    // Add body element.
-    body = doc.NewElement("body");
-
-    currentDivWrapper = doc.NewElement("div");
-    currentDivWrapper->SetAttribute("class", "d-flex justify-content-end m-2"); // Set div as flexbox to align items with padding and shadow
-
-    currentDiv = doc.NewElement("div");
-    currentDiv->SetAttribute("class", "d-inline-flex p-2 text-bg-primary rounded border shadow"); // Set div as inline-flex to make it takes as much width as necessary with padding and shadow
-    currentDiv->SetAttribute("id", "current");
-    currentDivWrapper->InsertEndChild(currentDiv);
-
-    body->InsertEndChild(currentDivWrapper);
-
-    // Add Bootstrap JS script to the body element
-    tinyxml2::XMLElement* bootstrapJsScript = doc.NewElement("script");
-    bootstrapJsScript->SetAttribute("src", "memory:bootstrap.bundle.min.js");
-
-    body->InsertEndChild(bootstrapJsScript);
-
-    root->InsertEndChild(body);
-
-    renderPage(webView);
+    keyEnter->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) { onEnter(viewer_, textField); });
 }
 
-void DefaultView::onEnter(wxWebView* webView, wxTextCtrl* textCtrl)
+void DefaultView::onEnter(const EquationViewer& equationViewer, wxTextCtrl* textCtrl)
 {
-    // Perform calculation or other actions based on currentInput and then clear currentInput
-    if (!currentExpression) {
-        SetStatusText("No expression to evaluate!");
-        return;
-    }
+    const auto result = currentExpression->Simplify();
+    const std::string queryMathML = ExpressionToMathMLStr(currentExpression);
+    const std::string responseMathML = ExpressionToMathMLStr(result);
 
-    auto& [query, response] = history.emplace_back(std::move(currentExpression), currentExpression->Simplify());
-
-    tinyxml2::XMLElement* queryRightAlign = doc.NewElement("div");
-    queryRightAlign->SetAttribute("class", "d-flex justify-content-end mt-2 mx-2"); // Set div as flexbox to align items with padding and shadow
-
-    tinyxml2::XMLElement* queryCard = doc.NewElement("div");
-    queryCard->SetAttribute("class", "d-inline-flex p-2 text-bg-primary rounded shadow"); // Set div as inline-flex to make it takes as much width as necessary with padding and shadow
-
-    query->Serialize(mathMLSerializer);
-    tinyxml2::XMLElement* queryMathML = mathMLSerializer.GetResult();
-    tinyxml2::XMLElement* queryMath = doc.NewElement("math");
-
-    queryMath->InsertFirstChild(queryMathML);
-    queryCard->InsertEndChild(queryMath);
-
-    queryRightAlign->InsertEndChild(queryCard);
-
-    if (currentDivWrapper->PreviousSibling()) {
-        body->InsertAfterChild(currentDivWrapper->PreviousSibling(), queryRightAlign);
-    } else {
-        body->InsertFirstChild(queryRightAlign);
-    }
-
-    tinyxml2::XMLElement* responseLeftAlign = doc.NewElement("div");
-    responseLeftAlign->SetAttribute("class", "d-flex justify-content-begin align-items-center mt-2 mx-2");
-
-    tinyxml2::XMLElement* responseCard = doc.NewElement("div");
-    responseCard->SetAttribute("class", "d-inline-flex p-2 bg-text-light rounded border shadow");
-
-    tinyxml2::XMLElement* avatarWrapper = doc.NewElement("div");
-    avatarWrapper->SetAttribute("class", "me-2 p-1 d-inline bg-light border rounded");
-
-    tinyxml2::XMLElement* responseAvatar = doc.NewElement("img");
-    responseAvatar->SetAttribute("src", "memory:Fox.svg");
-    responseAvatar->SetAttribute("class", "mr-3");
-    responseAvatar->SetAttribute("width", "30");
-    responseAvatar->SetAttribute("height", "30");
-    avatarWrapper->InsertEndChild(responseAvatar);
-
-    responseLeftAlign->InsertEndChild(avatarWrapper);
-
-    if (response == nullptr) {
-        tinyxml2::XMLText* errorText = doc.NewText("Error");
-        responseCard->InsertEndChild(errorText);
-    } else {
-        response->Serialize(mathMLSerializer);
-        tinyxml2::XMLElement* responseMathML = mathMLSerializer.GetResult();
-        tinyxml2::XMLElement* responseMath = doc.NewElement("math");
-        responseMath->InsertFirstChild(responseMathML);
-        responseCard->InsertEndChild(responseMath);
-    }
-
-    responseLeftAlign->InsertEndChild(responseCard);
-
-    body->InsertAfterChild(queryRightAlign, responseLeftAlign);
-
-    lastReloadReason = LastReloadReason::OnEnter;
-    renderPage(webView);
+    equationViewer.addEntryToHistory(queryMathML, responseMathML);
+    equationViewer.setCurrentEntry("");
 
     // (Assuming currentInput holds a valid mathematical expression)
     currentInput.clear();
     textCtrl->SetValue(currentInput);
-}
-
-void DefaultView::renderPage(wxWebView* webView)
-{
-    wxString scrollHeightStr;
-    webView->RunScript("window.scrollY", &scrollHeightStr);
-    lastScrollHeight = std::stoi(scrollHeightStr.ToStdString());
-
-    currentDiv->DeleteChildren();
-
-    // Current expression to MathML.
-    if (currentExpression) {
-        // Creating new expressionElement
-        tinyxml2::XMLElement* mathElement = doc.NewElement("math");
-
-        currentExpression->Serialize(mathMLSerializer);
-        tinyxml2::XMLElement* expressionElement = mathMLSerializer.GetResult();
-
-        mathElement->InsertEndChild(expressionElement);
-
-        // Adding new expressionElement to the currentDiv
-        currentDiv->InsertEndChild(mathElement);
-    }
-
-    // Print the XML document to a string.
-    tinyxml2::XMLPrinter printer;
-    doc.Print(&printer);
-
-    const std::string html_document = printer.CStr();
-    webView->SetPage(html_document, "");
 }

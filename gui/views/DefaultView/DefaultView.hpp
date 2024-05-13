@@ -9,6 +9,7 @@
 
 #include "Oasis/Expression.hpp"
 #include "Oasis/MathMLSerializer.hpp"
+#include "components/EquationViewer/EquationViewer.hpp"
 
 class wxWebView;
 class wxTextCtrl;
@@ -23,15 +24,7 @@ private:
 
     std::vector<std::pair<std::unique_ptr<Oasis::Expression>, std::unique_ptr<Oasis::Expression>>> history;
 
-    tinyxml2::XMLDocument doc;
-    tinyxml2::XMLElement* body;
-    tinyxml2::XMLElement* currentDiv;
-    tinyxml2::XMLElement* currentDivWrapper;
-
-    Oasis::MathMLSerializer mathMLSerializer { doc };
-
-    void renderPage(wxWebView* webView);
-    void onEnter(wxWebView* webView, wxTextCtrl* textCtrl);
+    void onEnter(const EquationViewer& equationViewer, wxTextCtrl* textCtrl);
 
     enum class LastReloadReason {
         OnEnter,
@@ -41,6 +34,8 @@ private:
 
     LastReloadReason lastReloadReason = LastReloadReason::OnEnter;
     int lastScrollHeight = 0;
+
+    EquationViewer viewer_;
 };
 
 

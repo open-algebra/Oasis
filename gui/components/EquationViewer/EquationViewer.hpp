@@ -11,13 +11,15 @@
 
 class EquationViewer {
 public:
-    explicit EquationViewer(wxWebView* webView);
 
+    void setWebView(wxWebView* web_view);
+
+    void LoadIndex() const;
     void addEntryToHistory(const std::string& query, const std::string& response) const;
     void setCurrentEntry(const std::string& entry) const;
 
 private:
-    wxWebView* webView;
+    wxWebView* webView = nullptr;
 };
 
 

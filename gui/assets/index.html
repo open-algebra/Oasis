@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Oasis Equation Viewer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="memory:bootstrap.css">
+    <script src="memory:bootstrap.bundle.js"></script>
+    <script src="memory:index.js"></script>
+</head>
+<body>
+<div class="py-2">
+    <div class="container">
+        <div class="mb-3">
+            <div class="d-flex gap-2">
+                <h1>Welcome to Oasis!</h1>
+            </div>
+            <a class="text-dark" data-bs-toggle="collapse" href="#help" role="button" aria-expanded="false" aria-controls="collapseExample">
+                Toggle Help
+            </a>
+            <div id="help" class="collapse mb-3">
+                <div class="card card-body text-muted">
+                    To get started, type something like "2x+3x" into the input textbox below, then hit the Enter/Return key on your keyboard. The results should immediately be displayed.
+                </div>
+            </div>
+        </div>
+        <div id="stack" class="d-flex flex-column gap-3">
+            <div id="currentInput" class="d-flex justify-content-end"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
