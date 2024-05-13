@@ -105,9 +105,7 @@ DefaultView::DefaultView()
 #endif
 
     viewer_.setWebView(webView);
-    viewer_.LoadIndex();
-    // webView->LoadURL("memory:/assets/index.js");
-    // webView->SetPage(std::string { indexHTML.begin(), indexHTML.end() }, "memory:/");
+    viewer_.Init();
 
     auto* inputSizer = new wxBoxSizer(wxVERTICAL);
 

@@ -14,9 +14,11 @@ public:
 
     void setWebView(wxWebView* web_view);
 
-    void LoadIndex() const;
+    void Init() const;
     void addEntryToHistory(const std::string& query, const std::string& response) const;
     void setCurrentEntry(const std::string& entry) const;
+    void setLightTheme() const;
+    void setDarkTheme() const;
 
 private:
     wxWebView* webView = nullptr;

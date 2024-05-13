@@ -2,9 +2,8 @@
 // Created by Matthew McCall on 5/12/24.
 //
 
-#include <regex>
-
 #include "fmt/format.h"
+#include <wx/settings.h>
 
 #include "EquationViewer.hpp"
 
@@ -13,9 +12,31 @@ void EquationViewer::setWebView(wxWebView* web_view)
     webView = web_view;
 }
 
-void EquationViewer::LoadIndex() const
+void EquationViewer::Init() const
 {
     webView->LoadURL("memory:index.html");
+
+    webView->Bind(wxEVT_WEBVIEW_LOADED,
+        [this](wxWebViewEvent& event) {
+            if (wxSystemSettings::GetAppearance().IsDark()) {
+                this->setDarkTheme();
+            } else {
+                this->setLightTheme();
+            }
+        });
+
+    // Bind System Colour Change Event to a handler
+    webView->Bind(wxEVT_SYS_COLOUR_CHANGED, [this](wxSysColourChangedEvent& event) {
+        // Check the system's current theme and update the application theme accordingly
+        if (wxSystemSettings::GetAppearance().IsDark()) {
+            this->setDarkTheme();
+        } else {
+            this->setLightTheme();
+        }
+
+        // Continue processing the event in case other handlers are interested
+        event.Skip();
+    });
 }
 
 void EquationViewer::addEntryToHistory(const std::string& query, const std::string& response) const
@@ -26,7 +47,7 @@ void EquationViewer::addEntryToHistory(const std::string& query, const std::stri
     std::ranges::replace(formattedResponse, '\n', ' ');
 
     const std::string js = fmt::format(R"(addToHistory("{}","{}"))", formattedQuery, formattedResponse);
-    webView->RunScript(js);
+    webView->RunScriptAsync(js);
 }
 
 void EquationViewer::setCurrentEntry(const std::string& entry) const
@@ -35,5 +56,15 @@ void EquationViewer::setCurrentEntry(const std::string& entry) const
     std::ranges::replace(formattedEntry, '\n', ' ');
 
     const std::string js = fmt::format(R"(setCurrentInput("{}"))", formattedEntry);
-    webView->RunScript(js);
+    webView->RunScriptAsync(js);
+}
+
+void EquationViewer::setLightTheme() const
+{
+    webView->RunScriptAsync("setLightTheme()");
+}
+
+void EquationViewer::setDarkTheme() const
+{
+    webView->RunScriptAsync("setDarkTheme()");
 }

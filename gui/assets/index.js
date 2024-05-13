@@ -4,7 +4,7 @@ function setCurrentInput(input) {
 
     if (input) {
         const currentInputDivContentWrapper = document.createElement("div");
-        currentInputDivContentWrapper.setAttribute("class", "text-bg-dark p-2 shadow rounded");
+        currentInputDivContentWrapper.setAttribute("class", "bg-primary-subtle text-primary-emphasis p-2 shadow rounded-4");
         currentInputDivContentWrapper.innerHTML = input;
 
         currentInputDiv.appendChild(currentInputDivContentWrapper)
@@ -21,17 +21,29 @@ function addToHistory(query, response) {
     queryResponseDiv.setAttribute("class", "d-flex flex-column gap-1");
 
     const queryDiv = document.createElement("div");
-    queryDiv.setAttribute("class", "align-self-end text-bg-dark p-2 shadow rounded");
+    queryDiv.setAttribute("class", "align-self-end bg-primary-subtle text-primary-emphasis p-2 shadow rounded-4");
     queryDiv.innerHTML = query;
     queryResponseDiv.appendChild(queryDiv);
 
     const responseDiv = document.createElement("div");
-    responseDiv.setAttribute("class", "align-self-start text-bg-light p-2 shadow rounded border");
+    responseDiv.setAttribute("class", "align-self-start bg-secondary-subtle p-2 shadow rounded-4");
     responseDiv.innerHTML = response;
     queryResponseDiv.appendChild(responseDiv);
 
     stackElem.insertBefore(queryResponseDiv, currentInputElem);
 }
 
+function setLightTheme()
+{
+    document.documentElement.setAttribute("data-bs-theme", "light");
+}
+
+function setDarkTheme()
+{
+    document.documentElement.setAttribute("data-bs-theme", "dark");
+}
+
 window.setCurrentInput = setCurrentInput
 window.addToHistory = addToHistory
+window.setLightTheme = setLightTheme
+window.setDarkTheme = setDarkTheme
