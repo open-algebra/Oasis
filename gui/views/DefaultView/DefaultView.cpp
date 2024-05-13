@@ -90,7 +90,7 @@ DefaultView::DefaultView()
     webView->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewFSHandler("memory")));
 #endif
 
-    webView->Create(this, wxID_ANY, "memory:index.html");
+    webView->Create(this, wxID_ANY);
 
 #ifndef __APPLE__
     webView->RegisterHandler(wxSharedPtr<wxWebViewHandler>(new wxWebViewFSHandler("memory")));
@@ -109,23 +109,6 @@ DefaultView::DefaultView()
 
     auto* inputSizer = new wxBoxSizer(wxVERTICAL);
 
-    auto* toolbarSizer = new wxBoxSizer(wxHORIZONTAL);
-    auto* derivativeButton = new wxButton(this, wxID_ANY, "d/dx");
-    auto* logarithmButton = new wxButton(this, wxID_ANY, "log");
-    // auto* sinButton = new wxButton(this, wxID_ANY, "sin");
-    // auto* cosButton = new wxButton(this, wxID_ANY, "cos");
-    // auto* tanButton = new wxButton(this, wxID_ANY, "tan");
-
-    toolbarSizer->Add(derivativeButton);
-    toolbarSizer->AddSpacer(4);
-    toolbarSizer->Add(logarithmButton);
-    // toolbarSizer->AddSpacer(4);
-    // toolbarSizer->Add(sinButton);
-    // toolbarSizer->AddSpacer(4);
-    // toolbarSizer->Add(cosButton);
-    // toolbarSizer->AddSpacer(4);
-    // toolbarSizer->Add(tanButton);
-
     // Add a textfield
     auto* textFieldSizer = new wxBoxSizer(wxHORIZONTAL);
     auto* textFieldLabel = new wxStaticText(this, wxID_ANY, "Input:");
@@ -136,9 +119,13 @@ DefaultView::DefaultView()
     textFieldSizer->AddSpacer(4);
     textFieldSizer->Add(textField, wxSizerFlags(1).Expand());
 
-    auto* keypad = new wxGridSizer(5, 4, 4, 4);
+    auto* keypad = new wxGridSizer(6, 4, 4, 4);
 
     auto* keyClear = new KeypadButton(this, wxID_ANY, "Clear");
+    auto* keyDDX = new KeypadButton(this, wxID_ANY, "d/dx");
+    auto* keyLog = new KeypadButton(this, wxID_ANY, "log");
+    auto* keyExp = new KeypadButton(this, wxID_ANY, "x\u207F");
+    auto* keyComma = new KeypadButton(this, wxID_ANY, ",");
     auto* keyLeftParens = new KeypadButton(this, wxID_ANY, "(");
     auto* keyRightParens = new KeypadButton(this, wxID_ANY, ")");
     auto* keyDivide = new KeypadButton(this, wxID_ANY, "\u00F7");
@@ -160,6 +147,10 @@ DefaultView::DefaultView()
     auto* keyEnter = new KeypadButton(this, wxID_ANY, "Enter");
 
     keypad->Add(keyClear, wxSizerFlags().Expand());
+    keypad->Add(keyDDX, wxSizerFlags().Expand());
+    keypad->Add(keyLog, wxSizerFlags().Expand());
+    keypad->Add(keyExp, wxSizerFlags().Expand());
+    keypad->Add(keyComma, wxSizerFlags().Expand());
     keypad->Add(keyLeftParens, wxSizerFlags().Expand());
     keypad->Add(keyRightParens, wxSizerFlags().Expand());
     keypad->Add(keyDivide, wxSizerFlags().Expand());
@@ -180,8 +171,6 @@ DefaultView::DefaultView()
     keypad->Add(keyDot, wxSizerFlags().Expand());
     keypad->Add(keyEnter, wxSizerFlags().Expand());
 
-    inputSizer->AddSpacer(4);
-    inputSizer->Add(toolbarSizer, wxSizerFlags());
     inputSizer->AddSpacer(4);
     inputSizer->Add(textFieldSizer, wxSizerFlags().Expand());
     inputSizer->AddSpacer(4);
@@ -325,6 +314,10 @@ DefaultView::DefaultView()
 
     Bind(wxEVT_MOTION, [=](wxMouseEvent& evt) {
         keyClear->paintNow();
+        keyDDX->paintNow();
+        keyLog->paintNow();
+        keyExp->paintNow();
+        keyComma->paintNow();
         keyLeftParens->paintNow();
         keyRightParens->paintNow();
         keyDivide->paintNow();
@@ -344,20 +337,6 @@ DefaultView::DefaultView()
         keyDot->paintNow();
         keyMultiply->paintNow();
         keyEnter->paintNow();
-    });
-
-    derivativeButton->Bind(wxEVT_BUTTON, [this, textField](wxCommandEvent& evt)
-    {
-        currentInput += "dd(";
-        textField->SetValue(currentInput);
-        textField->SetInsertionPointEnd();
-    });
-
-    logarithmButton->Bind(wxEVT_BUTTON, [this, textField](wxCommandEvent& evt)
-    {
-        currentInput += "log(";
-        textField->SetValue(currentInput);
-        textField->SetInsertionPointEnd();
     });
 
     textField->Bind(wxEVT_TEXT, [this](wxCommandEvent& evt) {
@@ -389,6 +368,25 @@ DefaultView::DefaultView()
 
     keyClear->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
         currentInput.clear();
+        textField->SetValue(currentInput);
+    });
+
+    keyDDX->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt)
+    {
+        currentInput += "dd(";
+        textField->SetValue(currentInput);
+        textField->SetInsertionPointEnd();
+    });
+
+    keyLog->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt)
+    {
+        currentInput += "log(";
+        textField->SetValue(currentInput);
+        textField->SetInsertionPointEnd();
+    });
+
+    keyComma->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
+        currentInput += ",";
         textField->SetValue(currentInput);
     });
 
@@ -438,6 +436,11 @@ DefaultView::DefaultView()
 
     keyMultiply->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
         currentInput += "*";
+        textField->SetValue(currentInput);
+    });
+
+    keyExp->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
+        currentInput += "^";
         textField->SetValue(currentInput);
     });
 
