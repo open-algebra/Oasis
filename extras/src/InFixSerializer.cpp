@@ -6,16 +6,16 @@
 
 #include "Oasis/InFixSerializer.hpp"
 
-#include "Oasis/Real.hpp"
-#include "Oasis/Variable.hpp"
 #include "Oasis/Add.hpp"
-#include "Oasis/Subtract.hpp"
-#include "Oasis/Multiply.hpp"
+#include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Log.hpp"
+#include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
-#include "Oasis/Derivative.hpp"
+#include "Oasis/Real.hpp"
+#include "Oasis/Subtract.hpp"
+#include "Oasis/Variable.hpp"
 
 namespace Oasis {
 
@@ -122,6 +122,17 @@ void InFixSerializer::Serialize(const Derivative<>& derivative)
     const auto leastSigOpStr = getResult();
 
     result = fmt::format("dd({},{})", mostSigOpStr, leastSigOpStr);
+}
+
+void Serialize(const Integral<>& integral)
+{
+    integral.GetMostSigOp().Serialize(*this);
+    const auto mostSigOpStr = getResult();
+
+    integral.GetLeastSigOp().Serialize(*this);
+    const auto leastSigOpStr = getResult();
+
+    result = fmt::format("in({},{})", mostSigOpStr, leastSigOpStr);
 }
 
 std::string InFixSerializer::getResult() const
