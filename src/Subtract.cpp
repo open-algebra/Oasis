@@ -8,6 +8,7 @@
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
@@ -195,6 +196,44 @@ auto Subtract<Expression>::Differentiate(const Expression& differentiationVariab
         }
     }
     return Copy();
+}
+
+auto Subtract<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+{
+    // Single integration variable
+    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+        auto simplifiedSub = this->Simplify();
+
+        // Make sure we're still subtracting
+        if (auto adder = Subtract<Expression>::Specialize(*simplifiedSub); adder != nullptr) {
+            auto leftRef = adder->GetLeastSigOp().Copy();
+            auto leftIntegral = leftRef->Integrate(integrationVariable);
+
+            auto specializedLeft = Add<Expression>::Specialize(*leftIntegral);
+
+            auto rightRef = adder->GetMostSigOp().Copy();
+            auto rightIntegral = rightRef->Integrate(integrationVariable);
+
+            auto specializedRight = Add<Expression>::Specialize(*rightIntegral);
+
+            if (specializedLeft == nullptr || specializedRight == nullptr) {
+                return Copy();
+            }
+            Add add { Subtract<Expression> {
+                          *(specializedRight->GetMostSigOp().Copy()),
+                          *(specializedLeft->GetMostSigOp().Copy()) },
+                Variable { "C" } };
+
+            return add.Simplify();
+        }
+        // If not, use other integration technique
+        else {
+            return simplifiedSub->Integrate(integrationVariable);
+        }
+    }
+    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+
+    return integral.Copy();
 }
 
 } // Oasis

@@ -13,6 +13,7 @@ set(Oasis_SOURCES
     Exponent.cpp
     Expression.cpp
     Imaginary.cpp
+    Integral.cpp
     Linear.cpp
     Log.cpp
     Multiply.cpp
@@ -31,6 +32,7 @@ set(Oasis_HEADERS
     ../include/Oasis/Exponent.hpp
     ../include/Oasis/Expression.hpp
     ../include/Oasis/Imaginary.hpp
+    ../include/Oasis/Integral.hpp
     ../include/Oasis/LeafExpression.hpp
     ../include/Oasis/Linear.hpp
     ../include/Oasis/Log.hpp
