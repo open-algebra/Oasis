@@ -1,10 +1,12 @@
 #include "taskflow/taskflow.hpp"
 
 #include "Oasis/Expression.hpp"
+#include "Oasis/Integral.hpp"
 
 #include <Oasis/Add.hpp>
 #include <Oasis/Divide.hpp>
 #include <Oasis/Exponent.hpp>
+#include <Oasis/Integral.hpp>
 #include <Oasis/Multiply.hpp>
 #include <Oasis/Subtract.hpp>
 #include <Oasis/Variable.hpp>
@@ -217,7 +219,7 @@ auto Expression::GetCategory() const -> uint32_t
 {
     return 0;
 }
-auto Expression::Differentiate(const Expression&) -> std::unique_ptr<Expression>
+auto Expression::Differentiate(const Expression&) const -> std::unique_ptr<Expression>
 {
     return Copy();
 }
@@ -244,6 +246,20 @@ auto Expression::Specialize(const Expression& other) -> std::unique_ptr<Expressi
 auto Expression::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Expression>
 {
     return other.Copy(subflow);
+}
+
+auto Expression::Integrate(const Expression& variable) -> std::unique_ptr<Expression>
+{
+    Integral<Expression, Expression> integral { *(this->Copy()), *(variable.Copy()) };
+
+    return integral.Copy();
+}
+
+auto Expression::IntegrateWithBounds(const Expression& variable, const Expression&, const Expression&) -> std::unique_ptr<Expression>
+{
+    Integral<Expression, Expression> integral { *(this->Copy()), *(variable.Copy()) };
+
+    return integral.Copy();
 }
 
 auto Expression::Simplify() const -> std::unique_ptr<Expression>

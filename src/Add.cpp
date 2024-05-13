@@ -6,6 +6,7 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 
@@ -294,7 +295,45 @@ auto Add<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
     return std::make_unique<Add>(dynamic_cast<const Add&>(*otherGeneralized));
 }
 
-auto Add<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Add<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+{
+    // Single integration variable
+    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+        auto simplifiedAdd = this->Simplify();
+
+        // Make sure we're still adder
+        if (auto adder = Add<Expression>::Specialize(*simplifiedAdd); adder != nullptr) {
+            auto leftRef = adder->GetLeastSigOp().Copy();
+            auto leftIntegral = leftRef->Integrate(integrationVariable);
+
+            auto specializedLeft = Add<Expression>::Specialize(*leftIntegral);
+
+            auto rightRef = adder->GetMostSigOp().Copy();
+            auto rightIntegral = rightRef->Integrate(integrationVariable);
+
+            auto specializedRight = Add<Expression>::Specialize(*rightIntegral);
+            if (specializedLeft == nullptr || specializedRight == nullptr) {
+                return Copy();
+            }
+            Add<Expression> add {
+                Add<Expression, Expression> {
+                    *(specializedLeft->GetMostSigOp().Copy()), *(specializedRight->GetMostSigOp().Copy()) },
+                Variable { "C" }
+            };
+
+            return add.Simplify();
+        }
+        // If not, use other integration technique
+        else {
+            return simplifiedAdd->Integrate(integrationVariable)->Simplify();
+        }
+    }
+    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+
+    return integral.Copy();
+}
+
+auto Add<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
         auto simplifiedAdd = this->Simplify();

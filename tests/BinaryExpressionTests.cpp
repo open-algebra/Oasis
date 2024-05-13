@@ -232,19 +232,3 @@ TEST_CASE("Substitute Binary", "[Substitute]")
                     Oasis::Real twenty {20};
     REQUIRE(after->Equals(*(twenty.Simplify())));
 }
-
-TEST_CASE("Substitute Unary", "[Substitute]")
-{
-    Oasis::Add<Oasis::Multiply<Oasis::Real, Oasis::Negate<Oasis::Variable>>,
-            Oasis::Multiply<Oasis::Real, Oasis::Variable>> before {
-            Oasis::Multiply<Oasis::Real, Oasis::Negate<Oasis::Variable>> {
-                    Oasis::Real { 2.0 },
-                    Oasis::Negate {Oasis::Variable { "x" } }},
-            Oasis::Multiply<Oasis::Real, Oasis::Variable> {
-                    Oasis::Real { 3.0 },
-                    Oasis::Variable { "x" } } }; // 2x+3x
-
-    auto after = before.Substitute(Oasis::Variable { "x" }, Oasis::Real { 4.0 }); // after should some std::unique_ptr<Expression> such that it equals 2(4) + 3(4)
-    Oasis::Real four {4};
-    REQUIRE(after->Equals(*(four.Simplify())));
-}

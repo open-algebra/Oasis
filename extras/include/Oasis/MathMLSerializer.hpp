@@ -10,7 +10,7 @@
 #include "Oasis/BinaryExpression.hpp"
 #include "Oasis/Serialization.hpp"
 
-template <template<typename, typename> typename T>
+template <template <typename, typename> typename T>
 concept DerivedFromBinaryExpression = std::derived_from<T<Oasis::Expression, Oasis::Expression>, Oasis::BinaryExpression<T>>;
 
 namespace Oasis {
@@ -31,6 +31,7 @@ public:
     void Serialize(const Log<Expression, Expression>& log) override;
     void Serialize(const Negate<Expression>& negate) override;
     void Serialize(const Derivative<Expression, Expression>& derivative) override;
+    void Serialize(const Integral<Expression, Expression>& integral) override;
 
     [[nodiscard]] tinyxml2::XMLDocument& GetDocument() const;
     [[nodiscard]] tinyxml2::XMLElement* GetResult() const;
@@ -38,7 +39,8 @@ public:
 private:
     [[nodiscard]] tinyxml2::XMLElement* CreatePlaceholder() const;
 
-    template <template<typename, typename> typename T> requires DerivedFromBinaryExpression<T>
+    template <template <typename, typename> typename T>
+        requires DerivedFromBinaryExpression<T>
     auto GetOpsAsMathMLPair(const T<Expression, Expression>& binexp) -> std::pair<tinyxml2::XMLElement*, tinyxml2::XMLElement*>
     {
         tinyxml2::XMLElement* mostSig = CreatePlaceholder();
@@ -64,7 +66,4 @@ private:
 
 }
 
-
-
-
-#endif //MATHMLSERIALIZER_HPP
+#endif // MATHMLSERIALIZER_HPP

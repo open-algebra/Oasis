@@ -28,6 +28,7 @@ enum class ExpressionType {
     Divide,
     Exponent,
     Log,
+    Integral,
     Limit,
     Derivative,
     Negate,
@@ -68,6 +69,16 @@ concept IExpression = (requires(T, const Expression& other, tf::Subflow& subflow
 // clang-format on
 
 /**
+ * Checks if type T is same as any of the provided types in U.
+ *
+ * @tparam T The type to compare against.
+ * @tparam U The comparision types.
+ * @return true if T is same as any type in U, false otherwise.
+ */
+template <typename T, typename... U>
+concept IsAnyOf = (std::same_as<T, U> || ...);
+
+/**
  * An expression.
  *
  * Expressions are a tree-like structure that represent mathematical expressions. They can be
@@ -93,7 +104,7 @@ public:
      * Tries to differentiate this function.
      * @return the differentiated expression.
      */
-    [[nodiscard]] virtual auto Differentiate(const Expression&) -> std::unique_ptr<Expression>;
+    [[nodiscard]] virtual auto Differentiate(const Expression&) const -> std::unique_ptr<Expression>;
 
     /**
      * Compares this expression to another expression for equality.
@@ -181,6 +192,19 @@ public:
      */
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Expression>;
 
+    /**
+     * Attempts to integrate this expression using integration rules
+     *
+     * @return An indefinite integral of the expression added to a constant
+     */
+    [[nodiscard]] virtual auto Integrate(const Expression&) -> std::unique_ptr<Expression>;
+
+    /**
+     * Attempts to integrate this expression using integration rules
+     *
+     * @return A solved definite integral of the expression
+     */
+    [[nodiscard]] virtual auto IntegrateWithBounds(const Expression&, const Expression&, const Expression&) -> std::unique_ptr<Expression>;
     /**
      * Gets whether this expression is of a specific type.
      *

@@ -39,7 +39,13 @@ public:
     {
         return this->GetType() == other.GetType();
     }
-    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> override
+
+    [[nodiscard]] auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression> override
+    {
+        return Generalize()->Integrate(integrationVariable);
+    }
+
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> override
     {
         return Generalize()->Differentiate(differentiationVariable);
     }

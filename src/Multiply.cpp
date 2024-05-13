@@ -6,6 +6,7 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Negate.hpp"
 #include "Oasis/Subtract.hpp"
 
@@ -365,7 +366,35 @@ auto Multiply<Expression>::Specialize(const Expression& other, tf::Subflow& subf
     return std::make_unique<Multiply>(dynamic_cast<const Multiply&>(*otherGeneralized));
 }
 
-auto Multiply<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Multiply<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+{
+    // Single integration variable
+    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+        auto simplifiedMult = this->Simplify();
+
+        // Constant case - Constant number multiplied by integrand
+        if (auto constant = Multiply<Real, Expression>::Specialize(*simplifiedMult); constant != nullptr) {
+            auto exp = constant->GetLeastSigOp().Copy();
+            auto num = constant->GetMostSigOp();
+            auto integrated = exp->Integrate(integrationVariable);
+
+            if (auto add = Add<Expression, Variable>::Specialize(*integrated); add != nullptr) {
+                Add<Multiply<Real, Expression>, Variable> adder {
+                    Multiply<Real, Expression> {
+                        Real { num.GetValue() }, add->GetMostSigOp() },
+                    Variable { "C" }
+                };
+
+                return adder.Simplify();
+            }
+        }
+    }
+    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+
+    return integral.Copy();
+}
+
+auto Multiply<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
