@@ -69,29 +69,28 @@ std::string updatePreview(wxWebView* webView, wxTextCtrl* firstArgInput, wxTextC
 FunctionBuilder::FunctionBuilder(wxWindow* parent, wxWindowID id, const wxString& title, const std::string& function, const std::string& firstArgPrompt, const std::string& secondArgPrompt)
     : wxDialog(parent, id, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
-    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    auto* sizer = new wxBoxSizer(wxVERTICAL);
 
     // wxWebView
     wxWebView* webView = wxWebView::New(this, wxID_ANY);
-    sizer->Add(webView, wxSizerFlags(3).Expand().Border(wxDOWN));
+
+    const auto flex_grid_sizer = new wxFlexGridSizer(2, 2, 4, 4);
 
     // First label and text control
-    wxStaticText* firstArgLabel = new wxStaticText(this, wxID_ANY, firstArgPrompt);
-    wxTextCtrl* firstArgInput = new wxTextCtrl(this, wxID_ANY);
-    wxBoxSizer* firstInputSizer = new wxBoxSizer(wxHORIZONTAL);
-    firstInputSizer->Add(firstArgLabel, wxSizerFlags(0).Center());
-    firstInputSizer->AddSpacer(4);
-    firstInputSizer->Add(firstArgInput, wxSizerFlags(1).Expand());
-    sizer->Add(firstInputSizer, wxSizerFlags(0).Expand().Border(wxDOWN | wxLEFT | wxRIGHT));
+    const auto firstArgLabel = new wxStaticText(this, wxID_ANY, firstArgPrompt);
+    flex_grid_sizer->Add(firstArgLabel, wxSizerFlags().Right().CenterVertical());
+
+    const auto firstArgInput = new wxTextCtrl(this, wxID_ANY);
+    flex_grid_sizer->Add(firstArgInput, wxSizerFlags().Expand());
 
     // Second label and text control
-    wxStaticText* secondArgLabel = new wxStaticText(this, wxID_ANY, secondArgPrompt);
-    wxTextCtrl* secondArgInput = new wxTextCtrl(this, wxID_ANY);
-    wxBoxSizer* secondInputSizer = new wxBoxSizer(wxHORIZONTAL);
-    secondInputSizer->Add(secondArgLabel, wxSizerFlags(0).Center());
-    secondInputSizer->AddSpacer(4);
-    secondInputSizer->Add(secondArgInput, wxSizerFlags(1).Expand());
-    sizer->Add(secondInputSizer, wxSizerFlags(0).Expand().Border(wxDOWN | wxLEFT | wxRIGHT));
+    const auto secondArgLabel = new wxStaticText(this, wxID_ANY, secondArgPrompt);
+    flex_grid_sizer->Add(secondArgLabel, wxSizerFlags().Right().CenterVertical());
+
+    const auto secondArgInput = new wxTextCtrl(this, wxID_ANY);
+    flex_grid_sizer->Add(secondArgInput, wxSizerFlags().Expand());
+
+    flex_grid_sizer->AddGrowableCol(1);
 
     // Create buttons
     wxButton* cancelButton = new wxButton(this, wxID_CANCEL, wxT("Cancel"));
@@ -100,12 +99,16 @@ FunctionBuilder::FunctionBuilder(wxWindow* parent, wxWindowID id, const wxString
 
     // Create sizer for buttons
     wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
-    buttonSizer->Add(cancelButton, wxSizerFlags(0));
+    buttonSizer->Add(cancelButton);
     buttonSizer->AddSpacer(4);
-    buttonSizer->Add(insertButton, wxSizerFlags(0));
+    buttonSizer->Add(insertButton);
 
-    // Add buttons sizer to the main sizer
-    sizer->Add(buttonSizer, wxSizerFlags(0).Align(wxALIGN_RIGHT).Border(wxDOWN | wxLEFT | wxRIGHT));
+    sizer->Add(webView, wxSizerFlags(1).Expand());
+    sizer->AddSpacer(4);
+    sizer->Add(flex_grid_sizer, wxSizerFlags().Expand().HorzBorder());
+    sizer->AddSpacer(4);
+    sizer->Add(buttonSizer, wxSizerFlags().Right().HorzBorder());
+    sizer->AddSpacer(4);
 
     firstArgInput->Bind(wxEVT_TEXT, [=](wxCommandEvent&) {
         composedFunction = updatePreview(webView, firstArgInput, secondArgInput, function);
