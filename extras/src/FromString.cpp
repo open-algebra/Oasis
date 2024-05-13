@@ -267,6 +267,10 @@ auto FromInFix(const std::string& str) -> std::unique_ptr<Expression>
         processOp(ops, st);
     }
 
+    if (st.empty()) {
+        throw std::runtime_error("Parsing failed");
+    }
+
     return st.top()->Copy(); // root of the expression tree
 }
 
