@@ -80,22 +80,36 @@ void MathMLSerializer::Serialize(const Subtract<>& subtract)
 
     mrow->InsertFirstChild(minuendElement);
 
+    bool surroundWithParens = true;
+
+    if (subtract.HasLeastSigOp()) {
+        if (auto realSubtrahend = Real::Specialize(subtract.GetLeastSigOp()); realSubtrahend != nullptr) {
+            if (realSubtrahend->GetValue() >= 0) {
+                surroundWithParens = false;
+            }
+        }
+    }
+
     // mo
     tinyxml2::XMLElement* const mo = doc.NewElement("mo");
     mo->SetText("-");
     mrow->InsertEndChild(mo);
 
-    // (
-    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
-    leftParen->SetText("(");
-    mrow->InsertEndChild(leftParen);
+    if (surroundWithParens) {
+        // (
+        tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+        leftParen->SetText("(");
+        mrow->InsertEndChild(leftParen);
+    }
 
     mrow->InsertEndChild(subtrahendElement);
 
-    // )
-    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
-    rightParen->SetText(")");
-    mrow->InsertEndChild(rightParen);
+    if (surroundWithParens) {
+        // )
+        tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+        rightParen->SetText(")");
+        mrow->InsertEndChild(rightParen);
+    }
 
     result = mrow;
 }
@@ -107,9 +121,23 @@ void MathMLSerializer::Serialize(const Multiply<>& multiply)
     std::vector<std::unique_ptr<Expression>> ops;
     multiply.Flatten(ops);
 
+    bool surroundWithParens = !ops[0]->Is<Real>() && !ops[0]->Is<Variable>() && !ops[0]->Is<Exponent>() && !ops[0]->Is<Log>();
+
+    if (surroundWithParens) {
+        tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+        leftParen->SetText("(");
+        mrow->InsertEndChild(leftParen);
+    }
+
     ops.front()->Serialize(*this);
     tinyxml2::XMLElement* firstOpElement = GetResult();
     mrow->InsertEndChild(firstOpElement);
+
+    if (surroundWithParens) {
+        tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+        rightParen->SetText(")");
+        mrow->InsertEndChild(rightParen);
+    }
 
     for (int i = 1; i < ops.size(); ++i) {
         const auto& leftOp = ops[i - 1];
@@ -118,17 +146,31 @@ void MathMLSerializer::Serialize(const Multiply<>& multiply)
         tinyxml2::XMLElement* mo = doc.NewElement("mo");
         mo->SetText("\u00D7");
 
-        if(leftOp->Is<Real>() && rightOp->Is<Real>()) {
+        if (leftOp->Is<Real>() && rightOp->Is<Real>()) {
             mrow->InsertEndChild(mo);
-        } else if (auto rightExp = Exponent<>::Specialize(*rightOp); rightExp != nullptr) {
-            mrow->InsertEndChild(mo);
+        } else if (leftOp->Is<Variable>() && rightOp->Is<Real>()) {
+            doc.DeleteNode(mo);
         } else {
             doc.DeleteNode(mo);
+        }
+
+        surroundWithParens = !ops[i]->Is<Real>() && !ops[i]->Is<Variable>() && !ops[i]->Is<Exponent>() && !ops[i]->Is<Log>();
+
+        if (surroundWithParens) {
+            tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+            leftParen->SetText("(");
+            mrow->InsertEndChild(leftParen);
         }
 
         ops[i]->Serialize(*this);
         tinyxml2::XMLElement* opElement = GetResult();
         mrow->InsertEndChild(opElement);
+
+        if (surroundWithParens) {
+            tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+            rightParen->SetText(")");
+            mrow->InsertEndChild(rightParen);
+        }
     }
 
     result = mrow;
