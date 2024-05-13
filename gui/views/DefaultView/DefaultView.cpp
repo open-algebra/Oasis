@@ -282,18 +282,7 @@ DefaultView::DefaultView()
         // Use VERTICAL layout
         mainSizer->SetOrientation(wxVERTICAL);
         verticalMenuItem->Check(true);
-
-        // Save the current window size
-        wxSize currentSize = this->GetSize();
-
-        // Swap the width and height values of the window size
-        currentSize.Set(currentSize.GetHeight(), currentSize.GetWidth());
-
-        // Set the new size to the window
-        this->SetSize(currentSize);
-
-        Fit();
-        // Layout();
+        Layout();
     }, verticalMenuItem->GetId());
 
     Bind(wxEVT_MENU, [=](wxCommandEvent& event)
@@ -301,18 +290,7 @@ DefaultView::DefaultView()
         // Use HORIZONTAL layout
         mainSizer->SetOrientation(wxHORIZONTAL);
         horizontalMenuItem->Check(true);
-
-        // Save the current window size
-        wxSize currentSize = this->GetSize();
-
-        // Swap the width and height values of the window size
-        currentSize.Set(currentSize.GetHeight(), currentSize.GetWidth());
-
-        // Set the new size to the window
-        this->SetSize(currentSize);
-
-        Fit();
-        // Layout();
+        Layout();
     }, horizontalMenuItem->GetId());
 
     Bind(wxEVT_MOTION, [=](wxMouseEvent& evt) {
