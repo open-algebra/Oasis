@@ -124,7 +124,7 @@ DefaultView::DefaultView()
     auto* keyClear = new KeypadButton(this, wxID_ANY, "Clear");
     auto* keyDDX = new KeypadButton(this, wxID_ANY, "d/dx");
     auto* keyLog = new KeypadButton(this, wxID_ANY, "log");
-    auto* keyExp = new KeypadButton(this, wxID_ANY, "x\u207F");
+    auto* keyExp = new KeypadButton(this, wxID_ANY, "\u2227");
     auto* keyComma = new KeypadButton(this, wxID_ANY, ",");
     auto* keyLeftParens = new KeypadButton(this, wxID_ANY, "(");
     auto* keyRightParens = new KeypadButton(this, wxID_ANY, ")");
