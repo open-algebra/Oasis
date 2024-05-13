@@ -46,7 +46,7 @@ void EquationViewer::addEntryToHistory(const std::string& query, const std::stri
     std::ranges::replace(formattedQuery, '\n', ' ');
     std::ranges::replace(formattedResponse, '\n', ' ');
 
-    const std::string js = fmt::format(R"(addToHistory("{}","{}"))", formattedQuery, formattedResponse);
+    const std::string js = fmt::format(R"(addToHistory(String.raw`{}`,String.raw`{}`))", formattedQuery, formattedResponse);
     webView->RunScriptAsync(js);
 }
 
@@ -55,7 +55,7 @@ void EquationViewer::setCurrentEntry(const std::string& entry) const
     std::string formattedEntry = entry;
     std::ranges::replace(formattedEntry, '\n', ' ');
 
-    const std::string js = fmt::format(R"(setCurrentInput("{}"))", formattedEntry);
+    const std::string js = fmt::format(R"(setCurrentInput(String.raw`{}`))", formattedEntry);
     webView->RunScriptAsync(js);
 }
 
