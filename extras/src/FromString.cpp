@@ -6,17 +6,18 @@
 #include <sstream>
 #include <stack>
 
-#include <../../include/Oasis/Add.hpp>
-#include <../../include/Oasis/Divide.hpp>
-#include <../../include/Oasis/Exponent.hpp>
-#include <../../include/Oasis/Log.hpp>
-#include <../../include/Oasis/Multiply.hpp>
-#include <../../include/Oasis/Real.hpp>
-#include <../../include/Oasis/Subtract.hpp>
+#include <Oasis/Add.hpp>
+#include <Oasis/Derivative.hpp>
+#include <Oasis/Divide.hpp>
+#include <Oasis/Exponent.hpp>
+#include <Oasis/Integral.hpp>
+#include <Oasis/Log.hpp>
+#include <Oasis/Multiply.hpp>
+#include <Oasis/Real.hpp>
+#include <Oasis/Subtract.hpp>
 
 #include "Oasis/FromString.hpp"
 
-#include "../../include/Oasis/Derivative.hpp"
 
 namespace {
 
@@ -49,10 +50,6 @@ void processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::E
     const auto left = std::move(st.top());
     st.pop();
 
-    // if (ops.top() == "log") {
-    //     st.pop();
-    //     st.push(std::make_unique<Oasis::Log<>>(*left, *right));
-    // } else {
     const auto op = ops.top();
     assert(op.size() == 1);
 
@@ -112,6 +109,9 @@ void processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const s
         Oasis::Derivative<> dd;
         setOps(dd, first_operand, second_operand);
         func = dd.Copy();
+    } else if (function_token == "in") {
+        Oasis::Integral<> in;
+        setOps(in, first_operand, second_operand);
     } else {
         throw std::runtime_error("Unknown function encountered: " + function_token);
     }
@@ -173,7 +173,7 @@ bool is_in(First&& first, T&&... t)
 
 bool is_operator(const std::string& token) { return is_in(token, "+", "-", "*", "/", "^"); }
 
-bool is_function(const std::string& token) { return is_in(token, "log", "dd"); }
+bool is_function(const std::string& token) { return is_in(token, "log", "dd", "in"); }
 
 bool is_number(const std::string& token) { return std::regex_match(token, std::regex(R"(^-?\d+(\.\d+)?$)")); }
 
