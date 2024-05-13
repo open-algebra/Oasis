@@ -9,6 +9,7 @@
 
 #include "tinyxml2.h"
 
+#include <wx/config.h>
 #include <wx/fs_mem.h>
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
@@ -65,6 +66,8 @@ std::string ReadFileIntoString(const std::string& path) {
 DefaultView::DefaultView()
     : wxFrame(nullptr, wxID_ANY, "OASIS")
 {
+    wxConfigBase* config = wxConfigBase::Get();
+
     wxFileSystem::AddHandler(new wxMemoryFSHandler);
 
     const auto& indexHTML = ReadFileIntoString("assets/index.html");
@@ -85,7 +88,8 @@ DefaultView::DefaultView()
     CreateStatusBar();
     SetStatusText("Welcome to OASIS!");
 
-    auto* mainSizer = new wxBoxSizer(wxVERTICAL);
+    const bool horizontalLayout = config->ReadBool("HorizontalLayout", false);
+    auto* mainSizer = new wxBoxSizer(horizontalLayout ? wxHORIZONTAL : wxVERTICAL);
 
     auto* webView = wxWebView::New();
 
@@ -282,6 +286,7 @@ DefaultView::DefaultView()
         // Use VERTICAL layout
         mainSizer->SetOrientation(wxVERTICAL);
         verticalMenuItem->Check(true);
+        config->Write("HorizontalLayout", false);
         Layout();
     }, verticalMenuItem->GetId());
 
@@ -290,6 +295,7 @@ DefaultView::DefaultView()
         // Use HORIZONTAL layout
         mainSizer->SetOrientation(wxHORIZONTAL);
         horizontalMenuItem->Check(true);
+        config->Write("HorizontalLayout", true);
         Layout();
     }, horizontalMenuItem->GetId());
 
