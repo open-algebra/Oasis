@@ -7,15 +7,17 @@
 #include <stack>
 
 #include <Oasis/Add.hpp>
+#include <Oasis/Derivative.hpp>
 #include <Oasis/Divide.hpp>
 #include <Oasis/Exponent.hpp>
+#include <Oasis/Integral.hpp>
 #include <Oasis/Log.hpp>
 #include <Oasis/Multiply.hpp>
 #include <Oasis/Real.hpp>
 #include <Oasis/Subtract.hpp>
-#include <Oasis/Derivative.hpp>
 
 #include "Oasis/FromString.hpp"
+
 
 namespace {
 
@@ -116,6 +118,9 @@ void processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const s
         Oasis::Derivative<> dd;
         setOps(dd, first_operand, second_operand);
         func = dd.Copy();
+    } else if (function_token == "in") {
+        Oasis::Integral<> in;
+        setOps(in, first_operand, second_operand);
     } else {
         throw std::runtime_error("Unknown function encountered: " + function_token);
     }
@@ -177,7 +182,7 @@ bool is_in(First&& first, T&&... t)
 
 bool is_operator(const std::string& token) { return is_in(token, "+", "-", "*", "/", "^"); }
 
-bool is_function(const std::string& token) { return is_in(token, "log", "dd"); }
+bool is_function(const std::string& token) { return is_in(token, "log", "dd", "in"); }
 
 bool is_number(const std::string& token) { return std::regex_match(token, std::regex(R"(^-?\d+(\.\d+)?$)")); }
 
