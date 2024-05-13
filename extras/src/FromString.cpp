@@ -121,6 +121,7 @@ void processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const s
     } else if (function_token == "in") {
         Oasis::Integral<> in;
         setOps(in, first_operand, second_operand);
+        func = in.Copy();
     } else {
         throw std::runtime_error("Unknown function encountered: " + function_token);
     }

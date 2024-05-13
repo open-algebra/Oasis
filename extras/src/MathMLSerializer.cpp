@@ -323,7 +323,7 @@ void MathMLSerializer::Serialize(const Integral<>& integral)
 
     // Integral symbol
     tinyxml2::XMLElement* inte = doc.NewElement("mo");
-    inte->SetText("\u222B;");
+    inte->SetText("\u222B");
 
     tinyxml2::XMLElement* dNode = doc.NewElement("mo");
     dNode->SetText("d");
