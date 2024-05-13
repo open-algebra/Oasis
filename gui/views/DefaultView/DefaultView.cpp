@@ -79,6 +79,9 @@ DefaultView::DefaultView()
     const auto& indexJS = ReadFileIntoString("assets/index.js");
     wxMemoryFSHandler::AddFile("index.js", indexJS);
 
+    const auto& foxSVG = ReadFileIntoString("assets/Fox.svg");
+    wxMemoryFSHandler::AddFile("Fox.svg", foxSVG);
+
     CreateStatusBar();
     SetStatusText("Welcome to OASIS!");
 

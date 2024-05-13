@@ -15,10 +15,18 @@
             <div class="d-flex gap-2">
                 <h1>Welcome to Oasis!</h1>
             </div>
-            <a class="link-secondary" data-bs-toggle="collapse" href="#help" role="button" aria-expanded="false" aria-controls="collapseExample">Help</a>
-            <div id="help" class="collapse mb-3">
-                <div class="card card-body text-muted">
-                    To get started, type something like "2x+3x" into the input textbox below, then hit the Enter/Return key on your keyboard. The results should immediately be displayed.
+            <div class="accordion" id="helpAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#helpCollapse" aria-controls="helpCollapse">
+                            Help
+                        </button>
+                    </h2>
+                    <div id="helpCollapse" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body">
+                            To get started, type an expression such as "2x+3x" into the input textbox below, then hit the Enter/Return key on your keyboard. Oasis will simplify the expression and respond with a result.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
