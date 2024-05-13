@@ -10,6 +10,7 @@
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
@@ -247,8 +248,8 @@ void MathMLSerializer::Serialize(const Integral<>& integral)
     tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
 
     // Integral symbol
-    tinyxml2::XMLElement* inte = doc.newElement("mo");
-    inte->SetText("&#x222B;");
+    tinyxml2::XMLElement* inte = doc.NewElement("mo");
+    inte->SetText("\u222B;");
 
     tinyxml2::XMLElement* dNode = doc.NewElement("mo");
     dNode->SetText("d");
@@ -256,9 +257,9 @@ void MathMLSerializer::Serialize(const Integral<>& integral)
     auto [expElement, varElement] = GetOpsAsMathMLPair(integral);
 
     // d variable
-    tinyxml2::XMLElement* dVar = doc.newElement("mrow");
-    dvar->InsertEndChild(dNode);
-    dvar->InsertEndChild(varElement);
+    tinyxml2::XMLElement* dVar = doc.NewElement("mrow");
+    dVar->InsertEndChild(dNode);
+    dVar->InsertEndChild(varElement);
 
     mrow->InsertEndChild(inte);
     mrow->InsertEndChild(expElement);
