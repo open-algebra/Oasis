@@ -139,7 +139,7 @@ DefaultView::DefaultView()
     auto* key4 = new KeypadButton(this, wxID_ANY, "4");
     auto* key5 = new KeypadButton(this, wxID_ANY, "5");
     auto* key6 = new KeypadButton(this, wxID_ANY, "6");
-    auto* keySubtract = new KeypadButton(this, wxID_ANY, "-");
+    auto* keySubtract = new KeypadButton(this, wxID_ANY, "\u2212");
     auto* key1 = new KeypadButton(this, wxID_ANY, "1");
     auto* key2 = new KeypadButton(this, wxID_ANY, "2");
     auto* key3 = new KeypadButton(this, wxID_ANY, "3");
