@@ -10,6 +10,7 @@
 #include <Oasis/Derivative.hpp>
 #include <Oasis/Divide.hpp>
 #include <Oasis/Exponent.hpp>
+#include "Oasis/Imaginary.hpp"
 #include <Oasis/Integral.hpp>
 #include <Oasis/Log.hpp>
 #include <Oasis/Multiply.hpp>
@@ -193,6 +194,10 @@ std::unique_ptr<Oasis::Expression> multiplyFromVariables(const std::vector<std::
     std::ranges::transform(tokens, std::back_inserter(multiplicands), [](auto token) -> std::unique_ptr<Oasis::Expression> {
         if (is_number(token)) {
             return std::make_unique<Oasis::Real>(std::stof(token));
+        }
+
+        if (token == "i") {
+            return std::make_unique<Oasis::Imaginary>();
         }
 
         return std::make_unique<Oasis::Variable>(token);
