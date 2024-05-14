@@ -11,6 +11,7 @@
 
 #include <wx/config.h>
 #include <wx/fs_mem.h>
+#include <wx/gbsizer.h>
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
 #include <wx/sizer.h>
@@ -34,6 +35,7 @@ std::string ExpressionToMathMLStr(const std::unique_ptr<Oasis::Expression>& expr
     tinyxml2::XMLPrinter printer;
 
     tinyxml2::XMLElement* mathElement = doc.NewElement("math");
+    mathElement->SetAttribute("display", "block");
     doc.InsertFirstChild(mathElement);
 
     expr->Serialize(serializer);
@@ -126,12 +128,15 @@ DefaultView::DefaultView()
     textFieldSizer->AddSpacer(4);
     textFieldSizer->Add(textField, wxSizerFlags(1).Expand());
 
-    auto* keypad = new wxGridSizer(6, 4, 4, 4);
+    auto* keypad = new wxGridBagSizer(4, 4);
 
     auto* keyClear = new KeypadButton(this, wxID_ANY, "Clear");
     auto* keyDDX = new KeypadButton(this, wxID_ANY, "d/dx");
+    auto* keyInt = new KeypadButton(this, wxID_ANY, "\u222B");
     auto* keyLog = new KeypadButton(this, wxID_ANY, "log");
     auto* keyExp = new KeypadButton(this, wxID_ANY, "\u2227");
+    auto* keyX = new KeypadButton(this, wxID_ANY, "\U0001D465");
+    auto* keyi = new KeypadButton(this, wxID_ANY, "\U0001D456");
     auto* keyComma = new KeypadButton(this, wxID_ANY, ",");
     auto* keyLeftParens = new KeypadButton(this, wxID_ANY, "(");
     auto* keyRightParens = new KeypadButton(this, wxID_ANY, ")");
@@ -153,30 +158,49 @@ DefaultView::DefaultView()
     auto* keyDot = new KeypadButton(this, wxID_ANY, ".");
     auto* keyEnter = new KeypadButton(this, wxID_ANY, "Enter");
 
-    keypad->Add(keyClear, wxSizerFlags().Expand());
-    keypad->Add(keyDDX, wxSizerFlags().Expand());
-    keypad->Add(keyLog, wxSizerFlags().Expand());
-    keypad->Add(keyExp, wxSizerFlags().Expand());
-    keypad->Add(keyComma, wxSizerFlags().Expand());
-    keypad->Add(keyLeftParens, wxSizerFlags().Expand());
-    keypad->Add(keyRightParens, wxSizerFlags().Expand());
-    keypad->Add(keyDivide, wxSizerFlags().Expand());
-    keypad->Add(key7, wxSizerFlags().Expand());
-    keypad->Add(key8, wxSizerFlags().Expand());
-    keypad->Add(key9, wxSizerFlags().Expand());
-    keypad->Add(keyMultiply, wxSizerFlags().Expand());
-    keypad->Add(key4, wxSizerFlags().Expand());
-    keypad->Add(key5, wxSizerFlags().Expand());
-    keypad->Add(key6, wxSizerFlags().Expand());
-    keypad->Add(keySubtract, wxSizerFlags().Expand());
-    keypad->Add(key1, wxSizerFlags().Expand());
-    keypad->Add(key2, wxSizerFlags().Expand());
-    keypad->Add(key3, wxSizerFlags().Expand());
-    keypad->Add(keyAdd, wxSizerFlags().Expand());
-    keypad->Add(key0, wxSizerFlags().Expand());
-    keypad->Add(keyNegate, wxSizerFlags().Expand());
-    keypad->Add(keyDot, wxSizerFlags().Expand());
-    keypad->Add(keyEnter, wxSizerFlags().Expand());
+    keypad->Add(keyClear, {0, 0}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyDDX, {0, 1}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyInt, {0, 2}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyNegate, {0, 3}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+
+    keypad->Add(keyX, {1, 0}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyi, {1, 1}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyLog, {1, 2}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyExp, {1, 3}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+
+    keypad->Add(keyComma, {2, 0}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyLeftParens, {2, 1}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyRightParens, {2, 2}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyDivide, {2, 3}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+
+    keypad->Add(key7, {3, 0}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(key8, {3, 1}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(key9, {3, 2}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyMultiply, {3, 3}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+
+    keypad->Add(key4, {4, 0}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(key5, {4, 1}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(key6, {4, 2}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keySubtract, {4, 3}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+
+    keypad->Add(key1, {5, 0}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(key2, {5, 1}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(key3, {5, 2}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyAdd, {5, 3}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+
+    keypad->Add(key0, {6, 0}, {1, 2}, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyDot, {6, 2}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyEnter, {6, 3}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+
+    // Add rows
+    for (int i = 0; i < keypad->GetRows(); ++i) {
+        keypad->AddGrowableRow(i);
+    }
+
+    // Add columns
+    for (int i = 0; i < keypad->GetCols(); ++i) {
+        keypad->AddGrowableCol(i);
+    }
 
     inputSizer->AddSpacer(4);
     inputSizer->Add(textFieldSizer, wxSizerFlags().Expand());
@@ -207,10 +231,15 @@ DefaultView::DefaultView()
 
     // "Vertical" menu item
     auto* verticalMenuItem = layoutSubMenu->AppendRadioItem(wxID_ANY, "Vertical");
-    verticalMenuItem->Check(true); // Make this the default option
 
     // "Horizontal" menu item
     auto* horizontalMenuItem = layoutSubMenu->AppendRadioItem(wxID_ANY, "Horizontal");
+
+    if (horizontalLayout) {
+        horizontalMenuItem->Check(true);
+    } else {
+        verticalMenuItem->Check(true);
+    }
 
     // Add the "Layout" submenu to the "View" menu
     menuView->AppendSubMenu(layoutSubMenu, "Layout");
@@ -304,6 +333,8 @@ DefaultView::DefaultView()
         keyDDX->paintNow();
         keyLog->paintNow();
         keyExp->paintNow();
+        keyX->paintNow();
+        keyi->paintNow();
         keyComma->paintNow();
         keyLeftParens->paintNow();
         keyRightParens->paintNow();
@@ -361,6 +392,27 @@ DefaultView::DefaultView()
     keyDDX->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt)
     {
         currentInput += "dd(";
+        textField->SetValue(currentInput);
+        textField->SetInsertionPointEnd();
+    });
+
+    keyInt->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt)
+    {
+        currentInput += "in(";
+        textField->SetValue(currentInput);
+        textField->SetInsertionPointEnd();
+    });
+
+    keyX->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt)
+    {
+        currentInput += "x";
+        textField->SetValue(currentInput);
+        textField->SetInsertionPointEnd();
+    });
+
+    keyi->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt)
+    {
+        currentInput += "i";
         textField->SetValue(currentInput);
         textField->SetInsertionPointEnd();
     });
