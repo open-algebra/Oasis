@@ -19,21 +19,8 @@ public:
     DefaultView();
 
 private:
-    std::string currentInput;
     std::unique_ptr<Oasis::Expression> currentExpression;
-
-    std::vector<std::pair<std::unique_ptr<Oasis::Expression>, std::unique_ptr<Oasis::Expression>>> history;
-
     void onEnter(const EquationViewer& equationViewer, wxTextCtrl* textCtrl);
-
-    enum class LastReloadReason {
-        OnEnter,
-        OnInputChanged,
-        ThemeChanged
-    };
-
-    LastReloadReason lastReloadReason = LastReloadReason::OnEnter;
-    int lastScrollHeight = 0;
 
     EquationViewer viewer_;
 };

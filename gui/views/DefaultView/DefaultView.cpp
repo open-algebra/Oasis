@@ -131,6 +131,7 @@ DefaultView::DefaultView()
     auto* keypad = new wxGridBagSizer(4, 4);
 
     auto* keyClear = new KeypadButton(this, wxID_ANY, "Clear");
+    auto* keyBackspace = new KeypadButton(this,wxID_ANY, "\u232B");
     auto* keyDDX = new KeypadButton(this, wxID_ANY, "d/dx");
     auto* keyInt = new KeypadButton(this, wxID_ANY, "\u222B");
     auto* keyLog = new KeypadButton(this, wxID_ANY, "log");
@@ -159,9 +160,9 @@ DefaultView::DefaultView()
     auto* keyEnter = new KeypadButton(this, wxID_ANY, "Enter");
 
     keypad->Add(keyClear, {0, 0}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
-    keypad->Add(keyDDX, {0, 1}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
-    keypad->Add(keyInt, {0, 2}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
-    keypad->Add(keyNegate, {0, 3}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyBackspace, {0, 1}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyDDX, {0, 2}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyInt, {0, 3}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
 
     keypad->Add(keyX, {1, 0}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
     keypad->Add(keyi, {1, 1}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
@@ -188,8 +189,9 @@ DefaultView::DefaultView()
     keypad->Add(key3, {5, 2}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
     keypad->Add(keyAdd, {5, 3}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
 
-    keypad->Add(key0, {6, 0}, {1, 2}, wxSizerFlags().Expand().GetFlags());
-    keypad->Add(keyDot, {6, 2}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(key0, {6, 0}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyDot, {6, 1}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
+    keypad->Add(keyNegate, {6, 2}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
     keypad->Add(keyEnter, {6, 3}, wxDefaultSpan, wxSizerFlags().Expand().GetFlags());
 
     // Add rows
@@ -221,6 +223,7 @@ DefaultView::DefaultView()
 
     auto* menuFunctions = new wxMenu;
     const wxMenuItem* itemDerivative = menuFunctions->Append(wxID_ANY, "Derivative...");
+    const wxMenuItem* itemIntegral = menuFunctions->Append(wxID_ANY, "Integral...");
     const wxMenuItem* itemLogarithm = menuFunctions->Append(wxID_ANY, "Logarithm...");
 
     auto* menuBar = new wxMenuBar;
@@ -272,10 +275,20 @@ DefaultView::DefaultView()
             return;
         }
 
-        currentInput += derivativeBuilder.getComposedFunction();
-        textField->SetValue(currentInput);
-        textField->SetInsertionPointEnd();
+        const auto composed_function = derivativeBuilder.getComposedFunction();
+        textField->WriteText(composed_function);
     }, itemDerivative->GetId());
+
+    Bind(wxEVT_MENU, [=](wxCommandEvent& event)
+    {
+        auto integralBuilder = FunctionBuilder(this, wxID_ANY, "Integral Builder", "in", "Function", "Variable");
+        if (integralBuilder.ShowModal() != wxID_OK) {
+            return;
+        }
+
+        const auto composed_function = integralBuilder.getComposedFunction();
+        textField->WriteText(composed_function);
+    }, itemIntegral->GetId());
 
     Bind(wxEVT_MENU, [=](wxCommandEvent& event)
     {
@@ -284,9 +297,8 @@ DefaultView::DefaultView()
             return;
         }
 
-        currentInput += logBuilder.getComposedFunction();
-        textField->SetValue(currentInput);
-        textField->SetInsertionPointEnd();
+        const auto composed_function = logBuilder.getComposedFunction();
+        textField->WriteText(composed_function);
     }, itemLogarithm->GetId());
 
 
@@ -328,43 +340,15 @@ DefaultView::DefaultView()
         Layout();
     }, horizontalMenuItem->GetId());
 
-    Bind(wxEVT_MOTION, [=](wxMouseEvent& evt) {
-        keyClear->paintNow();
-        keyDDX->paintNow();
-        keyLog->paintNow();
-        keyExp->paintNow();
-        keyX->paintNow();
-        keyi->paintNow();
-        keyComma->paintNow();
-        keyLeftParens->paintNow();
-        keyRightParens->paintNow();
-        keyDivide->paintNow();
-        key7->paintNow();
-        key8->paintNow();
-        key9->paintNow();
-        key4->paintNow();
-        key5->paintNow();
-        key6->paintNow();
-        key1->paintNow();
-        key2->paintNow();
-        key3->paintNow();
-        key0->paintNow();
-        keySubtract->paintNow();
-        keyAdd->paintNow();
-        keyNegate->paintNow();
-        keyDot->paintNow();
-        keyMultiply->paintNow();
-        keyEnter->paintNow();
-    });
-
     textField->Bind(wxEVT_TEXT, [this](wxCommandEvent& evt) {
         if (const auto textCtrl = dynamic_cast<wxTextCtrl*>(evt.GetEventObject())) {
-            currentInput = textCtrl->GetValue().ToStdString();
-            const std::string infix = preprocessInput(currentInput);
+            const std::string currentInput = textCtrl->GetValue().ToStdString();
 
             if (currentInput.empty()) {
                 return;
             }
+
+            const std::string infix = preprocessInput(currentInput);
 
             try {
                 currentExpression = Oasis::FromInFix(infix);
@@ -372,8 +356,6 @@ DefaultView::DefaultView()
                 SetStatusText(e.what());
                 return;
             }
-
-            lastReloadReason = LastReloadReason::OnInputChanged;
 
             const std::string currentMathML = ExpressionToMathMLStr(currentExpression);
             viewer_.setCurrentEntry(currentMathML);
@@ -385,102 +367,84 @@ DefaultView::DefaultView()
     textField->Bind(wxEVT_TEXT_ENTER, [this, textField](wxCommandEvent& evt) { onEnter(viewer_, textField); });
 
     keyClear->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
-        currentInput.clear();
-        textField->SetValue(currentInput);
+        textField->SetValue("");
     });
 
     keyDDX->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt)
     {
-        currentInput += "dd(";
-        textField->SetValue(currentInput);
-        textField->SetInsertionPointEnd();
+        const long insertion_point = textField->GetInsertionPoint();
+        textField->WriteText("dd(,)");
+        textField->SetInsertionPoint(insertion_point + 3);
     });
 
     keyInt->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt)
     {
-        currentInput += "in(";
-        textField->SetValue(currentInput);
-        textField->SetInsertionPointEnd();
+        const long insertion_point = textField->GetInsertionPoint();
+        textField->WriteText("in(,)");
+        textField->SetInsertionPoint(insertion_point + 3);
     });
 
     keyX->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt)
     {
-        currentInput += "x";
-        textField->SetValue(currentInput);
-        textField->SetInsertionPointEnd();
+        textField->WriteText("x");
     });
 
     keyi->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt)
     {
-        currentInput += "i";
-        textField->SetValue(currentInput);
-        textField->SetInsertionPointEnd();
+        textField->WriteText("i");
+    });
+
+    keyBackspace->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt)
+    {
+        if (textField->IsEditable() && textField->GetInsertionPoint() > 0) {
+            long position = textField->GetInsertionPoint();
+            textField->Remove(position - 1, position);
+        }
     });
 
     keyLog->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt)
     {
-        currentInput += "log(";
-        textField->SetValue(currentInput);
-        textField->SetInsertionPointEnd();
-    });
-
-    keyComma->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
-        currentInput += ",";
-        textField->SetValue(currentInput);
-    });
-
-    keyLeftParens->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
-        currentInput += "(";
-        textField->SetValue(currentInput);
-    });
-
-    keyRightParens->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
-        currentInput += ")";
-        textField->SetValue(currentInput);
+        textField->WriteText("log()");
+        textField->SetInsertionPoint(textField->GetInsertionPoint() - 1);
     });
 
     keyDivide->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
-        currentInput += "/";
-        textField->SetValue(currentInput);
+        textField->WriteText("/");
     });
 
-    for (const auto key : { key7, key8, key9, key4, key5, key6, key1, key2, key3, key0 }) {
+    for (const auto key : { keyComma, keyLeftParens, keyRightParens, key7, key8, key9, key4, key5, key6, key1, key2, key3, key0, keyAdd, keyDot }) {
         key->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
-            if (auto button = dynamic_cast<KeypadButton*>(evt.GetEventObject())) {
-                currentInput += button->getText();
-                textField->SetValue(currentInput);
+            if (const auto button = dynamic_cast<KeypadButton*>(evt.GetEventObject())) {
+                textField->WriteText(button->getText());
             }
         });
     }
 
     keySubtract->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
-        currentInput += "-";
-        textField->SetValue(currentInput);
-    });
-
-    keyAdd->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
-        currentInput += "+";
-        textField->SetValue(currentInput);
+        textField->WriteText("-");
     });
 
     keyNegate->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
-        currentInput = "-" + currentInput;
-        textField->SetValue(currentInput);
-    });
-
-    keyDot->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
-        currentInput += ".";
-        textField->SetValue(currentInput);
+        wxString currentText = textField->GetValue();
+        long cursorPos = textField->GetInsertionPoint();
+        if (currentText.StartsWith("-"))
+        {
+            textField->SetValue(currentText.Mid(1)); // If it's already negative, remove the "-"
+            textField->SetInsertionPoint(cursorPos-1);
+        }
+        else
+        {
+            textField->SetValue("-"+currentText); // If it's positive, add a "-" at the beginning
+            textField->SetInsertionPoint(cursorPos+1);
+        }
     });
 
     keyMultiply->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
-        currentInput += "*";
-        textField->SetValue(currentInput);
+        textField->WriteText("*");
     });
 
     keyExp->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) {
-        currentInput += "^";
-        textField->SetValue(currentInput);
+        textField->WriteText("^");
     });
 
     keyEnter->Bind(wxEVT_LEFT_UP, [this, textField](wxMouseEvent& evt) { onEnter(viewer_, textField); });
@@ -488,6 +452,10 @@ DefaultView::DefaultView()
 
 void DefaultView::onEnter(const EquationViewer& equationViewer, wxTextCtrl* textCtrl)
 {
+    if (currentExpression == nullptr) {
+        return;
+    }
+
     const auto result = currentExpression->Simplify();
     const std::string queryMathML = ExpressionToMathMLStr(currentExpression);
     const std::string responseMathML = ExpressionToMathMLStr(result);
@@ -495,7 +463,5 @@ void DefaultView::onEnter(const EquationViewer& equationViewer, wxTextCtrl* text
     equationViewer.addEntryToHistory(queryMathML, responseMathML);
     equationViewer.setCurrentEntry("");
 
-    // (Assuming currentInput holds a valid mathematical expression)
-    currentInput.clear();
-    textCtrl->SetValue(currentInput);
+    textCtrl->SetValue("");
 }
