@@ -5,6 +5,8 @@
 #include <cmath>
 #include <utility>
 
+#include <wx/graphics.h>
+
 #include "KeypadButton.hpp"
 
 BEGIN_EVENT_TABLE(KeypadButton, wxPanel)
@@ -42,48 +44,24 @@ void KeypadButton::paintNow() {
     render(dc);
 }
 
-void KeypadButton::render(wxClientDC& dc) {
-    const wxSize dcSize = dc.DeviceToLogicalRel(dc.GetSize());
-    const wxColour spotlightColor = wxSystemSettings::GetAppearance().IsDark() ? wxColour(255, 255, 255, 32) : *wxWHITE;
+void KeypadButton::render(wxClientDC& dc)
+{
+    dc.SetBackground(wxBrush(*wxTRANSPARENT_BRUSH));
+    dc.Clear();
 
-    dc.SetPen(wxPen(wxColour(127, 127, 127, 32), 2));
+    const wxSize dcSize = dc.DeviceToLogicalRel(dc.GetSize());
+
+    dc.SetPen(wxPen(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW), 1));
 
     if (hovered) {
-        dc.GradientFillConcentric(wxRect(dcSize * 2), spotlightColor, wxColour(255, 255, 255, wxALPHA_TRANSPARENT), lastMousePos);
-    }
-
-    if (pressedDown) {
+        dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNHIGHLIGHT)));
+    } else if (pressedDown) {
         dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNSHADOW)));
-    }
-
-    wxGraphicsContext* gc = wxGraphicsContext::Create(dc);
-
-    if (gc) {
-        auto [relX, relY] = ScreenToClient(wxGetMousePosition());
-        const unsigned borderThickness = 2;
-        const unsigned borderWidth = dcSize.GetWidth();
-        const unsigned borderHeight = dcSize.GetHeight();
-
-        auto spotlightPath = gc->CreatePath();
-        spotlightPath.AddRectangle(0, 0, borderWidth - borderThickness, borderThickness);
-        spotlightPath.AddRectangle(borderWidth - borderThickness, 0, borderThickness, borderHeight - borderThickness);
-        spotlightPath.AddRectangle(borderThickness, borderHeight - borderThickness, borderWidth - borderThickness, borderThickness);
-        spotlightPath.AddRectangle(0, borderThickness, borderThickness, borderHeight - borderThickness);
-
-        wxColour startColour = wxColour(255, 128, 128, 128);
-        wxColour endColour = wxColour(128, 128, 255, 128);
-
-        wxGraphicsBrush spotLightBrush = gc->CreateRadialGradientBrush(relX, relY, relX, relY, std::max(borderWidth, borderHeight), wxColour(127, 127, 127, 32), wxColour(127, 127, 127, wxALPHA_TRANSPARENT));
-        gc->SetBrush(spotLightBrush);
-
-        gc->FillPath(spotlightPath);
-        delete gc;
     } else {
-
-        dc.SetBrush(wxBrush(wxTransparentColor));
-        dc.DrawRectangle(1, 1, dcSize.GetWidth() - 1, dcSize.GetHeight() - 1);
-
+        dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE)));
     }
+
+    dc.DrawRoundedRectangle(1, 1, dcSize.GetWidth() -1, dcSize.GetHeight() - 1, 4);
 
     if (lastSize != dcSize) {
         fontSize = computeFontSize(dcSize);
@@ -117,7 +95,6 @@ void KeypadButton::mouseLeftWindow(wxMouseEvent &event) {
 void KeypadButton::mouseMoved(wxMouseEvent& event)
 {
     hovered = true;
-    lastMousePos = event.GetPosition();
     paintNow();
 }
 

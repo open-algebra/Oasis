@@ -5,7 +5,6 @@
 #ifndef OASIS_KEYPADBUTTON_HPP
 #define OASIS_KEYPADBUTTON_HPP
 
-#include "wx/sizer.h"
 #include "wx/wx.h"
 
 class KeypadButton : public wxWindow {
@@ -37,7 +36,6 @@ private:
     bool hovered;
     wxString text;
     wxSize lastSize;
-    wxPoint lastMousePos;
     int fontSize = 0;
     static int computeFontSize(const wxSize& dcSize) ;
 };
