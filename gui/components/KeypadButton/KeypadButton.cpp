@@ -9,7 +9,7 @@
 
 #include "KeypadButton.hpp"
 
-BEGIN_EVENT_TABLE(KeypadButton, wxPanel)
+BEGIN_EVENT_TABLE(KeypadButton, wxWindow)
 
 EVT_LEFT_DOWN(KeypadButton::mouseDown)
 EVT_LEFT_UP(KeypadButton::mouseReleased)
