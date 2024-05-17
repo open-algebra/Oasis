@@ -18,7 +18,6 @@
 
 #include "Oasis/FromString.hpp"
 
-#include "../../include/Oasis/Derivative.hpp"
 #include "fmt/format.h"
 
 namespace {
