@@ -9,6 +9,7 @@
 
 #include "tinyxml2.h"
 
+#include <wx/aboutdlg.h>
 #include <wx/config.h>
 #include <wx/fs_mem.h>
 #include <wx/gbsizer.h>
@@ -265,7 +266,18 @@ DefaultView::DefaultView()
         }
     });
 
-    Bind(wxEVT_MENU, [=](wxCommandEvent& event) { wxMessageBox("https://github.com/matthew-mccall/Oasis", "Open Algebra Software for Inferring Solutions", wxICON_INFORMATION); }, wxID_ABOUT);
+    Bind(wxEVT_MENU, [=](wxCommandEvent& event) {
+        wxAboutDialogInfo aboutInfo;
+        aboutInfo.SetName("OASIS");
+        aboutInfo.SetVersion("0.0.1");
+        aboutInfo.SetDescription(_("Open Algebra Software for Inferring Solutions"));
+        aboutInfo.SetCopyright("(C) 2024");
+        aboutInfo.SetWebSite("https://github.com/matthew-mccall/Oasis", "GitHub");
+        aboutInfo.AddDeveloper("Matthew McCall");
+        aboutInfo.AddArtist("Mansi Panwar");
+
+        wxAboutBox(aboutInfo);
+    }, wxID_ABOUT);
     Bind(wxEVT_MENU, [=](wxCommandEvent& event) { Close(true); }, wxID_EXIT);
 
     Bind(wxEVT_MENU, [=](wxCommandEvent& event)
@@ -453,6 +465,7 @@ DefaultView::DefaultView()
 void DefaultView::onEnter(const EquationViewer& equationViewer, wxTextCtrl* textCtrl)
 {
     if (currentExpression == nullptr) {
+        wxMessageBox("Please enter a valid expression", "Cannot simplify expression", wxICON_ERROR);
         return;
     }
 
