@@ -12,7 +12,7 @@ add_library(Oasis::Extras ALIAS OasisExtras)
 
 target_include_directories(OasisExtras
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(OasisExtras PUBLIC Oasis::Headers fmt::fmt
+target_link_libraries(OasisExtras PUBLIC Oasis::Oasis fmt::fmt
                                          tinyxml2::tinyxml2)
 
 if(OASIS_BUILD_TESTS)

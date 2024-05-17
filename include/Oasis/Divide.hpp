@@ -6,7 +6,6 @@
 #define OASIS_DIVIDE_HPP
 
 #include "BinaryExpression.hpp"
-#include "Real.hpp"
 
 namespace Oasis {
 
