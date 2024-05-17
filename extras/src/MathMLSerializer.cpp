@@ -10,6 +10,7 @@
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
@@ -17,10 +18,10 @@
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 
-
 namespace Oasis {
 
-MathMLSerializer::MathMLSerializer(tinyxml2::XMLDocument& doc) : doc(doc)
+MathMLSerializer::MathMLSerializer(tinyxml2::XMLDocument& doc)
+    : doc(doc)
 {
 }
 
@@ -238,6 +239,31 @@ void MathMLSerializer::Serialize(const Derivative<>& derivative)
     mrow->InsertEndChild(leftParen);
     mrow->InsertEndChild(expElement);
     mrow->InsertEndChild(rightParen);
+
+    result = mrow;
+}
+
+void MathMLSerializer::Serialize(const Integral<>& integral)
+{
+    tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
+
+    // Integral symbol
+    tinyxml2::XMLElement* inte = doc.NewElement("mo");
+    inte->SetText("\u222B;");
+
+    tinyxml2::XMLElement* dNode = doc.NewElement("mo");
+    dNode->SetText("d");
+
+    auto [expElement, varElement] = GetOpsAsMathMLPair(integral);
+
+    // d variable
+    tinyxml2::XMLElement* dVar = doc.NewElement("mrow");
+    dVar->InsertEndChild(dNode);
+    dVar->InsertEndChild(varElement);
+
+    mrow->InsertEndChild(inte);
+    mrow->InsertEndChild(expElement);
+    mrow->InsertEndChild(dVar);
 
     result = mrow;
 }

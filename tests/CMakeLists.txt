@@ -12,6 +12,7 @@ set(Oasis_TESTS
     DifferentiateTests.cpp
     DivideTests.cpp
     ExponentTests.cpp
+    IntegrateTests.cpp
     LinearTests.cpp
     LogTests.cpp
     MultiplyTests.cpp

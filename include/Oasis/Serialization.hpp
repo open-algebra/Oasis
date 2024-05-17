@@ -38,6 +38,9 @@ class Negate;
 template <IExpression, IExpression>
 class Derivative;
 
+template <IExpression Integrand, IExpression Differential>
+class Integral;
+
 class SerializationVisitor {
 public:
     virtual void Serialize(const Real& real) = 0;
@@ -52,6 +55,7 @@ public:
     virtual void Serialize(const Log<Expression, Expression>& log) = 0;
     virtual void Serialize(const Negate<Expression>& negate) = 0;
     virtual void Serialize(const Derivative<Expression, Expression>& derivative) = 0;
+    virtual void Serialize(const Integral<Expression, Expression>& integral) = 0;
 
     virtual ~SerializationVisitor() = default;
 };

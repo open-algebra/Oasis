@@ -4,7 +4,9 @@
 
 #include "Oasis/Variable.hpp"
 #include "Oasis/Add.hpp"
+#include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 
@@ -33,6 +35,34 @@ auto Variable::Specialize(const Expression& other) -> std::unique_ptr<Variable>
 auto Variable::Specialize(const Expression& other, tf::Subflow&) -> std::unique_ptr<Variable>
 {
     return other.Is<Variable>() ? std::make_unique<Variable>(dynamic_cast<const Variable&>(other)) : nullptr;
+}
+
+auto Variable::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+{
+    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+
+        // Power rule
+        if (name == (*variable).GetName()) {
+            Add adder {
+                Divide {
+                    Exponent { Variable { (*variable).GetName() }, Real { 2.0f } },
+                    Real { 2.0f } },
+                Variable { "C" }
+            };
+            return adder.Simplify();
+        }
+
+        // Different variable, treat as constant
+        Add adder {
+            Multiply { Variable { name }, Variable { (*variable).GetName() } },
+            Variable { "C" }
+        };
+        return adder.Simplify();
+    }
+
+    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+
+    return integral.Copy();
 }
 
 auto Variable::Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression>
