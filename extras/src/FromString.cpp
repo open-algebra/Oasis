@@ -18,6 +18,7 @@
 
 #include "Oasis/FromString.hpp"
 
+#include "../../include/Oasis/Derivative.hpp"
 
 namespace {
 

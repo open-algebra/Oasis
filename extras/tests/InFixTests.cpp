@@ -2,14 +2,13 @@
 // Created by Matthew McCall on 4/21/24.
 //
 
-#include "../../include/Oasis/Variable.hpp"
+#include "catch2/catch_test_macros.hpp"
 
-#include <../../cmake-build-debug/_deps/catch2-src/src/catch2/catch_test_macros.hpp>
-#include <../../include/Oasis/Add.hpp>
-
-#include <../../include/Oasis/Log.hpp>
-#include <../../include/Oasis/Multiply.hpp>
-#include <Oasis/FromString.hpp>
+#include "Oasis/Add.hpp"
+#include "Oasis/Log.hpp"
+#include "Oasis/Multiply.hpp"
+#include "Oasis/FromString.hpp"
+#include "Oasis/Variable.hpp"
 
 TEST_CASE("In-Fix Parsing Works for Simple Trees", "[Sexp]")
 {

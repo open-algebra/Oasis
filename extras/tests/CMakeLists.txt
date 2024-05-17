@@ -13,7 +13,7 @@ else()
                                                     -Werror)
 endif()
 
-target_link_libraries(OasisExtrasTests PRIVATE Oasis::Oasis Oasis::Extras
+target_link_libraries(OasisExtrasTests PRIVATE Oasis::Extras Oasis::Oasis
                                                Catch2::Catch2WithMain)
 
 # Automatically registers the tests with CTest.
