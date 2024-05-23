@@ -12,7 +12,7 @@
 #include "Oasis/Variable.hpp"
 #include "Oasis/Derivative.hpp"
 
-TEST_CASE("Nonzero number", "[Differentiate][Real][Nonzero]")
+TEST_CASE("Differentiate Nonzero number", "[Differentiate][Real][Nonzero]")
 {
     Oasis::Real zero { 0.0f };
 
@@ -23,7 +23,7 @@ TEST_CASE("Nonzero number", "[Differentiate][Real][Nonzero]")
     REQUIRE(zero.Equals(*diff2));
 }
 
-TEST_CASE("Zero", "[Differentiate][Real][Zero]")
+TEST_CASE("Differentiate Zero", "[Differentiate][Real][Zero]")
 {
     Oasis::Variable constant { "C" };
     Oasis::Real zero { 0.0f };
@@ -33,7 +33,7 @@ TEST_CASE("Zero", "[Differentiate][Real][Zero]")
     REQUIRE(zero.Equals(*diff));
 }
 
-TEST_CASE("Same Variable", "[Differentiate][Variable][Same]")
+TEST_CASE("Differentiate Same Variable", "[Differentiate][Variable][Same]")
 {
     Oasis::Variable var { "x" };
     Oasis::Real result {1.0};
@@ -42,7 +42,7 @@ TEST_CASE("Same Variable", "[Differentiate][Variable][Same]")
     REQUIRE(result.Equals(*integrated));
 }
 
-TEST_CASE("Different Variable", "[Differentiate][Variable][Different]")
+TEST_CASE("Differentiate Different Variable", "[Differentiate][Variable][Different]")
 {
     Oasis::Variable var { "x" };
     Oasis::Variable var2 { "y" };
@@ -52,7 +52,7 @@ TEST_CASE("Different Variable", "[Differentiate][Variable][Different]")
     REQUIRE(zero.Equals(*diff));
 }
 
-TEST_CASE("Power Rule", "[Differentiate][Exponent][Power]")
+TEST_CASE("Differentiate Power Rule", "[Differentiate][Exponent][Power]")
 {
     Oasis::Variable var { "x" };
     Oasis::Exponent<Oasis::Variable, Oasis::Real> differentiate { Oasis::Variable { var.GetName() }, Oasis::Real { 3.0f } };
@@ -65,7 +65,7 @@ TEST_CASE("Power Rule", "[Differentiate][Exponent][Power]")
     REQUIRE((*diffed).Equals(*ptr));
 }
 
-TEST_CASE("Constant Rule Multiply", "[Differentiate][Multiply][Constant]")
+TEST_CASE("Differentiate Constant Rule Multiply", "[Differentiate][Multiply][Constant]")
 {
     Oasis::Variable var { "x" };
     Oasis::Multiply<Oasis::Real, Oasis::Variable> diff1 { Oasis::Real { 3.0f }, Oasis::Variable { var.GetName() } };
@@ -76,7 +76,7 @@ TEST_CASE("Constant Rule Multiply", "[Differentiate][Multiply][Constant]")
     REQUIRE((diffed->Equals(*ptr)));
 }
 
-TEST_CASE("Constant Rule Divide", "[Differentiate][Divide][Constant]")
+TEST_CASE("Differentiate Constant Rule Divide", "[Differentiate][Divide][Constant]")
 {
     Oasis::Variable var { "x" };
     Oasis::Divide<Oasis::Variable, Oasis::Real> diff1 { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
@@ -86,7 +86,7 @@ TEST_CASE("Constant Rule Divide", "[Differentiate][Divide][Constant]")
     REQUIRE((simplified->Equals(*(half.Simplify()))));
 }
 
-TEST_CASE("Add Rule Different Terms", "[Differentiate][Add][Different]")
+TEST_CASE("Differentiate Add Rule Different Terms", "[Differentiate][Add][Different]")
 {
     Oasis::Variable var { "x" };
     Oasis::Add<Oasis::Variable, Oasis::Real>diff1 { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
@@ -98,7 +98,7 @@ TEST_CASE("Add Rule Different Terms", "[Differentiate][Add][Different]")
     REQUIRE(simplified->Equals(*(one.Simplify())));
 }
 
-TEST_CASE("Subtract Rule Different Terms", "[Differentiate][Subtract][Different]")
+TEST_CASE("Differentiate Subtract Rule Different Terms", "[Differentiate][Subtract][Different]")
 {
     Oasis::Variable var { "x" };
     Oasis::Subtract<Oasis::Variable, Oasis::Real> diff1 { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
@@ -109,7 +109,7 @@ TEST_CASE("Subtract Rule Different Terms", "[Differentiate][Subtract][Different]
     REQUIRE(simplified->Equals(*(one.Simplify())));
 }
 
-TEST_CASE("Add Rule Like Terms", "[Differentiate][Add][Like]")
+TEST_CASE("Differentiate Add Rule Like Terms", "[Differentiate][Add][Like]")
 {
     Oasis::Variable var { "x" };
     Oasis::Add<Oasis::Variable, Oasis::Variable> diff1 { Oasis::Variable { var.GetName() }, Oasis::Variable { var.GetName() } };
@@ -122,7 +122,7 @@ TEST_CASE("Add Rule Like Terms", "[Differentiate][Add][Like]")
     REQUIRE(simplified->Equals(*(two.Simplify())));
 }
 
-TEST_CASE("Quotient Rule Like Terms", "[Differentiate][Divide][Like]")
+TEST_CASE("Differentiate Quotient Rule Like Terms", "[Differentiate][Divide][Like]")
 {
     Oasis::Variable var{"x"}; // dx
     // derivative of [(x + 2)/(x + 3)]
@@ -152,7 +152,7 @@ TEST_CASE("Quotient Rule Like Terms", "[Differentiate][Divide][Like]")
     REQUIRE(simplified->Equals(*(simplifiedAns)));
 }
 
-TEST_CASE("Multiple Variables Differentiate", "[Differentiate][Multiply][Different]")
+TEST_CASE("Differentiate Multiple Variables Differentiate", "[Differentiate][Multiply][Different]")
 {
     Oasis::Variable x {"x"};
     Oasis::Variable y {"y"};
@@ -163,7 +163,7 @@ TEST_CASE("Multiple Variables Differentiate", "[Differentiate][Multiply][Differe
     REQUIRE(simplified->Equals(*(y.Simplify())));
 }
 
-TEST_CASE("Multiple Variables + Real Differentiate", "[Differentiate][Multiply][Different]")
+TEST_CASE("Differentiate Multiple Variables + Real Differentiate", "[Differentiate][Multiply][Different]")
 {
     Oasis::Variable x {"x"};
     Oasis::Variable y {"y"};
