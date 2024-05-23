@@ -48,6 +48,7 @@ std::string updatePreview(wxWebView* webView, wxTextCtrl* firstArgInput, wxTextC
         tinyxml2::XMLElement* expressionElement = mathmlSerializer.GetResult();
 
         tinyxml2::XMLElement* math = doc.NewElement("math");
+        math->SetAttribute("display", "block");
         div->InsertEndChild(math);
 
         math->InsertEndChild(expressionElement);
