@@ -18,7 +18,7 @@
 
 #include "Oasis/FromString.hpp"
 
-#include "../../include/Oasis/Derivative.hpp"
+#include "fmt/format.h"
 
 namespace {
 
@@ -44,7 +44,7 @@ void setOps(T& exp, const std::unique_ptr<Oasis::Expression>& op1, const std::un
     }
 }
 
-void processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::Expression>>& st)
+bool processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::Expression>>& st)
 {
     const auto right = std::move(st.top());
     st.pop();
@@ -84,15 +84,15 @@ void processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::E
         break;
     }
     default:
-        throw std::runtime_error("Unknown operator encountered: " + op);
+        return false;
     }
 
     st.emplace(std::move(opExp));
-    // }
     ops.pop();
+    return true;
 }
 
-void processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const std::string& function_token)
+bool processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const std::string& function_token)
 {
     // If we have a function active, the second operand has just been pushed onto the stack
     auto second_operand = std::move(st.top());
@@ -114,10 +114,11 @@ void processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const s
         Oasis::Integral<> in;
         setOps(in, first_operand, second_operand);
     } else {
-        throw std::runtime_error("Unknown function encountered: " + function_token);
+        return false;
     }
 
     st.emplace(std::move(func));
+    return true;
 }
 
 std::vector<std::string> tokenizeMultiplicands(const std::string& expression)
@@ -195,11 +196,24 @@ std::unique_ptr<Oasis::Expression> multiplyFromVariables(const std::vector<std::
 }
 
 namespace Oasis {
-class Expression;
 
-auto FromInFix(const std::string& str) -> std::unique_ptr<Expression>
-{
-    // Based of Dijkstra's Shunting Yard
+ParseResult::ParseResult(std::unique_ptr<Expression> expr) {
+    result = std::move(expr);
+}
+
+ParseResult::ParseResult(std::string err) : result(err) {
+}
+
+bool ParseResult::Ok() const {
+    return result.index() == 0;
+}
+
+auto ParseResult::GetResult() const -> const Expression & {
+    return *std::get<std::unique_ptr<Expression>>(result);
+}
+
+auto FromInFix(const std::string& str) -> ParseResult {
+    // Based off Dijkstra's Shunting Yard
 
     std::stack<std::unique_ptr<Expression>> st;
     std::stack<std::string> ops;
@@ -220,25 +234,33 @@ auto FromInFix(const std::string& str) -> std::unique_ptr<Expression>
         else if (token == ",") {
             // function_active = true;
             while (!ops.empty() && ops.top() != "(") {
-                processOp(ops, st);
+                if (!processOp(ops, st)) {
+                    return ParseResult { fmt::format(R"(Unknown operator: "{}")", token) };
+                }
             }
         }
         // ')'
         else if (token == ")") {
             while (!ops.empty() && ops.top() != "(") {
-                processOp(ops, st);
+                if (!processOp(ops, st)) {
+                    return ParseResult { fmt::format(R"(Unknown operator: "{}")", token) };
+                }
             }
             ops.pop(); // pop '('
             if (!ops.empty() && is_function(ops.top())) {
                 std::string func = ops.top();
                 ops.pop();
-                processFunction(st, func);
+                if (!processFunction(st, func)) {
+                    return ParseResult { fmt::format(R"(Unknown function: "{}")", token) };
+                }
             }
         }
         // Operator
         else if (is_operator(token)) {
             while (!ops.empty() && prec(ops.top()[0]) >= prec(token[0])) {
-                processOp(ops, st);
+                if (!processOp(ops, st)) {
+                    return ParseResult { fmt::format(R"(Unknown operator: "{}")", token) };
+                }
             }
             ops.push(token);
         } else if (ss.peek() != '(') {
@@ -248,10 +270,12 @@ auto FromInFix(const std::string& str) -> std::unique_ptr<Expression>
 
     // Process remaining ops
     while (!ops.empty()) {
-        processOp(ops, st);
+        if (!processOp(ops, st)) {
+            return ParseResult { fmt::format(R"(Unknown operator: "{}")", token) };
+        }
     }
 
-    return st.top()->Copy(); // root of the expression tree
+    return ParseResult { st.top()->Copy() }; // root of the expression tree
 }
 
 }
