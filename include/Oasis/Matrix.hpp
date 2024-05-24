@@ -32,11 +32,35 @@ public:
      */
     [[nodiscard]] auto GetMatrix() const -> MatrixXXD;
 
-    [[nodiscard]] auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression> final;
+    /**
+     * Gets the number of rows
+     * @return number of rows
+     */
+    [[nodiscard]] auto GetRows() const -> size_t;
+
+    /**
+     * Gets the number of columns
+     * @return number of columns
+     */
+    [[nodiscard]] auto GetCols() const -> size_t;
+
+    /**
+     * Gets the matrix's transpose
+     * @return Unique pointer to a Matrix
+     */
+    [[nodiscard]] auto Transpose() const -> std::unique_ptr<Matrix>;
+
+    /**
+     * Gets the matrix's inverse
+     * @return Unique pointer to a Matrix
+     */
+    [[nodiscard]] auto Inverse() const -> std::unique_ptr<Matrix>;
+
+    // [[nodiscard]] auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression> final;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Matrix>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Matrix>;
-    [[nodiscard]] auto Differentiate(const Expression&) const -> std::unique_ptr<Expression> final;
+    // [[nodiscard]] auto Differentiate(const Expression&) const -> std::unique_ptr<Expression> final;
 
     auto operator=(const Matrix& other) -> Matrix& = default;
 
