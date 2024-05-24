@@ -23,7 +23,8 @@ set(Oasis_SOURCES
     Subtract.cpp
     # Summation.cpp
     Undefined.cpp
-    Variable.cpp)
+    Variable.cpp
+        Matrix.cpp)
 
 set(Oasis_HEADERS
     # cmake-format: sortable
@@ -53,7 +54,8 @@ set(Oasis_HEADERS
     ../include/Oasis/Variable.hpp)
 
 # Adds a header-only library target called "OasisHeaders"
-add_library(OasisHeaders INTERFACE)
+add_library(OasisHeaders INTERFACE
+        ../include/Oasis/Matrix.hpp)
 add_library(Oasis::Headers ALIAS OasisHeaders)
 
 target_compile_features(OasisHeaders INTERFACE cxx_std_20)

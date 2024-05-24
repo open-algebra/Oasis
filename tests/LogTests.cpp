@@ -16,7 +16,7 @@
 #include "Oasis/Undefined.hpp"
 #include <iostream>
 
-double EPSILON = 0.000001;
+#define EPSILON 1E-6
 
 TEST_CASE("Log with invalid base", "[Log][Invalid Base]")
 {

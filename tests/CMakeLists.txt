@@ -19,7 +19,8 @@ set(Oasis_TESTS
     NegateTests.cpp
     PolynomialTests.cpp
     SubtractTests.cpp
-    UnaryExpressionTests.cpp)
+    UnaryExpressionTests.cpp
+        MatrixTests.cpp)
 
 # Adds an executable target called "OasisTests" to be built from sources files.
 add_executable(OasisTests ${Oasis_TESTS})
