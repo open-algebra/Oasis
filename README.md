@@ -1,4 +1,5 @@
 ![OASIS Big Cat Logo](docs/Big%20Cat%20Large.png)
+<small>Credit: Mansi Panwar for artwork</small>
 
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/matthew-mccall/oasis/cmake-multi-platform.yml)
 
