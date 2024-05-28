@@ -47,6 +47,24 @@ TEST_CASE("Create Matrix From MatrixXXD", "[Matrix][Create][MatrixXXD]")
     REQUIRE(mat3.Equals(mat));
 }
 
+TEST_CASE("Create Matrix from Vector", "[Matrix][Create][Vector]")
+{
+    std::vector<double> matrix = {1,2,3,4};
+    Oasis::Matrix even{2,2,matrix};
+    Oasis::Matrix less{1,2,matrix};
+    Oasis::Matrix more{2,3,matrix};
+    Oasis::Matrix less2{2,1,matrix};
+
+    INFO("Even:");
+    INFO(even.GetMatrix());
+    INFO("Less:");
+    INFO(less.GetMatrix());
+    INFO("More:");
+    INFO(more.GetMatrix());
+    INFO("Less2:");
+    INFO(less2.GetMatrix());
+}
+
 TEST_CASE("Add Matrices", "[Matrix][Add]")
 {
     Oasis::Matrix mat1{Oasis::MatrixXXD{{1,2},
@@ -59,4 +77,5 @@ TEST_CASE("Add Matrices", "[Matrix][Add]")
 
     REQUIRE(spec != nullptr);
     REQUIRE(spec->Equals(Oasis::Matrix{Oasis::MatrixXXD{{9,9},{9,9}}}));
+    // std::cout<<spec->GetMatrix()<<std::endl;
 }

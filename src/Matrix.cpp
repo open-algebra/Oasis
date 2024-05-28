@@ -12,15 +12,28 @@ Matrix::Matrix(MatrixXXD other)
 {
 }
 
-Matrix::Matrix(int numRows, int numCols){
+Matrix::Matrix(size_t numRows, size_t numCols){
     matrix = MatrixXXD(numRows, numCols);
 }
 
-/*// TODO: Fix
+Matrix::Matrix(size_t numRows, size_t numCols, std::vector<double>& vals){
+    matrix = MatrixXXD(numRows, numCols);
+    size_t count = numRows*numCols;
+    size_t index = 0;
+    for (; index < count; index++){
+        if (index<vals.size()){
+            matrix(static_cast<long>(index/numCols), static_cast<long>(index%numCols)) = vals[index];
+        } else {
+            matrix(static_cast<long>(index/numCols), static_cast<long>(index%numCols)) = 0;
+        }
+    }
+}
+
+// TODO: Fix
 auto Matrix::Differentiate(const Expression&) const -> std::unique_ptr<Expression>
 {
     return std::make_unique<Real>(0);
-}*/
+}
 
 auto Matrix::Equals(const Expression& other) const -> bool
 {
@@ -58,12 +71,12 @@ auto Matrix::Specialize(const Expression& other, tf::Subflow&) -> std::unique_pt
     return other.Is<Matrix>() ? std::make_unique<Matrix>(dynamic_cast<const Matrix&>(other)) : nullptr;
 }
 
-/*// TODO: Fix
+// TODO: Fix
 auto Matrix::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
 {
     Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
 
     return integral.Copy();
-}*/
+}
 
 } // namespace Oasis
