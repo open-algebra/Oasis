@@ -9,6 +9,7 @@
 #include "Oasis/Integral.hpp"
 #include "Oasis/Negate.hpp"
 #include "Oasis/Subtract.hpp"
+#include "Oasis/Matrix.hpp"
 
 #define EPSILON 10E-6
 
@@ -43,6 +44,10 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp())) {
             return std::make_unique<Exponent<Expression, Expression>>(exprCase->GetMostSigOp(), Real { 2.0 });
         }
+    }
+
+    if (auto rMatrixCase = Multiply<Real, Matrix>::Specialize(simplifiedMultiply); rMatrixCase != nullptr) {
+        return std::make_unique<Matrix>(rMatrixCase->GetLeastSigOp().GetMatrix() * rMatrixCase->GetMostSigOp().GetValue());
     }
 
     //    Commented out to not cause massive problems with things that need factored expressions

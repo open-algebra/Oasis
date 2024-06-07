@@ -6,6 +6,9 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "Oasis/Matrix.hpp"
 #include "Oasis/Add.hpp"
+#include "Oasis/Subtract.hpp"
+#include "Oasis/Multiply.hpp"
+#include "Oasis/Divide.hpp"
 
 #define EPSILON 10E-6
 
@@ -78,4 +81,56 @@ TEST_CASE("Add Matrices", "[Matrix][Add]")
     REQUIRE(spec != nullptr);
     REQUIRE(spec->Equals(Oasis::Matrix{Oasis::MatrixXXD{{9,9},{9,9}}}));
     // std::cout<<spec->GetMatrix()<<std::endl;
+}
+
+TEST_CASE("Subtract Matrices", "[Matrix][Subtract]")
+{
+    Oasis::Matrix mat1{Oasis::MatrixXXD{{1,2},
+                                        {3,4}}};
+    Oasis::Matrix mat2{Oasis::MatrixXXD{{5,6},
+                                        {7,8}}};
+
+    auto result = Oasis::Subtract<Oasis::Expression, Oasis::Expression>{mat2, mat1}.Simplify();
+    auto spec = Oasis::Matrix::Specialize(*result);
+
+    REQUIRE(spec != nullptr);
+    REQUIRE(spec->Equals(Oasis::Matrix{Oasis::MatrixXXD{{4,4},{4,4}}}));
+}
+
+TEST_CASE("Multiply Matrix and Real", "[Matrix][Real][Multiply]")
+{
+    Oasis::Real a {5.0};
+    Oasis::Matrix mat1{Oasis::MatrixXXD{{1,2},
+                                        {3,4}}};
+
+    auto result1 = Oasis::Multiply{a, mat1}.Simplify();
+    auto result2 = Oasis::Multiply{mat1, a}.Simplify();
+    auto spec1 = Oasis::Matrix::Specialize(*result1);
+    auto spec2 = Oasis::Matrix::Specialize(*result2);
+
+    REQUIRE(spec1 != nullptr);
+    REQUIRE(spec2 != nullptr);
+
+    REQUIRE(spec1->Equals(Oasis::Matrix{Oasis::MatrixXXD{{5.0, 10.0},{15.0, 20.0}}}));
+    REQUIRE(spec2->Equals(Oasis::Matrix{Oasis::MatrixXXD{{5.0, 10.0},{15.0, 20.0}}}));
+}
+
+TEST_CASE("Multiply Matrices, same dimensions", "[Matrix][Multiply]")
+{
+
+}
+
+TEST_CASE("Multiply Matrices, different dimensions", "[Matrix][Multiply]")
+{
+
+}
+
+TEST_CASE("Addition of Matrix and Real", "[Matrix][Real][Add]")
+{
+
+}
+
+TEST_CASE("Subtraction of Matrix and Real", "[Matrix][Real][Subtract]")
+{
+
 }
