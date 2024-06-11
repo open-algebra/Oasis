@@ -52,15 +52,11 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         const Oasis::IExpression auto& leftTerm = matrixCase->GetMostSigOp();
         const Oasis::IExpression auto& rightTerm = matrixCase->GetLeastSigOp();
 
-        if ((leftTerm.GetRows()==rightTerm.GetRows())&&(leftTerm.GetCols()==leftTerm.GetCols())){
+        if ((leftTerm.GetRows()==rightTerm.GetRows())&&(leftTerm.GetCols()==rightTerm.GetCols())){
             return std::make_unique<Matrix>(leftTerm.GetMatrix()+rightTerm.GetMatrix());
         } else {
             return std::make_unique<Add<Expression>>(leftTerm, rightTerm);
         }
-    }
-
-    if (auto rMatrixCase = Add<Real, Matrix>::Specialize(simplifiedAdd); rMatrixCase != nullptr){
-
     }
 
     // log(a) + log(b) = log(ab)

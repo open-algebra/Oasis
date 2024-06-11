@@ -50,6 +50,18 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return std::make_unique<Matrix>(rMatrixCase->GetLeastSigOp().GetMatrix() * rMatrixCase->GetMostSigOp().GetValue());
     }
 
+    if (auto matrixCase = Multiply<Matrix, Matrix>::Specialize(simplifiedMultiply); matrixCase != nullptr){
+        const Oasis::IExpression auto& leftTerm = matrixCase->GetMostSigOp();
+        const Oasis::IExpression auto& rightTerm = matrixCase->GetLeastSigOp();
+
+        if (leftTerm.GetCols()==rightTerm.GetRows()){
+            return std::make_unique<Matrix>(leftTerm.GetMatrix()*rightTerm.GetMatrix());
+        } else {
+            // ERROR: INVALID DIMENSION
+            return std::make_unique<Multiply<Expression>>(leftTerm, rightTerm);
+        }
+    }
+
     //    Commented out to not cause massive problems with things that need factored expressions
     //    // c*(a-b)
     //    if (auto negated = Multiply<Real, Subtract<Expression>>::Specialize(simplifiedMultiply); negated != nullptr) {

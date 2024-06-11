@@ -59,7 +59,7 @@ public:
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression> final;
 
-    [[nodiscard]] auto Identity() -> std::unique_ptr<Expression>;
+    [[nodiscard]] auto Identity() const -> std::unique_ptr<Expression>;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Matrix>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Matrix>;

@@ -118,25 +118,49 @@ TEST_CASE("Multiply Matrix and Real", "[Matrix][Real][Multiply]")
 TEST_CASE("Create Identity Matrix", "[Matrix][Identity]")
 {
     Oasis::MatrixXXD mat(3,3);
-    Oasis::Matrix Oasis::Matrix{mat}.Identity();
+    Oasis::Matrix i{mat};
+    Oasis::Matrix identity = *(Oasis::Matrix::Specialize(*i.Identity()));
+
+    mat << 1,0,0,
+           0,1,0,
+           0,0,1;
+
+    REQUIRE(identity.GetMatrix() == mat);
 }
 
 TEST_CASE("Multiply Matrices, same dimensions", "[Matrix][Multiply]")
 {
-
+    Oasis::Matrix mat1{Oasis::MatrixXXD{{5,6},{7,8}}};
+    Oasis::Matrix mat2{Oasis::MatrixXXD{{1,2},{3,4}}};
+    Oasis::Matrix expected{Oasis::MatrixXXD{{23,34},{31,46}}};
+    auto result = Oasis::Multiply{mat1, mat2}.Simplify();
+    REQUIRE(result->Equals(expected));
 }
 
 TEST_CASE("Multiply Matrices, different dimensions", "[Matrix][Multiply]")
 {
+    Oasis::Matrix mat1{Oasis::MatrixXXD{{1,2},{3,4}}};
+    Oasis::Matrix mat2{Oasis::MatrixXXD{{1,2},{3,4},{5,6}}};
+    Oasis::Matrix mat3{Oasis::MatrixXXD{{1,2,3},{4,5,6}}};
 
-}
+    Oasis::Multiply expected12{mat1, mat2};
+    Oasis::Matrix expected21{Oasis::MatrixXXD{{7,10},{15,22},{23,34}}};
+    Oasis::Matrix expected13{Oasis::MatrixXXD{{9,12,15},{19,26,33}}};
+    Oasis::Multiply expected31{mat3, mat1};
+    Oasis::Matrix expected23{Oasis::MatrixXXD{{9,12,15},{19,26,33},{29,40,51}}};
+    Oasis::Matrix expected32{Oasis::MatrixXXD{{22,28},{49,64}}};
 
-TEST_CASE("Addition of Matrix and Real", "[Matrix][Real][Add]")
-{
+    auto res12 = Oasis::Multiply{mat1, mat2}.Simplify();
+    auto res21 = Oasis::Multiply{mat2, mat1}.Simplify();
+    auto res13 = Oasis::Multiply{mat1, mat3}.Simplify();
+    auto res31 = Oasis::Multiply{mat3, mat1}.Simplify();
+    auto res23 = Oasis::Multiply{mat2, mat3}.Simplify();
+    auto res32 = Oasis::Multiply{mat3, mat2}.Simplify();
 
-}
-
-TEST_CASE("Subtraction of Matrix and Real", "[Matrix][Real][Subtract]")
-{
-
+    REQUIRE(res12->Equals(expected12));
+    REQUIRE(res21->Equals(expected21));
+    REQUIRE(res13->Equals(expected13));
+    REQUIRE(res31->Equals(expected31));
+    REQUIRE(res23->Equals(expected23));
+    REQUIRE(res32->Equals(expected32));
 }

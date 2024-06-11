@@ -37,7 +37,9 @@ auto Matrix::Differentiate(const Expression&) const -> std::unique_ptr<Expressio
 
 auto Matrix::Equals(const Expression& other) const -> bool
 {
-    return other.Is<Matrix>() && matrix == dynamic_cast<const Matrix&>(other).matrix;
+    return other.Is<Matrix>() && matrix.rows() == dynamic_cast<const Matrix&>(other).matrix.rows()
+        && matrix.cols() == dynamic_cast<const Matrix&>(other).matrix.cols()
+        && matrix == dynamic_cast<const Matrix&>(other).matrix;
 }
 
 auto Matrix::GetMatrix() const -> MatrixXXD
@@ -79,10 +81,10 @@ auto Matrix::Integrate(const Expression& integrationVariable) -> std::unique_ptr
     return integral.Copy();
 }
 
-auto Matrix::Identity() -> std::unique_ptr<Expression> {
+auto Matrix::Identity() const -> std::unique_ptr<Expression> {
     MatrixXXD identityMatrix = MatrixXXD(GetRows(), GetCols());
     for (size_t x = 0; x < GetRows(); x++){
-        for (size_t y = 0; y < GetCols(); x++) {
+        for (size_t y = 0; y < GetCols(); y++) {
             identityMatrix(static_cast<Eigen::Index>(x), static_cast<Eigen::Index>(y)) = (x == y ? 1.0 : 0.0);
         }
     }
