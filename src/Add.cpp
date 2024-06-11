@@ -59,6 +59,10 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
+    if (auto rMatrixCase = Add<Real, Matrix>::Specialize(simplifiedAdd); rMatrixCase != nullptr){
+
+    }
+
     // log(a) + log(b) = log(ab)
     if (auto logCase = Add<Log<Expression, Expression>, Log<Expression, Expression>>::Specialize(simplifiedAdd); logCase != nullptr) {
         if (logCase->GetMostSigOp().GetMostSigOp().Equals(logCase->GetLeastSigOp().GetMostSigOp())) {

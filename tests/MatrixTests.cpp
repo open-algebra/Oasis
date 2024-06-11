@@ -115,6 +115,12 @@ TEST_CASE("Multiply Matrix and Real", "[Matrix][Real][Multiply]")
     REQUIRE(spec2->Equals(Oasis::Matrix{Oasis::MatrixXXD{{5.0, 10.0},{15.0, 20.0}}}));
 }
 
+TEST_CASE("Create Identity Matrix", "[Matrix][Identity]")
+{
+    Oasis::MatrixXXD mat(3,3);
+    Oasis::Matrix Oasis::Matrix{mat}.Identity();
+}
+
 TEST_CASE("Multiply Matrices, same dimensions", "[Matrix][Multiply]")
 {
 

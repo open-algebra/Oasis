@@ -79,4 +79,14 @@ auto Matrix::Integrate(const Expression& integrationVariable) -> std::unique_ptr
     return integral.Copy();
 }
 
+auto Matrix::Identity() -> std::unique_ptr<Expression> {
+    MatrixXXD identityMatrix = MatrixXXD(GetRows(), GetCols());
+    for (size_t x = 0; x < GetRows(); x++){
+        for (size_t y = 0; y < GetCols(); x++) {
+            identityMatrix(static_cast<Eigen::Index>(x), static_cast<Eigen::Index>(y)) = (x == y ? 1.0 : 0.0);
+        }
+    }
+    return std::make_unique<Matrix>(identityMatrix);
+}
+
 } // namespace Oasis
