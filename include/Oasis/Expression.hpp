@@ -33,6 +33,7 @@ enum class ExpressionType {
     Derivative,
     Negate,
     Sqrt,
+    Matrix,
 };
 
 /**

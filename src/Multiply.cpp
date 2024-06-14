@@ -7,6 +7,7 @@
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
+#include "Oasis/Matrix.hpp"
 #include "Oasis/Negate.hpp"
 #include "Oasis/Subtract.hpp"
 
@@ -42,6 +43,22 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (auto exprCase = Multiply<Expression>::Specialize(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp())) {
             return std::make_unique<Exponent<Expression, Expression>>(exprCase->GetMostSigOp(), Real { 2.0 });
+        }
+    }
+
+    if (auto rMatrixCase = Multiply<Real, Matrix>::Specialize(simplifiedMultiply); rMatrixCase != nullptr) {
+        return std::make_unique<Matrix>(rMatrixCase->GetLeastSigOp().GetMatrix() * rMatrixCase->GetMostSigOp().GetValue());
+    }
+
+    if (auto matrixCase = Multiply<Matrix, Matrix>::Specialize(simplifiedMultiply); matrixCase != nullptr) {
+        const Oasis::IExpression auto& leftTerm = matrixCase->GetMostSigOp();
+        const Oasis::IExpression auto& rightTerm = matrixCase->GetLeastSigOp();
+
+        if (leftTerm.GetCols() == rightTerm.GetRows()) {
+            return std::make_unique<Matrix>(leftTerm.GetMatrix() * rightTerm.GetMatrix());
+        } else {
+            // ERROR: INVALID DIMENSION
+            return std::make_unique<Multiply<Expression>>(leftTerm, rightTerm);
         }
     }
 

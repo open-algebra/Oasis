@@ -21,6 +21,7 @@ public:
 
     void Serialize(const Real& real) override;
     void Serialize(const Imaginary& imaginary) override;
+    void Serialize(const Matrix& matrix) override;
     void Serialize(const Variable& variable) override;
     void Serialize(const Undefined& undefined) override;
     void Serialize(const Add<Expression, Expression>& add) override;
