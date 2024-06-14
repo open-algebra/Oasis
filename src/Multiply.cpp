@@ -7,9 +7,9 @@
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
+#include "Oasis/Matrix.hpp"
 #include "Oasis/Negate.hpp"
 #include "Oasis/Subtract.hpp"
-#include "Oasis/Matrix.hpp"
 
 #define EPSILON 10E-6
 
@@ -50,12 +50,12 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return std::make_unique<Matrix>(rMatrixCase->GetLeastSigOp().GetMatrix() * rMatrixCase->GetMostSigOp().GetValue());
     }
 
-    if (auto matrixCase = Multiply<Matrix, Matrix>::Specialize(simplifiedMultiply); matrixCase != nullptr){
+    if (auto matrixCase = Multiply<Matrix, Matrix>::Specialize(simplifiedMultiply); matrixCase != nullptr) {
         const Oasis::IExpression auto& leftTerm = matrixCase->GetMostSigOp();
         const Oasis::IExpression auto& rightTerm = matrixCase->GetLeastSigOp();
 
-        if (leftTerm.GetCols()==rightTerm.GetRows()){
-            return std::make_unique<Matrix>(leftTerm.GetMatrix()*rightTerm.GetMatrix());
+        if (leftTerm.GetCols() == rightTerm.GetRows()) {
+            return std::make_unique<Matrix>(leftTerm.GetMatrix() * rightTerm.GetMatrix());
         } else {
             // ERROR: INVALID DIMENSION
             return std::make_unique<Multiply<Expression>>(leftTerm, rightTerm);

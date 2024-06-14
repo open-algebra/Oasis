@@ -4,8 +4,8 @@
 
 #ifndef OASIS_MATRIX_HPP
 #define OASIS_MATRIX_HPP
-#include "LeafExpression.hpp"
 #include "Eigen/Dense"
+#include "LeafExpression.hpp"
 
 namespace Oasis {
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatrixXXD;
@@ -68,7 +68,7 @@ public:
     auto operator=(const Matrix& other) -> Matrix& = default;
 
 private:
-     MatrixXXD matrix {};
+    MatrixXXD matrix {};
 };
 
 } // Oasis

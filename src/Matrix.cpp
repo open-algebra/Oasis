@@ -12,19 +12,21 @@ Matrix::Matrix(MatrixXXD other)
 {
 }
 
-Matrix::Matrix(size_t numRows, size_t numCols){
+Matrix::Matrix(size_t numRows, size_t numCols)
+{
     matrix = MatrixXXD(numRows, numCols);
 }
 
-Matrix::Matrix(size_t numRows, size_t numCols, std::vector<double>& vals){
+Matrix::Matrix(size_t numRows, size_t numCols, std::vector<double>& vals)
+{
     matrix = MatrixXXD(numRows, numCols);
-    size_t count = numRows*numCols;
+    size_t count = numRows * numCols;
     size_t index = 0;
-    for (; index < count; index++){
-        if (index<vals.size()){
-            matrix(static_cast<long>(index/numCols), static_cast<long>(index%numCols)) = vals[index];
+    for (; index < count; index++) {
+        if (index < vals.size()) {
+            matrix(static_cast<long>(index / numCols), static_cast<long>(index % numCols)) = vals[index];
         } else {
-            matrix(static_cast<long>(index/numCols), static_cast<long>(index%numCols)) = 0;
+            matrix(static_cast<long>(index / numCols), static_cast<long>(index % numCols)) = 0;
         }
     }
 }
@@ -47,19 +49,23 @@ auto Matrix::GetMatrix() const -> MatrixXXD
     return matrix;
 }
 
-auto Matrix::GetRows() const -> size_t {
+auto Matrix::GetRows() const -> size_t
+{
     return matrix.rows();
 }
 
-auto Matrix::GetCols() const -> size_t {
+auto Matrix::GetCols() const -> size_t
+{
     return matrix.cols();
 }
 
-auto Matrix::Transpose() const -> std::unique_ptr<Matrix> {
+auto Matrix::Transpose() const -> std::unique_ptr<Matrix>
+{
     return std::make_unique<Matrix>(matrix.transpose());
 }
 
-auto Matrix::Inverse() const -> std::unique_ptr<Matrix> {
+auto Matrix::Inverse() const -> std::unique_ptr<Matrix>
+{
     return std::make_unique<Matrix>(matrix.inverse());
 }
 
@@ -81,9 +87,10 @@ auto Matrix::Integrate(const Expression& integrationVariable) -> std::unique_ptr
     return integral.Copy();
 }
 
-auto Matrix::Identity() const -> std::unique_ptr<Expression> {
+auto Matrix::Identity() const -> std::unique_ptr<Expression>
+{
     MatrixXXD identityMatrix = MatrixXXD(GetRows(), GetCols());
-    for (size_t x = 0; x < GetRows(); x++){
+    for (size_t x = 0; x < GetRows(); x++) {
         for (size_t y = 0; y < GetCols(); y++) {
             identityMatrix(static_cast<Eigen::Index>(x), static_cast<Eigen::Index>(y)) = (x == y ? 1.0 : 0.0);
         }

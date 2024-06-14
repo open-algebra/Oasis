@@ -10,10 +10,10 @@
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
+#include "Oasis/Matrix.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
 #include "Oasis/Variable.hpp"
-#include "Oasis/Matrix.hpp"
 
 namespace Oasis {
 
@@ -42,12 +42,12 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return std::make_unique<Real>(Real { 0.0 });
     }
 
-    if (auto matrixCase = Subtract<Matrix, Matrix>::Specialize(simplifiedSubtract); matrixCase != nullptr){
+    if (auto matrixCase = Subtract<Matrix, Matrix>::Specialize(simplifiedSubtract); matrixCase != nullptr) {
         const Oasis::IExpression auto& leftTerm = matrixCase->GetMostSigOp();
         const Oasis::IExpression auto& rightTerm = matrixCase->GetLeastSigOp();
 
-        if ((leftTerm.GetRows()==rightTerm.GetRows())&&(leftTerm.GetCols()==leftTerm.GetCols())){
-            return std::make_unique<Matrix>(leftTerm.GetMatrix()-rightTerm.GetMatrix());
+        if ((leftTerm.GetRows() == rightTerm.GetRows()) && (leftTerm.GetCols() == leftTerm.GetCols())) {
+            return std::make_unique<Matrix>(leftTerm.GetMatrix() - rightTerm.GetMatrix());
         } else {
             return std::make_unique<Subtract<Expression>>(leftTerm, rightTerm);
         }
