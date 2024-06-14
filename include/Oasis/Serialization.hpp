@@ -11,6 +11,7 @@ namespace Oasis {
 
 class Real;
 class Imaginary;
+class Matrix;
 class Variable;
 class Undefined;
 
@@ -45,6 +46,7 @@ class SerializationVisitor {
 public:
     virtual void Serialize(const Real& real) = 0;
     virtual void Serialize(const Imaginary& imaginary) = 0;
+    virtual void Serialize(const Matrix& matrix) = 0;
     virtual void Serialize(const Variable& variable) = 0;
     virtual void Serialize(const Undefined& undefined) = 0;
     virtual void Serialize(const Add<Expression, Expression>& add) = 0;

@@ -13,6 +13,7 @@
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Matrix.hpp"
 #include "Oasis/Negate.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
@@ -35,6 +36,56 @@ void MathMLSerializer::Serialize(const Imaginary& imaginary)
 {
     result = doc.NewElement("mi");
     result->SetText("i");
+}
+
+void MathMLSerializer::Serialize(const Matrix& matrix)
+{
+    tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
+
+    tinyxml2::XMLElement* openBrace = doc.NewElement("mo");
+    openBrace->SetText("[");
+
+    tinyxml2::XMLElement* closeBrace = doc.NewElement("mo");
+    closeBrace->SetText("]");
+
+    auto mat = matrix.GetMatrix();
+
+    tinyxml2::XMLElement* table = doc.NewElement("mtable");
+
+    for (int r = 0; r < matrix.GetRows(); r++){
+        tinyxml2::XMLElement* row = doc.NewElement("mtr");
+        for (int c = 0; c < matrix.GetCols(); c++){
+            tinyxml2::XMLElement* mtd = doc.NewElement("mtd");
+            tinyxml2::XMLElement* mn = doc.NewElement("mn");
+            mn->SetText(mat(r,c));
+            mtd->InsertEndChild(mn);
+            row->InsertEndChild(mtd);
+        }
+        table->InsertEndChild(row);
+    }
+    mrow->InsertEndChild(openBrace);
+    mrow->InsertEndChild(table);
+    mrow->InsertEndChild(closeBrace);
+
+    //    // Integral symbol
+    //    tinyxml2::XMLElement* inte = doc.NewElement("mo");
+    //    inte->SetText("\u222B;");
+    //
+    //    tinyxml2::XMLElement* dNode = doc.NewElement("mo");
+    //    dNode->SetText("d");
+    //
+    //    auto [expElement, varElement] = GetOpsAsMathMLPair(integral);
+    //
+    //    // d variable
+    //    tinyxml2::XMLElement* dVar = doc.NewElement("mrow");
+    //    dVar->InsertEndChild(dNode);
+    //    dVar->InsertEndChild(varElement);
+    //
+    //    mrow->InsertEndChild(inte);
+    //    mrow->InsertEndChild(expElement);
+    //    mrow->InsertEndChild(dVar);
+
+    result = mrow;
 }
 
 void MathMLSerializer::Serialize(const Variable& variable)

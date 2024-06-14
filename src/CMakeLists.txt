@@ -17,6 +17,7 @@ set(Oasis_SOURCES
     Integral.cpp
     Linear.cpp
     Log.cpp
+    Matrix.cpp
     Multiply.cpp
     Negate.cpp
     Real.cpp
