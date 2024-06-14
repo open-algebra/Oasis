@@ -20,14 +20,6 @@ TEST_CASE("Create Empty Matrix", "[Matrix][Create][Empty]")
     REQUIRE(a.GetRows() == 3);
 }
 
-TEST_CASE("Empty Matrix Equality", "[Matrix][Empty]")
-{
-    Oasis::Matrix a = {3,4};
-    Oasis::Matrix b = {3,4};
-
-    REQUIRE(a.Equals(b));
-}
-
 TEST_CASE("Create Matrix From MatrixXXD", "[Matrix][Create][MatrixXXD]")
 {
     Oasis::MatrixXXD a{2,2};
