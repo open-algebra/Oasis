@@ -11,6 +11,7 @@
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 #include "Oasis/Derivative.hpp"
+#include "Oasis/Log.hpp"
 
 TEST_CASE("Differentiate Nonzero number", "[Differentiate][Real][Nonzero]")
 {
@@ -252,4 +253,34 @@ TEST_CASE("Derivative Wrapper Class Exponent", "[Differentiate][Exponent][Like]"
     Oasis::Multiply<Oasis::Variable, Oasis::Real> twox {Oasis::Variable {x.GetName()}, Oasis::Real {2}};
     auto diffed = diff1.Simplify();
     REQUIRE(diffed->Equals(*(twox.Simplify())));
+}
+
+TEST_CASE("Product Rule", "[Differentiate][Product]")
+{
+    Oasis::Variable f{"x"};
+    Oasis::Multiply g{Oasis::Real{6.0}, Oasis::Variable{"x"}};
+    Oasis::Derivative diff{Oasis::Multiply{f, g}, Oasis::Variable{"x"}};
+    auto simplified = diff.Simplify();
+    Oasis::Multiply expected{Oasis::Real{12.0}, Oasis::Variable{"x"}};
+
+    REQUIRE(simplified->Equals(expected));
+}
+
+TEST_CASE("Natural Exponential Derivative", "[Derivative][Exponent][Euler's Number]")
+{
+
+}
+
+TEST_CASE("Natural Logarithm Derivative", "[Derivative][Logarithm][Euler's Number]")
+{
+    Oasis::Derivative diffLog{
+        Oasis::Log{Oasis::Variable{"e"},Oasis::Multiply{Oasis::Real{6},Oasis::Variable{"x"}}}, Oasis::Variable{"x"}};
+    auto diff = diffLog.Simplify();
+    Oasis::Divide expected{Oasis::Real{1.0}, Oasis::Variable{"x"}};
+    REQUIRE(diff->Equals(expected));
+}
+
+TEST_CASE("Chain Rule", "[Differentiate][Chain]")
+{
+
 }
