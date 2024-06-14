@@ -17,14 +17,14 @@ set(Oasis_SOURCES
     Integral.cpp
     Linear.cpp
     Log.cpp
+    Matrix.cpp
     Multiply.cpp
     Negate.cpp
     Real.cpp
     Subtract.cpp
     # Summation.cpp
     Undefined.cpp
-    Variable.cpp
-        Matrix.cpp)
+    Variable.cpp)
 
 set(Oasis_HEADERS
     # cmake-format: sortable
@@ -54,8 +54,7 @@ set(Oasis_HEADERS
     ../include/Oasis/Variable.hpp)
 
 # Adds a header-only library target called "OasisHeaders"
-add_library(OasisHeaders INTERFACE
-        ../include/Oasis/Matrix.hpp)
+add_library(OasisHeaders INTERFACE ../include/Oasis/Matrix.hpp)
 add_library(Oasis::Headers ALIAS OasisHeaders)
 
 target_compile_features(OasisHeaders INTERFACE cxx_std_20)
