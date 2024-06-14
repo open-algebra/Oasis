@@ -14,7 +14,6 @@ option(OASIS_BUILD_EXTRAS "Enables building extra modules for Oasis" OFF)
 option(OASIS_BUILD_TESTS "Enables building unit tests for Oasis" ON)
 option(OASIS_BUILD_WITH_COVERAGE
        "Enables building Oasis with code coverage enabled" OFF)
-option(OASIS_BUILD_GUI "Enables building the GUI application" OFF)
 
 # Adds compiler flags for code coverage. Note that only the Clang compiler is
 # currently supported for code coverage.
@@ -48,10 +47,6 @@ if(OASIS_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-if(OASIS_BUILD_EXTRAS OR OASIS_BUILD_GUI)
+if(OASIS_BUILD_EXTRAS)
     add_subdirectory(extras)
-endif()
-
-if(OASIS_BUILD_GUI)
-    add_subdirectory(gui)
 endif()
