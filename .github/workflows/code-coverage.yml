@@ -51,6 +51,8 @@ jobs:
                 -DCMAKE_CXX_COMPILER=clang++-17
                 -DCMAKE_BUILD_TYPE=Debug
                 -DOASIS_BUILD_WITH_COVERAGE=ON
+                -DOASIS_BUILD_EXTRAS=ON
+                -Dtinyxml2_BUILD_TESTING=OFF
 
             # Builds Oasis with the given configuration.
           - name: Build Oasis
@@ -67,6 +69,13 @@ jobs:
                 --build ${{ steps.strings.outputs.build-dir }}
                 --config Debug
                 --target OasisTests
+
+          - name: Build OasisExtrasTests
+            run: >
+                cmake
+                --build ${{ steps.strings.outputs.build-dir }}
+                --config Debug
+                --target OasisExtrasTests
 
             # Runs the tests registered to CTest by CMake.
           - name: Collect Coverage

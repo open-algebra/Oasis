@@ -8,6 +8,7 @@
 set(Oasis_SOURCES
     # cmake-format: sortable
     Add.cpp
+    # DefiniteIntegral.cpp
     Derivative.cpp
     Divide.cpp
     Exponent.cpp
@@ -20,6 +21,7 @@ set(Oasis_SOURCES
     Negate.cpp
     Real.cpp
     Subtract.cpp
+    # Summation.cpp
     Undefined.cpp
     Variable.cpp)
 

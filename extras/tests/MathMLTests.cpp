@@ -1,10 +1,10 @@
 #include "catch2/catch_test_macros.hpp"
 
-#include <Oasis/Add.hpp>
-#include <Oasis/Divide.hpp>
-#include <Oasis/Multiply.hpp>
-#include <Oasis/Variable.hpp>
-#include <Oasis/MathMLSerializer.hpp>
+#include "Oasis/Add.hpp"
+#include "Oasis/Divide.hpp"
+#include "Oasis/Multiply.hpp"
+#include "Oasis/Variable.hpp"
+#include "Oasis/MathMLSerializer.hpp"
 
 TEST_CASE("ToMathML Works", "[MathML]")
 {

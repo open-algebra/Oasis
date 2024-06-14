@@ -26,29 +26,18 @@ auto Derivative<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedExpression = mostSigOp ? mostSigOp->Simplify() : nullptr;
     auto simplifiedVar = leastSigOp ? leastSigOp->Simplify() : nullptr;
-
-    if (auto realCase = Real::Specialize(*simplifiedExpression); realCase != nullptr) {
-        return realCase->Differentiate(*simplifiedVar);
-    }
-    if (auto addCase = Add<Expression>::Specialize(*simplifiedExpression); addCase != nullptr) {
-        return addCase->Differentiate(*simplifiedVar);
-    }
-    if (auto subCase = Subtract<Expression>::Specialize(*simplifiedExpression); subCase != nullptr) {
-        return subCase->Differentiate(*simplifiedVar);
-    }
-    if (auto multCase = Multiply<Expression>::Specialize(*simplifiedExpression); multCase != nullptr) {
-        return multCase->Differentiate(*simplifiedVar);
-    }
-    if (auto divCase = Divide<Expression>::Specialize(*simplifiedExpression); divCase != nullptr) {
-        return divCase->Differentiate(*simplifiedVar);
-    }
-    if (auto varCase = Variable::Specialize(*simplifiedExpression); varCase != nullptr) {
-        return varCase->Differentiate(*simplifiedVar);
-    }
-    if (auto expCase = Exponent<Expression, Expression>::Specialize(*simplifiedExpression); expCase != nullptr) {
-        return expCase->Differentiate(*simplifiedVar);
-    }
     return simplifiedExpression->Differentiate(*simplifiedVar);
+}
+
+std::unique_ptr<Expression> Derivative<Expression, Expression>::Simplify(tf::Subflow&) const
+{
+    // TODO: Actually implement
+    return Simplify();
+}
+
+std::unique_ptr<Expression> Derivative<Expression, Expression>::Differentiate(const Expression& differentiationVariable) const
+{
+    return mostSigOp->Differentiate(*leastSigOp)->Differentiate(differentiationVariable);
 }
 
 auto Derivative<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Derivative<Expression, Expression>>
