@@ -41,6 +41,7 @@ add_subdirectory(cmake/FetchTaskflow)
 add_subdirectory(cmake/FetchTinyxml2)
 
 # Processes the CMakeLists.txt for each target.
+add_subdirectory(include)
 add_subdirectory(src)
 
 if(OASIS_BUILD_TESTS)
