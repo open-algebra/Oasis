@@ -299,6 +299,10 @@ auto FromInFix(const std::string& str) -> ParseResult {
         }
     }
 
+    if (st.empty()) {
+        return ParseResult { "Parsing failed" };
+    }
+
     return ParseResult { st.top()->Copy() }; // root of the expression tree
 }
 
