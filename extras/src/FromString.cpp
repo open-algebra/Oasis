@@ -231,6 +231,15 @@ auto ParseResult::GetResult() const -> const Expression & {
     return *std::get<std::unique_ptr<Expression>>(result);
 }
 
+std::string ParseResult::GetErrorMessage() const
+{
+    if (const auto message = std::get_if<std::string>(&result)) {
+        return *message;
+    }
+
+    return "No Error";
+}
+
 auto FromInFix(const std::string& str) -> ParseResult {
     // Based off Dijkstra's Shunting Yard
 

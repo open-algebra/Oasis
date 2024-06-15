@@ -14,6 +14,7 @@ public:
 
     [[nodiscard]] bool Ok() const;
     [[nodiscard]] const Expression& GetResult() const;
+    std::string GetErrorMessage() const;
 
 private:
     std::variant<std::unique_ptr<Expression>, std::string> result;
