@@ -35,10 +35,9 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2 fmt)
 
-# Processes the CMakeLists.txt for dependencies that need special handling.
-add_subdirectory(cmake/FetchEigen)
-add_subdirectory(cmake/FetchTaskflow)
-add_subdirectory(cmake/FetchTinyxml2)
+include(cmake/FetchEigen.cmake)
+include(cmake/FetchTaskflow.cmake)
+include(cmake/FetchTinyxml2.cmake)
 
 # Processes the CMakeLists.txt for each target.
 add_subdirectory(include)
