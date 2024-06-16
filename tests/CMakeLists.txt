@@ -12,11 +12,15 @@ set(Oasis_TESTS
     DifferentiateTests.cpp
     DivideTests.cpp
     ExponentTests.cpp
+    IntegrateTests.cpp
+    LinearTests.cpp
     LogTests.cpp
+    MatrixTests.cpp
     MultiplyTests.cpp
     NegateTests.cpp
     PolynomialTests.cpp
-    SubtractTests.cpp)
+    SubtractTests.cpp
+    UnaryExpressionTests.cpp)
 
 # Adds an executable target called "OasisTests" to be built from sources files.
 add_executable(OasisTests ${Oasis_TESTS})
@@ -28,7 +32,6 @@ else()
     target_compile_options(OasisTests PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_library(Oasis::Oasis ALIAS Oasis)
 target_link_libraries(OasisTests PRIVATE Oasis::Oasis Catch2::Catch2WithMain)
 
 # Automatically registers the tests with CTest.

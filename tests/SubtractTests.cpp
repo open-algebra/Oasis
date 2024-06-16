@@ -8,6 +8,8 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
+#include "Oasis/Variable.hpp"
+#include "Oasis/Add.hpp"
 
 TEST_CASE("Subtraction", "[Subtract]")
 {
@@ -82,4 +84,19 @@ TEST_CASE("Subtract Operator Overload", "[Subtract][Operator Overload]")
     REQUIRE(realSum != nullptr);
     REQUIRE(realSum->GetValue() == -1.0);
 
+}
+
+TEST_CASE("Simplify Equation with subtraction", "[Subtract]") {
+    Oasis::Add add1{ // 4x - 7y + -5
+            Oasis::Subtract{
+                    Oasis::Multiply{
+                            Oasis::Real{4.0},
+                            Oasis::Variable{"x"}},
+                    Oasis::Multiply{
+                            Oasis::Real{7.0},
+                            Oasis::Variable{"y"}}},
+            Oasis::Real{-5.0}
+    };
+
+    auto simplified = add1.Simplify();
 }

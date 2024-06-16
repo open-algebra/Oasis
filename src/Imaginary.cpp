@@ -12,11 +12,6 @@ auto Imaginary::Equals(const Expression& other) const -> bool
     return other.Is<Imaginary>() == dynamic_cast<const Imaginary&>(other).Is<Imaginary>();
 }
 
-auto Imaginary::ToString() const -> std::string
-{
-    return "i";
-}
-
 auto Imaginary::Specialize(const Expression& other) -> std::unique_ptr<Imaginary>
 {
     return other.Is<Imaginary>() ? std::make_unique<Imaginary>(dynamic_cast<const Imaginary&>(other)) : nullptr;

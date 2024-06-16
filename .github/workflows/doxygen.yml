@@ -50,6 +50,11 @@ jobs:
           - name: Generate documentation
             run: ./doxygen-1.10.0/bin/doxygen
 
+          - name: Copy Big Cat Large
+            run: |
+                mkdir docs/html/docs
+                cp docs/*.png docs/html/docs/
+
             # Uploads documentation artifacts.
           - name: Upload artifacts
             uses: actions/upload-pages-artifact@v3

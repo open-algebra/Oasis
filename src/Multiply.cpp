@@ -6,6 +6,12 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Integral.hpp"
+#include "Oasis/Matrix.hpp"
+#include "Oasis/Negate.hpp"
+#include "Oasis/Subtract.hpp"
+
+#define EPSILON 10E-6
 
 namespace Oasis {
 
@@ -18,8 +24,8 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (auto onezerocase = Multiply<Real, Expression>::Specialize(simplifiedMultiply); onezerocase != nullptr) {
         const Real& multiplicand = onezerocase->GetMostSigOp();
         const Expression& multiplier = onezerocase->GetLeastSigOp();
-        if (multiplicand.GetValue() == 0) {
-            return std::make_unique<Real>(Real { 0 });
+        if (std::abs(multiplicand.GetValue()) <= EPSILON) {
+            return std::make_unique<Real>(Real { 0.0 });
         }
         if (multiplicand.GetValue() == 1) {
             return multiplier.Simplify();
@@ -39,6 +45,43 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return std::make_unique<Exponent<Expression, Expression>>(exprCase->GetMostSigOp(), Real { 2.0 });
         }
     }
+
+    if (auto rMatrixCase = Multiply<Real, Matrix>::Specialize(simplifiedMultiply); rMatrixCase != nullptr) {
+        return std::make_unique<Matrix>(rMatrixCase->GetLeastSigOp().GetMatrix() * rMatrixCase->GetMostSigOp().GetValue());
+    }
+
+    if (auto matrixCase = Multiply<Matrix, Matrix>::Specialize(simplifiedMultiply); matrixCase != nullptr) {
+        const Oasis::IExpression auto& leftTerm = matrixCase->GetMostSigOp();
+        const Oasis::IExpression auto& rightTerm = matrixCase->GetLeastSigOp();
+
+        if (leftTerm.GetCols() == rightTerm.GetRows()) {
+            return std::make_unique<Matrix>(leftTerm.GetMatrix() * rightTerm.GetMatrix());
+        } else {
+            // ERROR: INVALID DIMENSION
+            return std::make_unique<Multiply<Expression>>(leftTerm, rightTerm);
+        }
+    }
+
+    //    Commented out to not cause massive problems with things that need factored expressions
+    //    // c*(a-b)
+    //    if (auto negated = Multiply<Real, Subtract<Expression>>::Specialize(simplifiedMultiply); negated != nullptr) {
+    //        if (negated->GetMostSigOp().GetValue()<0){
+    //            return Add{Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetMostSigOp()},
+    //                       Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetLeastSigOp()}}.Simplify();
+    //        } else if (negated->GetMostSigOp().GetValue()>0){
+    //            return Subtract{Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetMostSigOp()},
+    //                       Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetLeastSigOp()}}.Simplify();
+    //        } else {
+    //            return Real{0}.Copy();
+    //        }
+    //
+    //    }
+    //
+    //    // c*(a+b)
+    //    if (auto negated = Multiply<Real, Add<Expression>>::Specialize(simplifiedMultiply); negated != nullptr) {
+    //        return Add{Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetMostSigOp()},
+    //                   Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetLeastSigOp()}}.Simplify();
+    //    }
 
     if (auto exprCase = Multiply<Expression, Exponent<Expression, Expression>>::Specialize(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp())) {
@@ -158,6 +201,11 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
+    //    if (auto negate = Multiply<Real, Negate<Subtract<Expression>>>::Specialize(simplifiedMultiply); negate != nullptr){
+    //        return Add{Multiply{negate->GetMostSigOp(), negate->GetLeastSigOp().GetOperand().GetMostSigOp()},
+    //                   Multiply{negate->GetMostSigOp(), negate->GetLeastSigOp().GetOperand().GetLeastSigOp()}}.Simplify();
+    //    }
+
     // multiply add like terms
     std::vector<std::unique_ptr<Expression>> multiplies;
     std::vector<std::unique_ptr<Expression>> vals;
@@ -260,11 +308,6 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     // return simplifiedMultiply.Copy();
 }
 
-auto Multiply<Expression>::ToString() const -> std::string
-{
-    return fmt::format("({} * {})", mostSigOp->ToString(), leastSigOp->ToString());
-}
-
 auto Multiply<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
 {
     std::unique_ptr<Expression> simplifiedMultiplicand, simplifiedMultiplier;
@@ -340,7 +383,35 @@ auto Multiply<Expression>::Specialize(const Expression& other, tf::Subflow& subf
     return std::make_unique<Multiply>(dynamic_cast<const Multiply&>(*otherGeneralized));
 }
 
-auto Multiply<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Multiply<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+{
+    // Single integration variable
+    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+        auto simplifiedMult = this->Simplify();
+
+        // Constant case - Constant number multiplied by integrand
+        if (auto constant = Multiply<Real, Expression>::Specialize(*simplifiedMult); constant != nullptr) {
+            auto exp = constant->GetLeastSigOp().Copy();
+            auto num = constant->GetMostSigOp();
+            auto integrated = exp->Integrate(integrationVariable);
+
+            if (auto add = Add<Expression, Variable>::Specialize(*integrated); add != nullptr) {
+                Add<Multiply<Real, Expression>, Variable> adder {
+                    Multiply<Real, Expression> {
+                        Real { num.GetValue() }, add->GetMostSigOp() },
+                    Variable { "C" }
+                };
+
+                return adder.Simplify();
+            }
+        }
+    }
+    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+
+    return integral.Copy();
+}
+
+auto Multiply<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {

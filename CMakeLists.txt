@@ -10,6 +10,7 @@ project(Oasis)
 include(CTest)
 include(FetchContent)
 
+option(OASIS_BUILD_EXTRAS "Enables building extra modules for Oasis" OFF)
 option(OASIS_BUILD_TESTS "Enables building unit tests for Oasis" ON)
 option(OASIS_BUILD_WITH_COVERAGE
        "Enables building Oasis with code coverage enabled" OFF)
@@ -32,7 +33,12 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/fmtlib/fmt.git
     GIT_TAG 10.0.0)
 
-FetchContent_MakeAvailable(Catch2 fmt)
+FetchContent_Declare(
+    tinyxml2
+    GIT_REPOSITORY https://github.com/leethomason/tinyxml2
+    GIT_TAG 10.0.0)
+
+FetchContent_MakeAvailable(Catch2 fmt tinyxml2)
 
 # Processes the CMakeLists.txt for dependencies that need special handling.
 add_subdirectory(cmake/FetchEigen)
@@ -43,4 +49,8 @@ add_subdirectory(src)
 
 if(OASIS_BUILD_TESTS)
     add_subdirectory(tests)
+endif()
+
+if(OASIS_BUILD_EXTRAS)
+    add_subdirectory(extras)
 endif()

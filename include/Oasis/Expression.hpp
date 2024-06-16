@@ -1,7 +1,6 @@
 #ifndef OASIS_EXPRESSION_HPP
 #define OASIS_EXPRESSION_HPP
 
-#include <concepts>
 #include <memory>
 #include <string>
 #include <vector>
@@ -13,6 +12,7 @@ class Subflow;
 namespace Oasis {
 
 class Expression;
+class SerializationVisitor;
 
 /**
  * The type of an expression.
@@ -28,10 +28,12 @@ enum class ExpressionType {
     Divide,
     Exponent,
     Log,
+    Integral,
     Limit,
     Derivative,
     Negate,
     Sqrt,
+    Matrix,
 };
 
 /**
@@ -68,6 +70,16 @@ concept IExpression = (requires(T, const Expression& other, tf::Subflow& subflow
 // clang-format on
 
 /**
+ * Checks if type T is same as any of the provided types in U.
+ *
+ * @tparam T The type to compare against.
+ * @tparam U The comparision types.
+ * @return true if T is same as any type in U, false otherwise.
+ */
+template <typename T, typename... U>
+concept IsAnyOf = (std::same_as<T, U> || ...);
+
+/**
  * An expression.
  *
  * Expressions are a tree-like structure that represent mathematical expressions. They can be
@@ -93,7 +105,7 @@ public:
      * Tries to differentiate this function.
      * @return the differentiated expression.
      */
-    [[nodiscard]] virtual auto Differentiate(const Expression&) -> std::unique_ptr<Expression>;
+    [[nodiscard]] virtual auto Differentiate(const Expression&) const -> std::unique_ptr<Expression>;
 
     /**
      * Compares this expression to another expression for equality.
@@ -182,6 +194,19 @@ public:
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Expression>;
 
     /**
+     * Attempts to integrate this expression using integration rules
+     *
+     * @return An indefinite integral of the expression added to a constant
+     */
+    [[nodiscard]] virtual auto Integrate(const Expression&) -> std::unique_ptr<Expression>;
+
+    /**
+     * Attempts to integrate this expression using integration rules
+     *
+     * @return A solved definite integral of the expression
+     */
+    [[nodiscard]] virtual auto IntegrateWithBounds(const Expression&, const Expression&, const Expression&) -> std::unique_ptr<Expression>;
+    /**
      * Gets whether this expression is of a specific type.
      *
      * @tparam T The type to check against.
@@ -263,10 +288,11 @@ public:
     [[nodiscard]] virtual auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> = 0;
 
     /**
-     * Converts this expression to a string.
-     * @return The string representation of this expression.
+     * This function serializes the expression object.
+     *
+     * @param visitor The serializer class object to write the Expression data.
      */
-    [[nodiscard]] virtual std::string ToString() const = 0;
+    virtual void Serialize(SerializationVisitor& visitor) const = 0;
 
     virtual ~Expression() = default;
 };

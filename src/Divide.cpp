@@ -1,15 +1,19 @@
 //
 // Created by Matthew McCall on 8/10/23.
 //
+
+#include <map>
+#include <vector>
+
+#include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
-#include <map>
-#include <vector>
 
 namespace Oasis {
 
@@ -130,23 +134,23 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             for (; i < result.size(); i++) {
                 if (auto resExpr = Exponent<Expression, Expression>::Specialize(*result[i]); resExpr != nullptr) {
                     if (expExpr->GetMostSigOp().Equals(resExpr->GetMostSigOp())) {
-                        result[i] = Exponent { expExpr->GetMostSigOp(), *(Subtract { resExpr->GetLeastSigOp(), expExpr->GetLeastSigOp() }.Simplify()) }.Generalize();
+                        result[i] = Exponent { expExpr->GetMostSigOp(), *(Subtract { resExpr->GetLeastSigOp(), expExpr->GetLeastSigOp() }.Simplify()) }.Simplify();
                         break;
                     }
                 } else if (result[i]->Equals(expExpr->GetMostSigOp())) {
-                    result[i] = Exponent { expExpr->GetMostSigOp(), *(Subtract { Real { 1.0 }, resExpr->GetLeastSigOp() }.Simplify()) }.Generalize();
+                    result[i] = Exponent { expExpr->GetMostSigOp(), *(Subtract { Real { 1.0 }, resExpr->GetLeastSigOp() }.Simplify()) }.Simplify();
                     break;
                 }
             }
             if (i >= result.size()) {
-                result.push_back(Exponent<Expression> { expExpr->GetMostSigOp(), Multiply { Real { -1.0 }, expExpr->GetLeastSigOp() } }.Generalize());
+                result.push_back(Exponent<Expression> { expExpr->GetMostSigOp(), Multiply { Real { -1.0 }, expExpr->GetLeastSigOp() } }.Simplify());
             }
             continue;
         }
         for (; i < result.size(); i++) {
             if (auto resExpr = Exponent<Expression, Expression>::Specialize(*result[i]); resExpr != nullptr) {
                 if (denom->Equals(resExpr->GetMostSigOp())) {
-                    result[i] = Exponent { *denom, *(Subtract { resExpr->GetLeastSigOp(), Real { 1.0 } }.Simplify()) }.Generalize();
+                    result[i] = Exponent { *denom, *(Subtract { resExpr->GetLeastSigOp(), Real { 1.0 } }.Simplify()) }.Simplify();
                     break;
                 }
             } else if (result[i]->Equals(*denom)) {
@@ -214,11 +218,6 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return dividend;
 
     return Divide { *dividend, *divisor }.Copy();
-}
-
-auto Divide<Expression>::ToString() const -> std::string
-{
-    return fmt::format("({} / {})", mostSigOp->ToString(), leastSigOp->ToString());
 }
 
 auto Divide<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
@@ -296,7 +295,24 @@ auto Divide<Expression>::Specialize(const Expression& other, tf::Subflow& subflo
     return std::make_unique<Divide>(dynamic_cast<const Divide&>(*otherGeneralized));
 }
 
-auto Divide<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Divide<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+{
+    // Single integration variable
+    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+        auto simplifiedDiv = this->Simplify();
+
+        // Constant case - Integrand over a divisor
+        if (auto constant = Multiply<Expression, Real>::Specialize(*simplifiedDiv); constant != nullptr) {
+            return constant->Integrate(integrationVariable)->Simplify();
+        }
+    }
+
+    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+
+    return integral.Copy();
+}
+
+auto Divide<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // Single differentiation variable
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {

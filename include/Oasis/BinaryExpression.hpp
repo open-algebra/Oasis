@@ -11,6 +11,7 @@
 #include "taskflow/taskflow.hpp"
 
 #include "Expression.hpp"
+#include "Serialization.hpp"
 
 namespace Oasis {
 /**
@@ -24,9 +25,6 @@ concept IOperand = std::is_same_v<T, MostSigOpT> || std::is_same_v<T, LeastSigOp
 
 template <template <typename, typename> typename T>
 concept IAssociativeAndCommutative = IExpression<T<Expression, Expression>> && ((T<Expression, Expression>::GetStaticCategory() & (Associative | Commutative)) == (Associative | Commutative));
-
-template <typename T, typename... U>
-concept IsAnyOf = (std::same_as<T, U> || ...);
 
 /**
  * Builds a reasonably balanced binary expression from a vector of operands.
@@ -146,7 +144,7 @@ public:
 
         return std::make_unique<DerivedSpecialized>(copy);
     }
-    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> override
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> override
     {
         return Generalize()->Differentiate(differentiationVariable);
     }
@@ -244,6 +242,11 @@ public:
         return Generalize()->Simplify();
     }
 
+    [[nodiscard]] auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression> override
+    {
+        return Generalize()->Integrate(integrationVariable);
+    }
+
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> override
     {
         std::unique_ptr<Expression> generalized, simplified;
@@ -262,7 +265,7 @@ public:
         return simplified;
     }
 
-    [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool override
+    [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool final
     {
         if (this->GetType() != other.GetType()) {
             return false;
@@ -290,7 +293,7 @@ public:
         return true;
     }
 
-    auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool override
+    auto StructurallyEquivalent(const Expression& other, tf::Subflow& subflow) const -> bool final
     {
         if (this->GetType() != other.GetType()) {
             return false;
@@ -493,7 +496,13 @@ public:
 
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 
-protected:
+    void Serialize(SerializationVisitor& visitor) const override
+    {
+        const auto generalized = Generalize();
+        const auto& derivedGeneralized = dynamic_cast<const DerivedGeneralized&>(*generalized);
+        visitor.Serialize(derivedGeneralized);
+    }
+
     std::unique_ptr<MostSigOpT> mostSigOp;
     std::unique_ptr<LeastSigOpT> leastSigOp;
 };

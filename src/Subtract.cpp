@@ -3,12 +3,16 @@
 //
 
 #include "Oasis/Subtract.hpp"
+
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
+#include "Oasis/Matrix.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Negate.hpp"
 #include "Oasis/Variable.hpp"
 
 namespace Oasis {
@@ -36,6 +40,17 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
     // x - x = 0
     if (simplifiedMinuend->Equals(*simplifiedSubtrahend)) {
         return std::make_unique<Real>(Real { 0.0 });
+    }
+
+    if (auto matrixCase = Subtract<Matrix, Matrix>::Specialize(simplifiedSubtract); matrixCase != nullptr) {
+        const Oasis::IExpression auto& leftTerm = matrixCase->GetMostSigOp();
+        const Oasis::IExpression auto& rightTerm = matrixCase->GetLeastSigOp();
+
+        if ((leftTerm.GetRows() == rightTerm.GetRows()) && (leftTerm.GetCols() == leftTerm.GetCols())) {
+            return std::make_unique<Matrix>(leftTerm.GetMatrix() - rightTerm.GetMatrix());
+        } else {
+            return std::make_unique<Subtract<Expression>>(leftTerm, rightTerm);
+        }
     }
 
     // ax - x = (a-1)x
@@ -71,12 +86,22 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    return simplifiedSubtract.Copy();
-}
-
-auto Subtract<Expression>::ToString() const -> std::string
-{
-    return fmt::format("({} - {})", mostSigOp->ToString(), leastSigOp->ToString());
+    // makes subtraction into addition because it is easier to deal with
+    auto negated = Multiply<Expression> { Real { -1 }, *simplifiedSubtrahend };
+    if (auto added = Add<Expression>::Specialize(negated.GetLeastSigOp()); added != nullptr) {
+        auto RHS = Add { *(Multiply<Expression> { Real { -1.0 }, added->GetMostSigOp() }.Simplify()),
+            *(Multiply<Expression> { Real { -1.0 }, added->GetLeastSigOp() }.Simplify()) }
+                       .Simplify();
+        return Add { *simplifiedMinuend, *RHS }.Simplify();
+    } else if (auto subtracted = Subtract<Expression>::Specialize(negated.GetLeastSigOp()); subtracted != nullptr) {
+        auto RHS = Add { *(Multiply<Expression> { Real { -1.0 }, added->GetMostSigOp() }.Simplify()),
+            *(added->GetLeastSigOp().Simplify()) }
+                       .Simplify();
+        return Add { *simplifiedMinuend, *RHS }.Simplify();
+    } else {
+        //        return simplifiedSubtract.Copy();
+        return Add { *simplifiedMinuend, *(negated.Simplify()) }.Simplify();
+    }
 }
 
 auto Subtract<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
@@ -153,7 +178,7 @@ auto Subtract<Expression>::Specialize(const Expression& other, tf::Subflow& subf
     auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Subtract>(dynamic_cast<const Subtract&>(*otherGeneralized));
 }
-auto Subtract<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Subtract<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // Single diff variable
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
@@ -183,6 +208,44 @@ auto Subtract<Expression>::Differentiate(const Expression& differentiationVariab
         }
     }
     return Copy();
+}
+
+auto Subtract<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+{
+    // Single integration variable
+    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+        auto simplifiedSub = this->Simplify();
+
+        // Make sure we're still subtracting
+        if (auto adder = Subtract<Expression>::Specialize(*simplifiedSub); adder != nullptr) {
+            auto leftRef = adder->GetLeastSigOp().Copy();
+            auto leftIntegral = leftRef->Integrate(integrationVariable);
+
+            auto specializedLeft = Add<Expression>::Specialize(*leftIntegral);
+
+            auto rightRef = adder->GetMostSigOp().Copy();
+            auto rightIntegral = rightRef->Integrate(integrationVariable);
+
+            auto specializedRight = Add<Expression>::Specialize(*rightIntegral);
+
+            if (specializedLeft == nullptr || specializedRight == nullptr) {
+                return Copy();
+            }
+            Add add { Subtract<Expression> {
+                          *(specializedRight->GetMostSigOp().Copy()),
+                          *(specializedLeft->GetMostSigOp().Copy()) },
+                Variable { "C" } };
+
+            return add.Simplify();
+        }
+        // If not, use other integration technique
+        else {
+            return simplifiedSub->Integrate(integrationVariable);
+        }
+    }
+    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+
+    return integral.Copy();
 }
 
 } // Oasis

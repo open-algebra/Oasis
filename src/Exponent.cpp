@@ -2,11 +2,15 @@
 // Created by Andrew Nazareth on 9/19/23.
 //
 
+#include <cmath>
+
+#include "Oasis/Add.hpp"
+#include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
-#include <cmath>
 
 namespace Oasis {
 
@@ -96,11 +100,6 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return simplifiedExponent.Copy();
 }
 
-auto Exponent<Expression>::ToString() const -> std::string
-{
-    return fmt::format("({}^{})", mostSigOp->ToString(), leastSigOp->ToString());
-}
-
 auto Exponent<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
 {
     std::unique_ptr<Expression> simplifiedBase, simplifiedPower;
@@ -164,7 +163,38 @@ auto Exponent<Expression>::Specialize(const Oasis::Expression& other) -> std::un
     return std::make_unique<Exponent>(dynamic_cast<const Exponent&>(*otherGeneralized));
 }
 
-auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression>
+auto Exponent<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+{
+    // variable integration
+    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+        auto simplifiedExponent = this->Simplify();
+
+        std::unique_ptr<Expression> integral;
+        // Variable with a constant power
+        if (auto realExponent = Exponent<Variable, Real>::Specialize(*simplifiedExponent); realExponent != nullptr) {
+            const Variable& expBase = realExponent->GetMostSigOp();
+            const Real& expPow = realExponent->GetLeastSigOp();
+
+            if ((*variable).GetName() == expBase.GetName()) {
+
+                Add adder {
+                    Divide {
+                        Exponent<Variable, Real> { Variable { (*variable).GetName() }, Real { expPow.GetValue() + 1 } },
+                        Real { expPow.GetValue() + 1 } },
+                    Variable { "C" }
+                };
+
+                return adder.Simplify();
+            }
+        }
+    }
+
+    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+
+    return integral.Copy();
+}
+
+auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // variable diff
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {

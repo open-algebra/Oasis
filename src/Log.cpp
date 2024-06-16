@@ -68,11 +68,6 @@ auto Log<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Ex
     return Copy(subflow);
 }
 
-auto Log<Expression>::ToString() const -> std::string
-{
-    return fmt::format("log({}, {})", mostSigOp->ToString(), leastSigOp->ToString());
-}
-
 auto Log<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Log>
 {
     if (!other.Is<Oasis::Log>()) {

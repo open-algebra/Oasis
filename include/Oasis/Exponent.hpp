@@ -5,10 +5,7 @@
 #ifndef OASIS_EXPONENT_HPP
 #define OASIS_EXPONENT_HPP
 
-#include "fmt/core.h"
-
 #include "BinaryExpression.hpp"
-#include "Real.hpp"
 #include "Variable.hpp"
 
 namespace Oasis {
@@ -28,8 +25,9 @@ public:
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
-    [[nodiscard]] auto ToString() const -> std::string final;
-    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> final;
+
+    [[nodiscard]] auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression> final;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Exponent>;
     static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Exponent>;
@@ -57,11 +55,6 @@ public:
     Exponent(const BaseT& base, const PowerT& power)
         : BinaryExpression<Exponent, BaseT, PowerT>(base, power)
     {
-    }
-
-    [[nodiscard]] auto ToString() const -> std::string final
-    {
-        return fmt::format("({}^{})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
     }
 
     IMPL_SPECIALIZE(Exponent, BaseT, PowerT)

@@ -5,8 +5,6 @@
 #ifndef OASIS_ADD_HPP
 #define OASIS_ADD_HPP
 
-#include "fmt/core.h"
-
 #include "BinaryExpression.hpp"
 #include "Real.hpp"
 
@@ -25,8 +23,8 @@ public:
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
-    [[nodiscard]] auto ToString() const -> std::string final;
-    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) -> std::unique_ptr<Expression> final;
+    [[nodiscard]] auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression> final;
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> final;
 
     DECL_SPECIALIZE(Add)
 
@@ -55,17 +53,12 @@ public:
     {
     }
 
-    [[nodiscard]] auto ToString() const -> std::string final
-    {
-        return fmt::format("({} + {})", this->mostSigOp->ToString(), this->leastSigOp->ToString());
-    }
-
     IMPL_SPECIALIZE(Add, AugendT, AddendT)
 
     auto operator=(const Add& other) -> Add& = default;
 
     EXPRESSION_TYPE(Add)
-    EXPRESSION_CATEGORY(Associative | Commutative | BinExp)
+    EXPRESSION_CATEGORY(Associative | Commutative)
 };
 
 } // namespace Oasis
