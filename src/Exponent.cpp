@@ -213,7 +213,8 @@ auto Exponent<Expression>::Differentiate(const Expression& differentiationVariab
                     Real { expPow.GetValue() },
                     Exponent {
                         Variable { variable->GetName() },
-                        Real { expPow.GetValue() - 1 } } }
+                        Real { expPow.GetValue() - 1 } }
+                }
                     .Simplify();
             }
         }
