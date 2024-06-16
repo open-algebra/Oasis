@@ -34,6 +34,7 @@ jobs:
                   - os: ubuntu-latest
                     c_compiler: clang-17
                     cpp_compiler: clang++-17
+                    build_profiling: true
                   # - os: windows-latest
                   #   c_comiler: gcc
                   #   cpp_compiler: g++
@@ -66,6 +67,9 @@ jobs:
                 chmod +x llvm.sh
                 sudo ./llvm.sh 17
 
+          - name: Install Valgrind
+            run: sudo apt-get update && sudo apt-get install -y valgrind
+
             # Configures CMake in a subdirectory.
           - name: Configure CMake
             run: >
@@ -76,7 +80,7 @@ jobs:
                 -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
                 -DOASIS_BUILD_EXTRAS=ON
-                -Dtinyxml2_BUILD_TESTING=OFF
+                -DOASIS_BUILD_WITH_COVERAGE=${{ matrix.build_profiling == true && 'ON' || 'OFF'}}
 
             # Builds Oasis with the given configuration.
           - name: Build Oasis
@@ -106,11 +110,35 @@ jobs:
             working-directory: ${{ steps.strings.outputs.build-dir }}
             run: ctest --build-config ${{ matrix.build_type }}
 
-            # Uploads the build and test artifacts.
+          - name: Collect Coverage
+            if: ${{ matrix.build_profiling }}
+            working-directory: ${{ steps.strings.outputs.build-dir }}
+            run: >
+              LLVM_PROFILE_FILE="${{ steps.strings.outputs.coverage-dir }}/oasis.profraw"
+              ./tests/OasisTests
+
+            # Creates reports from the coverage data.
+          - name: Report Coverage
+            if: ${{ matrix.build_profiling }}
+            working-directory: ${{ steps.strings.outputs.coverage-dir }}
+            shell: bash
+            run: |
+              llvm-profdata-17 merge -sparse oasis.profraw -o oasis.profdata
+              llvm-cov-17 show -output-dir reports -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ${{ github.workspace }}/src ${{ github.workspace }}/include
+
+            # Uploads the build, test, and code coverage artifacts.
           - name: Upload artifacts
+            if: ${{ matrix.build_profiling }}
             uses: actions/upload-artifact@v3
             with:
-                name: build-${{ matrix.os }}-${{ matrix.build_type }}-${{ matrix.c_compiler }}
-                path: |
-                    ${{ steps.strings.outputs.build-dir }}
-                    !${{ steps.strings.outputs.build-dir }}/_deps
+              name: build-${{ matrix.os }}-${{ matrix.build_type }}-${{ matrix.c_compiler }}
+              path: |
+                ${{ steps.strings.outputs.build-dir }}
+                !${{ steps.strings.outputs.build-dir }}/_deps
+                ${{ steps.strings.outputs.coverage-dir }}
+
+          - name: Upload PR number
+            uses: actions/upload-artifact@v3
+            with:
+              name: pr-number
+              path: ${{ steps.strings.outputs.pr-dir }}
