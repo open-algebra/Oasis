@@ -3,7 +3,6 @@
 //
 
 #include "Oasis/Subtract.hpp"
-
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"

@@ -10,6 +10,7 @@
 #include <Oasis/Derivative.hpp>
 #include <Oasis/Divide.hpp>
 #include <Oasis/Exponent.hpp>
+#include "Oasis/Imaginary.hpp"
 #include <Oasis/Integral.hpp>
 #include <Oasis/Log.hpp>
 #include <Oasis/Multiply.hpp>
@@ -46,9 +47,14 @@ void setOps(T& exp, const std::unique_ptr<Oasis::Expression>& op1, const std::un
 
 bool processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::Expression>>& st)
 {
-    const auto right = std::move(st.top());
+    if (st.size() < 2) {
+        throw std::runtime_error("Invalid number of arguments");
+    }
+
+    const std::unique_ptr<Oasis::Expression> right = std::move(st.top());
     st.pop();
-    const auto left = std::move(st.top());
+
+    const std::unique_ptr<Oasis::Expression> left = std::move(st.top());
     st.pop();
 
     const auto op = ops.top();
@@ -94,6 +100,10 @@ bool processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::E
 
 bool processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const std::string& function_token)
 {
+    if (st.size() < 2) {
+        throw std::runtime_error("Invalid number of arguments");
+    }
+
     // If we have a function active, the second operand has just been pushed onto the stack
     auto second_operand = std::move(st.top());
     st.pop();
@@ -113,6 +123,7 @@ bool processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const s
     } else if (function_token == "in") {
         Oasis::Integral<> in;
         setOps(in, first_operand, second_operand);
+        func = in.Copy();
     } else {
         return false;
     }
@@ -187,8 +198,16 @@ std::unique_ptr<Oasis::Expression> multiplyFromVariables(const std::vector<std::
             return std::make_unique<Oasis::Real>(std::stof(token));
         }
 
+        if (token == "i") {
+            return std::make_unique<Oasis::Imaginary>();
+        }
+
         return std::make_unique<Oasis::Variable>(token);
     });
+
+    if (multiplicands.size() == 1) {
+        return std::move(multiplicands.front());
+    }
 
     return Oasis::BuildFromVector<Oasis::Multiply>(multiplicands);
 }
@@ -210,6 +229,15 @@ bool ParseResult::Ok() const {
 
 auto ParseResult::GetResult() const -> const Expression & {
     return *std::get<std::unique_ptr<Expression>>(result);
+}
+
+std::string ParseResult::GetErrorMessage() const
+{
+    if (const auto message = std::get_if<std::string>(&result)) {
+        return *message;
+    }
+
+    return "No Error";
 }
 
 auto FromInFix(const std::string& str) -> ParseResult {
@@ -246,6 +274,11 @@ auto FromInFix(const std::string& str) -> ParseResult {
                     return ParseResult { fmt::format(R"(Unknown operator: "{}")", token) };
                 }
             }
+
+            if (ops.empty() || ops.top() != "(") {
+                throw std::runtime_error("Mismatched parenthesis");
+            }
+
             ops.pop(); // pop '('
             if (!ops.empty() && is_function(ops.top())) {
                 std::string func = ops.top();
@@ -273,6 +306,10 @@ auto FromInFix(const std::string& str) -> ParseResult {
         if (!processOp(ops, st)) {
             return ParseResult { fmt::format(R"(Unknown operator: "{}")", token) };
         }
+    }
+
+    if (st.empty()) {
+        return ParseResult { "Parsing failed" };
     }
 
     return ParseResult { st.top()->Copy() }; // root of the expression tree
