@@ -83,7 +83,8 @@ jobs:
             if: ${{ matrix.build_profiling }}
             run: |
               wget https://sourceware.org/pub/valgrind/valgrind-3.23.0.tar.bz2
-              tar -xjf valgrind-3.23.0.tar.bz2
+              tar -xvf valgrind-3.23.0.tar.bz2
+              rm valgrind-3.23.0.tar.bz2
               cd valgrind-*
               ./configure --prefix=${{ github.workspace }}/valgrind
               make
