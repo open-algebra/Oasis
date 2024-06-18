@@ -280,7 +280,22 @@ TEST_CASE("Natural Logarithm Derivative", "[Derivative][Logarithm][Euler's Numbe
     REQUIRE(diff->Equals(expected));
 }
 
-TEST_CASE("Chain Rule", "[Differentiate][Chain]")
+TEST_CASE("Real Base Logarithm Derivative", "[Derivative][Logarithm][Euler's Real]")
 {
+    Oasis::Derivative diffLog{
+        Oasis::Log{Oasis::Real{10.0},Oasis::Multiply{Oasis::Real{6},Oasis::Variable{"x"}}}, Oasis::Variable{"x"}};
+    auto diff = diffLog.Simplify();
+    Oasis::Divide expected{Oasis::Real{1.0}, Oasis::Multiply{Oasis::Variable{"x"},
+                                                      Oasis::Log{Oasis::Variable{"e"}, Oasis::Real{10.0}}}};
+    REQUIRE(diff->Equals(*expected.Simplify()));
+}
 
+TEST_CASE("Variable Base Logarithm Derivative", "[Derivative][Logarithm][Variable]")
+{
+    Oasis::Derivative diffLog{
+        Oasis::Log{Oasis::Variable{"y"},Oasis::Multiply{Oasis::Real{6},Oasis::Variable{"x"}}}, Oasis::Variable{"x"}};
+    auto diff = diffLog.Simplify();
+    Oasis::Divide expected{Oasis::Real{1.0}, Oasis::Multiply{Oasis::Variable{"x"},
+                                                      Oasis::Log{Oasis::Variable{"e"}, Oasis::Variable{"y"}}}};
+    REQUIRE(diff->Equals(expected));
 }

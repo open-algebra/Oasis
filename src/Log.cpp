@@ -4,6 +4,8 @@
 //
 
 #include "Oasis/Log.hpp"
+#include "Oasis/Divide.hpp"
+#include "Oasis/Derivative.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Expression.hpp"
 #include "Oasis/Multiply.hpp"
@@ -86,6 +88,39 @@ auto Log<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
 
     const auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Log>(dynamic_cast<const Log<Expression>&>(*otherGeneralized));
+}
+
+auto Log<Expression>::Integrate(const Oasis::Expression& /*integrationVariable*/) -> std::unique_ptr<Expression> {
+    return std::make_unique<Real>(1);
+}
+
+auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression> {
+    // d(log_e(6x))/dx = 1/6x * 6
+    if (auto lnCase = Variable::Specialize(*mostSigOp); lnCase != nullptr){
+        if (lnCase->GetName() == "e"){
+            Divide derivative{Oasis::Real{1.0}, *leastSigOp};
+            Derivative chain{*leastSigOp, differentiationVariable};
+
+            Multiply result = Multiply<Expression>{derivative, *chain.Differentiate(differentiationVariable)};
+            return result.Simplify();
+        }
+        else {
+            Divide derivative{Oasis::Real{1.0}, Multiply<Expression>{*leastSigOp, Log{Variable{"e"}, *lnCase}}};
+            Derivative chain{*leastSigOp, differentiationVariable};
+
+            Multiply result = Multiply<Expression>{derivative, *chain.Differentiate(differentiationVariable)};
+            return result.Simplify();
+        }
+    } else {
+        Divide derivative{Oasis::Real{1.0}, Multiply<Expression>{*leastSigOp, Log{Variable{"e"}, *mostSigOp}}};
+        Derivative chain{*leastSigOp, differentiationVariable};
+
+        Multiply result = Multiply<Expression>{derivative, *chain.Differentiate(differentiationVariable)};
+        return result.Simplify();
+    }
+
+
+
 }
 
 } // Oasis
