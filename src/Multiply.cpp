@@ -3,6 +3,7 @@
 //
 
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Divide.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
@@ -40,6 +41,12 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (auto ImgCase = Multiply<Imaginary>::Specialize(simplifiedMultiply); ImgCase != nullptr) {
         return std::make_unique<Real>(-1.0);
     }
+
+    if (auto multCase = Multiply<Real, Divide<Expression>>::Specialize(simplifiedMultiply); multCase != nullptr) {
+        auto m = Multiply<Expression>{multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp()}.Simplify();
+        return Divide<Expression>{*m, (multCase->GetLeastSigOp().GetLeastSigOp())}.Generalize();
+    }
+
     if (auto exprCase = Multiply<Expression>::Specialize(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp())) {
             return std::make_unique<Exponent<Expression, Expression>>(exprCase->GetMostSigOp(), Real { 2.0 });
