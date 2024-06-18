@@ -53,11 +53,19 @@ jobs:
           - name: Checkout repository
             uses: actions/checkout@v4
 
-            # Creates reusable strings to use in steps.
           - name: Set reusable strings
             id: strings
             shell: bash
-            run: echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+            run: |
+              echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+              echo "coverage-dir=${{ github.workspace }}/coverage" >> "$GITHUB_OUTPUT"
+              echo "pr-dir=${{ github.workspace }}/pr" >> "$GITHUB_OUTPUT"
+
+            # Saves the PR number to use in writing a comment on the PR.
+          - name: Save PR number
+            run: |
+              mkdir -p ${{ steps.strings.outputs.pr-dir }}
+              echo "${{ github.event.number }}" > ${{ steps.strings.outputs.pr-dir }}/issue_number
 
             # Installs LLVM 17 on the Ubuntu runner.
           - name: Install LLVM 17
