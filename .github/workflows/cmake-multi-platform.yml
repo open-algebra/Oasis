@@ -139,7 +139,7 @@ jobs:
             if: ${{ matrix.build_profiling }}
             working-directory: ${{ steps.strings.outputs.build-dir }}
             run: >
-              valgrind --leak-check=full --error-exitcode=1 --build-config Debug ./tests/OasisTests
+              valgrind --leak-check=full --error-exitcode=1 ./tests/OasisTests
 
             # Uploads the build, test, and code coverage artifacts.
           - name: Upload artifacts
