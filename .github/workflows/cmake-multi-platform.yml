@@ -131,7 +131,7 @@ jobs:
             if: ${{ matrix.build_profiling }}
             working-directory: ${{ steps.strings.outputs.coverage-dir }}
             shell: bash
-            run: >
+            run: |
               llvm-profdata-17 merge -sparse oasis.profraw -o oasis.profdata
               llvm-cov-17 show -output-dir reports -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ${{ github.workspace }}/src ${{ github.workspace }}/include
 
