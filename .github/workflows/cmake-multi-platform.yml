@@ -82,6 +82,7 @@ jobs:
           - name: Install Valgrind
             if: ${{ matrix.build_profiling }}
             run: |
+              sudo apt-get update && sudo apt install libc6-dbg
               wget https://sourceware.org/pub/valgrind/valgrind-3.23.0.tar.bz2
               tar -xvf valgrind-3.23.0.tar.bz2
               rm valgrind-3.23.0.tar.bz2
