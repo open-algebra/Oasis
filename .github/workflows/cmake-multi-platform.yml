@@ -80,11 +80,11 @@ jobs:
                 sudo ./llvm.sh 17
 
           - name: Install Valgrind
-            if: ${{ matrix.build_profiling }}
+            if: ${{ matrix.os == 'ubuntu-latest' }}
             run: |
               sudo apt-get update && sudo apt install libc6-dbg
               wget https://sourceware.org/pub/valgrind/valgrind-3.23.0.tar.bz2
-              tar -xvf valgrind-3.23.0.tar.bz2
+              tar -xf valgrind-3.23.0.tar.bz2
               rm valgrind-3.23.0.tar.bz2
               cd valgrind-*
               ./configure --prefix=${{ github.workspace }}/valgrind
@@ -148,7 +148,7 @@ jobs:
               llvm-cov-17 show -output-dir reports -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ${{ github.workspace }}/src ${{ github.workspace }}/include
 
           - name: Memory Check
-            if: ${{ matrix.build_profiling }}
+            if: ${{ matrix.os == 'ubuntu-latest' }}
             working-directory: ${{ steps.strings.outputs.build-dir }}
             run: >
               ${{ github.workspace }}/valgrind/bin/valgrind --leak-check=full --error-exitcode=1 ./tests/OasisTests
