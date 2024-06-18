@@ -80,8 +80,14 @@ jobs:
                 sudo ./llvm.sh 17
 
           - name: Install Valgrind
-            if: ${{ matrix.os == 'ubuntu-latest' }}
-            run: sudo apt-get update && sudo apt-get install -y valgrind
+            if: ${{ matrix.build_profiling }}
+            run: |
+              wget https://sourceware.org/pub/valgrind/valgrind-3.23.0.tar.bz2
+              tar -xjf valgrind-3.23.0.tar.bz2
+              cd valgrind-*
+              ./configure --prefix=${{ github.workspace }}/valgrind
+              make
+              make install
 
             # Configures CMake in a subdirectory.
           - name: Configure CMake
@@ -143,7 +149,7 @@ jobs:
             if: ${{ matrix.build_profiling }}
             working-directory: ${{ steps.strings.outputs.build-dir }}
             run: >
-              valgrind --leak-check=full --error-exitcode=1 ./tests/OasisTests
+              ${{ github.workspace }}/valgrind/bin/valgrind --leak-check=full --error-exitcode=1 ./tests/OasisTests
 
             # Uploads the build, test, and code coverage artifacts.
           - name: Upload artifacts
