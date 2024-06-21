@@ -13,6 +13,7 @@
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Derivative.hpp"
 
 namespace Oasis {
 
@@ -217,6 +218,20 @@ auto Exponent<Expression>::Differentiate(const Expression& differentiationVariab
                 }
                     .Simplify();
             }
+        }
+
+        if (auto natBase = Exponent<Variable, Expression>::Specialize(*simplifiedExponent); natBase != nullptr){
+            if (natBase->GetMostSigOp().GetName() == "e"){
+                Multiply derivative{Derivative{natBase->GetLeastSigOp(), differentiationVariable}, *simplifiedExponent};
+                return derivative.Simplify();
+            } else {
+                Multiply derivative{Multiply{Derivative{natBase->GetLeastSigOp(), differentiationVariable}, *simplifiedExponent}, Log{Variable{"e"}, natBase->GetMostSigOp()}};
+                return derivative.Simplify();
+            }
+        }
+
+        if (auto realBase = Exponent<Expression, Variable>::Specialize(*simplifiedExponent); realBase != nullptr){
+
         }
     }
 
