@@ -34,6 +34,8 @@ enum class ExpressionType {
     Negate,
     Sqrt,
     Matrix,
+    Sin,
+    Arcsin,
 };
 
 /**
