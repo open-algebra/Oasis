@@ -7,6 +7,8 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
+
+#include "Oasis/Derivative.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
@@ -207,9 +209,13 @@ auto Exponent<Expression>::Differentiate(const Expression& differentiationVariab
             const Variable& expBase = realExponent->GetMostSigOp();
             const Real& expPow = realExponent->GetLeastSigOp();
 
-            if ((*variable).GetName() == expBase.GetName()) {
-                return Multiply<Expression, Expression> { Exponent<Variable, Real> { Variable { (*variable).GetName() }, Real { expPow.GetValue() - 1 } },
-                    Real { expPow.GetValue() } }
+            if (variable->GetName() == expBase.GetName()) {
+                return Multiply {
+                    Real { expPow.GetValue() },
+                    Exponent {
+                        Variable { variable->GetName() },
+                        Real { expPow.GetValue() - 1 } }
+                }
                     .Simplify();
             }
         }
@@ -229,7 +235,7 @@ auto Exponent<Expression>::Differentiate(const Expression& differentiationVariab
         }
     }
 
-    return Copy();
+    return Derivative { *this, differentiationVariable }.Copy();
 }
 
 auto Exponent<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Exponent>

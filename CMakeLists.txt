@@ -31,20 +31,16 @@ FetchContent_Declare(
 FetchContent_Declare(
     fmt
     GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-    GIT_TAG 10.0.0)
+    GIT_TAG 10.2.1)
 
-FetchContent_Declare(
-    tinyxml2
-    GIT_REPOSITORY https://github.com/leethomason/tinyxml2
-    GIT_TAG 10.0.0)
+FetchContent_MakeAvailable(Catch2 fmt)
 
-FetchContent_MakeAvailable(Catch2 fmt tinyxml2)
-
-# Processes the CMakeLists.txt for dependencies that need special handling.
-add_subdirectory(cmake/FetchEigen)
-add_subdirectory(cmake/FetchTaskflow)
+include(cmake/FetchEigen.cmake)
+include(cmake/FetchTaskflow.cmake)
+include(cmake/FetchTinyxml2.cmake)
 
 # Processes the CMakeLists.txt for each target.
+add_subdirectory(include)
 add_subdirectory(src)
 
 if(OASIS_BUILD_TESTS)

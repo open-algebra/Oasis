@@ -8,7 +8,7 @@ name: Code Coverage Comment
 
 on:
     workflow_run:
-        workflows: [ "Code Coverage" ]
+        workflows: [ "CMake on multiple platforms" ]
         types:
           - completed
 
