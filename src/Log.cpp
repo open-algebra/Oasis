@@ -12,6 +12,7 @@
 #include "Oasis/Undefined.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Add.hpp"
+#include "Oasis/EulerNumber.hpp"
 #include <cmath>
 
 namespace Oasis {
@@ -105,30 +106,19 @@ auto Log<Expression>::Integrate(const Oasis::Expression& /*integrationVariable*/
 
 auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression> {
     // d(log_e(6x))/dx = 1/6x * 6
-    if (auto lnCase = Variable::Specialize(*mostSigOp); lnCase != nullptr){
-        if (lnCase->GetName() == "e"){
-            Divide derivative{Oasis::Real{1.0}, *leastSigOp};
-            Derivative chain{*leastSigOp, differentiationVariable};
+    if (auto lnCase = EulerNumber::Specialize(*mostSigOp); lnCase != nullptr){
+        Divide derivative{Oasis::Real{1.0}, *leastSigOp};
+        Derivative chain{*leastSigOp, differentiationVariable};
 
-            Multiply result = Multiply<Expression>{derivative, *chain.Differentiate(differentiationVariable)};
-            return result.Simplify();
-        }
-        else {
-            Divide derivative{Oasis::Real{1.0}, Multiply<Expression>{*leastSigOp, Log{Variable{"e"}, *lnCase}}};
-            Derivative chain{*leastSigOp, differentiationVariable};
-
-            Multiply result = Multiply<Expression>{derivative, *chain.Differentiate(differentiationVariable)};
-            return result.Simplify();
-        }
+        Multiply result = Multiply<Expression>{derivative, *chain.Differentiate(differentiationVariable)};
+        return result.Simplify();
     } else {
-        Divide derivative{Oasis::Real{1.0}, Multiply<Expression>{*leastSigOp, Log{Variable{"e"}, *mostSigOp}}};
+        Divide derivative{Oasis::Real{1.0}, Multiply<Expression>{*leastSigOp, Log{EulerNumber{}, *mostSigOp}}};
         Derivative chain{*leastSigOp, differentiationVariable};
 
         Multiply result = Multiply<Expression>{derivative, *chain.Differentiate(differentiationVariable)};
         return result.Simplify();
     }
-
-
 
 }
 

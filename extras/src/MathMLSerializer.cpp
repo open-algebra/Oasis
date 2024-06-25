@@ -18,6 +18,8 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/EulerNumber.hpp"
+#include "Oasis/Pi.hpp"
 
 namespace Oasis {
 
@@ -67,25 +69,19 @@ void MathMLSerializer::Serialize(const Matrix& matrix)
     mrow->InsertEndChild(table);
     mrow->InsertEndChild(closeBrace);
 
-    //    // Integral symbol
-    //    tinyxml2::XMLElement* inte = doc.NewElement("mo");
-    //    inte->SetText("\u222B;");
-    //
-    //    tinyxml2::XMLElement* dNode = doc.NewElement("mo");
-    //    dNode->SetText("d");
-    //
-    //    auto [expElement, varElement] = GetOpsAsMathMLPair(integral);
-    //
-    //    // d variable
-    //    tinyxml2::XMLElement* dVar = doc.NewElement("mrow");
-    //    dVar->InsertEndChild(dNode);
-    //    dVar->InsertEndChild(varElement);
-    //
-    //    mrow->InsertEndChild(inte);
-    //    mrow->InsertEndChild(expElement);
-    //    mrow->InsertEndChild(dVar);
-
     result = mrow;
+}
+
+void MathMLSerializer::Serialize(const Oasis::Pi&)
+{
+    result = doc.NewElement("mi");
+    result->SetText("&pi");
+}
+
+void MathMLSerializer::Serialize(const Oasis::EulerNumber&)
+{
+    result = doc.NewElement("mi");
+    result->SetText("e");
 }
 
 void MathMLSerializer::Serialize(const Variable& variable)
