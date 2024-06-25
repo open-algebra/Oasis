@@ -14,6 +14,8 @@ class Imaginary;
 class Matrix;
 class Variable;
 class Undefined;
+class EulerNumber;
+class Pi;
 
 template <IExpression, IExpression>
 class Add;
@@ -49,6 +51,8 @@ public:
     virtual void Serialize(const Matrix& matrix) = 0;
     virtual void Serialize(const Variable& variable) = 0;
     virtual void Serialize(const Undefined& undefined) = 0;
+    virtual void Serialize(const EulerNumber&) = 0;
+    virtual void Serialize(const Pi&) = 0;
     virtual void Serialize(const Add<Expression, Expression>& add) = 0;
     virtual void Serialize(const Subtract<Expression, Expression>& subtract) = 0;
     virtual void Serialize(const Multiply<Expression, Expression>& multiply) = 0;

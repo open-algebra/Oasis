@@ -3,7 +3,8 @@ set(Oasis_HEADERS
     Oasis/Add.hpp
     Oasis/BinaryExpression.hpp
     Oasis/Derivative.hpp
-    Oasis/Divide.hpp
+        Oasis/Divide.hpp
+    Oasis/EulerNumber.hpp
     Oasis/Exponent.hpp
     Oasis/Expression.hpp
     Oasis/Imaginary.hpp
@@ -13,6 +14,7 @@ set(Oasis_HEADERS
     Oasis/Log.hpp
     Oasis/Multiply.hpp
     Oasis/Negate.hpp
+    Oasis/Pi.hpp
     Oasis/Real.hpp
     Oasis/Serialization.hpp
     Oasis/Subtract.hpp

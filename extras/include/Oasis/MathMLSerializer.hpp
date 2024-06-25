@@ -24,6 +24,8 @@ public:
     void Serialize(const Matrix& matrix) override;
     void Serialize(const Variable& variable) override;
     void Serialize(const Undefined& undefined) override;
+    void Serialize(const Pi&) override;
+    void Serialize(const EulerNumber&) override;
     void Serialize(const Add<Expression, Expression>& add) override;
     void Serialize(const Subtract<Expression, Expression>& subtract) override;
     void Serialize(const Multiply<Expression, Expression>& multiply) override;

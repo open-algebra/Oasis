@@ -12,6 +12,7 @@
 #include "Oasis/Variable.hpp"
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Log.hpp"
+#include "Oasis/EulerNumber.hpp"
 
 TEST_CASE("Differentiate Nonzero number", "[Differentiate][Real][Nonzero]")
 {
@@ -268,8 +269,8 @@ TEST_CASE("Product Rule", "[Differentiate][Product]")
 
 TEST_CASE("Natural Exponential Derivative", "[Derivative][Exponent][Euler's Number]")
 {
-    Oasis::Exponent exp{Oasis::Variable{"e"}, Oasis::Variable{"x"}};
-    Oasis::Exponent exp2{Oasis::Variable{"e"}, Oasis::Multiply{Oasis::Real{2.0},Oasis::Variable{"x"}}};
+    Oasis::Exponent exp{Oasis::EulerNumber{}, Oasis::Variable{"x"}};
+    Oasis::Exponent exp2{Oasis::EulerNumber{}, Oasis::Multiply{Oasis::Real{2.0},Oasis::Variable{"x"}}};
     Oasis::Derivative diffExp{exp, Oasis::Variable{"x"}};
     Oasis::Derivative diffExp2{exp2, Oasis::Variable{"x"}};
     Oasis::Multiply expected2{Oasis::Real{2.0}, exp2};
@@ -283,7 +284,7 @@ TEST_CASE("Natural Exponential Derivative", "[Derivative][Exponent][Euler's Numb
 TEST_CASE("Natural Logarithm Derivative", "[Derivative][Logarithm][Euler's Number]")
 {
     Oasis::Derivative diffLog{
-        Oasis::Log{Oasis::Variable{"e"},Oasis::Multiply{Oasis::Real{6},Oasis::Variable{"x"}}}, Oasis::Variable{"x"}};
+        Oasis::Log{Oasis::EulerNumber{},Oasis::Multiply{Oasis::Real{6},Oasis::Variable{"x"}}}, Oasis::Variable{"x"}};
     auto diff = diffLog.Simplify();
     Oasis::Divide expected{Oasis::Real{1.0}, Oasis::Variable{"x"}};
     REQUIRE(diff->Equals(expected));
@@ -295,7 +296,7 @@ TEST_CASE("Real Base Logarithm Derivative", "[Derivative][Logarithm][Euler's Rea
         Oasis::Log{Oasis::Real{10.0},Oasis::Multiply{Oasis::Real{6},Oasis::Variable{"x"}}}, Oasis::Variable{"x"}};
     auto diff = diffLog.Simplify();
     Oasis::Divide expected{Oasis::Real{1.0}, Oasis::Multiply{Oasis::Variable{"x"},
-                                                      Oasis::Log{Oasis::Variable{"e"}, Oasis::Real{10.0}}}};
+                                                      Oasis::Log{Oasis::EulerNumber{}, Oasis::Real{10.0}}}};
     REQUIRE(diff->Equals(*expected.Simplify()));
 }
 
@@ -305,7 +306,7 @@ TEST_CASE("Variable Base Logarithm Derivative", "[Derivative][Logarithm][Variabl
         Oasis::Log{Oasis::Variable{"y"},Oasis::Multiply{Oasis::Real{6},Oasis::Variable{"x"}}}, Oasis::Variable{"x"}};
     auto diff = diffLog.Simplify();
     Oasis::Divide expected{Oasis::Real{1.0}, Oasis::Multiply{Oasis::Variable{"x"},
-                                                      Oasis::Log{Oasis::Variable{"e"}, Oasis::Variable{"y"}}}};
+                                                      Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"y"}}}};
     REQUIRE(diff->Equals(expected));
 }
 
@@ -313,7 +314,7 @@ TEST_CASE("Any Base Exponential Derivative", "[Derivative][Exponent]")
 {
     Oasis::Exponent exp{Oasis::Variable{"a"}, Oasis::Multiply{Oasis::Real{2.0},Oasis::Variable{"x"}}};
     Oasis::Derivative diffExp{exp, Oasis::Variable{"x"}};
-    Oasis::Multiply expected{Oasis::Multiply{Oasis::Real{2.0}, exp}, Oasis::Log{Oasis::Variable{"e"}, Oasis::Variable{"a"}}};
+    Oasis::Multiply expected{Oasis::Multiply{Oasis::Real{2.0}, exp}, Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"a"}}};
     auto simplified = diffExp.Simplify();
     REQUIRE(simplified->Equals(expected));
 }
