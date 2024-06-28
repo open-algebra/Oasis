@@ -12,6 +12,7 @@ set(Oasis_HEADERS
     Oasis/LeafExpression.hpp
     Oasis/Linear.hpp
     Oasis/Log.hpp
+    Oasis/Magnitude.hpp
     Oasis/Multiply.hpp
     Oasis/Negate.hpp
     Oasis/Pi.hpp

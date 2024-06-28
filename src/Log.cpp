@@ -101,6 +101,9 @@ auto Log<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
 }
 
 auto Log<Expression>::Integrate(const Oasis::Expression& /*integrationVariable*/) -> std::unique_ptr<Expression> {
+    // TODO: Implement
+
+
     return std::make_unique<Real>(1);
 }
 
