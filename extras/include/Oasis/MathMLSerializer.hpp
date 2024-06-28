@@ -33,6 +33,7 @@ public:
     void Serialize(const Exponent<Expression, Expression>& exponent) override;
     void Serialize(const Log<Expression, Expression>& log) override;
     void Serialize(const Negate<Expression>& negate) override;
+    void Serialize(const Magnitude<Expression>& magnitude) override;
     void Serialize(const Derivative<Expression, Expression>& derivative) override;
     void Serialize(const Integral<Expression, Expression>& integral) override;
 

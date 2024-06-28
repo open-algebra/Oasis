@@ -35,7 +35,8 @@ enum class ExpressionType {
     Sqrt,
     Matrix,
     Pi,
-    EulerNumber
+    EulerNumber,
+    Magnitude
 };
 
 /**

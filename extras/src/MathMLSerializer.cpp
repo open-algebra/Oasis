@@ -20,6 +20,7 @@
 #include "Oasis/Variable.hpp"
 #include "Oasis/EulerNumber.hpp"
 #include "Oasis/Pi.hpp"
+#include "Oasis/Magnitude.hpp"
 
 namespace Oasis {
 
@@ -406,6 +407,27 @@ tinyxml2::XMLElement* MathMLSerializer::CreatePlaceholder() const
     mspace->SetAttribute("width", "1em");
     mspace->SetAttribute("height", "1em");
     return mspace;
+}
+void MathMLSerializer::Serialize(const Magnitude<Expression>& magnitude)
+{
+    // mrow
+    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+
+    // (
+    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+    leftParen->SetText("|");
+    mrow->InsertEndChild(leftParen);
+
+    magnitude.GetOperand().Serialize(*this);
+    tinyxml2::XMLElement* operandElement = GetResult();
+    mrow->InsertEndChild(operandElement);
+
+    // )
+    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+    rightParen->SetText("|");
+    mrow->InsertEndChild(rightParen);
+
+    result = mrow;
 }
 
 }

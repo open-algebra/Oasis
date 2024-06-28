@@ -38,6 +38,9 @@ class Log;
 template <typename OperandT>
 class Negate;
 
+template <typename OperandT>
+class Magnitude;
+
 template <IExpression, IExpression>
 class Derivative;
 
@@ -60,6 +63,7 @@ public:
     virtual void Serialize(const Exponent<Expression, Expression>& exponent) = 0;
     virtual void Serialize(const Log<Expression, Expression>& log) = 0;
     virtual void Serialize(const Negate<Expression>& negate) = 0;
+    virtual void Serialize(const Magnitude<Expression>& magnitude) = 0;
     virtual void Serialize(const Derivative<Expression, Expression>& derivative) = 0;
     virtual void Serialize(const Integral<Expression, Expression>& integral) = 0;
 

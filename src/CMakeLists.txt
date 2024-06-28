@@ -27,6 +27,7 @@ set(Oasis_SOURCES
     Variable.cpp
     Pi.cpp
     EulerNumber.cpp
+        Magnitude.cpp
 )
 
 # Adds a library target called "Oasis" to be built from source files.
