@@ -6,7 +6,13 @@
 #define OASIS_MAGNITUDE_HPP
 
 #include "UnaryExpression.hpp"
+#include "Expression.hpp"
 #include "Real.hpp"
+#include "Multiply.hpp"
+#include "Exponent.hpp"
+#include "Imaginary.hpp"
+#include "Add.hpp"
+#include "Subtract.hpp"
 #include "memory"
 
 namespace Oasis {
@@ -32,14 +38,23 @@ public:
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
     {
+        auto simpOp = this->GetOperand().Simplify();
         // TODO: Implement
-        if (auto realCase = Real::Specialize(this->GetOperand()); realCase != nullptr)
+        if (auto realCase = Real::Specialize(*simpOp); realCase != nullptr)
         {
             double val = realCase->GetValue();
             return val >= 0.0 ? std::make_unique<Real>(val) : std::make_unique<Real>(-val);
         }
+        if (auto imgCase = Imaginary::Specialize(*simpOp); imgCase != nullptr)
+        {
+            return std::make_unique<Real>(1.0);
+        }
+        if (auto mulImgCase = Multiply<Expression, Imaginary>::Specialize(*simpOp); mulImgCase != nullptr)
+        {
+            return Magnitude<Expression>{mulImgCase->GetMostSigOp()}.Simplify();
+        }
 
-        return this->GetOperand().Generalize();
+        return this->Generalize();
     }
 
     auto Simplify(tf::Subflow& /*subflow*/) const -> std::unique_ptr<Expression> override
