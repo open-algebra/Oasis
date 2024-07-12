@@ -92,15 +92,14 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
             *(Multiply<Expression> { Real { -1.0 }, added->GetLeastSigOp() }.Simplify()) }
                        .Simplify();
         return Add { *simplifiedMinuend, *RHS }.Simplify();
-    } else if (auto subtracted = Subtract<Expression>::Specialize(negated.GetLeastSigOp()); subtracted != nullptr) {
-        auto RHS = Add { *(Multiply<Expression> { Real { -1.0 }, added->GetMostSigOp() }.Simplify()),
-            *(added->GetLeastSigOp().Simplify()) }
+    }
+    if (auto subtracted = Subtract<Expression>::Specialize(negated.GetLeastSigOp()); subtracted != nullptr) {
+        auto RHS = Add { *(Multiply<Expression> { Real { -1.0 }, subtracted->GetMostSigOp() }.Simplify()),
+            *(subtracted->GetLeastSigOp().Simplify()) }
                        .Simplify();
         return Add { *simplifiedMinuend, *RHS }.Simplify();
-    } else {
-        //        return simplifiedSubtract.Copy();
-        return Add { *simplifiedMinuend, *(negated.Simplify()) }.Simplify();
     }
+    return Add { *simplifiedMinuend, negated }.Simplify();
 }
 
 auto Subtract<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>

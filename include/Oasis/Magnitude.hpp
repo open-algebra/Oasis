@@ -38,8 +38,8 @@ public:
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
     {
-        auto simpOp = this->GetOperand().Simplify();
-        // TODO: Implement
+        auto simpOpU = this->GetOperand().Generalize();
+        auto simpOp = simpOpU->Simplify();
         if (auto realCase = Real::Specialize(*simpOp); realCase != nullptr)
         {
             double val = realCase->GetValue();
@@ -53,6 +53,17 @@ public:
         {
             return Magnitude<Expression>{mulImgCase->GetMostSigOp()}.Simplify();
         }
+        if (auto addCase = Add<Expression, Imaginary>::Specialize(*simpOp); addCase != nullptr)
+        {
+            return Exponent{Add<Expression>{Exponent<Expression>{addCase->GetMostSigOp(), Real{2}},
+                                  Real{1.0}},Real{0.5}}.Simplify();
+        }
+        if (auto addCase = Add<Expression, Multiply<Expression, Imaginary>>::Specialize(*simpOp); addCase != nullptr)
+        {
+            return Exponent{Add<Expression>{Exponent<Expression>{addCase->GetMostSigOp(), Real{2}},
+                                  Exponent<Expression>{addCase->GetLeastSigOp().GetMostSigOp(), Real{2}}},Real{0.5}}.Simplify();
+        }
+        // TODO: Implement for matrices and vectors
 
         return this->Generalize();
     }
