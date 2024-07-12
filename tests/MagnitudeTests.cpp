@@ -42,5 +42,25 @@ TEST_CASE("Magnitude of Imaginary", "[Magnitude][Imaginary]")
     REQUIRE(simp2->Equals(Oasis::Real{5}));
     REQUIRE(simp3->Equals(Oasis::Real{5}));
 }
-// Magnitude of Complex
-// Magnitude of Matrices and Vectors
+
+TEST_CASE("Magnitude of Complex", "[Magnitude][Real][Imaginary]")
+{
+    Oasis::Magnitude mag1{Oasis::Add{Oasis::Real{5.0}, Oasis::Imaginary{}}};
+    Oasis::Magnitude mag2{Oasis::Subtract{Oasis::Real{5.0}, Oasis::Imaginary{}}};
+
+    auto simp1 = mag1.Simplify();
+    auto simp2 = mag2.Simplify();
+
+    REQUIRE(simp1->Equals(*Oasis::Exponent{Oasis::Real{26.0}, Oasis::Real{0.5}}.Simplify()));
+    REQUIRE(simp2->Equals(*Oasis::Exponent{Oasis::Real{26.0}, Oasis::Real{0.5}}.Simplify()));
+
+    Oasis::Magnitude mag3{Oasis::Add{Oasis::Real{5.0}, Oasis::Multiply{Oasis::Real{4.0}, Oasis::Imaginary{}}}};
+    Oasis::Magnitude mag4{Oasis::Subtract{Oasis::Real{7.0}, Oasis::Multiply{Oasis::Real{20.0}, Oasis::Imaginary{}}}};
+
+    auto simp3 = mag3.Simplify();
+    auto simp4 = mag4.Simplify();
+
+    REQUIRE(simp3->Equals(*Oasis::Exponent{Oasis::Real{41.0}, Oasis::Real{0.5}}.Simplify()));
+    REQUIRE(simp4->Equals(*Oasis::Exponent{Oasis::Real{449.0}, Oasis::Real{0.5}}.Simplify()));
+}
+// TODO: Magnitude of Matrices and Vectors
