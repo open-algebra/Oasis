@@ -80,7 +80,7 @@ auto Matrix::Specialize(const Expression& other, tf::Subflow&) -> std::unique_pt
 }
 
 // TO DO: Fix?
-auto Matrix::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Matrix::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
 

@@ -167,7 +167,7 @@ auto Exponent<Expression>::Specialize(const Oasis::Expression& other) -> std::un
     return std::make_unique<Exponent>(dynamic_cast<const Exponent&>(*otherGeneralized));
 }
 
-auto Exponent<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Exponent<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // variable integration
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {

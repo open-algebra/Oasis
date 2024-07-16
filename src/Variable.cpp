@@ -37,7 +37,7 @@ auto Variable::Specialize(const Expression& other, tf::Subflow&) -> std::unique_
     return other.Is<Variable>() ? std::make_unique<Variable>(dynamic_cast<const Variable&>(other)) : nullptr;
 }
 
-auto Variable::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Variable::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
 

@@ -242,7 +242,7 @@ public:
         return Generalize()->Simplify();
     }
 
-    [[nodiscard]] auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression> override
+    [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> override
     {
         return Generalize()->Integrate(integrationVariable);
     }

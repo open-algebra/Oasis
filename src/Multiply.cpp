@@ -390,7 +390,7 @@ auto Multiply<Expression>::Specialize(const Expression& other, tf::Subflow& subf
     return std::make_unique<Multiply>(dynamic_cast<const Multiply&>(*otherGeneralized));
 }
 
-auto Multiply<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Multiply<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {

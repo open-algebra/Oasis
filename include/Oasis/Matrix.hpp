@@ -57,7 +57,7 @@ public:
      */
     [[nodiscard]] auto Inverse() const -> std::unique_ptr<Matrix>;
 
-    [[nodiscard]] auto Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression> final;
+    [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto Identity() const -> std::unique_ptr<Expression>;
 

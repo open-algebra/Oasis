@@ -42,7 +42,7 @@ auto Real::Specialize(const Expression& other, tf::Subflow&) -> std::unique_ptr<
     return other.Is<Real>() ? std::make_unique<Real>(dynamic_cast<const Real&>(other)) : nullptr;
 }
 
-auto Real::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Real::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
         // Constant rule
