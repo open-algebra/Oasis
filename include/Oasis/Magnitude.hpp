@@ -13,6 +13,7 @@
 #include "Imaginary.hpp"
 #include "Add.hpp"
 #include "Subtract.hpp"
+#include "Matrix.hpp"
 #include "memory"
 
 namespace Oasis {
@@ -63,7 +64,16 @@ public:
             return Exponent{Add<Expression>{Exponent<Expression>{addCase->GetMostSigOp(), Real{2}},
                                   Exponent<Expression>{addCase->GetLeastSigOp().GetMostSigOp(), Real{2}}},Real{0.5}}.Simplify();
         }
-        // TODO: Implement for matrices and vectors
+        if (auto matrixCase = Matrix::Specialize(*simpOp); matrixCase != nullptr)
+        {
+            double sum = 0;
+            for (size_t i=0; i<matrixCase->GetRows(); i++){
+                for (size_t j=0; j<matrixCase->GetCols(); j++){
+                    sum += pow(matrixCase->GetMatrix()(i,j), 2);
+                }
+            }
+            return Exponent{Real{sum}, Real{0.5}}.Simplify();
+        }
 
         return this->Generalize();
     }

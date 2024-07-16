@@ -9,6 +9,7 @@
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Subtract.hpp"
+#include "Oasis/Matrix.hpp"
 
 TEST_CASE("Magnitude of Real", "[Magnitude][Real]")
 {
@@ -63,4 +64,21 @@ TEST_CASE("Magnitude of Complex", "[Magnitude][Real][Imaginary]")
     REQUIRE(simp3->Equals(*Oasis::Exponent{Oasis::Real{41.0}, Oasis::Real{0.5}}.Simplify()));
     REQUIRE(simp4->Equals(*Oasis::Exponent{Oasis::Real{449.0}, Oasis::Real{0.5}}.Simplify()));
 }
-// TODO: Magnitude of Matrices and Vectors
+
+TEST_CASE("Magnitude of Vector", "[Magnitude][Matrix1D]")
+{
+    std::vector<double> vals = {5,6,7,8};
+    Oasis::Magnitude mag1{Oasis::Matrix{4, 1, vals}};
+    Oasis::Magnitude mag2{Oasis::Matrix{1, 4, vals}};
+    auto expected = Oasis::Exponent{Oasis::Real{174}, Oasis::Real{0.5}}.Simplify();
+    REQUIRE((mag1.Simplify())->Equals(*expected));
+    REQUIRE((mag2.Simplify())->Equals(*expected));
+}
+
+TEST_CASE("Magnitude of Matrix", "[Magnitude][MatrixXXD]")
+{
+    std::vector<double> vals = {5,6,7,8};
+    Oasis::Magnitude mag1{Oasis::Matrix{2, 2, vals}};
+    auto expected = Oasis::Exponent{Oasis::Real{174}, Oasis::Real{0.5}}.Simplify();
+    REQUIRE((mag1.Simplify())->Equals(*expected));
+}
