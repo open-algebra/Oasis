@@ -95,11 +95,14 @@ public:
             .Simplify();
     }
 
-    [[nodiscard]] auto Integrate(const Expression& /*integrationVariable*/) -> std::unique_ptr<Expression> override
+    [[nodiscard]] auto Integrate(const Expression& integrationVar) const -> std::unique_ptr<Expression> override
     {
         // TODO: Implement
-
-        return this->Generalize();
+        const std::unique_ptr<Expression> operandDerivative = this->GetOperand().Integrate(integrationVar);
+        return Magnitude<Expression> {
+            *operandDerivative
+        }
+            .Simplify();
     }
 
     IMPL_SPECIALIZE_UNARYEXPR(Magnitude, OperandT)

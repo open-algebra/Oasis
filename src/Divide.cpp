@@ -295,7 +295,7 @@ auto Divide<Expression>::Specialize(const Expression& other, tf::Subflow& subflo
     return std::make_unique<Divide>(dynamic_cast<const Divide&>(*otherGeneralized));
 }
 
-auto Divide<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Divide<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {

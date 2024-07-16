@@ -208,7 +208,7 @@ auto Subtract<Expression>::Differentiate(const Expression& differentiationVariab
     return Copy();
 }
 
-auto Subtract<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Subtract<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
