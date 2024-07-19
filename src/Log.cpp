@@ -11,7 +11,9 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Undefined.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Add.hpp"
+#include "Oasis/Subtract.hpp"
 #include "Oasis/EulerNumber.hpp"
 #include <cmath>
 
@@ -100,12 +102,25 @@ auto Log<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
     return std::make_unique<Log>(dynamic_cast<const Log<Expression>&>(*otherGeneralized));
 }
 
-auto Log<Expression>::Integrate(const Oasis::Expression& /*integrationVariable*/) const -> std::unique_ptr<Expression>
+auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // TODO: Implement
+    if(this->mostSigOp->Equals(EulerNumber{})){
+        // ln(x)
+        if (leastSigOp->Is<Variable>() && Variable::Specialize(*leastSigOp)->Equals(integrationVariable)){
+            return Subtract<Expression>{Multiply<Expression>{integrationVariable, *this}, integrationVariable}.Simplify();
+        }
+        if (auto multiplyCase = Multiply<Expression>::Specialize(*leastSigOp); multiplyCase != nullptr){
+            if (multiplyCase->GetLeastSigOp().Equals(integrationVariable)){
+                return Subtract<Expression>{Multiply<Expression>{integrationVariable, *this}, integrationVariable}.Simplify();
+            } else {
+                return Multiply<Expression>{integrationVariable, *this}.Simplify();
+            }
+        }
+    }
 
 
-    return std::make_unique<Real>(1);
+    return Integral<Expression>{*this, integrationVariable}.Generalize();
 }
 
 auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression> {
