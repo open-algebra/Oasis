@@ -30,14 +30,14 @@ set(Oasis_SOURCES
 add_library(Oasis ${Oasis_SOURCES})
 add_library(Oasis::Oasis ALIAS Oasis)
 
-if (OASIS_BUILD_PARANOID)
+if(OASIS_BUILD_PARANOID)
     if(MSVC)
         target_compile_options(Oasis PRIVATE /W3 /WX)
         target_compile_options(Oasis PRIVATE /bigobj)
     else()
         target_compile_options(Oasis PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
-endif ()
+endif()
 
 target_compile_features(Oasis PUBLIC cxx_std_20)
 target_link_libraries(Oasis PUBLIC Oasis::Headers Eigen3::Eigen)
