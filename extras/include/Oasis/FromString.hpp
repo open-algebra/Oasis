@@ -23,6 +23,8 @@ private:
     std::variant<std::unique_ptr<Expression>, std::string> result;
 };
 
+auto PreProcessInFix(const std::string& str) -> std::string;
+
 auto FromInFix(const std::string& str) -> ParseResult;
 
 }
