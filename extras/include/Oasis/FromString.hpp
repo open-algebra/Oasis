@@ -5,6 +5,9 @@
 #ifndef FROMSTRING_HPP
 #define FROMSTRING_HPP
 
+#include <memory>
+#include "Oasis/Expression.hpp"
+
 namespace Oasis {
 
 class ParseResult {
