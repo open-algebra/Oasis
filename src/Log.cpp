@@ -117,6 +117,11 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
                 return Multiply<Expression>{integrationVariable, *this}.Simplify();
             }
         }
+    } else {
+        auto numer = Log<Expression>{EulerNumber{}, *(this->leastSigOp->Generalize())};
+        auto denom = Log<Expression>{EulerNumber{}, *(this->mostSigOp->Generalize())};
+        if (numer.Equals(denom)) return integrationVariable.Generalize();
+        return Divide{Integral{numer, integrationVariable}, denom}.Simplify();
     }
 
 
