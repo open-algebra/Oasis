@@ -240,6 +240,23 @@ std::string ParseResult::GetErrorMessage() const
     return "No Error";
 }
 
+auto PreProcessInFix(const std::string& str) -> std::string
+{
+    std::string result;
+    std::string operators = "+-*/^(),";
+
+    for (char ch : str) {
+        if (std::ranges::find(operators, ch) != operators.end()) {
+            result += ' ';
+            result += ch;
+            result += ' ';
+        } else {
+            result += ch;
+        }
+    }
+    return result;
+}
+
 auto FromInFix(const std::string& str) -> ParseResult {
     // Based off Dijkstra's Shunting Yard
 
