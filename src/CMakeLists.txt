@@ -11,24 +11,23 @@ set(Oasis_SOURCES
     # DefiniteIntegral.cpp
     Derivative.cpp
     Divide.cpp
+    EulerNumber.cpp
     Exponent.cpp
     Expression.cpp
     Imaginary.cpp
     Integral.cpp
     Linear.cpp
     Log.cpp
+    Magnitude.cpp
     Matrix.cpp
     Multiply.cpp
     Negate.cpp
+    Pi.cpp
     Real.cpp
     Subtract.cpp
     # Summation.cpp
     Undefined.cpp
-    Variable.cpp
-    Pi.cpp
-    EulerNumber.cpp
-        Magnitude.cpp
-)
+    Variable.cpp)
 
 # Adds a library target called "Oasis" to be built from source files.
 add_library(Oasis ${Oasis_SOURCES})
