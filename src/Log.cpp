@@ -13,9 +13,9 @@
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Pi.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Undefined.hpp"
-#include "Oasis/Pi.hpp"
 #include <cmath>
 
 namespace Oasis {

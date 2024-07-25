@@ -3,8 +3,8 @@
 //
 
 #include "Oasis/EulerNumber.hpp"
-#include "string"
 #include "numbers"
+#include "string"
 #include <cmath>
 
 namespace Oasis {
