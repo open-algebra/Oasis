@@ -15,6 +15,7 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Undefined.hpp"
+#include "Oasis/Pi.hpp"
 #include <cmath>
 
 namespace Oasis {
@@ -62,7 +63,7 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
     // log(a) with a < 0 log(-a)
     if (auto negCase = Log<Expression, Real>::Specialize(simplifiedLog); negCase != nullptr) {
         if (negCase->GetLeastSigOp().GetValue() < 0) {
-            return Add<Expression> { Log { negCase->GetMostSigOp(), Real { -1 * negCase->GetLeastSigOp().GetValue() } }, Multiply { Imaginary {}, Variable { "\u03C0" } } }.Generalize();
+            return Add<Expression> { Log { negCase->GetMostSigOp(), Real { -1 * negCase->GetLeastSigOp().GetValue() } }, Multiply<Expression> { Imaginary {}, Pi {} } }.Generalize();
         }
     }
 
