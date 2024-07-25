@@ -37,7 +37,7 @@ std::unique_ptr<Expression> Derivative<Expression, Expression>::Simplify(tf::Sub
 
 std::unique_ptr<Expression> Derivative<Expression, Expression>::Differentiate(const Expression&) const
 {
-    return mostSigOp->Differentiate(*leastSigOp); //->Differentiate(differentiationVariable);
+    return mostSigOp->Differentiate(*leastSigOp);
 }
 
 auto Derivative<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Derivative<Expression, Expression>>
