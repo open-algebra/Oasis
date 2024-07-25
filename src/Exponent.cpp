@@ -9,12 +9,11 @@
 #include "Oasis/Exponent.hpp"
 
 #include "Oasis/Derivative.hpp"
+#include "Oasis/EulerNumber.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
-#include "Oasis/Derivative.hpp"
-#include "Oasis/EulerNumber.hpp"
 
 namespace Oasis {
 
@@ -221,18 +220,18 @@ auto Exponent<Expression>::Differentiate(const Expression& differentiationVariab
             }
         }
 
-        if (auto natBase = Exponent<EulerNumber, Expression>::Specialize(*simplifiedExponent); natBase != nullptr){
-            Multiply derivative{Derivative{natBase->GetLeastSigOp(), differentiationVariable}, *simplifiedExponent};
+        if (auto natBase = Exponent<EulerNumber, Expression>::Specialize(*simplifiedExponent); natBase != nullptr) {
+            Multiply derivative { Derivative { natBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent };
             return derivative.Simplify();
         }
 
-        if (auto realBase = Exponent<Real, Expression>::Specialize(*simplifiedExponent); realBase != nullptr){
-            Multiply derivative{Multiply{Derivative{realBase->GetLeastSigOp(), differentiationVariable}, *simplifiedExponent}, Log{EulerNumber{}, realBase->GetMostSigOp()}};
+        if (auto realBase = Exponent<Real, Expression>::Specialize(*simplifiedExponent); realBase != nullptr) {
+            Multiply derivative { Multiply { Derivative { realBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent }, Log { EulerNumber {}, realBase->GetMostSigOp() } };
             return derivative.Simplify();
         }
 
-        if (auto varBase = Exponent<Variable, Expression>::Specialize(*simplifiedExponent); varBase != nullptr){
-            Multiply derivative{Multiply{Derivative{varBase->GetLeastSigOp(), differentiationVariable}, *simplifiedExponent}, Log{EulerNumber{}, varBase->GetMostSigOp()}};
+        if (auto varBase = Exponent<Variable, Expression>::Specialize(*simplifiedExponent); varBase != nullptr) {
+            Multiply derivative { Multiply { Derivative { varBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent }, Log { EulerNumber {}, varBase->GetMostSigOp() } };
             return derivative.Simplify();
         }
     }

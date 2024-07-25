@@ -3,8 +3,8 @@
 //
 
 #include "Oasis/Multiply.hpp"
-#include "Oasis/Divide.hpp"
 #include "Oasis/Add.hpp"
+#include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
@@ -43,8 +43,8 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     if (auto multCase = Multiply<Real, Divide<Expression>>::Specialize(simplifiedMultiply); multCase != nullptr) {
-        auto m = Multiply<Expression>{multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp()}.Simplify();
-        return Divide<Expression>{*m, (multCase->GetLeastSigOp().GetLeastSigOp())}.Generalize();
+        auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() }.Simplify();
+        return Divide<Expression> { *m, (multCase->GetLeastSigOp().GetLeastSigOp()) }.Generalize();
     }
 
     if (auto exprCase = Multiply<Expression>::Specialize(simplifiedMultiply); exprCase != nullptr) {
