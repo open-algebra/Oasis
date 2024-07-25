@@ -4,17 +4,17 @@
 //
 
 #include "Oasis/Log.hpp"
-#include "Oasis/Divide.hpp"
+#include "Oasis/Add.hpp"
 #include "Oasis/Derivative.hpp"
+#include "Oasis/Divide.hpp"
+#include "Oasis/EulerNumber.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Expression.hpp"
-#include "Oasis/Multiply.hpp"
-#include "Oasis/Undefined.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
-#include "Oasis/Add.hpp"
+#include "Oasis/Multiply.hpp"
 #include "Oasis/Subtract.hpp"
-#include "Oasis/EulerNumber.hpp"
+#include "Oasis/Undefined.hpp"
 #include <cmath>
 
 namespace Oasis {
@@ -59,10 +59,10 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return std::make_unique<Real>(log2(argument.GetValue()) * (1 / log2(base.GetValue())));
     }
 
-    //log(a) with a < 0 log(-a)
-    if (auto negCase = Log<Expression, Real>::Specialize(simplifiedLog); negCase != nullptr){
-        if (negCase->GetLeastSigOp().GetValue() < 0){
-            return Add<Expression>{Log{negCase->GetMostSigOp(), Real{-1 * negCase->GetLeastSigOp().GetValue()}}, Multiply{Imaginary{}, Variable{"\u03C0"}}}.Generalize();
+    // log(a) with a < 0 log(-a)
+    if (auto negCase = Log<Expression, Real>::Specialize(simplifiedLog); negCase != nullptr) {
+        if (negCase->GetLeastSigOp().GetValue() < 0) {
+            return Add<Expression> { Log { negCase->GetMostSigOp(), Real { -1 * negCase->GetLeastSigOp().GetValue() } }, Multiply { Imaginary {}, Variable { "\u03C0" } } }.Generalize();
         }
     }
 
@@ -105,45 +105,45 @@ auto Log<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
 auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // TODO: Implement
-    if(this->mostSigOp->Equals(EulerNumber{})){
+    if (this->mostSigOp->Equals(EulerNumber {})) {
         // ln(x)
-        if (leastSigOp->Is<Variable>() && Variable::Specialize(*leastSigOp)->Equals(integrationVariable)){
-            return Subtract<Expression>{Multiply<Expression>{integrationVariable, *this}, integrationVariable}.Simplify();
+        if (leastSigOp->Is<Variable>() && Variable::Specialize(*leastSigOp)->Equals(integrationVariable)) {
+            return Subtract<Expression> { Multiply<Expression> { integrationVariable, *this }, integrationVariable }.Simplify();
         }
-        if (auto multiplyCase = Multiply<Expression>::Specialize(*leastSigOp); multiplyCase != nullptr){
-            if (multiplyCase->GetLeastSigOp().Equals(integrationVariable)){
-                return Subtract<Expression>{Multiply<Expression>{integrationVariable, *this}, integrationVariable}.Simplify();
+        if (auto multiplyCase = Multiply<Expression>::Specialize(*leastSigOp); multiplyCase != nullptr) {
+            if (multiplyCase->GetLeastSigOp().Equals(integrationVariable)) {
+                return Subtract<Expression> { Multiply<Expression> { integrationVariable, *this }, integrationVariable }.Simplify();
             } else {
-                return Multiply<Expression>{integrationVariable, *this}.Simplify();
+                return Multiply<Expression> { integrationVariable, *this }.Simplify();
             }
         }
     } else {
-        auto numer = Log<Expression>{EulerNumber{}, *(this->leastSigOp->Generalize())};
-        auto denom = Log<Expression>{EulerNumber{}, *(this->mostSigOp->Generalize())};
-        if (numer.Equals(denom)) return integrationVariable.Generalize();
-        return Divide{Integral{numer, integrationVariable}, denom}.Simplify();
+        auto numer = Log<Expression> { EulerNumber {}, *(this->leastSigOp->Generalize()) };
+        auto denom = Log<Expression> { EulerNumber {}, *(this->mostSigOp->Generalize()) };
+        if (numer.Equals(denom))
+            return integrationVariable.Generalize();
+        return Divide { Integral { numer, integrationVariable }, denom }.Simplify();
     }
 
-
-    return Integral<Expression>{*this, integrationVariable}.Generalize();
+    return Integral<Expression> { *this, integrationVariable }.Generalize();
 }
 
-auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression> {
+auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression>
+{
     // d(log_e(6x))/dx = 1/6x * 6
-    if (auto lnCase = EulerNumber::Specialize(*mostSigOp); lnCase != nullptr){
-        Divide derivative{Oasis::Real{1.0}, *leastSigOp};
-        Derivative chain{*leastSigOp, differentiationVariable};
+    if (auto lnCase = EulerNumber::Specialize(*mostSigOp); lnCase != nullptr) {
+        Divide derivative { Oasis::Real { 1.0 }, *leastSigOp };
+        Derivative chain { *leastSigOp, differentiationVariable };
 
-        Multiply result = Multiply<Expression>{derivative, *chain.Differentiate(differentiationVariable)};
+        Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(differentiationVariable) };
         return result.Simplify();
     } else {
-        Divide derivative{Oasis::Real{1.0}, Multiply<Expression>{*leastSigOp, Log{EulerNumber{}, *mostSigOp}}};
-        Derivative chain{*leastSigOp, differentiationVariable};
+        Divide derivative { Oasis::Real { 1.0 }, Multiply<Expression> { *leastSigOp, Log { EulerNumber {}, *mostSigOp } } };
+        Derivative chain { *leastSigOp, differentiationVariable };
 
-        Multiply result = Multiply<Expression>{derivative, *chain.Differentiate(differentiationVariable)};
+        Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(differentiationVariable) };
         return result.Simplify();
     }
-
 }
 
 } // Oasis
