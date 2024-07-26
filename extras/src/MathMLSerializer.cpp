@@ -76,7 +76,7 @@ void MathMLSerializer::Serialize(const Matrix& matrix)
 void MathMLSerializer::Serialize(const Oasis::Pi&)
 {
     result = doc.NewElement("mi");
-    result->SetText("&pi");
+    result->SetText("&pi;");
 }
 
 void MathMLSerializer::Serialize(const Oasis::EulerNumber&)
