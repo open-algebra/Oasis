@@ -351,7 +351,7 @@ auto Add<Expression>::Differentiate(const Expression& differentiationVariable) c
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
         auto left = mostSigOp->Differentiate(differentiationVariable);
         auto right = leastSigOp->Differentiate(differentiationVariable);
-        return Add<Expression>{*left, *right}.Simplify();
+        return Add<Expression> { *left, *right }.Simplify();
     }
     return Copy();
 }
