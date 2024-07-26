@@ -39,8 +39,7 @@ public:
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
     {
-        auto simpOpU = this->GetOperand().Generalize();
-        auto simpOp = simpOpU->Simplify();
+        auto simpOp = this->GetOperand().Simplify();
         if (auto realCase = Real::Specialize(*simpOp); realCase != nullptr) {
             double val = realCase->GetValue();
             return val >= 0.0 ? std::make_unique<Real>(val) : std::make_unique<Real>(-val);
