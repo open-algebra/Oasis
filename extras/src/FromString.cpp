@@ -194,6 +194,19 @@ bool is_function(const std::string& token) { return is_in(token, "log", "dd", "i
 
 bool is_number(const std::string& token) { return std::regex_match(token, std::regex(R"(^-?\d+(\.\d+)?$)")); }
 
+std::unique_ptr<Oasis::Expression> parseToken(const std::string& token)
+{
+    if (is_number(token)) {
+        return std::make_unique<Oasis::Real>(std::stof(token));
+    }
+
+    if (token == "i") {
+        return std::make_unique<Oasis::Imaginary>();
+    }
+
+    return std::make_unique<Oasis::Variable>(token);
+}
+
 std::unique_ptr<Oasis::Expression> multiplyFromVariables(const std::vector<std::string>& tokens)
 {
     std::vector<std::unique_ptr<Oasis::Expression>> multiplicands;
@@ -244,21 +257,63 @@ std::string ParseResult::GetErrorMessage() const
     return "No Error";
 }
 
-auto PreProcessInFix(const std::string& str) -> std::string
+auto PreProcessFirstPass(const std::string& str) -> std::stringstream
 {
-    std::string result;
+    std::stringstream result;
     std::string operators = "+-*/^(),";
 
     for (char ch : str) {
         if (std::ranges::find(operators, ch) != operators.end()) {
-            result += ' ';
-            result += ch;
-            result += ' ';
+            result << ' ' << ch << ' ';
         } else {
-            result += ch;
+            result << ch;
         }
     }
+
     return result;
+}
+
+auto PreProcessSecondPass(std::stringstream str) -> std::stringstream
+{
+    std::stringstream secondPassResult;
+    std::string token;
+
+    while (str >> token) {
+        std::string updatedToken;
+
+        if (!is_function(token)) {
+            for (size_t i = 0; i < token.size(); i++) {
+                updatedToken += token[i];
+                if (i < token.size() - 1) {
+                    bool is_digit = isdigit(token[i]);
+                    bool is_letter = isalpha(token[i]);
+                    bool is_digit_next = isdigit(token[i + 1]);
+                    bool is_letter_next = isalpha(token[i + 1]);
+
+                    if ((is_digit && is_letter_next) || (is_letter && is_digit_next)) {
+                        updatedToken += "*";
+                    }
+
+                    if (is_letter && is_letter_next) {
+                        updatedToken += "*";
+                    }
+                }
+            }
+        } else {
+            updatedToken = token;
+        }
+        secondPassResult << updatedToken;
+    }
+
+    return secondPassResult;
+}
+
+auto PreProcessInFix(const std::string& str) -> std::string
+{
+    std::stringstream firstPassResult = PreProcessFirstPass(str);
+    std::stringstream secondPassResult = PreProcessSecondPass(std::move(firstPassResult));
+
+    return PreProcessFirstPass(secondPassResult.str()).str();
 }
 
 auto FromInFix(const std::string& str) -> ParseResult {
@@ -318,7 +373,7 @@ auto FromInFix(const std::string& str) -> ParseResult {
             }
             ops.push(token);
         } else if (ss.peek() != '(') {
-            st.push(multiplyFromVariables(tokenizeMultiplicands(token)));
+            st.push(parseToken(token));
         }
     }
 
