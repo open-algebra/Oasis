@@ -21,6 +21,8 @@
 
 #include "fmt/format.h"
 
+#include <Oasis/EulerNumber.hpp>
+
 namespace {
 
 int prec(const char c)
@@ -217,6 +219,9 @@ std::unique_ptr<Oasis::Expression> multiplyFromVariables(const std::vector<std::
 
         if (token == "i") {
             return std::make_unique<Oasis::Imaginary>();
+        }
+        if (token == "e") {
+            return std::make_unique<Oasis::EulerNumber>();
         }
 
         return std::make_unique<Oasis::Variable>(token);
