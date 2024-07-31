@@ -196,14 +196,17 @@ bool is_function(const std::string& token) { return is_in(token, "log", "dd", "i
 
 bool is_number(const std::string& token) { return std::regex_match(token, std::regex(R"(^-?\d+(\.\d+)?$)")); }
 
-std::unique_ptr<Oasis::Expression> parseToken(const std::string& token)
+std::unique_ptr<Oasis::Expression> parseToken(const std::string& token, Oasis::ParseImaginaryOption option)
 {
     if (is_number(token)) {
         return std::make_unique<Oasis::Real>(std::stof(token));
     }
 
-    if (token == "i") {
+    if (token == (Oasis::ParseImaginaryOption::UseI ? "i" : "j")) {
         return std::make_unique<Oasis::Imaginary>();
+    }
+    if (token == "e") {
+        return std::make_unique<Oasis::EulerNumber>();
     }
 
     return std::make_unique<Oasis::Variable>(token);
