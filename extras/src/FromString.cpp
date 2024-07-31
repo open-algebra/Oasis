@@ -196,13 +196,13 @@ bool is_function(const std::string& token) { return is_in(token, "log", "dd", "i
 
 bool is_number(const std::string& token) { return std::regex_match(token, std::regex(R"(^-?\d+(\.\d+)?$)")); }
 
-std::unique_ptr<Oasis::Expression> parseToken(const std::string& token, Oasis::ParseImaginaryOption option)
+std::unique_ptr<Oasis::Expression> parseToken(const std::string& token, const Oasis::ParseImaginaryOption option)
 {
     if (is_number(token)) {
         return std::make_unique<Oasis::Real>(std::stof(token));
     }
 
-    if (token == (Oasis::ParseImaginaryOption::UseI ? "i" : "j")) {
+    if (token == (option == Oasis::ParseImaginaryOption::UseI ? "i" : "j")) {
         return std::make_unique<Oasis::Imaginary>();
     }
     if (token == "e") {
@@ -210,31 +210,6 @@ std::unique_ptr<Oasis::Expression> parseToken(const std::string& token, Oasis::P
     }
 
     return std::make_unique<Oasis::Variable>(token);
-}
-
-std::unique_ptr<Oasis::Expression> multiplyFromVariables(const std::vector<std::string>& tokens)
-{
-    std::vector<std::unique_ptr<Oasis::Expression>> multiplicands;
-    std::ranges::transform(tokens, std::back_inserter(multiplicands), [](auto token) -> std::unique_ptr<Oasis::Expression> {
-        if (is_number(token)) {
-            return std::make_unique<Oasis::Real>(std::stof(token));
-        }
-
-        if (token == "i") {
-            return std::make_unique<Oasis::Imaginary>();
-        }
-        if (token == "e") {
-            return std::make_unique<Oasis::EulerNumber>();
-        }
-
-        return std::make_unique<Oasis::Variable>(token);
-    });
-
-    if (multiplicands.size() == 1) {
-        return std::move(multiplicands.front());
-    }
-
-    return Oasis::BuildFromVector<Oasis::Multiply>(multiplicands);
 }
 
 }
@@ -324,7 +299,7 @@ auto PreProcessInFix(const std::string& str) -> std::string
     return PreProcessFirstPass(secondPassResult.str()).str();
 }
 
-auto FromInFix(const std::string& str) -> ParseResult {
+auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResult {
     // Based off Dijkstra's Shunting Yard
 
     std::stack<std::unique_ptr<Expression>> st;
@@ -381,7 +356,7 @@ auto FromInFix(const std::string& str) -> ParseResult {
             }
             ops.push(token);
         } else if (ss.peek() != '(') {
-            st.push(parseToken(token));
+            st.push(parseToken(token, option));
         }
     }
 
