@@ -10,6 +10,11 @@
 
 namespace Oasis {
 
+enum class ParseImaginaryOption {
+    UseI,
+    UseJ
+};
+
 class ParseResult {
 public:
     explicit ParseResult(std::unique_ptr<Expression> expr);
@@ -25,7 +30,7 @@ private:
 
 auto PreProcessInFix(const std::string& str) -> std::string;
 
-auto FromInFix(const std::string& str) -> ParseResult;
+auto FromInFix(const std::string& str, ParseImaginaryOption option = ParseImaginaryOption::UseI) -> ParseResult;
 
 }
 
