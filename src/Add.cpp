@@ -308,7 +308,7 @@ auto Add<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) 
     return std::make_unique<Add>(dynamic_cast<const Add&>(*otherGeneralized));
 }
 
-auto Add<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Add<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
@@ -349,24 +349,9 @@ auto Add<Expression>::Integrate(const Expression& integrationVariable) -> std::u
 auto Add<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
-        auto simplifiedAdd = this->Simplify();
-        if (auto adder = Add<Expression>::Specialize(*simplifiedAdd); adder != nullptr) {
-            auto leftRef = adder->GetLeastSigOp().Copy();
-            auto leftDifferentiate = leftRef->Differentiate(differentiationVariable);
-
-            auto specializedLeft = Expression::Specialize(*leftDifferentiate);
-            auto rightRef = adder->GetMostSigOp().Copy();
-
-            auto rightDifferentiate = rightRef->Differentiate(differentiationVariable);
-            auto specializedRight = Expression::Specialize(*rightDifferentiate);
-
-            if (specializedLeft == nullptr || specializedRight == nullptr) {
-                return Copy();
-            }
-            return std::make_unique<Add<Expression, Expression>>(Add<Expression, Expression> { *(specializedLeft->Copy()), *(specializedRight->Copy()) })->Simplify();
-        } else {
-            return simplifiedAdd->Differentiate(differentiationVariable)->Simplify();
-        }
+        auto left = mostSigOp->Differentiate(differentiationVariable);
+        auto right = leastSigOp->Differentiate(differentiationVariable);
+        return Add<Expression> { *left, *right }.Simplify();
     }
     return Copy();
 }

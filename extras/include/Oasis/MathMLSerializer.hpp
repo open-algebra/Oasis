@@ -24,6 +24,8 @@ public:
     void Serialize(const Matrix& matrix) override;
     void Serialize(const Variable& variable) override;
     void Serialize(const Undefined& undefined) override;
+    void Serialize(const Pi&) override;
+    void Serialize(const EulerNumber&) override;
     void Serialize(const Add<Expression, Expression>& add) override;
     void Serialize(const Subtract<Expression, Expression>& subtract) override;
     void Serialize(const Multiply<Expression, Expression>& multiply) override;
@@ -31,6 +33,7 @@ public:
     void Serialize(const Exponent<Expression, Expression>& exponent) override;
     void Serialize(const Log<Expression, Expression>& log) override;
     void Serialize(const Negate<Expression>& negate) override;
+    void Serialize(const Magnitude<Expression>& magnitude) override;
     void Serialize(const Derivative<Expression, Expression>& derivative) override;
     void Serialize(const Integral<Expression, Expression>& integral) override;
 

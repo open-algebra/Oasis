@@ -11,15 +11,18 @@ set(Oasis_SOURCES
     # DefiniteIntegral.cpp
     Derivative.cpp
     Divide.cpp
+    EulerNumber.cpp
     Exponent.cpp
     Expression.cpp
     Imaginary.cpp
     Integral.cpp
     Linear.cpp
     Log.cpp
+    Magnitude.cpp
     Matrix.cpp
     Multiply.cpp
     Negate.cpp
+    Pi.cpp
     Real.cpp
     Subtract.cpp
     # Summation.cpp
@@ -30,11 +33,13 @@ set(Oasis_SOURCES
 add_library(Oasis ${Oasis_SOURCES})
 add_library(Oasis::Oasis ALIAS Oasis)
 
-if(MSVC)
-    target_compile_options(Oasis PRIVATE /W3 /WX)
-    target_compile_options(Oasis PRIVATE /bigobj)
-else()
-    target_compile_options(Oasis PRIVATE -Wall -Wextra -Wpedantic -Werror)
+if(OASIS_BUILD_PARANOID)
+    if(MSVC)
+        target_compile_options(Oasis PRIVATE /W3 /WX)
+        target_compile_options(Oasis PRIVATE /bigobj)
+    else()
+        target_compile_options(Oasis PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    endif()
 endif()
 
 target_compile_features(Oasis PUBLIC cxx_std_20)

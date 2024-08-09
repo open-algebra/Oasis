@@ -21,6 +21,8 @@
 
 #include "fmt/format.h"
 
+#include <Oasis/EulerNumber.hpp>
+
 namespace {
 
 int prec(const char c)
@@ -48,7 +50,9 @@ void setOps(T& exp, const std::unique_ptr<Oasis::Expression>& op1, const std::un
 bool processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::Expression>>& st)
 {
     if (st.size() < 2) {
-        throw std::runtime_error("Invalid number of arguments");
+        // TODO: Pass error message up
+        // throw std::runtime_error("Invalid number of arguments");
+        return false;
     }
 
     const std::unique_ptr<Oasis::Expression> right = std::move(st.top());
@@ -101,7 +105,9 @@ bool processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::E
 bool processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const std::string& function_token)
 {
     if (st.size() < 2) {
-        throw std::runtime_error("Invalid number of arguments");
+        // TODO: Pass error message up
+        // throw std::runtime_error("Invalid number of arguments");
+        return false;
     }
 
     // If we have a function active, the second operand has just been pushed onto the stack
@@ -190,26 +196,20 @@ bool is_function(const std::string& token) { return is_in(token, "log", "dd", "i
 
 bool is_number(const std::string& token) { return std::regex_match(token, std::regex(R"(^-?\d+(\.\d+)?$)")); }
 
-std::unique_ptr<Oasis::Expression> multiplyFromVariables(const std::vector<std::string>& tokens)
+std::unique_ptr<Oasis::Expression> parseToken(const std::string& token, const Oasis::ParseImaginaryOption option)
 {
-    std::vector<std::unique_ptr<Oasis::Expression>> multiplicands;
-    std::ranges::transform(tokens, std::back_inserter(multiplicands), [](auto token) -> std::unique_ptr<Oasis::Expression> {
-        if (is_number(token)) {
-            return std::make_unique<Oasis::Real>(std::stof(token));
-        }
-
-        if (token == "i") {
-            return std::make_unique<Oasis::Imaginary>();
-        }
-
-        return std::make_unique<Oasis::Variable>(token);
-    });
-
-    if (multiplicands.size() == 1) {
-        return std::move(multiplicands.front());
+    if (is_number(token)) {
+        return std::make_unique<Oasis::Real>(std::stof(token));
     }
 
-    return Oasis::BuildFromVector<Oasis::Multiply>(multiplicands);
+    if (token == (option == Oasis::ParseImaginaryOption::UseI ? "i" : "j")) {
+        return std::make_unique<Oasis::Imaginary>();
+    }
+    if (token == "e") {
+        return std::make_unique<Oasis::EulerNumber>();
+    }
+
+    return std::make_unique<Oasis::Variable>(token);
 }
 
 }
@@ -240,7 +240,66 @@ std::string ParseResult::GetErrorMessage() const
     return "No Error";
 }
 
-auto FromInFix(const std::string& str) -> ParseResult {
+auto PreProcessFirstPass(const std::string& str) -> std::stringstream
+{
+    std::stringstream result;
+    std::string operators = "+-*/^(),";
+
+    for (char ch : str) {
+        if (std::ranges::find(operators, ch) != operators.end()) {
+            result << ' ' << ch << ' ';
+        } else {
+            result << ch;
+        }
+    }
+
+    return result;
+}
+
+auto PreProcessSecondPass(std::stringstream str) -> std::stringstream
+{
+    std::stringstream secondPassResult;
+    std::string token;
+
+    while (str >> token) {
+        std::string updatedToken;
+
+        if (!is_function(token)) {
+            for (size_t i = 0; i < token.size(); i++) {
+                updatedToken += token[i];
+                if (i < token.size() - 1) {
+                    bool is_digit = isdigit(token[i]);
+                    bool is_letter = isalpha(token[i]);
+                    bool is_digit_next = isdigit(token[i + 1]);
+                    bool is_letter_next = isalpha(token[i + 1]);
+
+                    if ((is_digit && is_letter_next) || (is_letter && is_digit_next)) {
+                        updatedToken += "*";
+                    }
+
+                    if (is_letter && is_letter_next) {
+                        updatedToken += "*";
+                    }
+                }
+            }
+        } else {
+            updatedToken = token;
+        }
+        secondPassResult << updatedToken;
+    }
+
+    return secondPassResult;
+}
+
+auto PreProcessInFix(const std::string& str) -> std::string
+{
+    std::stringstream firstPassResult = PreProcessFirstPass(str);
+    std::stringstream secondPassResult = PreProcessSecondPass(std::move(firstPassResult));
+
+    return PreProcessFirstPass(secondPassResult.str()).str();
+}
+
+auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResult {
     // Based off Dijkstra's Shunting Yard
 
     std::stack<std::unique_ptr<Expression>> st;
@@ -263,7 +322,7 @@ auto FromInFix(const std::string& str) -> ParseResult {
             // function_active = true;
             while (!ops.empty() && ops.top() != "(") {
                 if (!processOp(ops, st)) {
-                    return ParseResult { fmt::format(R"(Unknown operator: "{}")", token) };
+                    return ParseResult { fmt::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
                 }
             }
         }
@@ -271,12 +330,12 @@ auto FromInFix(const std::string& str) -> ParseResult {
         else if (token == ")") {
             while (!ops.empty() && ops.top() != "(") {
                 if (!processOp(ops, st)) {
-                    return ParseResult { fmt::format(R"(Unknown operator: "{}")", token) };
+                    return ParseResult { fmt::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
                 }
             }
 
             if (ops.empty() || ops.top() != "(") {
-                throw std::runtime_error("Mismatched parenthesis");
+                return ParseResult { "Mismatched parenthesis" };
             }
 
             ops.pop(); // pop '('
@@ -297,7 +356,7 @@ auto FromInFix(const std::string& str) -> ParseResult {
             }
             ops.push(token);
         } else if (ss.peek() != '(') {
-            st.push(multiplyFromVariables(tokenizeMultiplicands(token)));
+            st.push(parseToken(token, option));
         }
     }
 

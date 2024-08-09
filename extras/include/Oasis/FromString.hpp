@@ -5,7 +5,15 @@
 #ifndef FROMSTRING_HPP
 #define FROMSTRING_HPP
 
+#include <memory>
+#include "Oasis/Expression.hpp"
+
 namespace Oasis {
+
+enum class ParseImaginaryOption {
+    UseI,
+    UseJ
+};
 
 class ParseResult {
 public:
@@ -20,7 +28,9 @@ private:
     std::variant<std::unique_ptr<Expression>, std::string> result;
 };
 
-auto FromInFix(const std::string& str) -> ParseResult;
+auto PreProcessInFix(const std::string& str) -> std::string;
+
+auto FromInFix(const std::string& str, ParseImaginaryOption option = ParseImaginaryOption::UseI) -> ParseResult;
 
 }
 

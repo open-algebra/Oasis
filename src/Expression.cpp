@@ -248,7 +248,7 @@ auto Expression::Specialize(const Expression& other, tf::Subflow& subflow) -> st
     return other.Copy(subflow);
 }
 
-auto Expression::Integrate(const Expression& variable) -> std::unique_ptr<Expression>
+auto Expression::Integrate(const Expression& variable) const -> std::unique_ptr<Expression>
 {
     Integral<Expression, Expression> integral { *(this->Copy()), *(variable.Copy()) };
 

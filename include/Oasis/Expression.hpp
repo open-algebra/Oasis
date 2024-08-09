@@ -36,6 +36,9 @@ enum class ExpressionType {
     Matrix,
     Sin,
     Arcsin,
+    Pi,
+    EulerNumber,
+    Magnitude
 };
 
 /**
@@ -200,7 +203,7 @@ public:
      *
      * @return An indefinite integral of the expression added to a constant
      */
-    [[nodiscard]] virtual auto Integrate(const Expression&) -> std::unique_ptr<Expression>;
+    [[nodiscard]] virtual auto Integrate(const Expression&) const -> std::unique_ptr<Expression>;
 
     /**
      * Attempts to integrate this expression using integration rules

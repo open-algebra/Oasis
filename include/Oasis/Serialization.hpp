@@ -14,6 +14,8 @@ class Imaginary;
 class Matrix;
 class Variable;
 class Undefined;
+class EulerNumber;
+class Pi;
 
 template <IExpression, IExpression>
 class Add;
@@ -36,6 +38,9 @@ class Log;
 template <typename OperandT>
 class Negate;
 
+template <typename OperandT>
+class Magnitude;
+
 template <IExpression, IExpression>
 class Derivative;
 
@@ -55,6 +60,8 @@ public:
     virtual void Serialize(const Matrix& matrix) = 0;
     virtual void Serialize(const Variable& variable) = 0;
     virtual void Serialize(const Undefined& undefined) = 0;
+    virtual void Serialize(const EulerNumber&) = 0;
+    virtual void Serialize(const Pi&) = 0;
     virtual void Serialize(const Add<Expression, Expression>& add) = 0;
     virtual void Serialize(const Subtract<Expression, Expression>& subtract) = 0;
     virtual void Serialize(const Multiply<Expression, Expression>& multiply) = 0;
@@ -62,6 +69,7 @@ public:
     virtual void Serialize(const Exponent<Expression, Expression>& exponent) = 0;
     virtual void Serialize(const Log<Expression, Expression>& log) = 0;
     virtual void Serialize(const Negate<Expression>& negate) = 0;
+    virtual void Serialize(const Magnitude<Expression>& magnitude) = 0;
     virtual void Serialize(const Derivative<Expression, Expression>& derivative) = 0;
     virtual void Serialize(const Integral<Expression, Expression>& integral) = 0;
     virtual void Serialize(const Sin<Expression>& sin) = 0;

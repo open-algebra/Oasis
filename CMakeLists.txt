@@ -14,6 +14,8 @@ option(OASIS_BUILD_EXTRAS "Enables building extra modules for Oasis" OFF)
 option(OASIS_BUILD_TESTS "Enables building unit tests for Oasis" ON)
 option(OASIS_BUILD_WITH_COVERAGE
        "Enables building Oasis with code coverage enabled" OFF)
+option(OASIS_BUILD_PARANOID
+       "Enables the -Werror flag friends when building Oasis" OFF)
 
 # Adds compiler flags for code coverage. Note that only the Clang compiler is
 # currently supported for code coverage.

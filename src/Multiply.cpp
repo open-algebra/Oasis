@@ -4,6 +4,7 @@
 
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Add.hpp"
+#include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
@@ -40,6 +41,12 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (auto ImgCase = Multiply<Imaginary>::Specialize(simplifiedMultiply); ImgCase != nullptr) {
         return std::make_unique<Real>(-1.0);
     }
+
+    if (auto multCase = Multiply<Real, Divide<Expression>>::Specialize(simplifiedMultiply); multCase != nullptr) {
+        auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() }.Simplify();
+        return Divide<Expression> { *m, (multCase->GetLeastSigOp().GetLeastSigOp()) }.Generalize();
+    }
+
     if (auto exprCase = Multiply<Expression>::Specialize(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp())) {
             return std::make_unique<Exponent<Expression, Expression>>(exprCase->GetMostSigOp(), Real { 2.0 });
@@ -383,7 +390,7 @@ auto Multiply<Expression>::Specialize(const Expression& other, tf::Subflow& subf
     return std::make_unique<Multiply>(dynamic_cast<const Multiply&>(*otherGeneralized));
 }
 
-auto Multiply<Expression>::Integrate(const Expression& integrationVariable) -> std::unique_ptr<Expression>
+auto Multiply<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable
     if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
@@ -405,6 +412,8 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) -> s
                 return adder.Simplify();
             }
         }
+
+        // TODO: Implement integration by parts
     }
     Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
 

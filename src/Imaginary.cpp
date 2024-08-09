@@ -9,7 +9,7 @@ namespace Oasis {
 
 auto Imaginary::Equals(const Expression& other) const -> bool
 {
-    return other.Is<Imaginary>() == dynamic_cast<const Imaginary&>(other).Is<Imaginary>();
+    return other.Is<Imaginary>();
 }
 
 auto Imaginary::Specialize(const Expression& other) -> std::unique_ptr<Imaginary>

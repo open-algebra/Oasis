@@ -18,6 +18,9 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/EulerNumber.hpp"
+#include "Oasis/Pi.hpp"
+#include "Oasis/Magnitude.hpp"
 
 namespace Oasis {
 
@@ -67,25 +70,19 @@ void MathMLSerializer::Serialize(const Matrix& matrix)
     mrow->InsertEndChild(table);
     mrow->InsertEndChild(closeBrace);
 
-    //    // Integral symbol
-    //    tinyxml2::XMLElement* inte = doc.NewElement("mo");
-    //    inte->SetText("\u222B;");
-    //
-    //    tinyxml2::XMLElement* dNode = doc.NewElement("mo");
-    //    dNode->SetText("d");
-    //
-    //    auto [expElement, varElement] = GetOpsAsMathMLPair(integral);
-    //
-    //    // d variable
-    //    tinyxml2::XMLElement* dVar = doc.NewElement("mrow");
-    //    dVar->InsertEndChild(dNode);
-    //    dVar->InsertEndChild(varElement);
-    //
-    //    mrow->InsertEndChild(inte);
-    //    mrow->InsertEndChild(expElement);
-    //    mrow->InsertEndChild(dVar);
-
     result = mrow;
+}
+
+void MathMLSerializer::Serialize(const Oasis::Pi&)
+{
+    result = doc.NewElement("mi");
+    result->SetText("&pi;");
+}
+
+void MathMLSerializer::Serialize(const Oasis::EulerNumber&)
+{
+    result = doc.NewElement("mi");
+    result->SetText("e");
 }
 
 void MathMLSerializer::Serialize(const Variable& variable)
@@ -410,6 +407,27 @@ tinyxml2::XMLElement* MathMLSerializer::CreatePlaceholder() const
     mspace->SetAttribute("width", "1em");
     mspace->SetAttribute("height", "1em");
     return mspace;
+}
+void MathMLSerializer::Serialize(const Magnitude<Expression>& magnitude)
+{
+    // mrow
+    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+
+    // (
+    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+    leftParen->SetText("|");
+    mrow->InsertEndChild(leftParen);
+
+    magnitude.GetOperand().Serialize(*this);
+    tinyxml2::XMLElement* operandElement = GetResult();
+    mrow->InsertEndChild(operandElement);
+
+    // )
+    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+    rightParen->SetText("|");
+    mrow->InsertEndChild(rightParen);
+
+    result = mrow;
 }
 
 }
