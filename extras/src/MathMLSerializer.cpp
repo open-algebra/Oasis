@@ -21,6 +21,10 @@
 #include "Oasis/EulerNumber.hpp"
 #include "Oasis/Pi.hpp"
 #include "Oasis/Magnitude.hpp"
+#include "Oasis/Sin.hpp"
+#include "Oasis/Cos.hpp"
+#include "Oasis/Arcsin.hpp"
+#include "Oasis/Arccos.hpp"
 
 namespace Oasis {
 
@@ -426,6 +430,82 @@ void MathMLSerializer::Serialize(const Magnitude<Expression>& magnitude)
     tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
     rightParen->SetText("|");
     mrow->InsertEndChild(rightParen);
+
+    result = mrow;
+}
+
+void MathMLSerializer::Serialize(const Sin<Expression>& sin)
+{
+    tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
+
+    tinyxml2::XMLElement* mi = doc.NewElement("mi");
+    mi->SetText("sin");
+
+    tinyxml2::XMLElement* mfenced = doc.NewElement("mfenced");
+
+    sin.GetOperand().Serialize(*this);
+    tinyxml2::XMLElement* operandElement = GetResult();
+
+    mfenced->InsertEndChild(operandElement);
+    mrow->InsertEndChild(mi);
+    mrow->InsertEndChild(mfenced);
+
+    result = mrow;
+}
+
+void MathMLSerializer::Serialize(const Arcsin<Expression>& arcsin)
+{
+    tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
+
+    tinyxml2::XMLElement* mi = doc.NewElement("mi");
+    mi->SetText("arcsin");
+
+    tinyxml2::XMLElement* mfenced = doc.NewElement("mfenced");
+
+    arcsin.GetOperand().Serialize(*this);
+    tinyxml2::XMLElement* operandElement = GetResult();
+
+    mfenced->InsertEndChild(operandElement);
+    mrow->InsertEndChild(mi);
+    mrow->InsertEndChild(mfenced);
+
+    result = mrow;
+}
+
+void MathMLSerializer::Serialize(const Cos<Expression>& cos)
+{
+    tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
+
+    tinyxml2::XMLElement* mi = doc.NewElement("mi");
+    mi->SetText("cos");
+
+    tinyxml2::XMLElement* mfenced = doc.NewElement("mfenced");
+
+    cos.GetOperand().Serialize(*this);
+    tinyxml2::XMLElement* operandElement = GetResult();
+
+    mfenced->InsertEndChild(operandElement);
+    mrow->InsertEndChild(mi);
+    mrow->InsertEndChild(mfenced);
+
+    result = mrow;
+}
+
+void MathMLSerializer::Serialize(const Arccos<Expression>& arccos)
+{
+    tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
+
+    tinyxml2::XMLElement* mi = doc.NewElement("mi");
+    mi->SetText("arccos");
+
+    tinyxml2::XMLElement* mfenced = doc.NewElement("mfenced");
+
+    arccos.GetOperand().Serialize(*this);
+    tinyxml2::XMLElement* operandElement = GetResult();
+
+    mfenced->InsertEndChild(operandElement);
+    mrow->InsertEndChild(mi);
+    mrow->InsertEndChild(mfenced);
 
     result = mrow;
 }

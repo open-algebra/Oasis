@@ -26,6 +26,10 @@ public:
     void Serialize(const Negate<Expression>& negate) override;
     void Serialize(const Derivative<Expression, Expression>& derivative) override;
     void Serialize(const Integral<Expression, Expression>& integral) override;
+    void Serialize(const Sin<Expression>& sin) override;
+    void Serialize(const Arcsin<Expression>& arcsin) override;
+    void Serialize(const Cos<Expression>& cos) override;
+    void Serialize(const Arccos<Expression>& arccos) override;
 
     [[nodiscard]] std::string getResult() const;
 

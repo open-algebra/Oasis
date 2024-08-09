@@ -141,4 +141,32 @@ std::string InFixSerializer::getResult() const
     return result;
 }
 
+void InFixSerializer::Serialize(const Sin<Expression>& sin)
+{
+    sin.GetOperand().Serialize(*this);
+    const auto operandStr = getResult();
+    result = fmt::format("sin({})", operandStr);
+}
+
+void InFixSerializer::Serialize(const Arcsin<Expression>& arcsin)
+{
+    arcsin.GetOperand().Serialize(*this);
+    const auto operandStr = getResult();
+    result = fmt::format("arcsin({})", operandStr);
+}
+
+void InFixSerializer::Serialize(const Cos<Expression>& cos)
+{
+    cos.GetOperand().Serialize(*this);
+    const auto operandStr = getResult();
+    result = fmt::format("cos({})", operandStr);
+}
+
+void InFixSerializer::Serialize(const Arccos<Expression>& arccos)
+{
+    arccos.GetOperand().Serialize(*this);
+    const auto operandStr = getResult();
+    result = fmt::format("arccos({})", operandStr);
+}
+
 } // Oasis

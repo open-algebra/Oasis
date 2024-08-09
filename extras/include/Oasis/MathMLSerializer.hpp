@@ -36,6 +36,10 @@ public:
     void Serialize(const Magnitude<Expression>& magnitude) override;
     void Serialize(const Derivative<Expression, Expression>& derivative) override;
     void Serialize(const Integral<Expression, Expression>& integral) override;
+    void Serialize(const Sin<Expression>& sin) override;
+    void Serialize(const Arcsin<Expression>& arcsin) override;
+    void Serialize(const Cos<Expression>& cos) override;
+    void Serialize(const Arccos<Expression>& arccos) override;
 
     [[nodiscard]] tinyxml2::XMLDocument& GetDocument() const;
     [[nodiscard]] tinyxml2::XMLElement* GetResult() const;
