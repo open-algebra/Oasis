@@ -53,6 +53,12 @@ class Sin;
 template <typename OperandT>
 class Arcsin;
 
+template <typename OperandT>
+class Cos;
+
+template <typename OperandT>
+class Arccos;
+
 class SerializationVisitor {
 public:
     virtual void Serialize(const Real& real) = 0;
@@ -74,6 +80,8 @@ public:
     virtual void Serialize(const Integral<Expression, Expression>& integral) = 0;
     virtual void Serialize(const Sin<Expression>& sin) = 0;
     virtual void Serialize(const Arcsin<Expression>& arcsin) = 0;
+    virtual void Serialize(const Cos<Expression>& cos) = 0;
+    virtual void Serialize(const Arccos<Expression>& arccos) = 0;
 
     virtual ~SerializationVisitor() = default;
 };

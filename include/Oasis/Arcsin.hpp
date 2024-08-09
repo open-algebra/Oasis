@@ -6,8 +6,7 @@
 namespace Oasis {
 
 class Arcsin : public UnaryExpression {
-
-public: 
+public:
     explicit Arcsin(const Expression& operand);
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override;
@@ -19,7 +18,8 @@ public:
 
     EXPRESSION_TYPE(Arcsin)
     EXPRESSION_CATEGORY(UnExp)
-}
+};
 
-}
-#endif
+} // namespace Oasis
+
+#endif // OASIS_ARCSIN_HPP

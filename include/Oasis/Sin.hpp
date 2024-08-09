@@ -6,7 +6,6 @@
 namespace Oasis {
 
 class Sin : public UnaryExpression {
-
 public: 
     explicit Sin(const Expression& operand);
 
@@ -19,7 +18,8 @@ public:
 
     EXPRESSION_TYPE(Sin)
     EXPRESSION_CATEGORY(UnExp)
-}
+};
 
-}
-#endif
+} // namespace Oasis
+
+#endif // OASIS_SIN_HPP

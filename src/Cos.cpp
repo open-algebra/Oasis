@@ -1,5 +1,5 @@
-#include "Oasis/Cos.hpp"
-#include "Oasis/Real.hpp"
+#include "Cos.hpp"
+#include "Real.hpp"
 #include <cmath>
 
 namespace Oasis {
