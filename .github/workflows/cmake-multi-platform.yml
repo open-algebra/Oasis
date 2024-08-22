@@ -120,12 +120,12 @@ jobs:
                 --config ${{ matrix.build_type }}
                 --target OasisTests
 
-          - name: Build OasisExtrasTests
+          - name: Build OasisIOTests
             run: >
                 cmake
                 --build ${{ steps.strings.outputs.build-dir }}
                 --config Debug
-                --target OasisExtrasTests
+                --target OasisIOTests
 
             # Runs the tests registered to CTest by CMake.
           - name: Test
