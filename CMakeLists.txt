@@ -10,7 +10,7 @@ project(Oasis)
 include(CTest)
 include(FetchContent)
 
-option(OASIS_BUILD_EXTRAS "Enables building extra modules for Oasis" OFF)
+option(OASIS_BUILD_IO "Enables building extra modules for Oasis" OFF)
 option(OASIS_BUILD_TESTS "Enables building unit tests for Oasis" ON)
 option(OASIS_BUILD_WITH_COVERAGE
        "Enables building Oasis with code coverage enabled" OFF)
@@ -49,6 +49,6 @@ if(OASIS_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-if(OASIS_BUILD_EXTRAS)
+if(OASIS_BUILD_IO)
     add_subdirectory(io)
 endif()
