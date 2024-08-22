@@ -50,5 +50,5 @@ if(OASIS_BUILD_TESTS)
 endif()
 
 if(OASIS_BUILD_EXTRAS)
-    add_subdirectory(extras)
+    add_subdirectory(io)
 endif()
