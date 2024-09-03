@@ -78,11 +78,6 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return simplifiedLog.Copy();
 }
 
-auto Log<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
-{
-    return Copy(subflow);
-}
-
 auto Log<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Log>
 {
     if (!other.Is<Oasis::Log>()) {
@@ -90,16 +85,6 @@ auto Log<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Log
     }
 
     const auto otherGeneralized = other.Generalize();
-    return std::make_unique<Log>(dynamic_cast<const Log<Expression>&>(*otherGeneralized));
-}
-
-auto Log<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Log>
-{
-    if (!other.Is<Oasis::Log>()) {
-        return nullptr;
-    }
-
-    const auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Log>(dynamic_cast<const Log<Expression>&>(*otherGeneralized));
 }
 
