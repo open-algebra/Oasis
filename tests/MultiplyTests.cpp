@@ -42,22 +42,6 @@ TEST_CASE("Generalized Multiplication", "[Multiply][Generalized]")
     REQUIRE(simplifiedReal.GetValue() == 6.0);
 }
 
-TEST_CASE("Multiplication Async", "[Multiply][Async]")
-{
-    Oasis::Multiply subtract {
-        Oasis::Multiply {
-            Oasis::Real { 1.0 },
-            Oasis::Real { 2.0 } },
-        Oasis::Real { 3.0 }
-    };
-
-    std::unique_ptr<Oasis::Expression> simplified = subtract.SimplifyAsync();
-    REQUIRE(simplified->Is<Oasis::Real>());
-
-    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
-    REQUIRE(simplifiedReal.GetValue() == 6.0);
-}
-
 TEST_CASE("Imaginary Multiplication", "[Imaginary][Multiplication]")
 {
     Oasis::Multiply i2 {

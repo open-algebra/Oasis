@@ -75,12 +75,6 @@ public:
         return this->Generalize();
     }
 
-    auto Simplify(tf::Subflow& /*subflow*/) const -> std::unique_ptr<Expression> override
-    {
-        // TODO: Implement
-        return this->Generalize();
-    }
-
     [[nodiscard]] auto Differentiate(const Expression& var) const -> std::unique_ptr<Expression> override
     {
         // TODO: Implement

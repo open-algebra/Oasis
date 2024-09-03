@@ -146,15 +146,6 @@ auto Integral<Expression>::Simplify(const Expression& upper, const Expression& l
         */
 }
 
-auto Integral<Expression>::Simplify(tf::Subflow&) const -> std::unique_ptr<Expression>
-{
-    std::unique_ptr<Expression> simplifiedIntegrand, simplifiedDifferential;
-
-    // To be Implemented : Performs Integration on simplified Expression
-
-    return Copy();
-}
-
 auto Integral<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Integral<Expression, Expression>>
 {
     if (!other.Is<Oasis::Integral>()) {
@@ -162,16 +153,6 @@ auto Integral<Expression>::Specialize(const Expression& other) -> std::unique_pt
     }
 
     auto otherGeneralized = other.Generalize();
-    return std::make_unique<Integral>(dynamic_cast<const Integral&>(*otherGeneralized));
-}
-
-auto Integral<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Integral>
-{
-    if (!other.Is<Oasis::Integral>()) {
-        return nullptr;
-    }
-
-    auto otherGeneralized = other.Generalize(subflow);
     return std::make_unique<Integral>(dynamic_cast<const Integral&>(*otherGeneralized));
 }
 

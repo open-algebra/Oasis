@@ -33,15 +33,6 @@ public:
             .Simplify();
     }
 
-    auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> override
-    {
-        return Multiply {
-            Real { -1.0 },
-            this->GetOperand()
-        }
-            .Simplify(subflow);
-    }
-
     [[nodiscard]] auto Differentiate(const Expression& var) const -> std::unique_ptr<Expression> override
     {
         const std::unique_ptr<Expression> operandDerivative = this->GetOperand().Differentiate(var);

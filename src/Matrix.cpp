@@ -74,11 +74,6 @@ auto Matrix::Specialize(const Expression& other) -> std::unique_ptr<Matrix>
     return other.Is<Matrix>() ? std::make_unique<Matrix>(dynamic_cast<const Matrix&>(other)) : nullptr;
 }
 
-auto Matrix::Specialize(const Expression& other, tf::Subflow&) -> std::unique_ptr<Matrix>
-{
-    return other.Is<Matrix>() ? std::make_unique<Matrix>(dynamic_cast<const Matrix&>(other)) : nullptr;
-}
-
 // TO DO: Fix?
 auto Matrix::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
