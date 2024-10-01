@@ -30,96 +30,141 @@
 #include "Oasis/LatexSerializer.hpp"
 
 namespace Oasis{
-Oasis::LatexSerializer::LatexSerializer(std::string output)
-    : output(std::move(output))
-{
+
+LatexSerializer::LatexSerializer(){
+    latexOptions = LatexOptions{NO_SPACING};
 }
 
-void Oasis::LatexSerializer::Serialize(const Real& real)
+LatexSerializer::LatexSerializer(LatexOptions& options)
+{
+    latexOptions = options;
+}
+
+void LatexSerializer::Serialize(const Real& real)
 {
     result = fmt::format("{:.5}", real.GetValue());
-    output.append(result);
 }
 
-void Oasis::LatexSerializer::Serialize(const Imaginary& imaginary)
+void LatexSerializer::Serialize(const Imaginary& imaginary)
 {
     result = "i";
-    output.append(result);
 }
 
-void Oasis::LatexSerializer::Serialize(const Matrix& matrix)
+void LatexSerializer::Serialize(const Matrix& matrix)
 {
+    // TODO: Implement
 }
 
-void Oasis::LatexSerializer::Serialize(const Variable& variable)
+void LatexSerializer::Serialize(const Variable& variable)
 {
     result = variable.GetName();
-    output.append(result);
 }
 
-void Oasis::LatexSerializer::Serialize(const Undefined& undefined)
+void LatexSerializer::Serialize(const Undefined& undefined)
 {
     result = "Undefined";
-    output.append(result);
 }
 
-void Oasis::LatexSerializer::Serialize(const Pi&)
+void LatexSerializer::Serialize(const Pi&)
 {
     result = "\\pi";
-    output.append(result);
 }
 
-void Oasis::LatexSerializer::Serialize(const EulerNumber&)
+void LatexSerializer::Serialize(const EulerNumber&)
 {
     result = "e";
-    output.append(result);
 }
 
-void Oasis::LatexSerializer::Serialize(const Add<Expression, Expression>& add)
+void LatexSerializer::Serialize(const Add<Expression, Expression>& add)
+{
+    add.GetMostSigOp().Serialize(*this);
+    const auto mostSigOpStr = getResult();
+
+    add.GetLeastSigOp().Serialize(*this);
+    const auto leastSigOpStr = getResult();
+    if (latexOptions.spacing == NO_SPACING)
+        result = fmt::format("\\left({}+{}\\right)", mostSigOpStr, leastSigOpStr);
+    else if (latexOptions.spacing == SPACING)
+        result = fmt::format("\\left({} + {}\\right)", mostSigOpStr, leastSigOpStr);
+}
+
+void LatexSerializer::Serialize(const Subtract<Expression, Expression>& subtract)
+{
+    subtract.GetMostSigOp().Serialize(*this);
+    const auto mostSigOpStr = getResult();
+
+    subtract.GetLeastSigOp().Serialize(*this);
+    const auto leastSigOpStr = getResult();
+
+    if (latexOptions.spacing == NO_SPACING)
+        result = fmt::format("\\left({}-{}\\right)", mostSigOpStr, leastSigOpStr);
+    else if (latexOptions.spacing == SPACING)
+        result = fmt::format("\\left({} - {}\\right)", mostSigOpStr, leastSigOpStr);
+}
+
+void LatexSerializer::Serialize(const Multiply<Expression, Expression>& multiply)
+{
+    multiply.GetMostSigOp().Serialize(*this);
+    const auto mostSigOpStr = getResult();
+
+    multiply.GetLeastSigOp().Serialize(*this);
+    const auto leastSigOpStr = getResult();
+
+    if (latexOptions.spacing == NO_SPACING)
+        result = fmt::format("\\left({}*{}\\right)", mostSigOpStr, leastSigOpStr);
+    else if (latexOptions.spacing == SPACING)
+        result = fmt::format("\\left({} * {}\\right)", mostSigOpStr, leastSigOpStr);
+}
+
+void LatexSerializer::Serialize(const Divide<Expression, Expression>& divide)
+{
+    divide.GetMostSigOp().Serialize(*this);
+    const auto mostSigOpStr = getResult();
+
+    divide.GetLeastSigOp().Serialize(*this);
+    const auto leastSigOpStr = getResult();
+
+    result = "\\left(\\frac{" + mostSigOpStr + "}{" + leastSigOpStr + "}\\right)";
+}
+
+void LatexSerializer::Serialize(const Exponent<Expression, Expression>& exponent)
+{
+    exponent.GetMostSigOp().Serialize(*this);
+    const auto mostSigOpStr = getResult();
+
+    exponent.GetLeastSigOp().Serialize(*this);
+    const auto leastSigOpStr = getResult();
+
+    result = "\\left("+ mostSigOpStr +"\\right)^{"+leastSigOpStr+"}";
+}
+
+void LatexSerializer::Serialize(const Log<Expression, Expression>& log)
+{
+    // if (log.GetMostSigOp())
+    log.GetMostSigOp().Serialize(*this);
+    const auto mostSigOpStr = getResult();
+
+    log.GetLeastSigOp().Serialize(*this);
+    const auto leastSigOpStr = getResult();
+}
+
+void LatexSerializer::Serialize(const Negate<Expression>& negate)
 {
 }
 
-void Oasis::LatexSerializer::Serialize(const Subtract<Expression, Expression>& subtract)
+void LatexSerializer::Serialize(const Magnitude<Expression>& magnitude)
 {
 }
 
-void Oasis::LatexSerializer::Serialize(const Multiply<Expression, Expression>& multiply)
+void LatexSerializer::Serialize(const Derivative<Expression, Expression>& derivative)
 {
 }
 
-void Oasis::LatexSerializer::Serialize(const Divide<Expression, Expression>& divide)
+void LatexSerializer::Serialize(const Integral<Expression, Expression>& integral)
 {
 }
 
-void Oasis::LatexSerializer::Serialize(const Exponent<Expression, Expression>& exponent)
-{
-}
-
-void Oasis::LatexSerializer::Serialize(const Log<Expression, Expression>& log)
-{
-}
-
-void Oasis::LatexSerializer::Serialize(const Negate<Expression>& negate)
-{
-}
-
-void Oasis::LatexSerializer::Serialize(const Magnitude<Expression>& magnitude)
-{
-}
-
-void Oasis::LatexSerializer::Serialize(const Derivative<Expression, Expression>& derivative)
-{
-}
-
-void Oasis::LatexSerializer::Serialize(const Integral<Expression, Expression>& integral)
-{
-}
-
-std::string Oasis::LatexSerializer::GetOutput() const {
-    return output;
-}
-
-std::string Oasis::LatexSerializer::GetResult() const
+std::string LatexSerializer::getResult() const
 {
     return result;
 }

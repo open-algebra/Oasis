@@ -9,14 +9,22 @@
 #include "Oasis/Serialization.hpp"
 #include <string>
 
-//template <template <typename, typename> typename T>
-// concept DerivedFromBinaryExpression = std::derived_from<T<Oasis::Expression, Oasis::Expression>, Oasis::BinaryExpression<T>>;
-
 namespace Oasis {
+
+enum Spacing{
+    NO_SPACING,
+    SPACING
+};
+
+struct LatexOptions{
+public:
+    Spacing spacing;
+};
 
 class LatexSerializer final : public SerializationVisitor {
 public:
-    explicit LatexSerializer(std::string output);
+    LatexSerializer();
+    explicit LatexSerializer(LatexOptions& options);
 
     void Serialize(const Real& real) override;
     void Serialize(const Imaginary& imaginary) override;
@@ -36,13 +44,11 @@ public:
     void Serialize(const Derivative<Expression, Expression>& derivative) override;
     void Serialize(const Integral<Expression, Expression>& integral) override;
 
-    [[nodiscard]] std::string GetOutput() const;
-    [[nodiscard]] std::string GetResult() const;
+    [[nodiscard]] std::string getResult() const;
 
 private:
-
-    std::string output;
-    std::string result = NULL;
+    std::string result;
+    LatexOptions latexOptions{};
 };
 
 }
