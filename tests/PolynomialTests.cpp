@@ -43,7 +43,7 @@ TEST_CASE("7th degree polynomial with rational roots", "[factor][duplicateRoot]"
     for (auto& i : zeros) {
         auto divideCase = Oasis::Divide<Oasis::Real>::Specialize(*i);
         REQUIRE(divideCase != nullptr);
-        std::tuple<long, long> asTuple = std::tuple(lround(divideCase->GetMostSigOp().GetValue()), lround(divideCase->GetLeastSigOp().GetValue()));
+        std::tuple<long, long> asTuple = std::tuple(lround(divideCase->GetMostSigOp().GetValue()), std::lround(divideCase->GetLeastSigOp().GetValue()));
         REQUIRE(goalSet.contains(asTuple));
         goalSet.erase(asTuple);
     }
