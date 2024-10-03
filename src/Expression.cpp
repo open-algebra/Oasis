@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include <Oasis/Add.hpp>
 #include <Oasis/Divide.hpp>
 #include <Oasis/Exponent.hpp>
@@ -90,23 +92,24 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             variableName = varName;
             exponent = 0;
         }
-        if (varName == "") {
+        if (varName.empty()) {
             varName = variableName;
         }
-        if (exponent != round(exponent) || varName != variableName) {
+        if (exponent != std::round(exponent) || varName != variableName) {
             return {};
         }
+        long flooredExponent = std::lround(exponent);
         if (exponent >= 0) {
             while (posCoefficents.size() <= exponent) {
                 posCoefficents.push_back(Real(0).Copy());
             }
-            posCoefficents[lround(exponent)] = Add<Expression>(*coefficent, *posCoefficents[lround(exponent)]).Copy();
+            posCoefficents[flooredExponent] = Add<Expression>(*coefficent, *posCoefficents[flooredExponent]).Copy();
         } else {
             exponent *= -1;
             while (negCoefficents.size() <= exponent) {
                 negCoefficents.push_back(Real(0).Copy());
             }
-            negCoefficents[lround(exponent)] = Add<Expression>(*coefficent, *negCoefficents[lround(exponent)]).Copy();
+            negCoefficents[flooredExponent] = Add<Expression>(*coefficent, *negCoefficents[flooredExponent]).Copy();
         }
     }
     while (negCoefficents.size() > 0 && Real::Specialize(*negCoefficents.back()) != nullptr && Real::Specialize(*negCoefficents.back())->GetValue() == 0) {
@@ -132,7 +135,7 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             break;
         }
         double value = realCase->GetValue();
-        if (value != round(value)) {
+        if (value != std::round(value)) {
             break;
         } else {
             termsC.push_back(lround(value));
