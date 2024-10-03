@@ -387,57 +387,57 @@ public:
     std::unique_ptr<LeastSigOpT> leastSigOp;
 };
 
-#define IMPL_SPECIALIZE(Derived, FirstOp, SecondOp)                                                                      \
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Derived<FirstOp, SecondOp>>                       \
-    {                                                                                                                    \
-        if (!other.Is<Oasis::Derived>()) {                                                                               \
-            return nullptr;                                                                                              \
-        }                                                                                                                \
-        auto specialized = std::make_unique<Derived<FirstOp, SecondOp>>();                                               \
-                                                                                                                         \
-        std::unique_ptr<Expression> otherGeneralized = other.Generalize();                                               \
-        const auto& otherBinaryExpression = static_cast<const Derived<Expression>&>(*otherGeneralized);                  \
-                                                                                                                         \
-        bool leftOperandSpecialized = true, rightOperandSpecialized = true;                                              \
-                                                                                                                         \
-        if (otherBinaryExpression.HasMostSigOp()) {                                                                      \
-            specialized->SetMostSigOp(FirstOp::Specialize(otherBinaryExpression.GetMostSigOp()));                        \
-            leftOperandSpecialized = specialized->HasMostSigOp();                                                        \
-        }                                                                                                                \
-                                                                                                                         \
-        if (otherBinaryExpression.HasLeastSigOp()) {                                                                     \
-            specialized->SetLeastSigOp(SecondOp::Specialize(otherBinaryExpression.GetLeastSigOp()));                     \
-            rightOperandSpecialized = specialized->HasLeastSigOp();                                                      \
-        }                                                                                                                \
-                                                                                                                         \
-        if (leftOperandSpecialized && rightOperandSpecialized) {                                                         \
-            return specialized;                                                                                          \
-        }                                                                                                                \
-                                                                                                                         \
-        if (!(other.GetCategory() & Commutative)) {                                                                      \
-            return nullptr;                                                                                              \
-        }                                                                                                                \
-                                                                                                                         \
-        leftOperandSpecialized = true, rightOperandSpecialized = true;                                                   \
-        specialized = std::make_unique<Derived<FirstOp, SecondOp>>();                                                    \
-                                                                                                                         \
-        auto otherWithSwappedOps                                                                                         \
-            = otherBinaryExpression.SwapOperands();                                                                      \
-        if (otherWithSwappedOps.HasMostSigOp()) {                                                                        \
-            specialized->SetMostSigOp(FirstOp::Specialize(otherWithSwappedOps.GetMostSigOp()));                          \
-            leftOperandSpecialized = specialized->HasMostSigOp();                                                        \
-        }                                                                                                                \
-                                                                                                                         \
-        if (otherWithSwappedOps.HasLeastSigOp()) {                                                                       \
-            specialized->SetLeastSigOp(SecondOp::Specialize(otherWithSwappedOps.GetLeastSigOp()));                       \
-            rightOperandSpecialized = specialized->HasLeastSigOp();                                                      \
-        }                                                                                                                \
-                                                                                                                         \
-        if (leftOperandSpecialized && rightOperandSpecialized) {                                                         \
-            return specialized;                                                                                          \
-        }                                                                                                                \
-                                                                                                                         \
-        return nullptr;                                                                                                  \
+#define IMPL_SPECIALIZE(Derived, FirstOp, SecondOp)                                                     \
+    static auto Specialize(const Expression& other) -> std::unique_ptr<Derived<FirstOp, SecondOp>>      \
+    {                                                                                                   \
+        if (!other.Is<Oasis::Derived>()) {                                                              \
+            return nullptr;                                                                             \
+        }                                                                                               \
+        auto specialized = std::make_unique<Derived<FirstOp, SecondOp>>();                              \
+                                                                                                        \
+        std::unique_ptr<Expression> otherGeneralized = other.Generalize();                              \
+        const auto& otherBinaryExpression = static_cast<const Derived<Expression>&>(*otherGeneralized); \
+                                                                                                        \
+        bool leftOperandSpecialized = true, rightOperandSpecialized = true;                             \
+                                                                                                        \
+        if (otherBinaryExpression.HasMostSigOp()) {                                                     \
+            specialized->SetMostSigOp(FirstOp::Specialize(otherBinaryExpression.GetMostSigOp()));       \
+            leftOperandSpecialized = specialized->HasMostSigOp();                                       \
+        }                                                                                               \
+                                                                                                        \
+        if (otherBinaryExpression.HasLeastSigOp()) {                                                    \
+            specialized->SetLeastSigOp(SecondOp::Specialize(otherBinaryExpression.GetLeastSigOp()));    \
+            rightOperandSpecialized = specialized->HasLeastSigOp();                                     \
+        }                                                                                               \
+                                                                                                        \
+        if (leftOperandSpecialized && rightOperandSpecialized) {                                        \
+            return specialized;                                                                         \
+        }                                                                                               \
+                                                                                                        \
+        if (!(other.GetCategory() & Commutative)) {                                                     \
+            return nullptr;                                                                             \
+        }                                                                                               \
+                                                                                                        \
+        leftOperandSpecialized = true, rightOperandSpecialized = true;                                  \
+        specialized = std::make_unique<Derived<FirstOp, SecondOp>>();                                   \
+                                                                                                        \
+        auto otherWithSwappedOps                                                                        \
+            = otherBinaryExpression.SwapOperands();                                                     \
+        if (otherWithSwappedOps.HasMostSigOp()) {                                                       \
+            specialized->SetMostSigOp(FirstOp::Specialize(otherWithSwappedOps.GetMostSigOp()));         \
+            leftOperandSpecialized = specialized->HasMostSigOp();                                       \
+        }                                                                                               \
+                                                                                                        \
+        if (otherWithSwappedOps.HasLeastSigOp()) {                                                      \
+            specialized->SetLeastSigOp(SecondOp::Specialize(otherWithSwappedOps.GetLeastSigOp()));      \
+            rightOperandSpecialized = specialized->HasLeastSigOp();                                     \
+        }                                                                                               \
+                                                                                                        \
+        if (leftOperandSpecialized && rightOperandSpecialized) {                                        \
+            return specialized;                                                                         \
+        }                                                                                               \
+                                                                                                        \
+        return nullptr;                                                                                 \
     }
 
 } // Oasis
