@@ -117,7 +117,6 @@ protected:
         return nullptr;                                                                         \
     }
 
-
 } // Oasis
 
 #endif // UNARYEXPRESSION_HPP

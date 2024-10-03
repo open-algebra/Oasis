@@ -239,7 +239,7 @@ public:
         return category;                                  \
     }
 
-#define DECL_SPECIALIZE(type)                                                 \
+#define DECL_SPECIALIZE(type) \
     static auto Specialize(const Expression& other) -> std::unique_ptr<type>;
 
 } // namespace Oasis
