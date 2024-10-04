@@ -13,7 +13,7 @@
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 
-#include <cstdint>
+#include <cmath>
 #include <set>
 #include <tuple>
 #include <vector>
