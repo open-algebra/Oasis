@@ -5,10 +5,10 @@
 #ifndef OASIS_BINARYEXPRESSION_HPP
 #define OASIS_BINARYEXPRESSION_HPP
 
+#include <algorithm>
 #include <cassert>
 #include <functional>
 #include <list>
-#include <transform>
 
 #include "Expression.hpp"
 #include "Serialization.hpp"
