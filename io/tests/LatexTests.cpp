@@ -16,6 +16,10 @@
 #include "Oasis/Pi.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/Negate.hpp"
+#include "Oasis/Magnitude.hpp"
+#include "Oasis/Integral.hpp"
+#include "Oasis/Derivative.hpp"
 
 TEST_CASE("Latex Serialization for Addition", "[Latex][Serializer][Add]"){
     Oasis::Add a{Oasis::Real{5.0}, Oasis::Variable{"x_0"}};
@@ -66,7 +70,7 @@ TEST_CASE("Latex Serialization for Division", "[Latex][Serializer][Divide]")
     d.Serialize(serializer);
 
     auto result = serializer.getResult();
-    std::string expected = "\\left(\\frac{5}{x_0}\\right)";
+    std::string expected = R"(\left(\frac{5}{x_0}\right))";
 
     REQUIRE(expected == result);
 }
@@ -96,7 +100,87 @@ TEST_CASE("Latex Serialization for Exponents", "[Latex][Serializer][Exponent]")
     e.Serialize(serializer);
 
     auto result = serializer.getResult();
-    std::string expected = "\\left(e\\right)^{\\left(i*x\\right)}";
+    std::string expected = R"(\left(e\right)^{\left(i*x\right)})";
+
+    REQUIRE(expected == result);
+
+    std::cout<<result<<std::endl;
+}
+
+TEST_CASE("Latex Serialization for Logarithms", "[Latex][Serializer][Log]")
+{
+    Oasis::Log e{Oasis::EulerNumber{}, Oasis::Variable{"x"}};
+
+    Oasis::LatexSerializer serializer{};
+
+    e.Serialize(serializer);
+
+    auto result = serializer.getResult();
+    std::string expected = R"(\log_{e}\left(x\right))";
+
+    REQUIRE(expected == result);
+
+    std::cout<<result<<std::endl;
+}
+
+TEST_CASE("Latex Serialization for Negate", "[Latex][Serializer][Negate]")
+{
+    Oasis::Negate<Oasis::Expression> e{Oasis::EulerNumber{}};
+
+    Oasis::LatexSerializer serializer{};
+
+    e.Serialize(serializer);
+
+    auto result = serializer.getResult();
+    std::string expected = R"(\left(-e\right))";
+
+    REQUIRE(expected == result);
+
+    std::cout<<result<<std::endl;
+}
+
+TEST_CASE("Latex Serialization for Magnitude", "[Latex][Serializer][Magnitude]")
+{
+    Oasis::Magnitude e{Oasis::Real{5}};
+
+    Oasis::LatexSerializer serializer{};
+
+    e.Serialize(serializer);
+
+    auto result = serializer.getResult();
+    std::string expected = R"(\left|-5\right|)";
+
+    REQUIRE(expected == result);
+
+    std::cout<<result<<std::endl;
+}
+
+TEST_CASE("Latex Serialization for Derivative", "[Latex][Serializer][Derivative]")
+{
+    Oasis::Derivative e{Oasis::Variable{"x"}, Oasis::Variable{"x"}};
+
+    Oasis::LatexSerializer serializer{};
+
+    e.Serialize(serializer);
+
+    auto result = serializer.getResult();
+    std::string expected = R"(\frac{d}{dx}\left(x\right))";
+
+    REQUIRE(expected == result);
+
+    std::cout<<result<<std::endl;
+}
+
+TEST_CASE("Latex Serialization for Integral", "[Latex][Serializer][Integral]")
+{
+    Oasis::Integral e{Oasis::Variable{"x"}, Oasis::Variable{"x"}};
+
+    Oasis::LatexSerializer serializer{};
+
+    e.Serialize(serializer);
+
+    auto result = serializer.getResult();
+    std::string expected = R"(\int\left(x\right)dx)";
 
     REQUIRE(expected == result);
 

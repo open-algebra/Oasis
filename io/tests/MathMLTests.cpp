@@ -6,6 +6,7 @@
 #include "Oasis/Matrix.hpp"
 #include "Oasis/Variable.hpp"
 #include "Oasis/MathMLSerializer.hpp"
+#include "Oasis/Magnitude.hpp"
 
 TEST_CASE("ToMathML Works", "[MathML]")
 {
@@ -247,3 +248,14 @@ TEST_CASE("Matrix to MathML 3x2", "[Matrix][MathML]")
     // std::cout<<mathml<<std::endl;
     REQUIRE(expected == mathml);
 }
+//
+//TEST_CASE("Test Magnitude", "[Magnitude]")
+//{
+//    Oasis::Magnitude m{Oasis::Real{-5}};
+//
+//    tinyxml2::XMLDocument doc;
+//    Oasis::MathMLSerializer serializer(doc);
+//
+//    m.Serialize(serializer);
+//
+//}

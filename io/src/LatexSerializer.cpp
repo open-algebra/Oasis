@@ -4,12 +4,6 @@
 
 #include <fmt/format.h>
 
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
 #include "Oasis/MathMLSerializer.hpp"
 
 #include "Oasis/Add.hpp"
@@ -146,22 +140,46 @@ void LatexSerializer::Serialize(const Log<Expression, Expression>& log)
 
     log.GetLeastSigOp().Serialize(*this);
     const auto leastSigOpStr = getResult();
+
+    result = "\\log_{"+mostSigOpStr+"}\\left("+leastSigOpStr+"\\right)";
 }
 
 void LatexSerializer::Serialize(const Negate<Expression>& negate)
 {
+    negate.GetOperand().Serialize(*this);
+    const auto op = getResult();
+
+    result = "\\left(-1*"+op+"\\right)";
 }
 
 void LatexSerializer::Serialize(const Magnitude<Expression>& magnitude)
 {
+    magnitude.GetOperand().Serialize(*this);
+    const auto op = getResult();
+
+    result = "\\left|"+op+"\\right|";
 }
 
 void LatexSerializer::Serialize(const Derivative<Expression, Expression>& derivative)
 {
+    derivative.GetMostSigOp().Serialize(*this);
+    const auto MostSigOpStr = getResult();
+
+    derivative.GetLeastSigOp().Serialize(*this);
+    const auto LeastSigOpStr = getResult();
+
+    result = "\\frac{d}{d"+LeastSigOpStr+"}\\left("+MostSigOpStr+"\\right)";
 }
 
 void LatexSerializer::Serialize(const Integral<Expression, Expression>& integral)
 {
+    integral.GetMostSigOp().Serialize(*this);
+    const auto MostSigOpStr = getResult();
+
+    integral.GetLeastSigOp().Serialize(*this);
+    const auto LeastSigOpStr = getResult();
+
+    result = "\\int\\left("+MostSigOpStr+"\\right)d"+LeastSigOpStr;
 }
 
 std::string LatexSerializer::getResult() const
