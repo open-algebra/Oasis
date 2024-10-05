@@ -27,38 +27,34 @@ jobs:
         steps:
             # Downloads the artifacts uploaded by the pull request workflow run.
           - name: Download artifacts
-            uses: actions/github-script@v6
+            uses: actions/github-script@v7
             with:
                 script: |
-                    let artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+                    const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
                         owner: context.repo.owner,
                         repo: context.repo.repo,
                         run_id: context.payload.workflow_run.id,
                     });
 
-                    let matchArtifact1 = artifacts.data.artifacts.filter((artifact) => {
-                        return artifact.name == "pr-number"
-                    })[0];
-                    let download1 = await github.rest.actions.downloadArtifact({
+                    const matchArtifact1 = artifacts.data.artifacts.find(artifact => artifact.name === "pr-number");
+                    const download1 = await github.rest.actions.downloadArtifact({
                         owner: context.repo.owner,
                         repo: context.repo.repo,
                         artifact_id: matchArtifact1.id,
                         archive_format: 'zip',
                     });
 
-                    let matchArtifact2 = artifacts.data.artifacts.filter((artifact) => {
-                        return artifact.name == "build-test-cover"
-                    })[0];
-                    let download2 = await github.rest.actions.downloadArtifact({
+                    const matchArtifact2 = artifacts.data.artifacts.find(artifact => artifact.name === "build-ubuntu-latest-Debug-clang-17");
+                    const download2 = await github.rest.actions.downloadArtifact({
                         owner: context.repo.owner,
                         repo: context.repo.repo,
                         artifact_id: matchArtifact2.id,
                         archive_format: 'zip',
                     });
 
-                    let fs = require('fs');
-                    fs.writeFileSync('${{github.workspace}}/pr-number.zip', Buffer.from(download1.data));
-                    fs.writeFileSync('${{github.workspace}}/build-test-cover.zip', Buffer.from(download2.data));
+                    const fs = require('fs');
+                    fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/pr-number.zip`, Buffer.from(download1.data));
+                    fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/build-ubuntu-latest-Debug-clang-17.zip`, Buffer.from(download2.data));
 
             # Unzips the artifacts.
           - name: Unzip artifacts
