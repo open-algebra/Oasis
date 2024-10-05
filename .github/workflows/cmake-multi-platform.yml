@@ -154,6 +154,23 @@ jobs:
             run: >
               ${{ github.workspace }}/valgrind/bin/valgrind --leak-check=full --error-exitcode=1 ./tests/OasisTests
 
+          - name: Comment on PR with Coverage Report
+            if: ${{ matrix.build_profiling && github.event_name == 'pull_request' }}
+            uses: actions/github-script@v6
+            with:
+              script: |
+                const fs = require('fs');
+                const coverageReportPath = '${{ steps.strings.outputs.coverage-dir }}/reports/index.txt';
+                const coverageReportContent = fs.readFileSync(coverageReportPath, 'utf8');
+                const commentBody = "```" + coverageReportContent + "```";
+
+                github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: commentBody
+                });
+
             # Uploads the build, test, and code coverage artifacts.
           - name: Upload artifacts
             if: ${{ matrix.build_profiling }}
@@ -164,9 +181,3 @@ jobs:
                 ${{ steps.strings.outputs.build-dir }}
                 !${{ steps.strings.outputs.build-dir }}/_deps
                 ${{ steps.strings.outputs.coverage-dir }}
-
-          - name: Upload PR number
-            uses: actions/upload-artifact@v3
-            with:
-              name: pr-number
-              path: ${{ steps.strings.outputs.pr-dir }}
