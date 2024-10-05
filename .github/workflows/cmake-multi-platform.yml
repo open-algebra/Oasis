@@ -19,6 +19,9 @@ concurrency:
 jobs:
     build_and_test:
         runs-on: ${{ matrix.os }}
+        permissions:
+          contents: read
+          pull-requests: write
 
         strategy:
             # Sets fail-fast to false to ensure that feedback is delivered for all platforms.
