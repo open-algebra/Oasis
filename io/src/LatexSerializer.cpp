@@ -46,7 +46,21 @@ void LatexSerializer::Serialize(const Imaginary& imaginary)
 
 void LatexSerializer::Serialize(const Matrix& matrix)
 {
-    // TODO: Implement
+    result = "\\begin{bmatrix}\n";
+    MatrixXXD mat = matrix.GetMatrix();
+    std::string row{};
+    for (int r = 0; r < matrix.GetRows(); r++){
+        row = "";
+        for (int c = 0; c < matrix.GetCols(); c++){
+            row += fmt::format("{:.5}", mat(r,c));
+            if (c < matrix.GetCols()-1){
+                row += "&";
+            }
+        }
+        row += "\\\\\n";
+        result += row;
+    }
+    result += "\\end{bmatrix}\n";
 }
 
 void LatexSerializer::Serialize(const Variable& variable)
