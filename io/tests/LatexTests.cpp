@@ -186,3 +186,21 @@ TEST_CASE("Latex Serialization for Integral", "[Latex][Serializer][Integral]")
 
     std::cout<<result<<std::endl;
 }
+
+TEST_CASE("Latex Serialization for Matrices", "[Latex][Serializer][Matrix]")
+{
+    Oasis::Matrix mat{Oasis::MatrixXXD{{1,2,3},{4,5,6.2}}};
+    Oasis::LatexSerializer serializer{};
+
+    mat.Serialize(serializer);
+
+    auto result = serializer.getResult();
+    std::cout<<result<<std::endl;
+    auto expected = R"(\begin{bmatrix}
+1&2&3\\
+4&5&6.2\\
+\end{bmatrix}
+)";
+
+    REQUIRE(expected == result);
+}
