@@ -65,6 +65,11 @@ public:
         return DerivedGeneralized { *this }.Copy(subflow);
     }
 
+    [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
+    {
+        return Generalize()->Simplify();
+    }
+
     auto GetOperand() const -> const OperandT&
     {
         return *op;

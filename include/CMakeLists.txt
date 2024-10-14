@@ -19,6 +19,7 @@ set(Oasis_HEADERS
     Oasis/Real.hpp
     Oasis/Serialization.hpp
     Oasis/Subtract.hpp
+        Oasis/Sine.hpp
     Oasis/UnaryExpression.hpp
     Oasis/Undefined.hpp
     Oasis/Variable.hpp)

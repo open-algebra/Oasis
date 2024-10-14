@@ -429,5 +429,9 @@ void MathMLSerializer::Serialize(const Magnitude<Expression>& magnitude)
 
     result = mrow;
 }
+void MathMLSerializer::Serialize(const Sine<Expression>& sine)
+{
+    result = nullptr;
+}
 
 }
