@@ -17,6 +17,7 @@ set(Oasis_HEADERS
     Oasis/Negate.hpp
     Oasis/Pi.hpp
     Oasis/Real.hpp
+    Oasis/RecursiveCast.hpp
     Oasis/Serialization.hpp
     Oasis/Subtract.hpp
     Oasis/UnaryExpression.hpp

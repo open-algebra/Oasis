@@ -2,7 +2,6 @@
 #define OASIS_EXPRESSION_HPP
 
 #include <memory>
-#include <string>
 #include <vector>
 
 namespace Oasis {

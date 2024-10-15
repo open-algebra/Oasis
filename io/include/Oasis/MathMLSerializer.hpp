@@ -8,10 +8,8 @@
 #include <tinyxml2.h>
 
 #include "Oasis/BinaryExpression.hpp"
+#include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Serialization.hpp"
-
-template <template <typename, typename> typename T>
-concept DerivedFromBinaryExpression = std::derived_from<T<Oasis::Expression, Oasis::Expression>, Oasis::BinaryExpression<T>>;
 
 namespace Oasis {
 
