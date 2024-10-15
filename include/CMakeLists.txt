@@ -18,8 +18,8 @@ set(Oasis_HEADERS
     Oasis/Pi.hpp
     Oasis/Real.hpp
     Oasis/Serialization.hpp
+    Oasis/Sine.hpp
     Oasis/Subtract.hpp
-        Oasis/Sine.hpp
     Oasis/UnaryExpression.hpp
     Oasis/Undefined.hpp
     Oasis/Variable.hpp)
