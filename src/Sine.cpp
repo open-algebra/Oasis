@@ -17,7 +17,7 @@ Sine<Expression>::Sine(const Expression& operand)
 
 auto Sine<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
-    std::cout<<"Sine Simplify"<<std::endl;
+//    std::cout<<"Sine Simplify"<<std::endl;
     auto simplifiedOperand = op ? op->Simplify() : nullptr;
 
     if (auto PiCase = Pi::Specialize(*simplifiedOperand); PiCase != nullptr){
@@ -25,13 +25,6 @@ auto Sine<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     return std::make_unique<Real>(-128);
-}
-
-auto Sine<Expression>::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
-{
-    // TODO: Implement
-    std::cout<<"Sine Simplify Subflow"<<std::endl;
-    return Simplify();
 }
 
 auto Sine<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>

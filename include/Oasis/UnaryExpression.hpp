@@ -60,6 +60,16 @@ public:
         return Generalize()->Simplify();
     }
 
+    [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> override
+    {
+        return Generalize()->Integrate(integrationVariable);
+    }
+
+    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> override
+    {
+        return Generalize()->Differentiate(differentiationVariable);
+    }
+
     auto GetOperand() const -> const OperandT&
     {
         return *op;
@@ -104,7 +114,7 @@ protected:
 };
 
 #define IMPL_SPECIALIZE_UNARYEXPR(DerivedT, OperandT)                                           \
-    static auto Specialize(const Expression& other) -> std::unique_ptr<DerivedT>                \
+    static auto Specialize(const Expression& other) -> std::unique_ptr<DerivedT<OperandT>>                \
     {                                                                                           \
         if (!other.Is<DerivedT>()) {                                                            \
             return nullptr;                                                                     \

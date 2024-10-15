@@ -27,7 +27,6 @@ public:
     Sine(const Expression& Operand);
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
-    auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> final;
