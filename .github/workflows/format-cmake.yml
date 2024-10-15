@@ -22,7 +22,7 @@ jobs:
 
             # Installs cmakelang.
           - name: Install cmakelang
-            run: pip install cmakelang
+            run: pip install --user cmakelang
 
             # Runs cmake-format on all CMakeLists.txt files.
           - name: Run cmake-format
