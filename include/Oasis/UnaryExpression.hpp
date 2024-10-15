@@ -10,7 +10,7 @@
 
 namespace Oasis {
 
-template <template <IExpression> class DerivedT, IExpression OperandT>
+template <template <IExpression> class DerivedT, IExpression OperandT = Expression>
 class UnaryExpression : public Expression {
 
     using DerivedSpecialized = DerivedT<OperandT>;
@@ -52,7 +52,13 @@ public:
 
     [[nodiscard]] auto Generalize() const -> std::unique_ptr<Expression> final
     {
-        return std::make_unique<DerivedGeneralized>(*this);
+        DerivedGeneralized generalized;
+
+        if (this->HasOperand()) {
+            generalized.SetOperand(*this->op->Copy());
+        }
+
+        return std::make_unique<DerivedGeneralized>(generalized);
     }
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
@@ -101,6 +107,8 @@ public:
         auto ret = comb.Simplify();
         return ret;
     }
+
+    auto operator=(const UnaryExpression& other) -> UnaryExpression& = default;
 
     void Serialize(SerializationVisitor& visitor) const override
     {
