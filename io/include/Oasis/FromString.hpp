@@ -6,6 +6,8 @@
 #define FROMSTRING_HPP
 
 #include <memory>
+#include <variant>
+
 #include "Oasis/Expression.hpp"
 
 namespace Oasis {

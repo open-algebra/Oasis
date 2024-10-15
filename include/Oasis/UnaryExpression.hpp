@@ -37,11 +37,6 @@ public:
         return std::make_unique<DerivedSpecialized>(*static_cast<const DerivedSpecialized*>(this));
     }
 
-    auto Copy(tf::Subflow&) const -> std::unique_ptr<Expression> final
-    {
-        return std::make_unique<DerivedSpecialized>(*static_cast<const DerivedSpecialized*>(this));
-    }
-
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final
     {
         if (!other.Is<DerivedSpecialized>()) {
@@ -60,11 +55,6 @@ public:
         return std::make_unique<DerivedGeneralized>(*this);
     }
 
-    auto Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final
-    {
-        return DerivedGeneralized { *this }.Copy(subflow);
-    }
-
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
     {
         return Generalize()->Simplify();
@@ -81,11 +71,6 @@ public:
     }
 
     [[nodiscard]] auto StructurallyEquivalent(const Expression& other) const -> bool final
-    {
-        return this->GetType() == other.GetType();
-    }
-
-    auto StructurallyEquivalent(const Expression& other, tf::Subflow&) const -> bool final
     {
         return this->GetType() == other.GetType();
     }
@@ -135,12 +120,6 @@ protected:
         }                                                                                       \
                                                                                                 \
         return nullptr;                                                                         \
-    }                                                                                           \
-                                                                                                \
-    static auto Specialize(const Expression& other, tf::Subflow&) -> std::unique_ptr<DerivedT>  \
-    {                                                                                           \
-        /* TODO: Actually implement */                                                          \
-        return DerivedT<OperandT>::Specialize(other);                                           \
     }
 
 } // Oasis

@@ -42,7 +42,6 @@ public:
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Variable>;
-    static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Variable>;
 
     auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> override;
 

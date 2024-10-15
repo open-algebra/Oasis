@@ -32,6 +32,5 @@ target_compile_features(OasisHeaders INTERFACE cxx_std_20)
 target_include_directories(
     OasisHeaders INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                            $<INSTALL_INTERFACE:include>)
-target_link_libraries(OasisHeaders INTERFACE Taskflow)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${Oasis_HEADERS})

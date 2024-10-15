@@ -38,7 +38,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2 fmt)
 
 include(cmake/FetchEigen.cmake)
-include(cmake/FetchTaskflow.cmake)
 include(cmake/FetchTinyxml2.cmake)
 
 # Processes the CMakeLists.txt for each target.

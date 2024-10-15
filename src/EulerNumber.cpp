@@ -19,10 +19,6 @@ auto EulerNumber::Specialize(const Expression& other) -> std::unique_ptr<EulerNu
     return other.Is<EulerNumber>() ? std::make_unique<EulerNumber>(dynamic_cast<const EulerNumber&>(other)) : nullptr;
 }
 
-auto EulerNumber::Specialize(const Expression& other, tf::Subflow&) -> std::unique_ptr<EulerNumber>
-{
-    return other.Is<EulerNumber>() ? std::make_unique<EulerNumber>(dynamic_cast<const EulerNumber&>(other)) : nullptr;
-}
 auto EulerNumber::GetValue() -> double
 {
     return std::numbers::e;
