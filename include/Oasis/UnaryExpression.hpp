@@ -122,7 +122,7 @@ protected:
 };
 
 #define IMPL_SPECIALIZE_UNARYEXPR(DerivedT, OperandT)                                           \
-    static auto Specialize(const Expression& other) -> std::unique_ptr<DerivedT<OperandT>>                \
+    static auto Specialize(const Expression& other) -> std::unique_ptr<DerivedT<OperandT>>      \
     {                                                                                           \
         if (!other.Is<DerivedT>()) {                                                            \
             return nullptr;                                                                     \

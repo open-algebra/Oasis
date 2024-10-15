@@ -7,20 +7,18 @@
 #include "Oasis/Pi.hpp"
 #include "Oasis/Real.hpp"
 
-namespace Oasis{
+namespace Oasis {
 Sine<Expression>::Sine(const Expression& operand)
     : UnaryExpression(operand)
 {
 }
 
-
-
 auto Sine<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
-//    std::cout<<"Sine Simplify"<<std::endl;
+    //    std::cout<<"Sine Simplify"<<std::endl;
     auto simplifiedOperand = op ? op->Simplify() : nullptr;
 
-    if (auto PiCase = Pi::Specialize(*simplifiedOperand); PiCase != nullptr){
+    if (auto PiCase = Pi::Specialize(*simplifiedOperand); PiCase != nullptr) {
         return std::make_unique<Real>(0);
     }
 

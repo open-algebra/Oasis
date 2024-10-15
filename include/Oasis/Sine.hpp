@@ -5,10 +5,10 @@
 #ifndef OASIS_SINE_HPP
 #define OASIS_SINE_HPP
 
-#include "UnaryExpression.hpp"
 #include "Real.hpp"
+#include "UnaryExpression.hpp"
 
-namespace Oasis{
+namespace Oasis {
 
 // TODO: Fix so function(s) can be implemented in other files.
 
@@ -19,7 +19,7 @@ class Sine;
 template <>
 class Sine<Expression> : public UnaryExpression<Sine, Expression> {
 public:
-//    using UnaryExpression::UnaryExpression;
+    //    using UnaryExpression::UnaryExpression;
 
     Sine() = default;
     Sine(const Sine<Expression>& other) = default;
@@ -52,7 +52,7 @@ public:
     {
     }
 
-     explicit Sine(const OperandT& operand)
+    explicit Sine(const OperandT& operand)
         : UnaryExpression<Oasis::Sine, OperandT>(operand)
     {
     }
