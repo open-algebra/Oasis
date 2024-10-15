@@ -10,6 +10,7 @@
 #include "Oasis/Log.hpp"
 #include "Oasis/Matrix.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/RecursiveCast.hpp"
 
 #define EPSILON 10E-6
 
@@ -22,7 +23,7 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     Add simplifiedAdd { *simplifiedAugend, *simplifiedAddend };
 
-    if (auto realCase = Add<Real>::Specialize(simplifiedAdd); realCase != nullptr) {
+    if (auto realCase = RecursiveCast<Add<Real>, Real, Real>(simplifiedAdd); realCase != nullptr) {
         const Real& firstReal = realCase->GetMostSigOp();
         const Real& secondReal = realCase->GetLeastSigOp();
 
