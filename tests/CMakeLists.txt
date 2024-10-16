@@ -20,6 +20,7 @@ set(Oasis_TESTS
     MultiplyTests.cpp
     NegateTests.cpp
     PolynomialTests.cpp
+    SineTests.cpp
     SubtractTests.cpp
     UnaryExpressionTests.cpp)
 
