@@ -10,80 +10,72 @@
 
 namespace Oasis {
 
-// Primary template
-template<typename T>
-struct original_template;
-
-// Specialization for MyTemplate
-template <template <typename, typename > class Template, typename T, typename U>
-struct original_template<Template<T, U>> {
-    template <typename V, typename W>
-    using type = Template<V, W>;
+template<class Derived>
+concept DerivedFromBinaryExpression = requires (Derived& d) {
+    []<template <typename, typename> typename D, typename T, typename U>(BinaryExpression<D, T, U>&) {}(d);
 };
 
-template <template <typename, typename> typename T>
-concept DerivedFromBinaryExpression = std::derived_from<T<Expression, Expression>, BinaryExpression<T>>;
-
-template <typename SpecializedT, typename MostSigOpT, typename LeastSigOpT>
-concept DerivedFromSpecializedBinaryExpression = std::derived_from<SpecializedT, BinaryExpression<original_template<SpecializedT>::template type, MostSigOpT, LeastSigOpT>> && IExpression<MostSigOpT> && IExpression<LeastSigOpT>;
-
-template <IExpression DerivedT, IExpression MostSigOpT, IExpression LeastSigOpT> // requires DerivedFromSpecializedBinaryExpression<DerivedT, MostSigOpT, LeastSigOpT>
-auto RecursiveCast(const Expression& other) -> std::unique_ptr<DerivedT>
+template <IExpression T> requires DerivedFromBinaryExpression<T>
+auto RecursiveCast(const Expression& other) -> std::unique_ptr<T>
 {
-    if (!other.Is<DerivedT>()) {
+    T dummy;
+    return [&other]<template <typename, typename> typename DerivedT, typename MostSigOpT, typename LeastSigOpT>(BinaryExpression<DerivedT, MostSigOpT, LeastSigOpT>&) -> std::unique_ptr<T> {
+        if (!other.Is<DerivedT>()) {
+            return nullptr;
+        }
+
+        const std::unique_ptr<Expression> otherGeneralized = other.Generalize();
+        const auto& otherBinaryExpression = static_cast<const DerivedT<Expression, Expression>&>(*otherGeneralized);
+
+        auto specialized = std::make_unique<T>();
+
+        bool leftOperandSpecialized = true, rightOperandSpecialized = true;
+
+        if (otherBinaryExpression.HasMostSigOp()) {
+            specialized->SetMostSigOp(RecursiveCast<MostSigOpT>(otherBinaryExpression.GetMostSigOp()));
+            leftOperandSpecialized = specialized->HasMostSigOp();
+        }
+
+        if (otherBinaryExpression.HasLeastSigOp()) {
+            specialized->SetLeastSigOp(RecursiveCast<LeastSigOpT>(otherBinaryExpression.GetLeastSigOp()));
+            rightOperandSpecialized = specialized->HasLeastSigOp();
+        }
+
+        if (leftOperandSpecialized && rightOperandSpecialized) {
+            return specialized;
+        }
+
+        if (!(other.GetCategory() & Commutative)) {
+            return nullptr;
+        }
+
+        leftOperandSpecialized = true, rightOperandSpecialized = true;
+        specialized = std::make_unique<T>();
+
+        auto otherWithSwappedOps
+            = otherBinaryExpression.SwapOperands();
+        if (otherWithSwappedOps.HasMostSigOp()) {
+            specialized->SetMostSigOp(RecursiveCast<MostSigOpT>(otherWithSwappedOps.GetMostSigOp()));
+            leftOperandSpecialized = specialized->HasMostSigOp();
+        }
+
+        if (otherWithSwappedOps.HasLeastSigOp()) {
+            specialized->SetLeastSigOp(RecursiveCast<LeastSigOpT>(otherWithSwappedOps.GetLeastSigOp()));
+            rightOperandSpecialized = specialized->HasLeastSigOp();
+        }
+
+        if (leftOperandSpecialized && rightOperandSpecialized) {
+            return specialized;
+        }
+
         return nullptr;
-    }
-    auto specialized = std::make_unique<DerivedT>();
-
-    const std::unique_ptr<Expression> otherGeneralized = other.Generalize();
-    const auto& otherBinaryExpression = static_cast<const DerivedT&>(*otherGeneralized);
-
-    bool leftOperandSpecialized = true, rightOperandSpecialized = true;
-
-    if (otherBinaryExpression.HasMostSigOp()) {
-        specialized->SetMostSigOp(RecursiveCast<MostSigOpT>(otherBinaryExpression.GetMostSigOp()));
-        leftOperandSpecialized = specialized->HasMostSigOp();
-    }
-
-    if (otherBinaryExpression.HasLeastSigOp()) {
-        specialized->SetLeastSigOp(RecursiveCast<LeastSigOpT>(otherBinaryExpression.GetLeastSigOp()));
-        rightOperandSpecialized = specialized->HasLeastSigOp();
-    }
-
-    if (leftOperandSpecialized && rightOperandSpecialized) {
-        return specialized;
-    }
-
-    if (!(other.GetCategory() & Commutative)) {
-        return nullptr;
-    }
-
-    leftOperandSpecialized = true, rightOperandSpecialized = true;
-    specialized = std::make_unique<DerivedT>();
-
-    auto otherWithSwappedOps
-        = otherBinaryExpression.SwapOperands();
-    if (otherWithSwappedOps.HasMostSigOp()) {
-        specialized->SetMostSigOp(RecursiveCast<MostSigOpT>(otherWithSwappedOps.GetMostSigOp()));
-        leftOperandSpecialized = specialized->HasMostSigOp();
-    }
-
-    if (otherWithSwappedOps.HasLeastSigOp()) {
-        specialized->SetLeastSigOp(RecursiveCast<LeastSigOpT>(otherWithSwappedOps.GetLeastSigOp()));
-        rightOperandSpecialized = specialized->HasLeastSigOp();
-    }
-
-    if (leftOperandSpecialized && rightOperandSpecialized) {
-        return specialized;
-    }
-
-    return nullptr;
+    }(dummy);
 }
 
 template <IExpression T>
-auto RecursiveCast(const T& other) -> std::unique_ptr<T>
+auto RecursiveCast(const Expression& other) -> std::unique_ptr<T>
 {
-    return other.template Is<T>() ? std::make_unique<T>() : nullptr;
+    return other.Is<T>() ? std::make_unique<T>(dynamic_cast<const T&>(other)) : nullptr;
 }
 
 }

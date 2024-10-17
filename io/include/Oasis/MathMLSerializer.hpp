@@ -41,9 +41,7 @@ public:
 private:
     [[nodiscard]] tinyxml2::XMLElement* CreatePlaceholder() const;
 
-    template <template <typename, typename> typename T>
-        requires DerivedFromBinaryExpression<T>
-    auto GetOpsAsMathMLPair(const T<Expression, Expression>& binexp) -> std::pair<tinyxml2::XMLElement*, tinyxml2::XMLElement*>
+    auto GetOpsAsMathMLPair(const DerivedFromBinaryExpression auto& binexp) -> std::pair<tinyxml2::XMLElement*, tinyxml2::XMLElement*>
     {
         tinyxml2::XMLElement* mostSig = CreatePlaceholder();
 

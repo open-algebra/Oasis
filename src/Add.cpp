@@ -23,7 +23,7 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     Add simplifiedAdd { *simplifiedAugend, *simplifiedAddend };
 
-    if (auto realCase = RecursiveCast<Add<Real>, Real, Real>(simplifiedAdd); realCase != nullptr) {
+    if (auto realCase = RecursiveCast<Add<Real>>(simplifiedAdd); realCase != nullptr) {
         const Real& firstReal = realCase->GetMostSigOp();
         const Real& secondReal = realCase->GetLeastSigOp();
 
