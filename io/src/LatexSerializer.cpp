@@ -163,7 +163,7 @@ void LatexSerializer::Serialize(const Negate<Expression>& negate)
     negate.GetOperand().Serialize(*this);
     const auto op = getResult();
 
-    result = "\\left(-1*"+op+"\\right)";
+    result = "\\left(-"+op+"\\right)";
 }
 
 void LatexSerializer::Serialize(const Magnitude<Expression>& magnitude)
