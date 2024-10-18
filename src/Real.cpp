@@ -8,6 +8,7 @@
 #include "Oasis/Integral.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Variable.hpp"
 
 namespace Oasis {
@@ -39,7 +40,7 @@ auto Real::Specialize(const Expression& other) -> std::unique_ptr<Real>
 
 auto Real::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
-    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+    if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
         // Constant rule
         if (value != 0) {
 

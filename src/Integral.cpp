@@ -5,10 +5,6 @@
 #include "Oasis/Integral.hpp"
 
 #include "Oasis/Add.hpp"
-#include "Oasis/Divide.hpp"
-#include "Oasis/Exponent.hpp"
-#include "Oasis/Multiply.hpp"
-#include "Oasis/Subtract.hpp"
 // #include "Oasis/Log.hpp"
 // #include "Oasis/Imaginary.hpp"
 
@@ -43,11 +39,11 @@ auto Integral<Expression>::Simplify(const Expression& upper, const Expression& l
         // Bounded Integration Rules
 
         // Constant Rule
-        if (auto constCase = Integral<Real, Variable>::Specialize(simplifiedIntegrate); constCase != nullptr) {
+        if (auto constCase = RecursiveCast<Integral<Real, Variable>>(simplifiedIntegrate); constCase != nullptr) {
             const Real& constant = constCase->GetMostSigOp();
 
-            auto upper_bound = Real::Specialize(upper);
-            auto lower_bound = Real::Specialize(lower);
+            auto upper_bound = RecursiveCast<Real>(upper);
+            auto lower_bound = RecursiveCast<Real>(lower);
 
             if (upper_bound != nullptr && lower_bound != nullptr) {
                 return std::make_unique<Real>((constant.GetValue() * upper_bound->GetValue()) - (constant.GetValue() * lower_bound->GetValue()));
@@ -59,12 +55,12 @@ auto Integral<Expression>::Simplify(const Expression& upper, const Expression& l
             return std::make_unique<Subtract<Expression>>(*Multiply<Expression> { constant, upper }.Simplify(), *Multiply<Expression> { constant, lower }.Simplify());
         }
 
-        if (auto constCase = Integral<Divide<Real>, Variable>::Specialize(simplifiedIntegrate); constCase != nullptr) {
+        if (auto constCase = RecursiveCast<Integral<Divide<Real>, Variable>>(simplifiedIntegrate); constCase != nullptr) {
             Oasis::Divide constant { constCase->GetMostSigOp() };
-            auto constReal = Real::Specialize(*constant.Simplify());
+            auto constReal = RecursiveCast<Real>(*constant.Simplify());
 
-            auto upper_bound = Real::Specialize(upper);
-            auto lower_bound = Real::Specialize(lower);
+            auto upper_bound = RecursiveCast<Real>(upper);
+            auto lower_bound = RecursiveCast<Real>(lower);
 
             if (upper_bound != nullptr && lower_bound != nullptr) {
                 return std::make_unique<Real>((Real { *constReal }.GetValue() * upper_bound->GetValue()) - (Real { *constReal }.GetValue() * lower_bound->GetValue()));
@@ -77,13 +73,13 @@ auto Integral<Expression>::Simplify(const Expression& upper, const Expression& l
         }
 
         // Power Rule
-        if (auto powerCase = Integral<Exponent<Expression>, Variable>::Specialize(simplifiedIntegrate); powerCase != nullptr) {
+        if (auto powerCase = RecursiveCast<Integral<Exponent<Expression>, Variable>>(simplifiedIntegrate); powerCase != nullptr) {
             const Variable& differential = powerCase->GetLeastSigOp();
             Oasis::Exponent exponent { powerCase->GetMostSigOp() };
-            auto integral = Add<Divide<Exponent<Variable, Real>, Real>, Variable>::Specialize(*exponent.Integrate(differential));
+            auto integral = RecursiveCast<Add<Divide<Exponent<Variable, Real>, Real>, Variable>>(*exponent.Integrate(differential));
 
-            auto upper_bound = Real::Specialize(upper);
-            auto lower_bound = Real::Specialize(lower);
+            auto upper_bound = RecursiveCast<Real>(upper);
+            auto lower_bound = RecursiveCast<Real>(lower);
 
             if (upper_bound != nullptr && lower_bound != nullptr) {
 
@@ -101,7 +97,7 @@ auto Integral<Expression>::Simplify(const Expression& upper, const Expression& l
         }
         //
         //    // Constant + Power Rule
-        //    if (auto powerCase = Integrate<Multiply<Expression, Exponent<Expression>>, Variable>::Specialize(simplifiedIntegrate); powerCase != nullptr) {
+        //    if (auto powerCase = RecursiveCast<Integrate<Multiply<Expression, Exponent<Expression>>, Variable>>(simplifiedIntegrate); powerCase != nullptr) {
         //        const Variable& differential = powerCase->GetLeastSigOp();
         //        Oasis::Exponent exponent{powerCase->GetMostSigOp().GetLeastSigOp()};
         //        auto integration = exponent.Integrate(differential);
@@ -109,7 +105,7 @@ auto Integral<Expression>::Simplify(const Expression& upper, const Expression& l
         //        return std::make_unique<Multiply<Expression>>(powerCase->GetMostSigOp().GetMostSigOp(), (*integration));
         //    }
         //
-        //    if (auto powerCase = Integrate<Multiply<Exponent<Expression>, Expression>, Variable>::Specialize(simplifiedIntegrate); powerCase != nullptr) {
+        //    if (auto powerCase = RecursiveCast<Integrate<Multiply<Exponent<Expression>, Expression>, Variable>>(simplifiedIntegrate); powerCase != nullptr) {
         //        const Variable& differential = powerCase->GetLeastSigOp();
         //        Oasis::Exponent exponent{powerCase->GetMostSigOp().GetMostSigOp()};
         //        auto integration = exponent.Integrate(differential);

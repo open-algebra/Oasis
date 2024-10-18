@@ -5,13 +5,13 @@
 #include <map>
 #include <vector>
 
-#include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 
@@ -28,14 +28,14 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     auto simplifiedDivider = leastSigOp->Simplify(); // denominator
     Divide simplifiedDivide { *simplifiedDividend, *simplifiedDivider };
 
-    if (auto realCase = Divide<Real>::Specialize(simplifiedDivide); realCase != nullptr) {
+    if (auto realCase = RecursiveCast<Divide<Real>>(simplifiedDivide); realCase != nullptr) {
         const Real& dividend = realCase->GetMostSigOp();
         const Real& divisor = realCase->GetLeastSigOp();
         return std::make_unique<Real>(dividend.GetValue() / divisor.GetValue());
     }
 
     // log(a)/log(b)=log[b](a)
-    if (auto logCase = Divide<Log<Expression, Expression>, Log<Expression, Expression>>::Specialize(simplifiedDivide); logCase != nullptr) {
+    if (auto logCase = RecursiveCast<Divide<Log<Expression, Expression>, Log<Expression, Expression>>>(simplifiedDivide); logCase != nullptr) {
         if (logCase->GetMostSigOp().GetMostSigOp().Equals(logCase->GetLeastSigOp().GetMostSigOp())) {
             const IExpression auto& base = logCase->GetLeastSigOp().GetLeastSigOp();
             const IExpression auto& argument = logCase->GetMostSigOp().GetLeastSigOp();
@@ -49,13 +49,13 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     std::vector<std::unique_ptr<Expression>> numeratorVals;
     std::vector<std::unique_ptr<Expression>> denominatorVals;
 
-    if (auto multipliedNumerator = Multiply<Expression>::Specialize(*simplifiedDividend); multipliedNumerator != nullptr) {
+    if (auto multipliedNumerator = RecursiveCast<Multiply<Expression>>(*simplifiedDividend); multipliedNumerator != nullptr) {
         multipliedNumerator->Flatten(numerator);
     } else {
         numerator.push_back(simplifiedDividend->Copy());
     }
 
-    if (auto multipliedDenominator = Multiply<Expression>::Specialize(*simplifiedDivider); multipliedDenominator != nullptr) {
+    if (auto multipliedDenominator = RecursiveCast<Multiply<Expression>>(*simplifiedDivider); multipliedDenominator != nullptr) {
         multipliedDenominator->Flatten(denominator);
     } else {
         denominator.push_back(simplifiedDivider->Copy());
@@ -69,9 +69,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     for (const auto& denom : denominator) {
         size_t i = 0;
-        if (auto real = Real::Specialize(*denom); real != nullptr) {
+        if (auto real = RecursiveCast<Real>(*denom); real != nullptr) {
             for (; i < result.size(); i++) {
-                if (auto resI = Real::Specialize(*result[i]); resI != nullptr) {
+                if (auto resI = RecursiveCast<Real>(*result[i]); resI != nullptr) {
                     result[i] = Real { resI->GetValue() / real->GetValue() }.Generalize();
                     break;
                 }
@@ -81,9 +81,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             }
             continue;
         }
-        if (auto img = Imaginary::Specialize(*denom); img != nullptr) {
+        if (auto img = RecursiveCast<Imaginary>(*denom); img != nullptr) {
             for (; i < result.size(); i++) {
-                if (auto resI = Imaginary::Specialize(*result[i]); resI != nullptr) {
+                if (auto resI = RecursiveCast<Imaginary>(*result[i]); resI != nullptr) {
                     result[i] = Real { 1.0 }.Generalize();
                     break;
                 }
@@ -93,14 +93,14 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             }
             continue;
         }
-        if (auto var = Variable::Specialize(*denom); var != nullptr) {
+        if (auto var = RecursiveCast<Variable>(*denom); var != nullptr) {
             for (; i < result.size(); i++) {
-                if (auto resIexp = Exponent<Variable, Expression>::Specialize(*result[i]); resIexp != nullptr) {
+                if (auto resIexp = RecursiveCast<Exponent<Variable, Expression>>(*result[i]); resIexp != nullptr) {
                     if (resIexp->GetMostSigOp().Equals(*var)) {
                         result[i] = Exponent<Expression> { *var, *(Subtract<Expression> { resIexp->GetLeastSigOp(), Real { 1.0 } }.Simplify()) }.Generalize();
                         break;
                     }
-                } else if (auto resI = Variable::Specialize(*result[i]); resI != nullptr) {
+                } else if (auto resI = RecursiveCast<Variable>(*result[i]); resI != nullptr) {
                     if (resI->Equals(*var)) {
                         result[i] = Real { 1.0 }.Generalize();
                         break;
@@ -112,14 +112,14 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             }
             continue;
         }
-        if (auto var = Exponent<Variable, Expression>::Specialize(*denom); var != nullptr) {
+        if (auto var = RecursiveCast<Exponent<Variable, Expression>>(*denom); var != nullptr) {
             for (; i < result.size(); i++) {
-                if (auto resIexp = Exponent<Variable, Expression>::Specialize(*result[i]); resIexp != nullptr) {
+                if (auto resIexp = RecursiveCast<Exponent<Variable, Expression>>(*result[i]); resIexp != nullptr) {
                     if (resIexp->GetMostSigOp().Equals(var->GetMostSigOp())) {
                         result[i] = Exponent<Expression> { var->GetMostSigOp(), *(Subtract<Expression> { resIexp->GetLeastSigOp(), var->GetLeastSigOp() }.Simplify()) }.Generalize();
                         break;
                     }
-                } else if (auto resI = Variable::Specialize(*result[i]); resI != nullptr) {
+                } else if (auto resI = RecursiveCast<Variable>(*result[i]); resI != nullptr) {
                     if (resI->Equals(*var)) {
                         result[i] = Exponent<Expression> { var->GetMostSigOp(), *(Subtract<Expression> { Real { 1.0 }, var->GetLeastSigOp() }.Simplify()) }.Generalize();
                     }
@@ -130,9 +130,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             }
             continue;
         }
-        if (auto expExpr = Exponent<Expression>::Specialize(*denom); expExpr != nullptr) {
+        if (auto expExpr = RecursiveCast<Exponent<Expression>>(*denom); expExpr != nullptr) {
             for (; i < result.size(); i++) {
-                if (auto resExpr = Exponent<Expression, Expression>::Specialize(*result[i]); resExpr != nullptr) {
+                if (auto resExpr = RecursiveCast<Exponent<Expression, Expression>>(*result[i]); resExpr != nullptr) {
                     if (expExpr->GetMostSigOp().Equals(resExpr->GetMostSigOp())) {
                         result[i] = Exponent { expExpr->GetMostSigOp(), *(Subtract { resExpr->GetLeastSigOp(), expExpr->GetLeastSigOp() }.Simplify()) }.Simplify();
                         break;
@@ -148,7 +148,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             continue;
         }
         for (; i < result.size(); i++) {
-            if (auto resExpr = Exponent<Expression, Expression>::Specialize(*result[i]); resExpr != nullptr) {
+            if (auto resExpr = RecursiveCast<Exponent<Expression, Expression>>(*result[i]); resExpr != nullptr) {
                 if (denom->Equals(resExpr->GetMostSigOp())) {
                     result[i] = Exponent { *denom, *(Subtract { resExpr->GetLeastSigOp(), Real { 1.0 } }.Simplify()) }.Simplify();
                     break;
@@ -165,21 +165,21 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     // rebuild into tree
     for (const auto& val : result) {
-        if (auto valI = Real::Specialize(*val); valI != nullptr) {
+        if (auto valI = RecursiveCast<Real>(*val); valI != nullptr) {
             if (valI->GetValue() != 1.0) {
                 numeratorVals.push_back(valI->Generalize());
             }
-        } else if (auto var = Variable::Specialize(*val); var != nullptr) {
+        } else if (auto var = RecursiveCast<Variable>(*val); var != nullptr) {
             numeratorVals.push_back(val->Generalize());
-        } else if (auto img = Imaginary::Specialize(*val); img != nullptr) {
+        } else if (auto img = RecursiveCast<Imaginary>(*val); img != nullptr) {
             numeratorVals.push_back(val->Generalize());
-        } else if (auto expR = Exponent<Expression, Real>::Specialize(*val); expR != nullptr) {
+        } else if (auto expR = RecursiveCast<Exponent<Expression, Real>>(*val); expR != nullptr) {
             if (expR->GetLeastSigOp().GetValue() < 0.0) {
                 denominatorVals.push_back(Exponent { expR->GetMostSigOp(), Real { expR->GetLeastSigOp().GetValue() * -1.0 } }.Generalize());
             } else {
                 numeratorVals.push_back(val->Generalize());
             }
-        } else if (auto exp = Exponent<Expression, Multiply<Real, Expression>>::Specialize(*val); exp != nullptr) {
+        } else if (auto exp = RecursiveCast<Exponent<Expression, Multiply<Real, Expression>>>(*val); exp != nullptr) {
             if (exp->GetLeastSigOp().GetMostSigOp().GetValue() < 0.0) {
                 denominatorVals.push_back(Exponent { exp->GetMostSigOp(), exp->GetLeastSigOp().GetLeastSigOp() }.Generalize());
             } else {
@@ -192,7 +192,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     // makes expr^1 into expr
     for (auto& val : numeratorVals) {
-        if (auto exp = Exponent<Expression, Real>::Specialize(*val); exp != nullptr) {
+        if (auto exp = RecursiveCast<Exponent<Expression, Real>>(*val); exp != nullptr) {
             if (exp->GetLeastSigOp().GetValue() == 1.0) {
                 val = exp->GetMostSigOp().Generalize();
             }
@@ -200,7 +200,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     for (auto& val : denominatorVals) {
-        if (auto exp = Exponent<Expression, Real>::Specialize(*val); exp != nullptr) {
+        if (auto exp = RecursiveCast<Exponent<Expression, Real>>(*val); exp != nullptr) {
             if (exp->GetLeastSigOp().GetValue() == 1.0) {
                 val = exp->GetMostSigOp().Generalize();
             }
@@ -233,11 +233,11 @@ auto Divide<Expression>::Specialize(const Expression& other) -> std::unique_ptr<
 auto Divide<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable
-    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+    if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
         auto simplifiedDiv = this->Simplify();
 
         // Constant case - Integrand over a divisor
-        if (auto constant = Multiply<Expression, Real>::Specialize(*simplifiedDiv); constant != nullptr) {
+        if (auto constant = RecursiveCast<Multiply<Expression, Real>>(*simplifiedDiv); constant != nullptr) {
             return constant->Integrate(integrationVariable)->Simplify();
         }
     }
@@ -250,29 +250,29 @@ auto Divide<Expression>::Integrate(const Expression& integrationVariable) const 
 auto Divide<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // Single differentiation variable
-    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
+    if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
         auto simplifiedDiv = this->Simplify();
 
         // Constant case - differentiation over a divisor
-        if (auto constant = Divide<Expression, Real>::Specialize(*simplifiedDiv); constant != nullptr) {
+        if (auto constant = RecursiveCast<Divide<Expression, Real>>(*simplifiedDiv); constant != nullptr) {
             auto exp = constant->GetMostSigOp().Copy();
             auto num = constant->GetLeastSigOp();
             auto differentiate = (*exp).Differentiate(differentiationVariable);
-            if (auto add = Expression::Specialize(*differentiate); add != nullptr) {
+            if (auto add = RecursiveCast<Expression>(*differentiate); add != nullptr) {
                 return std::make_unique<Divide<Expression, Real>>(Divide<Expression, Real> { *(add->Simplify()), Real { num.GetValue() } })->Simplify();
             }
         }
         // In case of simplify turning divide into mult
-        if (auto constant = Multiply<Expression, Real>::Specialize(*simplifiedDiv); constant != nullptr) {
+        if (auto constant = RecursiveCast<Multiply<Expression, Real>>(*simplifiedDiv); constant != nullptr) {
             auto exp = constant->GetMostSigOp().Copy();
             auto num = constant->GetLeastSigOp();
             auto differentiate = (*exp).Differentiate(differentiationVariable);
-            if (auto add = Expression::Specialize(*differentiate); add != nullptr) {
+            if (auto add = RecursiveCast<Expression>(*differentiate); add != nullptr) {
                 return std::make_unique<Multiply<Expression, Real>>(Multiply<Expression, Real> { *(add->Simplify()), Real { num.GetValue() } })->Simplify();
             }
         }
         // Quotient Rule: d/dx (f(x)/g(x)) = (g(x)f'(x)-f(x)g'(x))/(g(x)^2)
-        if (auto quotient = Divide<Expression, Expression>::Specialize(*simplifiedDiv); quotient != nullptr) {
+        if (auto quotient = RecursiveCast<Divide<Expression, Expression>>(*simplifiedDiv); quotient != nullptr) {
             auto leftexp = quotient->GetMostSigOp().Copy();
             auto rightexp = quotient->GetLeastSigOp().Copy();
             auto leftDiff = leftexp->Differentiate(differentiationVariable);
