@@ -104,7 +104,6 @@ TEST_CASE("Latex Serialization for Exponents", "[Latex][Serializer][Exponent]")
 
     REQUIRE(expected == result);
 
-    std::cout<<result<<std::endl;
 }
 
 TEST_CASE("Latex Serialization for Logarithms", "[Latex][Serializer][Log]")
@@ -120,7 +119,6 @@ TEST_CASE("Latex Serialization for Logarithms", "[Latex][Serializer][Log]")
 
     REQUIRE(expected == result);
 
-    std::cout<<result<<std::endl;
 }
 
 TEST_CASE("Latex Serialization for Negate", "[Latex][Serializer][Negate]")
@@ -136,12 +134,11 @@ TEST_CASE("Latex Serialization for Negate", "[Latex][Serializer][Negate]")
 
     REQUIRE(expected == result);
 
-    std::cout<<result<<std::endl;
 }
 
 TEST_CASE("Latex Serialization for Magnitude", "[Latex][Serializer][Magnitude]")
 {
-    Oasis::Magnitude e{Oasis::Real{5}};
+    Oasis::Magnitude e{Oasis::Real{-5}};
 
     Oasis::LatexSerializer serializer{};
 
@@ -152,7 +149,6 @@ TEST_CASE("Latex Serialization for Magnitude", "[Latex][Serializer][Magnitude]")
 
     REQUIRE(expected == result);
 
-    std::cout<<result<<std::endl;
 }
 
 TEST_CASE("Latex Serialization for Derivative", "[Latex][Serializer][Derivative]")
@@ -168,7 +164,6 @@ TEST_CASE("Latex Serialization for Derivative", "[Latex][Serializer][Derivative]
 
     REQUIRE(expected == result);
 
-    std::cout<<result<<std::endl;
 }
 
 TEST_CASE("Latex Serialization for Integral", "[Latex][Serializer][Integral]")
@@ -184,7 +179,6 @@ TEST_CASE("Latex Serialization for Integral", "[Latex][Serializer][Integral]")
 
     REQUIRE(expected == result);
 
-    std::cout<<result<<std::endl;
 }
 
 TEST_CASE("Latex Serialization for Matrices", "[Latex][Serializer][Matrix]")
@@ -195,7 +189,6 @@ TEST_CASE("Latex Serialization for Matrices", "[Latex][Serializer][Matrix]")
     mat.Serialize(serializer);
 
     auto result = serializer.getResult();
-    std::cout<<result<<std::endl;
     auto expected = R"(\begin{bmatrix}
 1&2&3\\
 4&5&6.2\\
