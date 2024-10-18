@@ -52,7 +52,11 @@ public:
 
     [[nodiscard]] auto Generalize() const -> std::unique_ptr<Expression> final
     {
-        return std::make_unique<DerivedGeneralized>(*this);
+        DerivedGeneralized generalized;
+        if (this->op) {
+            generalized.SetOperand(*this->op->Copy());
+        }
+        return std::make_unique<DerivedGeneralized>(generalized);
     }
 
     auto GetOperand() const -> const OperandT&
