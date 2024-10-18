@@ -5,8 +5,8 @@
 #include "Oasis/Linear.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Variable.hpp"
-#include "iostream"
 
 namespace Oasis {
 
@@ -57,17 +57,17 @@ auto ConstructMatrices(const std::vector<std::unique_ptr<Expression>>& exprs)
     std::map<std::string, Eigen::Index> vars; // variable name, column in matrix
     for (size_t row = 0; row < exprs.size(); row++) {
         std::vector<std::unique_ptr<Expression>> terms;
-        auto expr = Add<Expression>::Specialize(*exprs[row]);
+        auto expr = RecursiveCast<Add<Expression>>(*exprs[row]);
         expr->Flatten(terms);
         for (auto& term : terms) {
-            if (auto r = Real::Specialize(*term); r != nullptr) { // real number
+            if (auto r = RecursiveCast<Real>(*term); r != nullptr) { // real number
                 b[Eigen::Index(row)] = -1 * r->GetValue();
-            } else if (auto v = Variable::Specialize(*term); v != nullptr) { // variable by itself (coefficient of 1)
+            } else if (auto v = RecursiveCast<Variable>(*term); v != nullptr) { // variable by itself (coefficient of 1)
                 std::pair<size_t, bool> keyloc = GetMapValue<std::string, Eigen::Index>(vars, v->GetName(), varCount);
                 if (keyloc.second)
                     varCount++;
                 A(Eigen::Index(row), Eigen::Index(keyloc.first)) = 1;
-            } else if (auto exprV = Multiply<Real, Variable>::Specialize(*term); exprV != nullptr) {
+            } else if (auto exprV = RecursiveCast<Multiply<Real, Variable>>(*term); exprV != nullptr) {
                 // any expression times a variable
                 std::pair<size_t, bool> keyloc = GetMapValue<std::string, Eigen::Index>(vars,
                     exprV->GetLeastSigOp().GetName(),
