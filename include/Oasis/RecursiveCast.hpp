@@ -75,7 +75,10 @@ auto RecursiveCast(const Expression& other) -> std::unique_ptr<T>
 template <IExpression T>
 auto RecursiveCast(const Expression& other) -> std::unique_ptr<T>
 {
-    return other.Is<T>() ? std::make_unique<T>(dynamic_cast<const T&>(other)) : nullptr;
+    if constexpr (std::is_same_v<T, Expression>)
+        return other.Copy();
+    else
+        return other.Is<T>() ? std::make_unique<T>(dynamic_cast<const T&>(other)) : nullptr;
 }
 
 }
