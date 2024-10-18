@@ -23,14 +23,12 @@ public:
     Exponent(const Expression& base, const Expression& power);
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
-    auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Exponent>;
-    static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Exponent>;
 
     EXPRESSION_TYPE(Exponent)
     EXPRESSION_CATEGORY(BinExp)

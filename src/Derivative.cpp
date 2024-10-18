@@ -29,12 +29,6 @@ auto Derivative<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return simplifiedExpression->Differentiate(*simplifiedVar);
 }
 
-std::unique_ptr<Expression> Derivative<Expression, Expression>::Simplify(tf::Subflow&) const
-{
-    // TODO: Actually implement
-    return Simplify();
-}
-
 std::unique_ptr<Expression> Derivative<Expression, Expression>::Differentiate(const Expression&) const
 {
     return mostSigOp->Differentiate(*leastSigOp);
@@ -50,12 +44,4 @@ auto Derivative<Expression>::Specialize(const Expression& other) -> std::unique_
     return std::make_unique<Derivative>(dynamic_cast<const Derivative&>(*otherGeneralized));
 }
 
-auto Derivative<Expression>::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Derivative>
-{
-    if (!other.Is<Oasis::Derivative>()) {
-        return nullptr;
-    }
-    auto otherGeneralized = other.Generalize(subflow);
-    return std::make_unique<Derivative>(dynamic_cast<const Derivative&>(*otherGeneralized));
-}
 }

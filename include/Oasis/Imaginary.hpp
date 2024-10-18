@@ -23,7 +23,6 @@ public:
     EXPRESSION_CATEGORY(UnExp)
 
     static auto Specialize(const Expression& other) -> std::unique_ptr<Imaginary>;
-    static auto Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Imaginary>;
 };
 }
 

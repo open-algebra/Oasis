@@ -18,10 +18,6 @@ auto Pi::Specialize(const Expression& other) -> std::unique_ptr<Pi>
     return other.Is<Pi>() ? std::make_unique<Pi>(dynamic_cast<const Pi&>(other)) : nullptr;
 }
 
-auto Pi::Specialize(const Expression& other, tf::Subflow&) -> std::unique_ptr<Pi>
-{
-    return other.Is<Pi>() ? std::make_unique<Pi>(dynamic_cast<const Pi&>(other)) : nullptr;
-}
 auto Pi::GetValue() -> double
 {
     return std::numbers::pi;

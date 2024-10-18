@@ -193,22 +193,6 @@ TEST_CASE("Generalized Division", "[Divide][Generalized]")
     REQUIRE(simplifiedReal.GetValue() == 1.0);
 }
 
-TEST_CASE("Division Async", "[Divide][Async]")
-{
-    Oasis::Divide subtract {
-        Oasis::Divide {
-            Oasis::Real { 2.0 },
-            Oasis::Real { 1.0 } },
-        Oasis::Real { 2.0 }
-    };
-
-    std::unique_ptr<Oasis::Expression> simplified = subtract.SimplifyAsync();
-    REQUIRE(simplified->Is<Oasis::Real>());
-
-    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
-    REQUIRE(simplifiedReal.GetValue() == 1.0);
-}
-
 TEST_CASE("Divide Operator Overload", "[Divide][Operator Overload]")
 {
     const std::unique_ptr<Oasis::Expression> a = std::make_unique<Oasis::Real>(1.0);

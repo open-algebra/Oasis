@@ -1,7 +1,4 @@
-#include "taskflow/taskflow.hpp"
-
-#include "Oasis/Expression.hpp"
-#include "Oasis/Integral.hpp"
+#include <cmath>
 
 #include <Oasis/Add.hpp>
 #include <Oasis/Divide.hpp>
@@ -95,23 +92,24 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             variableName = varName;
             exponent = 0;
         }
-        if (varName == "") {
+        if (varName.empty()) {
             varName = variableName;
         }
-        if (exponent != round(exponent) || varName != variableName) {
+        if (exponent != std::round(exponent) || varName != variableName) {
             return {};
         }
+        long flooredExponent = std::lround(exponent);
         if (exponent >= 0) {
             while (posCoefficents.size() <= exponent) {
                 posCoefficents.push_back(Real(0).Copy());
             }
-            posCoefficents[lround(exponent)] = Add<Expression>(*coefficent, *posCoefficents[lround(exponent)]).Copy();
+            posCoefficents[flooredExponent] = Add<Expression>(*coefficent, *posCoefficents[flooredExponent]).Copy();
         } else {
             exponent *= -1;
             while (negCoefficents.size() <= exponent) {
                 negCoefficents.push_back(Real(0).Copy());
             }
-            negCoefficents[lround(exponent)] = Add<Expression>(*coefficent, *negCoefficents[lround(exponent)]).Copy();
+            negCoefficents[flooredExponent] = Add<Expression>(*coefficent, *negCoefficents[flooredExponent]).Copy();
         }
     }
     while (negCoefficents.size() > 0 && Real::Specialize(*negCoefficents.back()) != nullptr && Real::Specialize(*negCoefficents.back())->GetValue() == 0) {
@@ -137,7 +135,7 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             break;
         }
         double value = realCase->GetValue();
-        if (value != round(value)) {
+        if (value != std::round(value)) {
             break;
         } else {
             termsC.push_back(lround(value));
@@ -171,7 +169,6 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
                                 }
                                 do {
                                     termsC.pop_back();
-                                    std::cout << mpv << "/" << qv << '\n';
                                 } while (termsC.back() == 0);
                                 if (termsC.size() <= 1) {
                                     break;
@@ -192,16 +189,13 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
         }
         coefficents.clear();
         std::reverse(termsC.begin(), termsC.end());
-        std::cout << termsC.size() << '\n';
         for (auto i : termsC) {
             coefficents.push_back(Real(i * 1.0).Copy());
         }
     }
-    std::cout << coefficents.size() << '\n';
     if (coefficents.size() == 2) {
         results.push_back(Divide(Multiply(Real(-1), *coefficents[0]), *coefficents[1]).Simplify());
     } else if (coefficents.size() == 3) {
-        std::cout << "hi\n";
         auto& a = coefficents[2];
         auto& b = coefficents[1];
         auto& c = coefficents[0];
@@ -211,7 +205,6 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
         results.push_back(Divide(Add(*negB, *sqrt), *twoA).Copy());
         results.push_back(Divide(Subtract(*negB, *sqrt), *twoA).Copy());
     }
-    std::cout << results.size() << '\n';
     return results;
 }
 
@@ -233,19 +226,9 @@ auto Expression::Generalize() const -> std::unique_ptr<Expression>
     return Copy();
 }
 
-auto Expression::Generalize(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
-{
-    return Copy(subflow);
-}
-
 auto Expression::Specialize(const Expression& other) -> std::unique_ptr<Expression>
 {
     return other.Copy();
-}
-
-auto Expression::Specialize(const Expression& other, tf::Subflow& subflow) -> std::unique_ptr<Expression>
-{
-    return other.Copy(subflow);
 }
 
 auto Expression::Integrate(const Expression& variable) const -> std::unique_ptr<Expression>
@@ -265,41 +248,6 @@ auto Expression::IntegrateWithBounds(const Expression& variable, const Expressio
 auto Expression::Simplify() const -> std::unique_ptr<Expression>
 {
     return Copy();
-}
-
-auto Expression::Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression>
-{
-    return Copy(subflow);
-}
-
-auto Expression::SimplifyAsync() const -> std::unique_ptr<Expression>
-{
-    static tf::Executor executor;
-    tf::Taskflow taskflow;
-
-    std::unique_ptr<Expression> simplifiedExpression;
-
-    taskflow.emplace([this, &simplifiedExpression](tf::Subflow& subflow) {
-        simplifiedExpression = Simplify(subflow);
-    });
-
-    executor.run(taskflow).wait();
-    return simplifiedExpression;
-}
-
-auto Expression::StructurallyEquivalentAsync(const Expression& other) const -> bool
-{
-    static tf::Executor executor;
-    tf::Taskflow taskflow;
-
-    bool equivalent = false;
-
-    taskflow.emplace([&equivalent, this, &other](tf::Subflow& subflow) {
-        equivalent = StructurallyEquivalent(other, subflow);
-    });
-
-    executor.run(taskflow).wait();
-    return equivalent;
 }
 
 } // namespace Oasis

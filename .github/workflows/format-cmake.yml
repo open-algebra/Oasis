@@ -20,9 +20,22 @@ jobs:
           - name: Checkout repository
             uses: actions/checkout@v4
 
+            # Set up Python environment
+          - name: Set up Python
+            uses: actions/setup-python@v4
+            with:
+              python-version: '3.x'
+
+            # Create and activate virtual environment
+          - name: Create virtual environment
+            run: python -m venv venv
+
+          - name: Activate virtual environment
+            run: source venv/bin/activate
+
             # Installs cmakelang.
           - name: Install cmakelang
-            run: pip install cmakelang
+            run: pip install --user cmakelang
 
             # Runs cmake-format on all CMakeLists.txt files.
           - name: Run cmake-format

@@ -83,38 +83,6 @@ TEST_CASE("Generalized Addition", "[Add][Generalized]")
     REQUIRE(simplifiedReal.GetValue() == 6.0);
 }
 
-TEST_CASE("Addition Async", "[Add][Async]")
-{
-    Oasis::Add add {
-        Oasis::Add {
-            Oasis::Real { 1.0 },
-            Oasis::Real { 2.0 } },
-        Oasis::Real { 3.0 }
-    };
-
-    std::unique_ptr<Oasis::Expression> simplified = add.SimplifyAsync();
-    REQUIRE(simplified->Is<Oasis::Real>());
-
-    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
-    REQUIRE(simplifiedReal.GetValue() == 6.0);
-}
-
-TEST_CASE("Generalized Addition Async", "[Add][Generalized][Async]")
-{
-    Oasis::Add<Oasis::Expression> add {
-        Oasis::Add<Oasis::Expression> {
-            Oasis::Real { 1.0 },
-            Oasis::Real { 2.0 } },
-        Oasis::Real { 3.0 }
-    };
-
-    auto simplified = add.SimplifyAsync();
-    REQUIRE(simplified->Is<Oasis::Real>());
-
-    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
-    REQUIRE(simplifiedReal.GetValue() == 6.0);
-}
-
 TEST_CASE("Structurally Equivalent", "[StructurallyEquivalent]")
 {
     REQUIRE(
@@ -134,30 +102,6 @@ TEST_CASE("Generalized Structurally Equivalent", "[StructurallyEquivalent][Gener
             Oasis::Real {},
             Oasis::Real {} }
             .StructurallyEquivalent(
-                Oasis::Add<Oasis::Expression> {
-                    Oasis::Real {},
-                    Oasis::Real {} }));
-}
-
-TEST_CASE("Structurally Equivalent Async", "[StructurallyEquivalent][Async]")
-{
-    REQUIRE(
-        Oasis::Add {
-            Oasis::Real {},
-            Oasis::Real {} }
-            .StructurallyEquivalentAsync(
-                Oasis::Add {
-                    Oasis::Real {},
-                    Oasis::Real {} }));
-}
-
-TEST_CASE("Generalized Structurally Equivalent Async", "[StructurallyEquivalent][Generalized][Async]")
-{
-    REQUIRE(
-        Oasis::Add<Oasis::Expression> {
-            Oasis::Real {},
-            Oasis::Real {} }
-            .StructurallyEquivalentAsync(
                 Oasis::Add<Oasis::Expression> {
                     Oasis::Real {},
                     Oasis::Real {} }));

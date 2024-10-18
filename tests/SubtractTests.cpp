@@ -43,22 +43,6 @@ TEST_CASE("Generalized Subtraction", "[Subtract][Generalized]")
     REQUIRE(simplifiedReal.GetValue() == -4.0);
 }
 
-TEST_CASE("Subtraction Async", "[Subtract][Async]")
-{
-    Oasis::Subtract subtract {
-        Oasis::Subtract {
-            Oasis::Real { 1.0 },
-            Oasis::Real { 2.0 } },
-        Oasis::Real { 3.0 }
-    };
-
-    std::unique_ptr<Oasis::Expression> simplified = subtract.SimplifyAsync();
-    REQUIRE(simplified->Is<Oasis::Real>());
-
-    auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
-    REQUIRE(simplifiedReal.GetValue() == -4.0);
-}
-
 TEST_CASE("Imaginary Subtration", "[Subtract][Imaginary]")
 {
     Oasis::Subtract s1 {
