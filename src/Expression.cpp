@@ -113,10 +113,10 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             negCoefficents[flooredExponent] = Add<Expression>(*coefficent, *negCoefficents[flooredExponent]).Copy();
         }
     }
-    while (negCoefficents.size() > 0 && Real::Specialize(*negCoefficents.back()) != nullptr && Real::Specialize(*negCoefficents.back())->GetValue() == 0) {
+    while (negCoefficents.size() > 0 && Real::Specialize(*negCoefficents.back()) != nullptr && RecursiveCast<Real>(*negCoefficents.back())->GetValue() == 0) {
         negCoefficents.pop_back();
     }
-    while (posCoefficents.size() > 0 && Real::Specialize(*posCoefficents.back()) != nullptr && Real::Specialize(*posCoefficents.back())->GetValue() == 0) {
+    while (posCoefficents.size() > 0 && Real::Specialize(*posCoefficents.back()) != nullptr && RecursiveCast<Real>(*posCoefficents.back())->GetValue() == 0) {
         posCoefficents.pop_back();
     }
     std::vector<std::unique_ptr<Expression>> coefficents;

@@ -55,7 +55,7 @@ public:
     {
     }
 
-    IMPL_SPECIALIZE(Subtract, MinuendT, SubtrahendT)
+
 
     auto operator=(const Subtract& other) -> Subtract& = default;
 

@@ -53,7 +53,7 @@ public:
     {
     }
 
-    IMPL_SPECIALIZE(Integral, IntegrandT, DifferentialT)
+
 
     auto operator=(const Integral& other) -> Integral& = default;
 

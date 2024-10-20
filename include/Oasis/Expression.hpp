@@ -60,7 +60,6 @@ enum ExpressionCategory : uint32_t {
  */
 template <typename T>
 concept IExpression = (requires(T, const Expression& other) {
-    { T::Specialize(other) } -> std::same_as<std::unique_ptr<T>>;
     { T::GetStaticCategory() } -> std::same_as<uint32_t>;
     { T::GetStaticType() } -> std::same_as<ExpressionType>;
 } && std::derived_from<T, Expression>) || std::is_same_v<T, Expression>;

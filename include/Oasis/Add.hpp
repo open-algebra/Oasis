@@ -52,7 +52,7 @@ public:
     {
     }
 
-    IMPL_SPECIALIZE(Add, AugendT, AddendT)
+
 
     auto operator=(const Add& other) -> Add& = default;
 
