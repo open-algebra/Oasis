@@ -52,7 +52,7 @@ public:
     {
     }
 
-    IMPL_SPECIALIZE(Derivative, DependentT, IndependentT)
+
 
     auto operator=(const Derivative& other) -> Derivative& = default;
 

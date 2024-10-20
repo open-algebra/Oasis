@@ -54,7 +54,7 @@ public:
     {
     }
 
-    IMPL_SPECIALIZE(Divide, DividendT, DivisorT)
+
 
     auto operator=(const Divide& other) -> Divide& = default;
 

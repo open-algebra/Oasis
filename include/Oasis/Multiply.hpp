@@ -52,7 +52,7 @@ public:
     {
     }
 
-    IMPL_SPECIALIZE(Multiply, MultiplicandT, MultiplierT)
+
 
     auto operator=(const Multiply& other) -> Multiply& = default;
 

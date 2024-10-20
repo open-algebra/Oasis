@@ -55,7 +55,7 @@ public:
     {
     }
 
-    IMPL_SPECIALIZE(Exponent, BaseT, PowerT)
+
 
     auto operator=(const Exponent& other) -> Exponent& = default;
 

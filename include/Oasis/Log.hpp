@@ -54,7 +54,7 @@ public:
     {
     }
 
-    IMPL_SPECIALIZE(Log, BaseT, ArgumentT);
+   ;
 
     auto operator=(const Log& other) -> Log& = default;
 
