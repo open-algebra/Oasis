@@ -5,10 +5,12 @@
 #ifndef OASIS_RECURSIVECAST_HPP
 #define OASIS_RECURSIVECAST_HPP
 
-#include "Oasis/Add.hpp"
-#include "Oasis/BinaryExpression.hpp"
+#include "Expression.hpp"
 
 namespace Oasis {
+
+template <template <IExpression, IExpression> class DerivedT, IExpression MostSigOpT, IExpression LeastSigOpT>
+class BinaryExpression;
 
 template<class Derived>
 concept DerivedFromBinaryExpression = requires (Derived& d) {
@@ -27,45 +29,25 @@ auto RecursiveCast(const Expression& other) -> std::unique_ptr<T>
         const std::unique_ptr<Expression> otherGeneralized = other.Generalize();
         const auto& otherBinaryExpression = static_cast<const DerivedT<Expression, Expression>&>(*otherGeneralized);
 
-        auto specialized = std::make_unique<T>();
+        auto specializedMostSigOp = RecursiveCast<MostSigOpT>(otherBinaryExpression.GetMostSigOp());
+        auto specializedLeastSigOp = RecursiveCast<LeastSigOpT>(otherBinaryExpression.GetLeastSigOp());
 
-        bool leftOperandSpecialized = true, rightOperandSpecialized = true;
-
-        if (otherBinaryExpression.HasMostSigOp()) {
-            specialized->SetMostSigOp(RecursiveCast<MostSigOpT>(otherBinaryExpression.GetMostSigOp()));
-            leftOperandSpecialized = specialized->HasMostSigOp();
-        }
-
-        if (otherBinaryExpression.HasLeastSigOp()) {
-            specialized->SetLeastSigOp(RecursiveCast<LeastSigOpT>(otherBinaryExpression.GetLeastSigOp()));
-            rightOperandSpecialized = specialized->HasLeastSigOp();
-        }
-
-        if (leftOperandSpecialized && rightOperandSpecialized) {
-            return specialized;
+        if (specializedMostSigOp && specializedLeastSigOp) {
+            return std::make_unique<T>(*specializedMostSigOp, *specializedLeastSigOp);
         }
 
         if (!(other.GetCategory() & Commutative)) {
             return nullptr;
         }
 
-        leftOperandSpecialized = true, rightOperandSpecialized = true;
-        specialized = std::make_unique<T>();
-
         auto otherWithSwappedOps
             = otherBinaryExpression.SwapOperands();
-        if (otherWithSwappedOps.HasMostSigOp()) {
-            specialized->SetMostSigOp(RecursiveCast<MostSigOpT>(otherWithSwappedOps.GetMostSigOp()));
-            leftOperandSpecialized = specialized->HasMostSigOp();
-        }
 
-        if (otherWithSwappedOps.HasLeastSigOp()) {
-            specialized->SetLeastSigOp(RecursiveCast<LeastSigOpT>(otherWithSwappedOps.GetLeastSigOp()));
-            rightOperandSpecialized = specialized->HasLeastSigOp();
-        }
+        specializedMostSigOp = RecursiveCast<MostSigOpT>(otherWithSwappedOps.GetMostSigOp());
+        specializedLeastSigOp = RecursiveCast<LeastSigOpT>(otherWithSwappedOps.GetLeastSigOp());
 
-        if (leftOperandSpecialized && rightOperandSpecialized) {
-            return specialized;
+        if (specializedMostSigOp && specializedLeastSigOp) {
+            return std::make_unique<T>(*specializedMostSigOp, *specializedLeastSigOp);
         }
 
         return nullptr;
