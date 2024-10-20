@@ -179,6 +179,12 @@ public:
         return GetType() == T::GetStaticType();
     }
 
+    template <template <typename> typename T>
+    [[nodiscard]] bool Is() const
+    {
+        return GetType() == T<Expression>::GetStaticType();
+    }
+
     template <template <typename, typename> typename T>
     [[nodiscard]] bool Is() const
     {

@@ -12,9 +12,18 @@ namespace Oasis {
 template <template <IExpression, IExpression> class DerivedT, IExpression MostSigOpT, IExpression LeastSigOpT>
 class BinaryExpression;
 
+template <template <IExpression> class DerivedT, IExpression OpT>
+class UnaryExpression;
+
 template<class Derived>
 concept DerivedFromBinaryExpression = requires (Derived& d) {
     []<template <typename, typename> typename D, typename T, typename U>(BinaryExpression<D, T, U>&) {}(d);
+};
+
+template <class Derived>
+concept DerivedFromUnaryExpression = requires (Derived& d)
+{
+    []<template <typename> typename D, typename T>(UnaryExpression<D, T>&){}(d);
 };
 
 template <IExpression T> requires DerivedFromBinaryExpression<T>
@@ -48,6 +57,27 @@ auto RecursiveCast(const Expression& other) -> std::unique_ptr<T>
 
         if (specializedMostSigOp && specializedLeastSigOp) {
             return std::make_unique<T>(*specializedMostSigOp, *specializedLeastSigOp);
+        }
+
+        return nullptr;
+    }(dummy);
+}
+
+template <IExpression T> requires DerivedFromUnaryExpression<T>
+auto RecursiveCast(const Expression& other) -> std::unique_ptr<T>
+{
+    T dummy;
+    return [&other]<template <typename> typename DerivedT, typename OpT>(UnaryExpression<DerivedT, OpT>&) -> std::unique_ptr<T> {
+        if (!other.Is<DerivedT>()) {
+            return nullptr;
+        }
+
+        const std::unique_ptr<Expression> otherGeneralized = other.Generalize();
+        const auto& otherUnaryExpression = static_cast<const DerivedT<Expression>&>(*otherGeneralized);
+
+        auto specializedOp = RecursiveCast<OpT>(otherUnaryExpression.GetOperand());
+        if (specializedOp) {
+            return std::make_unique<T>(*specializedOp);
         }
 
         return nullptr;
