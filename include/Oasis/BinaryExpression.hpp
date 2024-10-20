@@ -320,6 +320,11 @@ public:
             return true;
         }
 
+        if constexpr (std::same_as<MostSigOpT, T> && !std::same_as<MostSigOpT, Expression>) {
+            this->mostSigOp = std::make_unique<MostSigOpT>(op);
+            return true;
+        }
+
         if (auto castedOp = Oasis::RecursiveCast<MostSigOpT>(op); castedOp) {
             mostSigOp = std::move(castedOp);
             return true;
@@ -338,6 +343,11 @@ public:
     {
         if constexpr (std::same_as<LeastSigOpT, Expression>) {
             this->leastSigOp = op.Copy();
+            return true;
+        }
+
+        if constexpr (std::same_as<LeastSigOpT, T> && !std::same_as<LeastSigOpT, Expression>) {
+            this->leastSigOp = std::make_unique<LeastSigOpT>(op);
             return true;
         }
 
