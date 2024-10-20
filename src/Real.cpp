@@ -33,10 +33,7 @@ auto Real::GetValue() const -> double
     return value;
 }
 
-auto Real::Specialize(const Expression& other) -> std::unique_ptr<Real>
-{
-    return other.Is<Real>() ? std::make_unique<Real>(dynamic_cast<const Real&>(other)) : nullptr;
-}
+
 
 auto Real::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {

@@ -80,22 +80,12 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return simplifiedLog.Copy();
 }
 
-auto Log<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Log>
-{
-    if (!other.Is<Oasis::Log>()) {
-        return nullptr;
-    }
-
-    const auto otherGeneralized = other.Generalize();
-    return std::make_unique<Log>(dynamic_cast<const Log<Expression>&>(*otherGeneralized));
-}
-
 auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // TODO: Implement
     if (this->mostSigOp->Equals(EulerNumber {})) {
         // ln(x)
-        if (leastSigOp->Is<Variable>() && Variable::Specialize(*leastSigOp)->Equals(integrationVariable)) {
+        if (leastSigOp->Is<Variable>() && RecursiveCast<Variable>(*leastSigOp)->Equals(integrationVariable)) {
             return Subtract<Expression> { Multiply<Expression> { integrationVariable, *this }, integrationVariable }.Simplify();
         }
         if (auto multiplyCase = RecursiveCast<Multiply<Expression>>(*leastSigOp); multiplyCase != nullptr) {

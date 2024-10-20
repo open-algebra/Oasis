@@ -28,10 +28,7 @@ auto Variable::GetName() const -> std::string
     return name;
 }
 
-auto Variable::Specialize(const Expression& other) -> std::unique_ptr<Variable>
-{
-    return other.Is<Variable>() ? std::make_unique<Variable>(dynamic_cast<const Variable&>(other)) : nullptr;
-}
+
 
 auto Variable::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {

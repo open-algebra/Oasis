@@ -113,10 +113,10 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             negCoefficents[flooredExponent] = Add<Expression>(*coefficent, *negCoefficents[flooredExponent]).Copy();
         }
     }
-    while (negCoefficents.size() > 0 && Real::Specialize(*negCoefficents.back()) != nullptr && RecursiveCast<Real>(*negCoefficents.back())->GetValue() == 0) {
+    while (negCoefficents.size() > 0 && RecursiveCast<Real>(*negCoefficents.back()) != nullptr && RecursiveCast<Real>(*negCoefficents.back())->GetValue() == 0) {
         negCoefficents.pop_back();
     }
-    while (posCoefficents.size() > 0 && Real::Specialize(*posCoefficents.back()) != nullptr && RecursiveCast<Real>(*posCoefficents.back())->GetValue() == 0) {
+    while (posCoefficents.size() > 0 && RecursiveCast<Real>(*posCoefficents.back()) != nullptr && RecursiveCast<Real>(*posCoefficents.back())->GetValue() == 0) {
         posCoefficents.pop_back();
     }
     std::vector<std::unique_ptr<Expression>> coefficents;
@@ -225,11 +225,6 @@ auto Expression::GetType() const -> ExpressionType
 auto Expression::Generalize() const -> std::unique_ptr<Expression>
 {
     return Copy();
-}
-
-auto Expression::Specialize(const Expression& other) -> std::unique_ptr<Expression>
-{
-    return other.Copy();
 }
 
 auto Expression::Integrate(const Expression& variable) const -> std::unique_ptr<Expression>

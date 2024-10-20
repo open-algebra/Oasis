@@ -314,16 +314,6 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     // return simplifiedMultiply.Copy();
 }
 
-auto Multiply<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Multiply<Expression, Expression>>
-{
-    if (!other.Is<Oasis::Multiply>()) {
-        return nullptr;
-    }
-
-    auto otherGeneralized = other.Generalize();
-    return std::make_unique<Multiply>(dynamic_cast<const Multiply&>(*otherGeneralized));
-}
-
 auto Multiply<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable

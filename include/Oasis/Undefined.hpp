@@ -22,7 +22,7 @@ public:
     EXPRESSION_TYPE(None)
     EXPRESSION_CATEGORY(UnExp)
 
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Undefined>;
+
 
     auto operator=(const Undefined& other) -> Undefined& = default;
 };

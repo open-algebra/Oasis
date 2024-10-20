@@ -10,7 +10,7 @@
 #include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Variable.hpp"
 
-TEST_CASE("Specialize Considers Commutative Property", "[Symbolic]")
+TEST_CASE("Recursive Cast Considers Commutative Property", "[Symbolic]")
 {
     Oasis::Add add {
         Oasis::Add {
