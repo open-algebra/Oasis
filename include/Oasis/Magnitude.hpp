@@ -97,7 +97,7 @@ public:
             .Simplify();
     }
 
-    IMPL_SPECIALIZE_UNARYEXPR(Magnitude, OperandT)
+
 
     EXPRESSION_TYPE(Magnitude)
     EXPRESSION_CATEGORY(UnExp)
