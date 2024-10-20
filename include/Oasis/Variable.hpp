@@ -41,8 +41,6 @@ public:
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
 
-
-
     auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> override;
 
     auto operator=(const Variable& other) -> Variable& = default;

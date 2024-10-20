@@ -52,8 +52,6 @@ public:
     {
     }
 
-
-
     auto operator=(const Add& other) -> Add& = default;
 
     EXPRESSION_TYPE(Add)

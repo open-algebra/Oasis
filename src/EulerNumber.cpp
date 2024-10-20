@@ -14,8 +14,6 @@ auto EulerNumber::Equals(const Expression& other) const -> bool
     return other.Is<EulerNumber>();
 }
 
-
-
 auto EulerNumber::GetValue() -> double
 {
     return std::numbers::e;

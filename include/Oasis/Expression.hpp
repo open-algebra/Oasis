@@ -229,8 +229,7 @@ public:
         return category;                                  \
     }
 
-#define DECL_SPECIALIZE(type) \
-
+#define DECL_SPECIALIZE(type)
 
 } // namespace Oasis
 

@@ -32,7 +32,6 @@ public:
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
 
-
     [[nodiscard]] auto Differentiate(const Expression&) const -> std::unique_ptr<Expression> final;
 
     auto operator=(const Real& other) -> Real& = default;

@@ -42,8 +42,6 @@ public:
             .Simplify();
     }
 
-
-
     EXPRESSION_TYPE(Negate)
     EXPRESSION_CATEGORY(UnExp)
 };

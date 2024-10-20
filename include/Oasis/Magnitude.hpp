@@ -97,8 +97,6 @@ public:
             .Simplify();
     }
 
-
-
     EXPRESSION_TYPE(Magnitude)
     EXPRESSION_CATEGORY(UnExp)
 };

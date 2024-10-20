@@ -13,8 +13,6 @@ auto Pi::Equals(const Expression& other) const -> bool
     return other.Is<Pi>() == dynamic_cast<const Pi&>(other).Is<Pi>();
 }
 
-
-
 auto Pi::GetValue() -> double
 {
     return std::numbers::pi;

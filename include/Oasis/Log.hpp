@@ -27,8 +27,6 @@ public:
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> final;
 
-
-
     EXPRESSION_TYPE(Log)
     EXPRESSION_CATEGORY(BinExp)
 };
@@ -50,11 +48,9 @@ public:
     }
 
     Log(const BaseT& base, const ArgumentT& argument)
-        : BinaryExpression<Log, BaseT, ArgumentT>(base, argument)
-    {
-    }
+        : BinaryExpression<Log, BaseT, ArgumentT>(base, argument) {}
 
-   ;
+        ;
 
     auto operator=(const Log& other) -> Log& = default;
 

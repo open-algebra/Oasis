@@ -28,8 +28,6 @@ auto Variable::GetName() const -> std::string
     return name;
 }
 
-
-
 auto Variable::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {

@@ -5,7 +5,6 @@
 
 #include <cmath>
 
-#include "Oasis/Log.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
@@ -14,6 +13,7 @@
 #include "Oasis/Expression.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
+#include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Pi.hpp"
 #include "Oasis/RecursiveCast.hpp"

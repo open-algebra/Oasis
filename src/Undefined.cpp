@@ -6,6 +6,4 @@
 
 namespace Oasis {
 
-
-
 } // namespace Oasis

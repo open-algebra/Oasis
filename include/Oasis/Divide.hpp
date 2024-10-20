@@ -27,8 +27,6 @@ public:
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
 
-
-
     EXPRESSION_TYPE(Divide)
     EXPRESSION_CATEGORY(BinExp)
 };
@@ -53,8 +51,6 @@ public:
         : BinaryExpression<Divide, DividendT, DivisorT>(addend1, addend2)
     {
     }
-
-
 
     auto operator=(const Divide& other) -> Divide& = default;
 

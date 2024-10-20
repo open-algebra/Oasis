@@ -22,7 +22,6 @@ public:
     EXPRESSION_TYPE(EulerNumber)
     EXPRESSION_CATEGORY(UnExp)
 
-
     static auto GetValue() -> double;
 };
 }

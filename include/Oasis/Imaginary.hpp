@@ -21,8 +21,6 @@ public:
 
     EXPRESSION_TYPE(Imaginary)
     EXPRESSION_CATEGORY(UnExp)
-
-
 };
 }
 
