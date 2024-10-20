@@ -9,22 +9,6 @@
 
 namespace Oasis {
 
-template <template <IExpression, IExpression> class DerivedT, IExpression MostSigOpT, IExpression LeastSigOpT>
-class BinaryExpression;
-
-template <template <IExpression> class DerivedT, IExpression OpT>
-class UnaryExpression;
-
-template <class Derived>
-concept DerivedFromBinaryExpression = requires(Derived& d) {
-    []<template <typename, typename> typename D, typename T, typename U>(BinaryExpression<D, T, U>&) {}(d);
-};
-
-template <class Derived>
-concept DerivedFromUnaryExpression = requires(Derived& d) {
-    []<template <typename> typename D, typename T>(UnaryExpression<D, T>&) {}(d);
-};
-
 template <IExpression T>
     requires DerivedFromBinaryExpression<T>
 auto RecursiveCast(const Expression& other) -> std::unique_ptr<T>

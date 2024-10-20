@@ -1,6 +1,7 @@
 set(Oasis_HEADERS
     # cmake-format: sortable
     Oasis/Add.hpp
+    Oasis/Concepts.hpp
     Oasis/BinaryExpression.hpp
     Oasis/Derivative.hpp
     Oasis/Divide.hpp

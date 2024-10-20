@@ -4,9 +4,10 @@
 #include <memory>
 #include <vector>
 
+#include "Concepts.hpp"
+
 namespace Oasis {
 
-class Expression;
 class SerializationVisitor;
 
 /**
@@ -44,36 +45,6 @@ enum ExpressionCategory : uint32_t {
     BinExp = 1 << 2,
     UnExp = 1 << 3,
 };
-
-// clang-format off
-/**
- * An expression concept.
- *
- * An expression concept is a type that satisfies the following requirements:
- * - It is derived from `Expression`.
- * - It has a static `Specialize` function that returns a `std::unique_ptr<T>` and takes a `const Expression&` as an argument.
- * - It has a static `Specialize` function that returns a `std::unique_ptr<T>` and takes a `const Expression&` and a `tf::Subflow&` as arguments.
- * - It has a static `GetStaticCategory` function that returns a `uint32_t`.
- * - It has a static `GetStaticType` function that returns an `ExpressionType`.
- *
- * @tparam T The type to check.
- */
-template <typename T>
-concept IExpression = (requires(T, const Expression& other) {
-    { T::GetStaticCategory() } -> std::same_as<uint32_t>;
-    { T::GetStaticType() } -> std::same_as<ExpressionType>;
-} && std::derived_from<T, Expression>) || std::is_same_v<T, Expression>;
-// clang-format on
-
-/**
- * Checks if type T is same as any of the provided types in U.
- *
- * @tparam T The type to compare against.
- * @tparam U The comparision types.
- * @return true if T is same as any type in U, false otherwise.
- */
-template <typename T, typename... U>
-concept IsAnyOf = (std::same_as<T, U> || ...);
 
 /**
  * An expression.
@@ -165,13 +136,13 @@ public:
         return GetType() == T::GetStaticType();
     }
 
-    template <template <typename> typename T>
+    template <template <typename> typename T> requires DerivedFromUnaryExpression<T<Expression>>
     [[nodiscard]] bool Is() const
     {
         return GetType() == T<Expression>::GetStaticType();
     }
 
-    template <template <typename, typename> typename T>
+    template <template <typename, typename> typename T> requires DerivedFromBinaryExpression<T<Expression, Expression>>
     [[nodiscard]] bool Is() const
     {
         return GetType() == T<Expression, Expression>::GetStaticType();
