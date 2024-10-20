@@ -26,7 +26,7 @@ public:
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
     [[nodiscard]] auto Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression> /* final */;
 
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Integral>;
+
 
     EXPRESSION_TYPE(Integral)
     EXPRESSION_CATEGORY(Associative | Commutative)

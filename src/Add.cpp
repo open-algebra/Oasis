@@ -234,16 +234,6 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return simplifiedAdd.Copy();
 }
 
-auto Add<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Add<Expression, Expression>>
-{
-    if (!other.Is<Oasis::Add>()) {
-        return nullptr;
-    }
-
-    auto otherGeneralized = other.Generalize();
-    return std::make_unique<Add>(dynamic_cast<const Add&>(*otherGeneralized));
-}
-
 auto Add<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable

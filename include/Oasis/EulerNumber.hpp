@@ -22,7 +22,7 @@ public:
     EXPRESSION_TYPE(EulerNumber)
     EXPRESSION_CATEGORY(UnExp)
 
-    static auto Specialize(const Expression& other) -> std::unique_ptr<EulerNumber>;
+
     static auto GetValue() -> double;
 };
 }

@@ -103,16 +103,6 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return simplifiedExponent.Copy();
 }
 
-auto Exponent<Expression>::Specialize(const Oasis::Expression& other) -> std::unique_ptr<Exponent<Expression, Expression>>
-{
-    if (!other.Is<Oasis::Exponent>()) {
-        return nullptr;
-    }
-
-    auto otherGeneralized = other.Generalize();
-    return std::make_unique<Exponent>(dynamic_cast<const Exponent&>(*otherGeneralized));
-}
-
 auto Exponent<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // variable integration

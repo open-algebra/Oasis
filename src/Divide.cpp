@@ -220,16 +220,6 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return Divide { *dividend, *divisor }.Copy();
 }
 
-auto Divide<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Divide<Expression, Expression>>
-{
-    if (!other.Is<Oasis::Divide>()) {
-        return nullptr;
-    }
-
-    auto otherGeneralized = other.Generalize();
-    return std::make_unique<Divide>(dynamic_cast<const Divide&>(*otherGeneralized));
-}
-
 auto Divide<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable

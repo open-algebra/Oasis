@@ -141,20 +141,6 @@ public:
     [[nodiscard]] virtual auto Generalize() const -> std::unique_ptr<Expression>;
 
     /**
-     * Attempts to specialize this expression to a more specific expression.
-     *
-     * Some expressions may explicitly specify the type of their operands. For example, a
-     * `Divide<Real>` expression may only accept `Real` operands. This function attempts to
-     * specialize the expression to a more specific expression, such as `Divide<Real>`, which
-     * accepts only `Real` operands. If the expression cannot be specialized, this function returns
-     * `nullptr`.
-     *
-     * @param other The other expression to specialize against.
-     * @return The specialized expression, or `nullptr` if the expression cannot be specialized.
-     */
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Expression>;
-
-    /**
      * Attempts to integrate this expression using integration rules
      *
      * @return An indefinite integral of the expression added to a constant
@@ -244,7 +230,7 @@ public:
     }
 
 #define DECL_SPECIALIZE(type) \
-    static auto Specialize(const Expression& other) -> std::unique_ptr<type>;
+
 
 } // namespace Oasis
 

@@ -100,16 +100,6 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return Add { *simplifiedMinuend, negated }.Simplify();
 }
 
-auto Subtract<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Subtract<Expression, Expression>>
-{
-    if (!other.Is<Oasis::Subtract>()) {
-        return nullptr;
-    }
-
-    auto otherGeneralized = other.Generalize();
-    return std::make_unique<Subtract>(dynamic_cast<const Subtract&>(*otherGeneralized));
-}
-
 auto Subtract<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // Single diff variable

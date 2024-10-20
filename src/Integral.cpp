@@ -142,14 +142,4 @@ auto Integral<Expression>::Simplify(const Expression& upper, const Expression& l
         */
 }
 
-auto Integral<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Integral<Expression, Expression>>
-{
-    if (!other.Is<Oasis::Integral>()) {
-        return nullptr;
-    }
-
-    auto otherGeneralized = other.Generalize();
-    return std::make_unique<Integral>(dynamic_cast<const Integral&>(*otherGeneralized));
-}
-
 } // Oasis

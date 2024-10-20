@@ -25,7 +25,7 @@ public:
 
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> override;
 
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Derivative>;
+
 
     EXPRESSION_TYPE(Derivative)
     EXPRESSION_CATEGORY(BinExp)
