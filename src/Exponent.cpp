@@ -94,9 +94,9 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     // a^log[a](x) = x - maybe add domain stuff (should only be defined for x >= 0)
-    if (auto logCase = RecursiveCast<Exponent<Expression, Log<Expression, Expression>>>(simplifiedExponent); logCase != nullptr) {
+    if (auto logCase = RecursiveCast<Exponent<Expression, Log<>>>(simplifiedExponent); logCase != nullptr) {
         if (logCase->GetMostSigOp().Equals(logCase->GetLeastSigOp().GetMostSigOp())) {
-            return Expression::Specialize(logCase->GetLeastSigOp().GetLeastSigOp());
+            return logCase->GetLeastSigOp().GetLeastSigOp().Copy();
         }
     }
 

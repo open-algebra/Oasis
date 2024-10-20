@@ -110,7 +110,7 @@ TEST_CASE("Generalized Structurally Equivalent", "[StructurallyEquivalent][Gener
 
 TEST_CASE("Specialization", "[Specialization]")
 {
-    REQUIRE(Oasis::Add<Oasis::Real>::Specialize(
+    REQUIRE(Oasis::RecursiveCast<Oasis::Add<Oasis::Real>>(
         Oasis::Add<Oasis::Expression> {
             Oasis::Real {},
             Oasis::Real {} }
