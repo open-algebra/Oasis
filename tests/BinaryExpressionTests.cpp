@@ -5,9 +5,10 @@
 
 #include "Oasis/Add.hpp"
 #include "Oasis/Multiply.hpp"
-#include "Oasis/Real.hpp"
-#include "Oasis/Variable.hpp"
 #include "Oasis/Negate.hpp"
+#include "Oasis/Real.hpp"
+#include "Oasis/RecursiveCast.hpp"
+#include "Oasis/Variable.hpp"
 
 TEST_CASE("Specialize Considers Commutative Property", "[Symbolic]")
 {
@@ -19,7 +20,7 @@ TEST_CASE("Specialize Considers Commutative Property", "[Symbolic]")
     };
 
     auto generalizedAdd = add.Generalize();
-    auto result1 = Oasis::Add<Oasis::Real, Oasis::Add<Oasis::Real>>::Specialize(*generalizedAdd);
+    auto result1 = Oasis::RecursiveCast<Oasis::Add<Oasis::Real, Oasis::Add<Oasis::Real>>>(*generalizedAdd);
     REQUIRE(result1 != nullptr);
 
     Oasis::Multiply multiply {
@@ -30,7 +31,7 @@ TEST_CASE("Specialize Considers Commutative Property", "[Symbolic]")
     };
 
     auto generalizedMultiply = multiply.Generalize();
-    auto result2 = Oasis::Multiply<Oasis::Variable, Oasis::Expression>::Specialize(*generalizedMultiply);
+    auto result2 = Oasis::RecursiveCast<Oasis::Multiply<Oasis::Variable, Oasis::Expression>>(*generalizedMultiply);
     REQUIRE(result2 != nullptr);
 }
 
@@ -44,7 +45,7 @@ TEST_CASE("Specialize Recursively Considers Commutative Property", "[Symbolic]")
     };
 
     auto generalizedAdd = add.Generalize();
-    auto result1 = Oasis::Add<Oasis::Real, Oasis::Add<Oasis::Real, Oasis::Expression>>::Specialize(*generalizedAdd);
+    auto result1 = Oasis::RecursiveCast<Oasis::Add<Oasis::Real, Oasis::Add<Oasis::Real, Oasis::Expression>>>(*generalizedAdd);
     REQUIRE(result1 != nullptr);
 
     Oasis::Multiply multiply {
@@ -57,7 +58,7 @@ TEST_CASE("Specialize Recursively Considers Commutative Property", "[Symbolic]")
     auto generalizedMultiply = multiply.Generalize();
 
     // intentionally out of order
-    auto result2 = Oasis::Multiply<Oasis::Variable, Oasis::Multiply<Oasis::Real, Oasis::Variable>>::Specialize(*generalizedMultiply);
+    auto result2 = Oasis::RecursiveCast<Oasis::Multiply<Oasis::Variable, Oasis::Multiply<Oasis::Real, Oasis::Variable>>>(*generalizedMultiply);
     REQUIRE(result2 != nullptr);
 }
 
