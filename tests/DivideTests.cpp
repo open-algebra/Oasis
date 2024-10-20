@@ -6,6 +6,7 @@
 
 #include "Oasis/Divide.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Variable.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Exponent.hpp"
@@ -199,7 +200,7 @@ TEST_CASE("Divide Operator Overload", "[Divide][Operator Overload]")
     const std::unique_ptr<Oasis::Expression> b = std::make_unique<Oasis::Real>(2.0);
 
     const auto sum = b/a;
-    auto realSum = Oasis::Real::Specialize(*sum);
+    auto realSum = Oasis::RecursiveCast<Oasis::Real>(*sum);
 
     REQUIRE(realSum != nullptr);
     REQUIRE(realSum->GetValue() == 2.0);
