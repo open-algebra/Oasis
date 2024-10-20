@@ -69,8 +69,6 @@ auto Matrix::Inverse() const -> std::unique_ptr<Matrix>
     return std::make_unique<Matrix>(matrix.inverse());
 }
 
-
-
 // TO DO: Fix?
 auto Matrix::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {

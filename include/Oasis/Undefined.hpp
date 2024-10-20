@@ -22,8 +22,6 @@ public:
     EXPRESSION_TYPE(None)
     EXPRESSION_CATEGORY(UnExp)
 
-
-
     auto operator=(const Undefined& other) -> Undefined& = default;
 };
 

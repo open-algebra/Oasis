@@ -28,8 +28,6 @@ public:
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
 
-
-
     EXPRESSION_TYPE(Exponent)
     EXPRESSION_CATEGORY(BinExp)
 };
@@ -54,8 +52,6 @@ public:
         : BinaryExpression<Exponent, BaseT, PowerT>(base, power)
     {
     }
-
-
 
     auto operator=(const Exponent& other) -> Exponent& = default;
 

@@ -25,8 +25,6 @@ public:
 
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> override;
 
-
-
     EXPRESSION_TYPE(Derivative)
     EXPRESSION_CATEGORY(BinExp)
 };
@@ -51,8 +49,6 @@ public:
         : BinaryExpression<Derivative, DependentT, IndependentT>(exp, var)
     {
     }
-
-
 
     auto operator=(const Derivative& other) -> Derivative& = default;
 

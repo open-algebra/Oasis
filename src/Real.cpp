@@ -33,8 +33,6 @@ auto Real::GetValue() const -> double
     return value;
 }
 
-
-
 auto Real::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {

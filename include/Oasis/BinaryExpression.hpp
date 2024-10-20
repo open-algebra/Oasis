@@ -10,8 +10,8 @@
 #include <functional>
 #include <list>
 
-#include "RecursiveCast.hpp"
 #include "Expression.hpp"
+#include "RecursiveCast.hpp"
 #include "Serialization.hpp"
 
 namespace Oasis {
