@@ -32,7 +32,7 @@ jobs:
                 include:
                   - os: ubuntu-latest
                     c_compiler: gcc-12
-                    cpp_compiler: g++
+                    cpp_compiler: g++-12
                   - os: ubuntu-latest
                     c_compiler: clang-17
                     cpp_compiler: clang++-17
