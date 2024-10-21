@@ -137,14 +137,12 @@ public:
     }
 
     template <template <typename> typename T>
-        requires DerivedFromUnaryExpression<T<Expression>>
     [[nodiscard]] bool Is() const
     {
         return GetType() == T<Expression>::GetStaticType();
     }
 
     template <template <typename, typename> typename T>
-        requires DerivedFromBinaryExpression<T<Expression, Expression>>
     [[nodiscard]] bool Is() const
     {
         return GetType() == T<Expression, Expression>::GetStaticType();
