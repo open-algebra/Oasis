@@ -21,6 +21,46 @@
 #include "Oasis/Integral.hpp"
 #include "Oasis/Derivative.hpp"
 
+TEST_CASE("LaTeX serialization for various precision", "[LaTeX][Serializer][Real]"){
+    Oasis::Real r{111215.0123456};
+    Oasis::LatexOptions options1 {};
+    Oasis::LatexSerializer serializer1{options1};
+
+    Oasis::LatexOptions options2 {Oasis::CHARACTER_I, 2};
+    Oasis::LatexSerializer serializer2{options2};
+
+    r.Serialize(serializer1);
+    r.Serialize(serializer2);
+
+    auto actual1 = serializer1.getResult();
+    auto actual2 = serializer2.getResult();
+    std::string expected1 = "111215";
+    std::string expected2 = "1.11e+05";
+
+    REQUIRE(actual1 == expected1);
+    REQUIRE(actual2 == expected2);
+}
+
+TEST_CASE("LaTeX serialization for different imaginary character", "[LaTeX][Serializer][Imaginary]"){
+    Oasis::Imaginary i{};
+
+    Oasis::LatexSerializer serializer{};
+    Oasis::LatexSerializer serializerJ{Oasis::LatexOptions{Oasis::CHARACTER_J}};
+
+    i.Serialize(serializer);
+    i.Serialize(serializerJ);
+
+    auto actual = serializer.getResult();
+    auto actualJ = serializerJ.getResult();
+
+    std::string expected = "i";
+    std::string expectedJ = "j";
+
+    REQUIRE(actual == expected);
+    REQUIRE(actualJ == expectedJ);
+
+}
+
 TEST_CASE("Latex Serialization for Addition", "[Latex][Serializer][Add]"){
     Oasis::Add a{Oasis::Real{5.0}, Oasis::Variable{"x_0"}};
 
@@ -79,7 +119,7 @@ TEST_CASE("Latex Serialization with spacing options", "[Latex][Serializer][Latex
 {
     Oasis::Multiply s{Oasis::Real{5.0}, Oasis::Variable{"x_0"}};
 
-    Oasis::LatexOptions options{Oasis::SPACING};
+    Oasis::LatexOptions options{Oasis::CHARACTER_I, 5, Oasis::SPACING};
 
     Oasis::LatexSerializer serializer{options};
 

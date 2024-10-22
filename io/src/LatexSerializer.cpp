@@ -25,23 +25,30 @@
 
 namespace Oasis{
 
-LatexSerializer::LatexSerializer(){
-    latexOptions = LatexOptions{NO_SPACING};
+void LatexSerializer::SetImaginaryCharacter(ImaginaryCharacter character)
+{
+    latexOptions.character = character;
 }
 
-LatexSerializer::LatexSerializer(LatexOptions& options)
+void LatexSerializer::SetNumPlaces(uint8_t num)
 {
-    latexOptions = options;
+    latexOptions.numPlaces = num;
+}
+
+void LatexSerializer::SetSpacing(Spacing sp)
+{
+    latexOptions.spacing = sp;
 }
 
 void LatexSerializer::Serialize(const Real& real)
 {
-    result = fmt::format("{:.5}", real.GetValue());
+    result = fmt::format("{:.{}}", real.GetValue(), latexOptions.numPlaces+1);
 }
 
 void LatexSerializer::Serialize(const Imaginary& imaginary)
 {
-    result = "i";
+    if (latexOptions.character == CHARACTER_J) result = "j";
+    else result = "i";
 }
 
 void LatexSerializer::Serialize(const Matrix& matrix)
@@ -132,6 +139,9 @@ void LatexSerializer::Serialize(const Divide<Expression, Expression>& divide)
     divide.GetLeastSigOp().Serialize(*this);
     const auto leastSigOpStr = getResult();
 
+    if (latexOptions.divType == DIV){
+        result = fmt::format("\\left(\{{}\}\\div\{{}\}\\right)", mostSigOpStr, leastSigOpStr);
+    }
     result = "\\left(\\frac{" + mostSigOpStr + "}{" + leastSigOpStr + "}\\right)";
 }
 

@@ -16,15 +16,39 @@ enum Spacing{
     SPACING
 };
 
+enum ImaginaryCharacter{
+    CHARACTER_I = 'i',
+    CHARACTER_J = 'j'
+};
+
+enum DivisionType{
+    FRAC,
+    DIV
+};
+
 struct LatexOptions{
 public:
     Spacing spacing;
+    ImaginaryCharacter character;
+    uint8_t numPlaces;
+    DivisionType divType;
+
+    explicit LatexOptions(uint8_t num) : LatexOptions(CHARACTER_I, num, FRAC) {}
+    explicit LatexOptions(Spacing spacing) : LatexOptions(CHARACTER_I, 6, FRAC, spacing) {}
+    explicit LatexOptions(DivisionType dv) : LatexOptions(CHARACTER_I, 6, dv) {}
+
+    LatexOptions(ImaginaryCharacter ch = CHARACTER_I, uint8_t num = 6, DivisionType dv = FRAC, Spacing sp = NO_SPACING)
+        : spacing(sp), character(ch), numPlaces(num) {}
 };
 
 class LatexSerializer final : public SerializationVisitor {
 public:
-    LatexSerializer();
-    explicit LatexSerializer(LatexOptions& options);
+    LatexSerializer() : LatexSerializer(LatexOptions{}) {}
+    explicit LatexSerializer(LatexOptions options) : latexOptions(options) {}
+
+    void SetImaginaryCharacter(ImaginaryCharacter character);
+    void SetNumPlaces(uint8_t num);
+    void SetSpacing(Spacing sp);
 
     void Serialize(const Real& real) override;
     void Serialize(const Imaginary& imaginary) override;
