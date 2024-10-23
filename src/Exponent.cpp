@@ -28,7 +28,7 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     const Exponent simplifiedExponent{ *simplifiedBase, *simplifiedPower };
 
-    return MatchCast<Expression>()
+    static auto matchcast = MatchCast<Expression>()
            .Case<Exponent<Expression, Real>>([](const auto& zeroCase) -> std::unique_ptr<Expression> {
                if (const Real& power = zeroCase.GetLeastSigOp(); power.GetValue() == 0.0)
                    return std::make_unique<Real>(1.0);
@@ -87,8 +87,9 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
                    return logCase.GetLeastSigOp().GetLeastSigOp().Copy();
                }
                return {};
-           })
-           .Execute(simplifiedExponent, simplifiedExponent.Copy());
+           });
+
+    return matchcast.Execute(simplifiedExponent, simplifiedExponent.Copy());
 }
 
 auto Exponent<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
