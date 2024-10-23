@@ -14,6 +14,7 @@ set(Oasis_HEADERS
     Oasis/Linear.hpp
     Oasis/Log.hpp
     Oasis/Magnitude.hpp
+    Oasis/MatchCast.hpp
     Oasis/Multiply.hpp
     Oasis/Negate.hpp
     Oasis/Pi.hpp

@@ -12,95 +12,83 @@
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
+#include "Oasis/MatchCast.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/RecursiveCast.hpp"
 
 namespace Oasis {
 
 Exponent<Expression>::Exponent(const Expression& base, const Expression& power)
-    : BinaryExpression(base, power)
-{
-}
+    : BinaryExpression(base, power) {}
 
 auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
-    auto simplifiedBase = mostSigOp->Simplify();
-    auto simplifiedPower = leastSigOp->Simplify();
+    const auto simplifiedBase = mostSigOp->Simplify();
+    const auto simplifiedPower = leastSigOp->Simplify();
 
-    Exponent simplifiedExponent { *simplifiedBase, *simplifiedPower };
+    const Exponent simplifiedExponent{ *simplifiedBase, *simplifiedPower };
 
-    if (auto zeroCase = RecursiveCast<Exponent<Expression, Real>>(simplifiedExponent); zeroCase != nullptr) {
-        const Real& power = zeroCase->GetLeastSigOp();
-
-        if (power.GetValue() == 0.0) {
-            return std::make_unique<Real>(1.0);
-        }
-    }
-
-    if (auto zeroCase = RecursiveCast<Exponent<Real, Expression>>(simplifiedExponent); zeroCase != nullptr) {
-        const Real& base = zeroCase->GetMostSigOp();
-
-        if (base.GetValue() == 0.0) {
-            return std::make_unique<Real>(0.0);
-        }
-    }
-
-    if (auto realCase = RecursiveCast<Exponent<Real>>(simplifiedExponent); realCase != nullptr) {
-        const Real& base = realCase->GetMostSigOp();
-        const Real& power = realCase->GetLeastSigOp();
-
-        return std::make_unique<Real>(pow(base.GetValue(), power.GetValue()));
-    }
-
-    if (auto oneCase = RecursiveCast<Exponent<Expression, Real>>(simplifiedExponent); oneCase != nullptr) {
-        const Real& power = oneCase->GetLeastSigOp();
-        if (power.GetValue() == 1.0) {
-            return oneCase->GetMostSigOp().Copy();
-        }
-    }
-
-    if (auto oneCase = RecursiveCast<Exponent<Real, Expression>>(simplifiedExponent); oneCase != nullptr) {
-        const Real& base = oneCase->GetMostSigOp();
-        if (base.GetValue() == 1.0) {
-            return std::make_unique<Real>(1.0);
-        }
-    }
-
-    if (auto ImgCase = RecursiveCast<Exponent<Imaginary, Real>>(simplifiedExponent); ImgCase != nullptr) {
-        const auto power = std::fmod((ImgCase->GetLeastSigOp()).GetValue(), 4);
-        if (power == 1) {
-            return std::make_unique<Imaginary>();
-        } else if (power == 2) {
-            return std::make_unique<Real>(-1);
-        } else if (power == 0) {
-            return std::make_unique<Real>(1);
-        } else if (power == 3) {
-            return std::make_unique<Multiply<Real, Imaginary>>(Real { -1 }, Imaginary {});
-        }
-    }
-
-    if (auto ImgCase = RecursiveCast<Exponent<Multiply<Real, Expression>, Real>>(simplifiedExponent); ImgCase != nullptr) {
-        if (ImgCase->GetMostSigOp().GetMostSigOp().GetValue() < 0 && ImgCase->GetLeastSigOp().GetValue() == 0.5) {
-            return std::make_unique<Multiply<Expression>>(
-                Multiply<Expression> { Real { pow(std::abs(ImgCase->GetMostSigOp().GetMostSigOp().GetValue()), 0.5) },
-                    Exponent<Expression> { ImgCase->GetMostSigOp().GetLeastSigOp(), Real { 0.5 } } },
-                Imaginary {});
-        }
-    }
-
-    if (auto expExpCase = RecursiveCast<Exponent<Exponent<Expression, Expression>, Expression>>(simplifiedExponent); expExpCase != nullptr) {
-        return std::make_unique<Exponent<Expression>>(expExpCase->GetMostSigOp().GetMostSigOp(),
-            *(Multiply { expExpCase->GetMostSigOp().GetLeastSigOp(), expExpCase->GetLeastSigOp() }.Simplify()));
-    }
-
-    // a^log[a](x) = x - maybe add domain stuff (should only be defined for x >= 0)
-    if (auto logCase = RecursiveCast<Exponent<Expression, Log<>>>(simplifiedExponent); logCase != nullptr) {
-        if (logCase->GetMostSigOp().Equals(logCase->GetLeastSigOp().GetMostSigOp())) {
-            return logCase->GetLeastSigOp().GetLeastSigOp().Copy();
-        }
-    }
-
-    return simplifiedExponent.Copy();
+    return MatchCast<Expression>()
+           .Case<Exponent<Expression, Real>>([](const auto& zeroCase) -> std::unique_ptr<Expression> {
+               if (const Real& power = zeroCase.GetLeastSigOp(); power.GetValue() == 0.0)
+                   return std::make_unique<Real>(1.0);
+               return {};
+           })
+           .Case<Exponent<Real, Expression>>([](const auto& zeroCase) -> std::unique_ptr<Expression> {
+               if (const Real& base = zeroCase.GetMostSigOp(); base.GetValue() == 0.0)
+                   return std::make_unique<Real>(0.0);
+               return {};
+           })
+           .Case<Exponent<Real>>([](const auto& realCase) -> std::unique_ptr<Expression> {
+               const Real& base = realCase.GetMostSigOp();
+               const Real& power = realCase.GetLeastSigOp();
+               return std::make_unique<Real>(pow(base.GetValue(), power.GetValue()));
+           })
+           .Case<Exponent<Expression, Real>>([](const auto& oneCase) -> std::unique_ptr<Expression> {
+               if (const Real& power = oneCase.GetLeastSigOp(); power.GetValue() == 1.0)
+                   return oneCase.GetMostSigOp().Copy();
+               return {};
+           })
+           .Case<Exponent<Real, Expression>>([](const auto& oneCase) -> std::unique_ptr<Expression> {
+               if (const Real& base = oneCase.GetMostSigOp(); base.GetValue() == 1.0)
+                   return std::make_unique<Real>(1.0);
+               return {};
+           })
+           .Case<Exponent<Imaginary, Real>>([](const auto& ImgCase) -> std::unique_ptr<Expression> {
+               const auto power = std::fmod((ImgCase.GetLeastSigOp()).GetValue(), 4);
+               switch (static_cast<int>(power)) {
+               case 0:
+                   return std::make_unique<Real>(1);
+               case 1:
+                   return std::make_unique<Imaginary>();
+               case 2:
+                   return std::make_unique<Real>(-1);
+               case 3:
+                   return std::make_unique<Multiply<Real, Imaginary>>(Real{ -1 }, Imaginary{});
+               default:
+                   return {};
+               }
+           })
+           .Case<Exponent<Multiply<Real, Expression>, Real>>([](const auto& ImgCase) -> std::unique_ptr<Expression> {
+               if (ImgCase.GetMostSigOp().GetMostSigOp().GetValue() < 0 && ImgCase.GetLeastSigOp().GetValue() == 0.5) {
+                   return std::make_unique<Multiply<>>(
+                       Multiply<>{ Real{ pow(std::abs(ImgCase.GetMostSigOp().GetMostSigOp().GetValue()), 0.5) },
+                                   Exponent{ ImgCase.GetMostSigOp().GetLeastSigOp(), Real{ 0.5 } } },
+                       Imaginary{});
+               }
+               return {};
+           })
+           .Case<Exponent<Exponent, Expression>>([](const auto& expExpCase) -> std::unique_ptr<Expression> {
+               return std::make_unique<Exponent>(expExpCase.GetMostSigOp().GetMostSigOp(),
+                   *(Multiply{ expExpCase.GetMostSigOp().GetLeastSigOp(), expExpCase.GetLeastSigOp() }.Simplify()));
+           })
+           .Case<Exponent<Expression, Log<>>>([](const auto& logCase) -> std::unique_ptr<Expression> {
+               if (logCase.GetMostSigOp().Equals(logCase.GetLeastSigOp().GetMostSigOp())) {
+                   return logCase.GetLeastSigOp().GetLeastSigOp().Copy();
+               }
+               return {};
+           })
+           .Execute(simplifiedExponent, simplifiedExponent.Copy());
 }
 
 auto Exponent<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
@@ -117,11 +105,11 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) cons
 
             if ((*variable).GetName() == expBase.GetName()) {
 
-                Add adder {
-                    Divide {
-                        Exponent<Variable, Real> { Variable { (*variable).GetName() }, Real { expPow.GetValue() + 1 } },
-                        Real { expPow.GetValue() + 1 } },
-                    Variable { "C" }
+                Add adder{
+                    Divide{
+                        Exponent<Variable, Real>{ Variable{ (*variable).GetName() }, Real{ expPow.GetValue() + 1 } },
+                        Real{ expPow.GetValue() + 1 } },
+                    Variable{ "C" }
                 };
 
                 return adder.Simplify();
@@ -129,7 +117,7 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) cons
         }
     }
 
-    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
+    Integral<Expression, Expression> integral{ *(this->Copy()), *(integrationVariable.Copy()) };
 
     return integral.Copy();
 }
@@ -147,33 +135,33 @@ auto Exponent<Expression>::Differentiate(const Expression& differentiationVariab
             const Real& expPow = realExponent->GetLeastSigOp();
 
             if (variable->GetName() == expBase.GetName()) {
-                return Multiply {
-                    Real { expPow.GetValue() },
-                    Exponent {
-                        Variable { variable->GetName() },
-                        Real { expPow.GetValue() - 1 } }
-                }
+                return Multiply{
+                        Real{ expPow.GetValue() },
+                        Exponent{
+                            Variable{ variable->GetName() },
+                            Real{ expPow.GetValue() - 1 } }
+                    }
                     .Simplify();
             }
         }
 
         if (auto natBase = RecursiveCast<Exponent<EulerNumber, Expression>>(*simplifiedExponent); natBase != nullptr) {
-            Multiply derivative { Derivative { natBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent };
+            Multiply derivative{ Derivative{ natBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent };
             return derivative.Simplify();
         }
 
         if (auto realBase = RecursiveCast<Exponent<Real, Expression>>(*simplifiedExponent); realBase != nullptr) {
-            Multiply derivative { Multiply { Derivative { realBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent }, Log { EulerNumber {}, realBase->GetMostSigOp() } };
+            Multiply derivative{ Multiply{ Derivative{ realBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent }, Log{ EulerNumber{}, realBase->GetMostSigOp() } };
             return derivative.Simplify();
         }
 
         if (auto varBase = RecursiveCast<Exponent<Variable, Expression>>(*simplifiedExponent); varBase != nullptr) {
-            Multiply derivative { Multiply { Derivative { varBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent }, Log { EulerNumber {}, varBase->GetMostSigOp() } };
+            Multiply derivative{ Multiply{ Derivative{ varBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent }, Log{ EulerNumber{}, varBase->GetMostSigOp() } };
             return derivative.Simplify();
         }
     }
 
-    return Derivative { *this, differentiationVariable }.Copy();
+    return Derivative{ *this, differentiationVariable }.Copy();
 }
 
 } // Oasis
