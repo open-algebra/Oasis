@@ -8,6 +8,7 @@
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
+#include "Oasis/MatchCast.hpp"
 #include "Oasis/Matrix.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/RecursiveCast.hpp"
