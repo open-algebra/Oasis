@@ -5,8 +5,8 @@
 #ifndef OASIS_MATCHCAST_HPP
 #define OASIS_MATCHCAST_HPP
 
-#include <type_traits>
 #include <functional>
+#include <type_traits>
 
 namespace Oasis {
 
@@ -14,7 +14,7 @@ template <typename T>
 struct lambda_traits;
 
 template <typename Ret, typename ClassType, typename Arg>
-struct lambda_traits<Ret(ClassType::*)(Arg) const> {
+struct lambda_traits<Ret (ClassType::*)(Arg) const> {
     using argument_type = std::remove_cvref_t<Arg>;
 };
 
@@ -27,12 +27,13 @@ class MatchCast {
     using CaseFuncT = std::function<std::unique_ptr<ArgumentT>(const ArgumentT&)>;
 
 public:
-    template<typename Lambda>
+    template <typename Lambda>
     MatchCast& Case(Lambda caseTrueCallback)
     {
         using CaseType = lambda_argument_type<Lambda>;
         cases_.emplace_back([caseTrueCallback](const ArgumentT& arg_) -> std::unique_ptr<ArgumentT> {
-            if (std::unique_ptr<CaseType> castResult = RecursiveCast<CaseType>(arg_)) return caseTrueCallback(*castResult);
+            if (std::unique_ptr<CaseType> castResult = RecursiveCast<CaseType>(arg_))
+                return caseTrueCallback(*castResult);
             return {};
         });
 
@@ -41,7 +42,9 @@ public:
 
     std::unique_ptr<ArgumentT> Execute(const ArgumentT& arg, std::unique_ptr<ArgumentT>&& fallback) const
     {
-        for (const auto& c : cases_) if (auto result = c(arg)) return result;
+        for (const auto& c : cases_)
+            if (auto result = c(arg))
+                return result;
         return fallback;
     }
 
@@ -51,4 +54,4 @@ private:
 
 }
 
-#endif //OASIS_MATCHCAST_HPP
+#endif // OASIS_MATCHCAST_HPP
