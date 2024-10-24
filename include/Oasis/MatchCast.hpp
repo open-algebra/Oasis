@@ -23,15 +23,16 @@ using lambda_argument_type = typename lambda_traits<decltype(&Lambda::operator()
 
 template <typename ArgumentT>
 class MatchCast {
-public:
+
     using CaseFuncT = std::function<std::unique_ptr<ArgumentT>(const ArgumentT&)>;
 
+public:
     template<typename Lambda>
     MatchCast& Case(Lambda caseTrueCallback)
     {
-        using ArgType = lambda_argument_type<Lambda>;
+        using CaseType = lambda_argument_type<Lambda>;
         cases_.emplace_back([caseTrueCallback](const ArgumentT& arg_) -> std::unique_ptr<ArgumentT> {
-            if (std::unique_ptr<ArgType> castResult = RecursiveCast<ArgType>(arg_)) return caseTrueCallback(*castResult);
+            if (std::unique_ptr<CaseType> castResult = RecursiveCast<CaseType>(arg_)) return caseTrueCallback(*castResult);
             return {};
         });
 
