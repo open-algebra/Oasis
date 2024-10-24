@@ -30,7 +30,7 @@ public:
     MatchCast& Case(Lambda caseTrueCallback)
     {
         using ArgType = lambda_argument_type<Lambda>;
-        cases_.emplace_back([this, caseTrueCallback](const ArgumentT& arg_) -> std::unique_ptr<ArgumentT> {
+        cases_.emplace_back([caseTrueCallback](const ArgumentT& arg_) -> std::unique_ptr<ArgumentT> {
             if (std::unique_ptr<ArgType> castResult = RecursiveCast<ArgType>(arg_)) return caseTrueCallback(*castResult);
             return {};
         });
