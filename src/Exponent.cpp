@@ -23,73 +23,74 @@ Exponent<Expression>::Exponent(const Expression& base, const Expression& power)
 
 auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
+    static auto match_cast =
+        MatchCast<Expression>()
+        .Case([](const Exponent<Expression, Real>& zeroCase) -> std::unique_ptr<Expression> {
+            if (const Real& power = zeroCase.GetLeastSigOp(); power.GetValue() == 0.0)
+                return std::make_unique<Real>(1.0);
+            return {};
+        })
+        .Case([](const Exponent<Real, Expression>& zeroCase) -> std::unique_ptr<Expression> {
+            if (const Real& base = zeroCase.GetMostSigOp(); base.GetValue() == 0.0)
+                return std::make_unique<Real>(0.0);
+            return {};
+        })
+        .Case([](const Exponent<Real>& realCase) -> std::unique_ptr<Expression> {
+            const Real& base = realCase.GetMostSigOp();
+            const Real& power = realCase.GetLeastSigOp();
+            return std::make_unique<Real>(pow(base.GetValue(), power.GetValue()));
+        })
+        .Case([](const Exponent<Expression, Real>& oneCase) -> std::unique_ptr<Expression> {
+            if (const Real& power = oneCase.GetLeastSigOp(); power.GetValue() == 1.0)
+                return oneCase.GetMostSigOp().Copy();
+            return {};
+        })
+        .Case([](const Exponent<Real, Expression>& oneCase) -> std::unique_ptr<Expression> {
+            if (const Real& base = oneCase.GetMostSigOp(); base.GetValue() == 1.0)
+                return std::make_unique<Real>(1.0);
+            return {};
+        })
+        .Case([](const Exponent<Imaginary, Real>& ImgCase) -> std::unique_ptr<Expression> {
+            const auto power = std::fmod((ImgCase.GetLeastSigOp()).GetValue(), 4);
+            switch (static_cast<int>(power)) {
+            case 0:
+                return std::make_unique<Real>(1);
+            case 1:
+                return std::make_unique<Imaginary>();
+            case 2:
+                return std::make_unique<Real>(-1);
+            case 3:
+                return std::make_unique<Multiply<Real, Imaginary>>(Real{ -1 }, Imaginary{});
+            default:
+                return {};
+            }
+        })
+        .Case([](const Exponent<Multiply<Real, Expression>, Real>& ImgCase) -> std::unique_ptr<Expression> {
+            if (ImgCase.GetMostSigOp().GetMostSigOp().GetValue() < 0 && ImgCase.GetLeastSigOp().GetValue() == 0.5) {
+                return std::make_unique<Multiply<>>(
+                    Multiply{ Real{ pow(std::abs(ImgCase.GetMostSigOp().GetMostSigOp().GetValue()), 0.5) },
+                              Exponent{ ImgCase.GetMostSigOp().GetLeastSigOp(), Real{ 0.5 } } },
+                    Imaginary{});
+            }
+            return {};
+        })
+        .Case([](const Exponent<Exponent, Expression>& expExpCase) -> std::unique_ptr<Expression> {
+            return std::make_unique<Exponent>(expExpCase.GetMostSigOp().GetMostSigOp(),
+                *(Multiply{ expExpCase.GetMostSigOp().GetLeastSigOp(), expExpCase.GetLeastSigOp() }.Simplify()));
+        })
+        .Case([](const Exponent<Expression, Log<>>& logCase) -> std::unique_ptr<Expression> {
+            if (logCase.GetMostSigOp().Equals(logCase.GetLeastSigOp().GetMostSigOp())) {
+                return logCase.GetLeastSigOp().GetLeastSigOp().Copy();
+            }
+            return {};
+        });
+
     const auto simplifiedBase = mostSigOp->Simplify();
     const auto simplifiedPower = leastSigOp->Simplify();
 
     const Exponent simplifiedExponent{ *simplifiedBase, *simplifiedPower };
 
-    static auto matchcast = MatchCast<Expression>()
-           .Case<Exponent<Expression, Real>>([](const auto& zeroCase) -> std::unique_ptr<Expression> {
-               if (const Real& power = zeroCase.GetLeastSigOp(); power.GetValue() == 0.0)
-                   return std::make_unique<Real>(1.0);
-               return {};
-           })
-           .Case<Exponent<Real, Expression>>([](const auto& zeroCase) -> std::unique_ptr<Expression> {
-               if (const Real& base = zeroCase.GetMostSigOp(); base.GetValue() == 0.0)
-                   return std::make_unique<Real>(0.0);
-               return {};
-           })
-           .Case<Exponent<Real>>([](const auto& realCase) -> std::unique_ptr<Expression> {
-               const Real& base = realCase.GetMostSigOp();
-               const Real& power = realCase.GetLeastSigOp();
-               return std::make_unique<Real>(pow(base.GetValue(), power.GetValue()));
-           })
-           .Case<Exponent<Expression, Real>>([](const auto& oneCase) -> std::unique_ptr<Expression> {
-               if (const Real& power = oneCase.GetLeastSigOp(); power.GetValue() == 1.0)
-                   return oneCase.GetMostSigOp().Copy();
-               return {};
-           })
-           .Case<Exponent<Real, Expression>>([](const auto& oneCase) -> std::unique_ptr<Expression> {
-               if (const Real& base = oneCase.GetMostSigOp(); base.GetValue() == 1.0)
-                   return std::make_unique<Real>(1.0);
-               return {};
-           })
-           .Case<Exponent<Imaginary, Real>>([](const auto& ImgCase) -> std::unique_ptr<Expression> {
-               const auto power = std::fmod((ImgCase.GetLeastSigOp()).GetValue(), 4);
-               switch (static_cast<int>(power)) {
-               case 0:
-                   return std::make_unique<Real>(1);
-               case 1:
-                   return std::make_unique<Imaginary>();
-               case 2:
-                   return std::make_unique<Real>(-1);
-               case 3:
-                   return std::make_unique<Multiply<Real, Imaginary>>(Real{ -1 }, Imaginary{});
-               default:
-                   return {};
-               }
-           })
-           .Case<Exponent<Multiply<Real, Expression>, Real>>([](const auto& ImgCase) -> std::unique_ptr<Expression> {
-               if (ImgCase.GetMostSigOp().GetMostSigOp().GetValue() < 0 && ImgCase.GetLeastSigOp().GetValue() == 0.5) {
-                   return std::make_unique<Multiply<>>(
-                       Multiply<>{ Real{ pow(std::abs(ImgCase.GetMostSigOp().GetMostSigOp().GetValue()), 0.5) },
-                                   Exponent{ ImgCase.GetMostSigOp().GetLeastSigOp(), Real{ 0.5 } } },
-                       Imaginary{});
-               }
-               return {};
-           })
-           .Case<Exponent<Exponent, Expression>>([](const auto& expExpCase) -> std::unique_ptr<Expression> {
-               return std::make_unique<Exponent>(expExpCase.GetMostSigOp().GetMostSigOp(),
-                   *(Multiply{ expExpCase.GetMostSigOp().GetLeastSigOp(), expExpCase.GetLeastSigOp() }.Simplify()));
-           })
-           .Case<Exponent<Expression, Log<>>>([](const auto& logCase) -> std::unique_ptr<Expression> {
-               if (logCase.GetMostSigOp().Equals(logCase.GetLeastSigOp().GetMostSigOp())) {
-                   return logCase.GetLeastSigOp().GetLeastSigOp().Copy();
-               }
-               return {};
-           });
-
-    return matchcast.Execute(simplifiedExponent, simplifiedExponent.Copy());
+    return match_cast.Execute(simplifiedExponent, simplifiedExponent.Copy());
 }
 
 auto Exponent<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
