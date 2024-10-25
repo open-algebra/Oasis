@@ -9,49 +9,87 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
+#include "Oasis/EulerNumber.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
-#include "Oasis/Multiply.hpp"
+#include "Oasis/Magnitude.hpp"
 #include "Oasis/Matrix.hpp"
+#include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
+#include "Oasis/Pi.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
+#include "Oasis/TeXSerializer.hpp"
 #include "Oasis/Variable.hpp"
-#include "Oasis/EulerNumber.hpp"
-#include "Oasis/Pi.hpp"
-#include "Oasis/Magnitude.hpp"
-#include "Oasis/LatexSerializer.hpp"
 
 namespace Oasis{
 
-void LatexSerializer::SetImaginaryCharacter(ImaginaryCharacter character)
+void TeXSerializer::SetImaginaryCharacter(ImaginaryCharacter character)
 {
     latexOptions.character = character;
 }
 
-void LatexSerializer::SetNumPlaces(uint8_t num)
+void TeXSerializer::SetNumPlaces(uint8_t num)
 {
     latexOptions.numPlaces = num;
 }
 
-void LatexSerializer::SetSpacing(Spacing sp)
+void TeXSerializer::SetSpacing(Spacing sp)
 {
     latexOptions.spacing = sp;
 }
+DivisionType TeXSerializer::GetDivType()
+{
+    return latexOptions.divType;
+}
 
-void LatexSerializer::Serialize(const Real& real)
+void TeXSerializer::SetDivType(DivisionType dv)
+{
+    latexOptions.divType = dv;
+}
+ImaginaryCharacter TeXSerializer::GetImaginaryCharacter()
+{
+    return latexOptions.character;
+}
+Spacing TeXSerializer::GetSpacing()
+{
+    return latexOptions.spacing;
+}
+uint8_t TeXSerializer::GetNumPlaces()
+{
+    return latexOptions.numPlaces;
+}
+
+void TeXSerializer::SetTeXDialect(TeXDialect dt)
+{
+    latexOptions.dialect = dt;
+}
+TeXDialect TeXSerializer::GetTeXDialect()
+{
+    return latexOptions.dialect;
+}
+void TeXSerializer::AddTeXPackage(SupportedPackages package)
+{
+    latexOptions.packages.insert(package);
+}
+void TeXSerializer::RemoveTeXPackage(SupportedPackages package)
+{
+    latexOptions.packages.erase(package);
+}
+
+void TeXSerializer::Serialize(const Real& real)
 {
     result = fmt::format("{:.{}}", real.GetValue(), latexOptions.numPlaces+1);
 }
 
-void LatexSerializer::Serialize(const Imaginary& imaginary)
+void TeXSerializer::Serialize(const Imaginary& imaginary)
 {
     if (latexOptions.character == CHARACTER_J) result = "j";
     else result = "i";
 }
 
-void LatexSerializer::Serialize(const Matrix& matrix)
+void TeXSerializer::Serialize(const Matrix& matrix)
 {
     result = "\\begin{bmatrix}\n";
     MatrixXXD mat = matrix.GetMatrix();
@@ -70,27 +108,27 @@ void LatexSerializer::Serialize(const Matrix& matrix)
     result += "\\end{bmatrix}\n";
 }
 
-void LatexSerializer::Serialize(const Variable& variable)
+void TeXSerializer::Serialize(const Variable& variable)
 {
     result = variable.GetName();
 }
 
-void LatexSerializer::Serialize(const Undefined& undefined)
+void TeXSerializer::Serialize(const Undefined& undefined)
 {
     result = "Undefined";
 }
 
-void LatexSerializer::Serialize(const Pi&)
+void TeXSerializer::Serialize(const Pi&)
 {
     result = "\\pi";
 }
 
-void LatexSerializer::Serialize(const EulerNumber&)
+void TeXSerializer::Serialize(const EulerNumber&)
 {
     result = "e";
 }
 
-void LatexSerializer::Serialize(const Add<Expression, Expression>& add)
+void TeXSerializer::Serialize(const Add<Expression, Expression>& add)
 {
     add.GetMostSigOp().Serialize(*this);
     const auto mostSigOpStr = getResult();
@@ -103,7 +141,7 @@ void LatexSerializer::Serialize(const Add<Expression, Expression>& add)
         result = fmt::format("\\left({} + {}\\right)", mostSigOpStr, leastSigOpStr);
 }
 
-void LatexSerializer::Serialize(const Subtract<Expression, Expression>& subtract)
+void TeXSerializer::Serialize(const Subtract<Expression, Expression>& subtract)
 {
     subtract.GetMostSigOp().Serialize(*this);
     const auto mostSigOpStr = getResult();
@@ -117,7 +155,7 @@ void LatexSerializer::Serialize(const Subtract<Expression, Expression>& subtract
         result = fmt::format("\\left({} - {}\\right)", mostSigOpStr, leastSigOpStr);
 }
 
-void LatexSerializer::Serialize(const Multiply<Expression, Expression>& multiply)
+void TeXSerializer::Serialize(const Multiply<Expression, Expression>& multiply)
 {
     multiply.GetMostSigOp().Serialize(*this);
     const auto mostSigOpStr = getResult();
@@ -131,7 +169,7 @@ void LatexSerializer::Serialize(const Multiply<Expression, Expression>& multiply
         result = fmt::format("\\left({} * {}\\right)", mostSigOpStr, leastSigOpStr);
 }
 
-void LatexSerializer::Serialize(const Divide<Expression, Expression>& divide)
+void TeXSerializer::Serialize(const Divide<Expression, Expression>& divide)
 {
     divide.GetMostSigOp().Serialize(*this);
     const auto mostSigOpStr = getResult();
@@ -140,12 +178,13 @@ void LatexSerializer::Serialize(const Divide<Expression, Expression>& divide)
     const auto leastSigOpStr = getResult();
 
     if (latexOptions.divType == DIV){
-        result = fmt::format("\\left(\{{}\}\\div\{{}\}\\right)", mostSigOpStr, leastSigOpStr);
+        result = fmt::format("\\left({{{}}}\\div{{{}}}\\right)", mostSigOpStr, leastSigOpStr);
+    } else {
+        result = fmt::format("\\left(\\frac{{{}}}{{{}}}\\right)", mostSigOpStr, leastSigOpStr);
     }
-    result = "\\left(\\frac{" + mostSigOpStr + "}{" + leastSigOpStr + "}\\right)";
 }
 
-void LatexSerializer::Serialize(const Exponent<Expression, Expression>& exponent)
+void TeXSerializer::Serialize(const Exponent<Expression, Expression>& exponent)
 {
     exponent.GetMostSigOp().Serialize(*this);
     const auto mostSigOpStr = getResult();
@@ -153,10 +192,10 @@ void LatexSerializer::Serialize(const Exponent<Expression, Expression>& exponent
     exponent.GetLeastSigOp().Serialize(*this);
     const auto leastSigOpStr = getResult();
 
-    result = "\\left("+ mostSigOpStr +"\\right)^{"+leastSigOpStr+"}";
+    result = fmt::format("\\left({}\\right)^{{{}}}", mostSigOpStr, leastSigOpStr);
 }
 
-void LatexSerializer::Serialize(const Log<Expression, Expression>& log)
+void TeXSerializer::Serialize(const Log<Expression, Expression>& log)
 {
     // if (log.GetMostSigOp())
     log.GetMostSigOp().Serialize(*this);
@@ -165,26 +204,26 @@ void LatexSerializer::Serialize(const Log<Expression, Expression>& log)
     log.GetLeastSigOp().Serialize(*this);
     const auto leastSigOpStr = getResult();
 
-    result = "\\log_{"+mostSigOpStr+"}\\left("+leastSigOpStr+"\\right)";
+    result = fmt::format("\\log_{{{}}}\\left({}\\right)", mostSigOpStr, leastSigOpStr);
 }
 
-void LatexSerializer::Serialize(const Negate<Expression>& negate)
+void TeXSerializer::Serialize(const Negate<Expression>& negate)
 {
     negate.GetOperand().Serialize(*this);
     const auto op = getResult();
 
-    result = "\\left(-"+op+"\\right)";
+    result = fmt::format("\\left(-{}\\right)", op);
 }
 
-void LatexSerializer::Serialize(const Magnitude<Expression>& magnitude)
+void TeXSerializer::Serialize(const Magnitude<Expression>& magnitude)
 {
     magnitude.GetOperand().Serialize(*this);
     const auto op = getResult();
 
-    result = "\\left|"+op+"\\right|";
+    result = fmt::format("\\left|{}\\right|", op);
 }
 
-void LatexSerializer::Serialize(const Derivative<Expression, Expression>& derivative)
+void TeXSerializer::Serialize(const Derivative<Expression, Expression>& derivative)
 {
     derivative.GetMostSigOp().Serialize(*this);
     const auto MostSigOpStr = getResult();
@@ -192,10 +231,10 @@ void LatexSerializer::Serialize(const Derivative<Expression, Expression>& deriva
     derivative.GetLeastSigOp().Serialize(*this);
     const auto LeastSigOpStr = getResult();
 
-    result = "\\frac{d}{d"+LeastSigOpStr+"}\\left("+MostSigOpStr+"\\right)";
+    result = fmt::format("\\frac{{d}}{{d{}}}\\left({}\\right)", LeastSigOpStr, MostSigOpStr);
 }
 
-void LatexSerializer::Serialize(const Integral<Expression, Expression>& integral)
+void TeXSerializer::Serialize(const Integral<Expression, Expression>& integral)
 {
     integral.GetMostSigOp().Serialize(*this);
     const auto MostSigOpStr = getResult();
@@ -203,10 +242,10 @@ void LatexSerializer::Serialize(const Integral<Expression, Expression>& integral
     integral.GetLeastSigOp().Serialize(*this);
     const auto LeastSigOpStr = getResult();
 
-    result = "\\int\\left("+MostSigOpStr+"\\right)d"+LeastSigOpStr;
+    result = fmt::format("\\int\\left({}\\right)d{}", MostSigOpStr, LeastSigOpStr);
 }
 
-std::string LatexSerializer::getResult() const
+std::string TeXSerializer::getResult() const
 {
     return result;
 }

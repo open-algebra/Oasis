@@ -5,29 +5,30 @@
 #include "catch2/catch_test_macros.hpp"
 
 #include "Oasis/Add.hpp"
+#include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
-#include "Oasis/Exponent.hpp"
 #include "Oasis/EulerNumber.hpp"
-#include "Oasis/Imaginary.hpp"
+#include "Oasis/Exponent.hpp"
 #include "Oasis/FromString.hpp"
-#include "Oasis/LatexSerializer.hpp"
+#include "Oasis/Imaginary.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
+#include "Oasis/Magnitude.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Negate.hpp"
 #include "Oasis/Pi.hpp"
 #include "Oasis/Subtract.hpp"
+#include "Oasis/TeXSerializer.hpp"
 #include "Oasis/Variable.hpp"
-#include "Oasis/Negate.hpp"
-#include "Oasis/Magnitude.hpp"
-#include "Oasis/Integral.hpp"
-#include "Oasis/Derivative.hpp"
 
 TEST_CASE("LaTeX serialization for various precision", "[LaTeX][Serializer][Real]"){
     Oasis::Real r{111215.0123456};
-    Oasis::LatexOptions options1 {};
-    Oasis::LatexSerializer serializer1{options1};
+    Oasis::TexOptions options1 {};
+    Oasis::TeXSerializer serializer1{options1};
 
-    Oasis::LatexOptions options2 {Oasis::CHARACTER_I, 2};
-    Oasis::LatexSerializer serializer2{options2};
+    Oasis::TexOptions options2 {};
+    Oasis::TeXSerializer serializer2{options2};
+    serializer2.SetNumPlaces(2);
 
     r.Serialize(serializer1);
     r.Serialize(serializer2);
@@ -44,8 +45,8 @@ TEST_CASE("LaTeX serialization for various precision", "[LaTeX][Serializer][Real
 TEST_CASE("LaTeX serialization for different imaginary character", "[LaTeX][Serializer][Imaginary]"){
     Oasis::Imaginary i{};
 
-    Oasis::LatexSerializer serializer{};
-    Oasis::LatexSerializer serializerJ{Oasis::LatexOptions{Oasis::CHARACTER_J}};
+    Oasis::TeXSerializer serializer{};
+    Oasis::TeXSerializer serializerJ{Oasis::TexOptions {Oasis::CHARACTER_J}};
 
     i.Serialize(serializer);
     i.Serialize(serializerJ);
@@ -61,10 +62,10 @@ TEST_CASE("LaTeX serialization for different imaginary character", "[LaTeX][Seri
 
 }
 
-TEST_CASE("Latex Serialization for Addition", "[Latex][Serializer][Add]"){
+TEST_CASE("LaTeX Serialization for Addition", "[LaTeX][Serializer][Add]"){
     Oasis::Add a{Oasis::Real{5.0}, Oasis::Variable{"x_0"}};
 
-    Oasis::LatexSerializer serializer;
+    Oasis::TeXSerializer serializer;
 
     a.Serialize(serializer);
 
@@ -74,10 +75,10 @@ TEST_CASE("Latex Serialization for Addition", "[Latex][Serializer][Add]"){
     REQUIRE(expected == result);
 }
 
-TEST_CASE("Latex Serialization for Subtraction", "[Latex][Serializer][Subtract]"){
+TEST_CASE("LaTeX Serialization for Subtraction", "[LaTeX][Serializer][Subtract]"){
     Oasis::Subtract s{Oasis::Real{5.0}, Oasis::Variable{"x_0"}};
 
-    Oasis::LatexSerializer serializer;
+    Oasis::TeXSerializer serializer;
 
     s.Serialize(serializer);
 
@@ -87,11 +88,11 @@ TEST_CASE("Latex Serialization for Subtraction", "[Latex][Serializer][Subtract]"
     REQUIRE(expected == result);
 }
 
-TEST_CASE("Latex Serialization for Multiplication", "[Latex][Serializer][Multiply]")
+TEST_CASE("LaTeX Serialization for Multiplication", "[LaTeX][Serializer][Multiply]")
 {
     Oasis::Multiply s{Oasis::Real{5.0}, Oasis::Variable{"x_0"}};
 
-    Oasis::LatexSerializer serializer;
+    Oasis::TeXSerializer serializer;
 
     s.Serialize(serializer);
 
@@ -101,11 +102,11 @@ TEST_CASE("Latex Serialization for Multiplication", "[Latex][Serializer][Multipl
     REQUIRE(expected == result);
 }
 
-TEST_CASE("Latex Serialization for Division", "[Latex][Serializer][Divide]")
+TEST_CASE("LaTeX Serialization for Division", "[LaTeX][Serializer][Divide]")
 {
     Oasis::Divide d{Oasis::Real{5.0}, Oasis::Variable{"x_0"}};
 
-    Oasis::LatexSerializer serializer;
+    Oasis::TeXSerializer serializer;
 
     d.Serialize(serializer);
 
@@ -115,13 +116,29 @@ TEST_CASE("Latex Serialization for Division", "[Latex][Serializer][Divide]")
     REQUIRE(expected == result);
 }
 
-TEST_CASE("Latex Serialization with spacing options", "[Latex][Serializer][LatexOptions]")
+TEST_CASE("LaTeX Serialization for Division with \\div", "[LaTeX][Serializer][Division]")
+{
+    Oasis::Divide d{Oasis::Real{5.0}, Oasis::Variable{"x_0"}};
+
+    Oasis::TeXSerializer serializer{Oasis::TexOptions {Oasis::DivisionType{Oasis::DIV}}};
+
+    assert(serializer.GetDivType() == Oasis::DivisionType::DIV);
+
+    d.Serialize(serializer);
+
+    auto result = serializer.getResult();
+    std::string expected = R"(\left({5}\div{x_0}\right))";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("LaTeX Serialization with spacing options", "[LaTeX][Serializer][TexOptions]")
 {
     Oasis::Multiply s{Oasis::Real{5.0}, Oasis::Variable{"x_0"}};
 
-    Oasis::LatexOptions options{Oasis::CHARACTER_I, 5, Oasis::SPACING};
+    Oasis::TexOptions options{Oasis::SPACING};
 
-    Oasis::LatexSerializer serializer{options};
+    Oasis::TeXSerializer serializer{options};
 
     s.Serialize(serializer);
 
@@ -131,11 +148,11 @@ TEST_CASE("Latex Serialization with spacing options", "[Latex][Serializer][Latex
     REQUIRE(expected == result);
 }
 
-TEST_CASE("Latex Serialization for Exponents", "[Latex][Serializer][Exponent]")
+TEST_CASE("LaTeX Serialization for Exponents", "[LaTeX][Serializer][Exponent]")
 {
     Oasis::Exponent e{Oasis::EulerNumber{}, Oasis::Multiply{Oasis::Imaginary{}, Oasis::Variable{"x"}}};
 
-    Oasis::LatexSerializer serializer{};
+    Oasis::TeXSerializer serializer{};
 
     e.Serialize(serializer);
 
@@ -146,11 +163,11 @@ TEST_CASE("Latex Serialization for Exponents", "[Latex][Serializer][Exponent]")
 
 }
 
-TEST_CASE("Latex Serialization for Logarithms", "[Latex][Serializer][Log]")
+TEST_CASE("LaTeX Serialization for Logarithms", "[LaTeX][Serializer][Log]")
 {
     Oasis::Log e{Oasis::EulerNumber{}, Oasis::Variable{"x"}};
 
-    Oasis::LatexSerializer serializer{};
+    Oasis::TeXSerializer serializer{};
 
     e.Serialize(serializer);
 
@@ -161,11 +178,11 @@ TEST_CASE("Latex Serialization for Logarithms", "[Latex][Serializer][Log]")
 
 }
 
-TEST_CASE("Latex Serialization for Negate", "[Latex][Serializer][Negate]")
+TEST_CASE("LaTeX Serialization for Negate", "[LaTeX][Serializer][Negate]")
 {
     Oasis::Negate<Oasis::Expression> e{Oasis::EulerNumber{}};
 
-    Oasis::LatexSerializer serializer{};
+    Oasis::TeXSerializer serializer{};
 
     e.Serialize(serializer);
 
@@ -176,11 +193,11 @@ TEST_CASE("Latex Serialization for Negate", "[Latex][Serializer][Negate]")
 
 }
 
-TEST_CASE("Latex Serialization for Magnitude", "[Latex][Serializer][Magnitude]")
+TEST_CASE("LaTeX Serialization for Magnitude", "[LaTeX][Serializer][Magnitude]")
 {
     Oasis::Magnitude e{Oasis::Real{-5}};
 
-    Oasis::LatexSerializer serializer{};
+    Oasis::TeXSerializer serializer{};
 
     e.Serialize(serializer);
 
@@ -191,11 +208,11 @@ TEST_CASE("Latex Serialization for Magnitude", "[Latex][Serializer][Magnitude]")
 
 }
 
-TEST_CASE("Latex Serialization for Derivative", "[Latex][Serializer][Derivative]")
+TEST_CASE("LaTeX Serialization for Derivative", "[LaTeX][Serializer][Derivative]")
 {
     Oasis::Derivative e{Oasis::Variable{"x"}, Oasis::Variable{"x"}};
 
-    Oasis::LatexSerializer serializer{};
+    Oasis::TeXSerializer serializer{};
 
     e.Serialize(serializer);
 
@@ -206,11 +223,11 @@ TEST_CASE("Latex Serialization for Derivative", "[Latex][Serializer][Derivative]
 
 }
 
-TEST_CASE("Latex Serialization for Integral", "[Latex][Serializer][Integral]")
+TEST_CASE("LaTeX Serialization for Integral", "[LaTeX][Serializer][Integral]")
 {
     Oasis::Integral e{Oasis::Variable{"x"}, Oasis::Variable{"x"}};
 
-    Oasis::LatexSerializer serializer{};
+    Oasis::TeXSerializer serializer{};
 
     e.Serialize(serializer);
 
@@ -221,10 +238,10 @@ TEST_CASE("Latex Serialization for Integral", "[Latex][Serializer][Integral]")
 
 }
 
-TEST_CASE("Latex Serialization for Matrices", "[Latex][Serializer][Matrix]")
+TEST_CASE("LaTeX Serialization for Matrices", "[LaTeX][Serializer][Matrix]")
 {
     Oasis::Matrix mat{Oasis::MatrixXXD{{1,2,3},{4,5,6.2}}};
-    Oasis::LatexSerializer serializer{};
+    Oasis::TeXSerializer serializer{};
 
     mat.Serialize(serializer);
 
