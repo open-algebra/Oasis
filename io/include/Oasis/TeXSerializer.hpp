@@ -8,6 +8,7 @@
 #include "Oasis/BinaryExpression.hpp"
 #include "Oasis/Serialization.hpp"
 #include <string>
+#include <set>
 
 namespace Oasis {
 
@@ -17,8 +18,8 @@ enum Spacing{
 };
 
 enum ImaginaryCharacter{
-    CHARACTER_I = 'i',
-    CHARACTER_J = 'j'
+    CHARACTER_I,
+    CHARACTER_J
 };
 
 enum DivisionType{
@@ -26,29 +27,52 @@ enum DivisionType{
     DIV
 };
 
-struct LatexOptions{
+enum TeXDialect{
+    LATEX
+};
+
+enum SupportedPackages{
+    ESDIFF,
+};
+
+struct TexOptions {
 public:
+    TeXDialect dialect;
     Spacing spacing;
     ImaginaryCharacter character;
     uint8_t numPlaces;
     DivisionType divType;
+    std::set<SupportedPackages> packages;
 
-    explicit LatexOptions(uint8_t num) : LatexOptions(CHARACTER_I, num, FRAC) {}
-    explicit LatexOptions(Spacing spacing) : LatexOptions(CHARACTER_I, 6, FRAC, spacing) {}
-    explicit LatexOptions(DivisionType dv) : LatexOptions(CHARACTER_I, 6, dv) {}
+    explicit TexOptions(ImaginaryCharacter ch) : TexOptions(LATEX, ch) {}
+    explicit TexOptions(uint8_t num) : TexOptions(LATEX, CHARACTER_I, num, FRAC) {}
+    explicit TexOptions(Spacing spacing) : TexOptions(LATEX, CHARACTER_I, 6, FRAC, spacing) {}
+    explicit TexOptions(DivisionType dv) : TexOptions(LATEX, CHARACTER_I, 6, dv) {}
 
-    LatexOptions(ImaginaryCharacter ch = CHARACTER_I, uint8_t num = 6, DivisionType dv = FRAC, Spacing sp = NO_SPACING)
-        : spacing(sp), character(ch), numPlaces(num) {}
+    TexOptions(TeXDialect dt = LATEX, ImaginaryCharacter ch = CHARACTER_I, uint8_t num = 6,
+                  DivisionType dv = FRAC, Spacing sp = NO_SPACING)
+        : dialect(dt), spacing(sp), character(ch), numPlaces(num), divType(dv) {}
 };
 
-class LatexSerializer final : public SerializationVisitor {
+class TeXSerializer final : public SerializationVisitor {
 public:
-    LatexSerializer() : LatexSerializer(LatexOptions{}) {}
-    explicit LatexSerializer(LatexOptions options) : latexOptions(options) {}
+    TeXSerializer() : TeXSerializer(TexOptions {}) {}
+    explicit TeXSerializer(TexOptions options) : latexOptions(options) {}
 
+    void SetTeXDialect(TeXDialect dt);
     void SetImaginaryCharacter(ImaginaryCharacter character);
     void SetNumPlaces(uint8_t num);
     void SetSpacing(Spacing sp);
+    void SetDivType(DivisionType dv);
+
+    TeXDialect GetTeXDialect();
+    DivisionType GetDivType();
+    Spacing GetSpacing();
+    uint8_t GetNumPlaces();
+    ImaginaryCharacter GetImaginaryCharacter();
+
+    void AddTeXPackage(SupportedPackages package);
+    void RemoveTeXPackage(SupportedPackages package);
 
     void Serialize(const Real& real) override;
     void Serialize(const Imaginary& imaginary) override;
@@ -72,7 +96,7 @@ public:
 
 private:
     std::string result;
-    LatexOptions latexOptions{};
+    TexOptions latexOptions{};
 };
 
 }
