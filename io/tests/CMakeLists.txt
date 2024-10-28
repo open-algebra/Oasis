@@ -1,6 +1,6 @@
 # These variables MUST be modified whenever a new test file is added.
 set(OASIS_IO_TESTS_SOURCES # cmake-format: sortable
-                           InFixTests.cpp TeXTests.cpp MathMLTests.cpp)
+                           InFixTests.cpp MathMLTests.cpp TeXTests.cpp)
 
 # Adds an executable target called "OasisTests" to be built from sources files.
 add_executable(OasisIOTests ${OASIS_IO_TESTS_SOURCES})
