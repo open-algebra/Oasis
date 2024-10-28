@@ -2,6 +2,7 @@ set(Oasis_HEADERS
     # cmake-format: sortable
     Oasis/Add.hpp
     Oasis/BinaryExpression.hpp
+    Oasis/Concepts.hpp
     Oasis/Derivative.hpp
     Oasis/Divide.hpp
     Oasis/EulerNumber.hpp
@@ -17,6 +18,7 @@ set(Oasis_HEADERS
     Oasis/Negate.hpp
     Oasis/Pi.hpp
     Oasis/Real.hpp
+    Oasis/RecursiveCast.hpp
     Oasis/Serialization.hpp
     Oasis/Subtract.hpp
     Oasis/UnaryExpression.hpp

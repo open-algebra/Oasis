@@ -8,6 +8,7 @@
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Variable.hpp"
 
 #include <functional>
@@ -109,7 +110,7 @@ TEST_CASE("Generalized Structurally Equivalent", "[StructurallyEquivalent][Gener
 
 TEST_CASE("Specialization", "[Specialization]")
 {
-    REQUIRE(Oasis::Add<Oasis::Real>::Specialize(
+    REQUIRE(Oasis::RecursiveCast<Oasis::Add<Oasis::Real>>(
         Oasis::Add<Oasis::Expression> {
             Oasis::Real {},
             Oasis::Real {} }
@@ -199,7 +200,7 @@ TEST_CASE("Add Operator Overload", "[Add][Operator Overload]")
     const std::unique_ptr<Oasis::Expression> b = std::make_unique<Oasis::Real>(2.0);
 
     const auto sum = a+b;
-    auto realSum = Oasis::Real::Specialize(*sum);
+    auto realSum = Oasis::RecursiveCast<Oasis::Real>(*sum);
 
     REQUIRE(realSum != nullptr);
     REQUIRE(realSum->GetValue() == 3.0);

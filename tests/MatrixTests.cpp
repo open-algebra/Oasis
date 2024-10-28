@@ -8,7 +8,7 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Multiply.hpp"
-#include "Oasis/Divide.hpp"
+#include "Oasis/RecursiveCast.hpp"
 
 #define EPSILON 10E-6
 
@@ -68,7 +68,7 @@ TEST_CASE("Add Matrices", "[Matrix][Add]")
                                         {6,5}}};
 
     auto result = Oasis::Add<Oasis::Expression>{mat1, mat2}.Simplify();
-    auto spec = Oasis::Matrix::Specialize(*result);
+    auto spec = Oasis::RecursiveCast<Oasis::Matrix>(*result);
 
     REQUIRE(spec != nullptr);
     REQUIRE(spec->Equals(Oasis::Matrix{Oasis::MatrixXXD{{9,9},{9,9}}}));
@@ -83,7 +83,7 @@ TEST_CASE("Subtract Matrices", "[Matrix][Subtract]")
                                         {7,8}}};
 
     auto result = Oasis::Subtract<Oasis::Expression, Oasis::Expression>{mat2, mat1}.Simplify();
-    auto spec = Oasis::Matrix::Specialize(*result);
+    auto spec = Oasis::RecursiveCast<Oasis::Matrix>(*result);
 
     REQUIRE(spec != nullptr);
     REQUIRE(spec->Equals(Oasis::Matrix{Oasis::MatrixXXD{{4,4},{4,4}}}));
@@ -97,8 +97,8 @@ TEST_CASE("Multiply Matrix and Real", "[Matrix][Real][Multiply]")
 
     auto result1 = Oasis::Multiply{a, mat1}.Simplify();
     auto result2 = Oasis::Multiply{mat1, a}.Simplify();
-    auto spec1 = Oasis::Matrix::Specialize(*result1);
-    auto spec2 = Oasis::Matrix::Specialize(*result2);
+    auto spec1 = Oasis::RecursiveCast<Oasis::Matrix>(*result1);
+    auto spec2 = Oasis::RecursiveCast<Oasis::Matrix>(*result2);
 
     REQUIRE(spec1 != nullptr);
     REQUIRE(spec2 != nullptr);
@@ -111,7 +111,7 @@ TEST_CASE("Create Identity Matrix", "[Matrix][Identity]")
 {
     Oasis::MatrixXXD mat(3,3);
     Oasis::Matrix i{mat};
-    Oasis::Matrix identity = *(Oasis::Matrix::Specialize(*i.Identity()));
+    Oasis::Matrix identity = *(Oasis::RecursiveCast<Oasis::Matrix>(*i.Identity()));
 
     mat << 1,0,0,
            0,1,0,

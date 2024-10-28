@@ -102,25 +102,6 @@ protected:
     std::unique_ptr<OperandT> op;
 };
 
-#define IMPL_SPECIALIZE_UNARYEXPR(DerivedT, OperandT)                                           \
-    static auto Specialize(const Expression& other) -> std::unique_ptr<DerivedT>                \
-    {                                                                                           \
-        if (!other.Is<DerivedT>()) {                                                            \
-            return nullptr;                                                                     \
-        }                                                                                       \
-                                                                                                \
-        auto specialized = std::make_unique<DerivedT<OperandT>>();                              \
-        std::unique_ptr<Expression> otherGeneralized = other.Generalize();                      \
-        const auto& otherUnary = dynamic_cast<const DerivedT<Expression>&>(*otherGeneralized);  \
-                                                                                                \
-        if (auto operand = OperandT::Specialize(otherUnary.GetOperand()); operand != nullptr) { \
-            specialized->op = std::move(operand);                                               \
-            return specialized;                                                                 \
-        }                                                                                       \
-                                                                                                \
-        return nullptr;                                                                         \
-    }
-
 } // Oasis
 
 #endif // UNARYEXPRESSION_HPP

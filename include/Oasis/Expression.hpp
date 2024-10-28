@@ -2,12 +2,12 @@
 #define OASIS_EXPRESSION_HPP
 
 #include <memory>
-#include <string>
 #include <vector>
+
+#include "Concepts.hpp"
 
 namespace Oasis {
 
-class Expression;
 class SerializationVisitor;
 
 /**
@@ -45,37 +45,6 @@ enum ExpressionCategory : uint32_t {
     BinExp = 1 << 2,
     UnExp = 1 << 3,
 };
-
-// clang-format off
-/**
- * An expression concept.
- *
- * An expression concept is a type that satisfies the following requirements:
- * - It is derived from `Expression`.
- * - It has a static `Specialize` function that returns a `std::unique_ptr<T>` and takes a `const Expression&` as an argument.
- * - It has a static `Specialize` function that returns a `std::unique_ptr<T>` and takes a `const Expression&` and a `tf::Subflow&` as arguments.
- * - It has a static `GetStaticCategory` function that returns a `uint32_t`.
- * - It has a static `GetStaticType` function that returns an `ExpressionType`.
- *
- * @tparam T The type to check.
- */
-template <typename T>
-concept IExpression = (requires(T, const Expression& other) {
-    { T::Specialize(other) } -> std::same_as<std::unique_ptr<T>>;
-    { T::GetStaticCategory() } -> std::same_as<uint32_t>;
-    { T::GetStaticType() } -> std::same_as<ExpressionType>;
-} && std::derived_from<T, Expression>) || std::is_same_v<T, Expression>;
-// clang-format on
-
-/**
- * Checks if type T is same as any of the provided types in U.
- *
- * @tparam T The type to compare against.
- * @tparam U The comparision types.
- * @return true if T is same as any type in U, false otherwise.
- */
-template <typename T, typename... U>
-concept IsAnyOf = (std::same_as<T, U> || ...);
 
 /**
  * An expression.
@@ -143,20 +112,6 @@ public:
     [[nodiscard]] virtual auto Generalize() const -> std::unique_ptr<Expression>;
 
     /**
-     * Attempts to specialize this expression to a more specific expression.
-     *
-     * Some expressions may explicitly specify the type of their operands. For example, a
-     * `Divide<Real>` expression may only accept `Real` operands. This function attempts to
-     * specialize the expression to a more specific expression, such as `Divide<Real>`, which
-     * accepts only `Real` operands. If the expression cannot be specialized, this function returns
-     * `nullptr`.
-     *
-     * @param other The other expression to specialize against.
-     * @return The specialized expression, or `nullptr` if the expression cannot be specialized.
-     */
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Expression>;
-
-    /**
      * Attempts to integrate this expression using integration rules
      *
      * @return An indefinite integral of the expression added to a constant
@@ -179,6 +134,12 @@ public:
     [[nodiscard]] bool Is() const
     {
         return GetType() == T::GetStaticType();
+    }
+
+    template <template <typename> typename T>
+    [[nodiscard]] bool Is() const
+    {
+        return GetType() == T<Expression>::GetStaticType();
     }
 
     template <template <typename, typename> typename T>
@@ -239,8 +200,7 @@ public:
         return category;                                  \
     }
 
-#define DECL_SPECIALIZE(type) \
-    static auto Specialize(const Expression& other) -> std::unique_ptr<type>;
+#define DECL_SPECIALIZE(type)
 
 } // namespace Oasis
 

@@ -13,10 +13,10 @@
 #include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Undefined.hpp"
 #include "Oasis/Variable.hpp"
-#include <iostream>
 
 #define EPSILON 1E-6
 
@@ -100,7 +100,7 @@ TEST_CASE("Log of Exponentiation", "[Log][Exponent]")
     };
 
     auto base5of5toX_Simplified = base5of5toX.Simplify();
-    auto simplifiedSpecialized = Oasis::Multiply<Oasis::Real, Oasis::Variable>::Specialize(*base5of5toX_Simplified);
+    auto simplifiedSpecialized = RecursiveCast<Oasis::Multiply<Oasis::Real, Oasis::Variable>>(*base5of5toX_Simplified);
 
     REQUIRE(simplifiedSpecialized != nullptr);
     REQUIRE_THAT(simplifiedSpecialized->GetMostSigOp().GetValue(), Catch::Matchers::WithinAbs(1.0, EPSILON));

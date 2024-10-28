@@ -5,6 +5,7 @@
 #include <Oasis/Exponent.hpp>
 #include <Oasis/Integral.hpp>
 #include <Oasis/Multiply.hpp>
+#include <Oasis/RecursiveCast.hpp>
 #include <Oasis/Subtract.hpp>
 #include <Oasis/Variable.hpp>
 
@@ -51,7 +52,7 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
 {
     std::vector<std::unique_ptr<Expression>> results;
     std::vector<std::unique_ptr<Expression>> termsE;
-    if (auto addCase = Add<Expression>::Specialize(*this); addCase != nullptr) {
+    if (auto addCase = RecursiveCast<Add<Expression>>(*this); addCase != nullptr) {
         addCase->Flatten(termsE);
     } else {
         termsE.push_back(Copy());
@@ -63,27 +64,27 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
         std::unique_ptr<Expression> coefficent;
         std::string variableName;
         double exponent;
-        if (auto variableCase = Variable::Specialize(*i); variableCase != nullptr) {
+        if (auto variableCase = RecursiveCast<Variable>(*i); variableCase != nullptr) {
             coefficent = Real(1).Copy();
             variableName = variableCase->GetName();
             exponent = 1;
-        } else if (auto expCase = Exponent<Variable, Real>::Specialize(*i); expCase != nullptr) {
+        } else if (auto expCase = RecursiveCast<Exponent<Variable, Real>>(*i); expCase != nullptr) {
             coefficent = Real(1).Copy();
             variableName = expCase->GetMostSigOp().GetName();
             exponent = expCase->GetLeastSigOp().GetValue();
-        } else if (auto prodCase = Multiply<Expression, Variable>::Specialize(*i); prodCase != nullptr) {
+        } else if (auto prodCase = RecursiveCast<Multiply<Expression, Variable>>(*i); prodCase != nullptr) {
             coefficent = prodCase->GetMostSigOp().Copy();
             variableName = prodCase->GetLeastSigOp().GetName();
             exponent = 1;
-        } else if (auto prodExpCase = Multiply<Expression, Exponent<Variable, Real>>::Specialize(*i); prodExpCase != nullptr) {
+        } else if (auto prodExpCase = RecursiveCast<Multiply<Expression, Exponent<Variable, Real>>>(*i); prodExpCase != nullptr) {
             coefficent = prodExpCase->GetMostSigOp().Copy();
             variableName = prodExpCase->GetLeastSigOp().GetMostSigOp().GetName();
             exponent = prodExpCase->GetLeastSigOp().GetLeastSigOp().GetValue();
-        } else if (auto divCase = Divide<Expression, Variable>::Specialize(*i); divCase != nullptr) {
+        } else if (auto divCase = RecursiveCast<Divide<Expression, Variable>>(*i); divCase != nullptr) {
             coefficent = divCase->GetMostSigOp().Copy();
             variableName = divCase->GetLeastSigOp().GetName();
             exponent = -1;
-        } else if (auto divExpCase = Divide<Expression, Exponent<Variable, Real>>::Specialize(*i); divExpCase != nullptr) {
+        } else if (auto divExpCase = RecursiveCast<Divide<Expression, Exponent<Variable, Real>>>(*i); divExpCase != nullptr) {
             coefficent = divExpCase->GetMostSigOp().Copy();
             variableName = divExpCase->GetLeastSigOp().GetMostSigOp().GetName();
             exponent = -divExpCase->GetLeastSigOp().GetLeastSigOp().GetValue();
@@ -112,10 +113,10 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             negCoefficents[flooredExponent] = Add<Expression>(*coefficent, *negCoefficents[flooredExponent]).Copy();
         }
     }
-    while (negCoefficents.size() > 0 && Real::Specialize(*negCoefficents.back()) != nullptr && Real::Specialize(*negCoefficents.back())->GetValue() == 0) {
+    while (negCoefficents.size() > 0 && RecursiveCast<Real>(*negCoefficents.back()) != nullptr && RecursiveCast<Real>(*negCoefficents.back())->GetValue() == 0) {
         negCoefficents.pop_back();
     }
-    while (posCoefficents.size() > 0 && Real::Specialize(*posCoefficents.back()) != nullptr && Real::Specialize(*posCoefficents.back())->GetValue() == 0) {
+    while (posCoefficents.size() > 0 && RecursiveCast<Real>(*posCoefficents.back()) != nullptr && RecursiveCast<Real>(*posCoefficents.back())->GetValue() == 0) {
         posCoefficents.pop_back();
     }
     std::vector<std::unique_ptr<Expression>> coefficents;
@@ -130,7 +131,7 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
     }
     std::vector<long long> termsC;
     for (auto& i : coefficents) {
-        auto realCase = Real::Specialize(*i);
+        auto realCase = RecursiveCast<Real>(*i);
         if (realCase == nullptr) {
             break;
         }
@@ -224,11 +225,6 @@ auto Expression::GetType() const -> ExpressionType
 auto Expression::Generalize() const -> std::unique_ptr<Expression>
 {
     return Copy();
-}
-
-auto Expression::Specialize(const Expression& other) -> std::unique_ptr<Expression>
-{
-    return other.Copy();
 }
 
 auto Expression::Integrate(const Expression& variable) const -> std::unique_ptr<Expression>

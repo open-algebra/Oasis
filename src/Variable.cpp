@@ -9,6 +9,7 @@
 #include "Oasis/Integral.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/RecursiveCast.hpp"
 
 namespace Oasis {
 
@@ -27,14 +28,9 @@ auto Variable::GetName() const -> std::string
     return name;
 }
 
-auto Variable::Specialize(const Expression& other) -> std::unique_ptr<Variable>
-{
-    return other.Is<Variable>() ? std::make_unique<Variable>(dynamic_cast<const Variable&>(other)) : nullptr;
-}
-
 auto Variable::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
-    if (auto variable = Variable::Specialize(integrationVariable); variable != nullptr) {
+    if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
 
         // Power rule
         if (name == (*variable).GetName()) {
@@ -62,7 +58,7 @@ auto Variable::Integrate(const Expression& integrationVariable) const -> std::un
 
 auto Variable::Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression>
 {
-    auto varclone = Variable::Specialize(var);
+    auto varclone = RecursiveCast<Variable>(var);
     if (varclone == nullptr) {
         throw std::invalid_argument("Variable was not a variable.");
     }
@@ -74,7 +70,7 @@ auto Variable::Substitute(const Expression& var, const Expression& val) -> std::
 
 auto Variable::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
-    if (auto variable = Variable::Specialize(differentiationVariable); variable != nullptr) {
+    if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
 
         // Power rule
         if (name == (*variable).GetName()) {

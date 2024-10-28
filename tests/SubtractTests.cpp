@@ -10,6 +10,7 @@
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 #include "Oasis/Add.hpp"
+#include "Oasis/RecursiveCast.hpp"
 
 TEST_CASE("Subtraction", "[Subtract]")
 {
@@ -63,7 +64,7 @@ TEST_CASE("Subtract Operator Overload", "[Subtract][Operator Overload]")
     const std::unique_ptr<Oasis::Expression> b = std::make_unique<Oasis::Real>(2.0);
 
     const auto sum = a-b;
-    auto realSum = Oasis::Real::Specialize(*sum);
+    auto realSum = Oasis::RecursiveCast<Oasis::Real>(*sum);
 
     REQUIRE(realSum != nullptr);
     REQUIRE(realSum->GetValue() == -1.0);

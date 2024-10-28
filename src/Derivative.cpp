@@ -34,14 +34,4 @@ std::unique_ptr<Expression> Derivative<Expression, Expression>::Differentiate(co
     return mostSigOp->Differentiate(*leastSigOp);
 }
 
-auto Derivative<Expression>::Specialize(const Expression& other) -> std::unique_ptr<Derivative<Expression, Expression>>
-{
-    if (!other.Is<Oasis::Derivative>()) {
-        return nullptr;
-    }
-
-    auto otherGeneralized = other.Generalize();
-    return std::make_unique<Derivative>(dynamic_cast<const Derivative&>(*otherGeneralized));
-}
-
 }

@@ -69,11 +69,6 @@ auto Matrix::Inverse() const -> std::unique_ptr<Matrix>
     return std::make_unique<Matrix>(matrix.inverse());
 }
 
-auto Matrix::Specialize(const Expression& other) -> std::unique_ptr<Matrix>
-{
-    return other.Is<Matrix>() ? std::make_unique<Matrix>(dynamic_cast<const Matrix&>(other)) : nullptr;
-}
-
 // TO DO: Fix?
 auto Matrix::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {

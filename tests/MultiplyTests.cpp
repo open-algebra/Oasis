@@ -9,6 +9,7 @@
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/RecursiveCast.hpp"
 
 TEST_CASE("Multiplication", "[Multiply]")
 {
@@ -102,7 +103,7 @@ TEST_CASE("Multiply Operator Overload", "[Multiply][Operator Overload]")
     const std::unique_ptr<Oasis::Expression> b = std::make_unique<Oasis::Real>(2.0);
 
     const auto sum = a*b;
-    auto realSum = Oasis::Real::Specialize(*sum);
+    auto realSum = Oasis::RecursiveCast<Oasis::Real>(*sum);
 
     REQUIRE(realSum != nullptr);
     REQUIRE(realSum->GetValue() == 2.0);

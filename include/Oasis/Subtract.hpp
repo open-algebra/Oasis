@@ -28,8 +28,6 @@ public:
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
 
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Subtract>;
-
     EXPRESSION_TYPE(Subtract)
     EXPRESSION_CATEGORY(BinExp)
 };
@@ -54,8 +52,6 @@ public:
         : BinaryExpression<Subtract, MinuendT, SubtrahendT>(addend1, addend2)
     {
     }
-
-    IMPL_SPECIALIZE(Subtract, MinuendT, SubtrahendT)
 
     auto operator=(const Subtract& other) -> Subtract& = default;
 

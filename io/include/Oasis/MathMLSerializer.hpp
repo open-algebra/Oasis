@@ -8,10 +8,8 @@
 #include <tinyxml2.h>
 
 #include "Oasis/BinaryExpression.hpp"
+#include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Serialization.hpp"
-
-template <template <typename, typename> typename T>
-concept DerivedFromBinaryExpression = std::derived_from<T<Oasis::Expression, Oasis::Expression>, Oasis::BinaryExpression<T>>;
 
 namespace Oasis {
 
@@ -43,9 +41,7 @@ public:
 private:
     [[nodiscard]] tinyxml2::XMLElement* CreatePlaceholder() const;
 
-    template <template <typename, typename> typename T>
-        requires DerivedFromBinaryExpression<T>
-    auto GetOpsAsMathMLPair(const T<Expression, Expression>& binexp) -> std::pair<tinyxml2::XMLElement*, tinyxml2::XMLElement*>
+    auto GetOpsAsMathMLPair(const DerivedFromBinaryExpression auto& binexp) -> std::pair<tinyxml2::XMLElement*, tinyxml2::XMLElement*>
     {
         tinyxml2::XMLElement* mostSig = CreatePlaceholder();
 

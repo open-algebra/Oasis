@@ -25,8 +25,6 @@ public:
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
 
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Multiply>;
-
     EXPRESSION_TYPE(Multiply)
     EXPRESSION_CATEGORY(Associative | Commutative | BinExp)
 };
@@ -51,8 +49,6 @@ public:
         : BinaryExpression<Multiply, MultiplicandT, MultiplierT>(addend1, addend2)
     {
     }
-
-    IMPL_SPECIALIZE(Multiply, MultiplicandT, MultiplierT)
 
     auto operator=(const Multiply& other) -> Multiply& = default;
 

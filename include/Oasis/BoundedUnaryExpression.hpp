@@ -58,11 +58,12 @@ public:
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final
     {
 
-        if (const auto otherExpression = DerivedSpecialized::Specialize(other); otherExpression != nullptr) {
-            return HasOperand() == otherExpression->HasOperand()
-                && this->HasLowerBound() == otherExpression->HasLowerBound()
-                && this->HasUpperBound() == otherExpression->HasUpperBound();
-        }
+        // TODO: Reimplement now that Specialize is gone
+        //        if (const auto otherExpression = DerivedSpecialized::Specialize(other); otherExpression != nullptr) {
+        //            return HasOperand() == otherExpression->HasOperand()
+        //                && this->HasLowerBound() == otherExpression->HasLowerBound()
+        //                && this->HasUpperBound() == otherExpression->HasUpperBound();
+        //        }
 
         return false;
     }

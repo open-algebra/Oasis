@@ -132,7 +132,7 @@ void MathMLSerializer::Serialize(const Subtract<>& subtract)
     bool surroundWithParens = true;
 
     if (subtract.HasLeastSigOp()) {
-        if (auto realSubtrahend = Real::Specialize(subtract.GetLeastSigOp()); realSubtrahend != nullptr) {
+        if (auto realSubtrahend = RecursiveCast<Real>(subtract.GetLeastSigOp()); realSubtrahend != nullptr) {
             if (realSubtrahend->GetValue() >= 0) {
                 surroundWithParens = false;
             }

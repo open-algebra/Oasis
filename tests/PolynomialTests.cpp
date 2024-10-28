@@ -10,6 +10,7 @@
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 
@@ -44,7 +45,7 @@
 //     REQUIRE(zeros.size() == 6);
 //     std::set<std::tuple<long, long>> goalSet = { std::tuple(1, 3), std::tuple(6, 7), std::tuple(3, 7), std::tuple(-5, 3), std::tuple(11, 20), std::tuple(5, 1) };
 //     for (auto& i : zeros) {
-//         auto divideCase = Oasis::Divide<Oasis::Real>::Specialize(*i);
+//         auto divideCase = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*i);
 //         REQUIRE(divideCase != nullptr);
 //         std::tuple<long, long> asTuple = std::tuple(std::lround(divideCase->GetMostSigOp().GetValue()), std::lround(divideCase->GetLeastSigOp().GetValue()));
 //         REQUIRE(goalSet.contains(asTuple));
@@ -61,7 +62,7 @@ TEST_CASE("imaginary linear polynomial")
     auto zeros = add.FindZeros();
     REQUIRE(zeros.size() == 1);
     if (zeros.size() == 1) {
-        auto root = Oasis::Multiply<Oasis::Real, Oasis::Imaginary>::Specialize(*zeros[0]);
+        auto root = Oasis::RecursiveCast<Oasis::Multiply<Oasis::Real, Oasis::Imaginary>>(*zeros[0]);
         REQUIRE(root != nullptr);
         REQUIRE(root->GetMostSigOp().GetValue() == -1);
     }
@@ -117,7 +118,7 @@ TEST_CASE("linear polynomial", "[factor]")
     auto zeros = add.FindZeros();
     REQUIRE(zeros.size() == 1);
     if (zeros.size() == 1) {
-        auto root = Oasis::Divide<Oasis::Real>::Specialize(*zeros[0]);
+        auto root = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
         REQUIRE(root != nullptr);
         REQUIRE(root->GetMostSigOp().GetValue() == -30);
         REQUIRE(root->GetLeastSigOp().GetValue() == 1);

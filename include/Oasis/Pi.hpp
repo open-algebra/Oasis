@@ -22,7 +22,6 @@ public:
     EXPRESSION_TYPE(Pi)
     EXPRESSION_CATEGORY(UnExp)
 
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Pi>;
     static auto GetValue() -> double;
 };
 }

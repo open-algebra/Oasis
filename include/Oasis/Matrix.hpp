@@ -61,7 +61,6 @@ public:
 
     [[nodiscard]] auto Identity() const -> std::unique_ptr<Expression>;
 
-    static auto Specialize(const Expression& other) -> std::unique_ptr<Matrix>;
     [[nodiscard]] auto Differentiate(const Expression&) const -> std::unique_ptr<Expression> final;
 
     auto operator=(const Matrix& other) -> Matrix& = default;
