@@ -37,6 +37,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2 fmt)
 
+include(cmake/FetchBoost.cmake)
 include(cmake/FetchEigen.cmake)
 include(cmake/FetchTinyxml2.cmake)
 
