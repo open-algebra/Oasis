@@ -43,6 +43,6 @@ if(OASIS_BUILD_PARANOID)
 endif()
 
 target_compile_features(Oasis PUBLIC cxx_std_20)
-target_link_libraries(Oasis PUBLIC Oasis::Headers Eigen3::Eigen)
+target_link_libraries(Oasis PUBLIC Oasis::Headers Eigen3::Eigen Boost::mpl)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${Oasis_SOURCES})
