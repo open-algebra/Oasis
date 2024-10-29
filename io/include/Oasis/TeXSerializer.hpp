@@ -36,7 +36,6 @@ enum SupportedPackages{
 };
 
 struct TexOptions {
-public:
     TeXDialect dialect;
     Spacing spacing;
     ImaginaryCharacter character;
