@@ -1,0 +1,88 @@
+# ##############################################################################
+# OASIS: Open Algebra Software for Inferring Solutions
+#
+# cmake-windows.yml
+# ##############################################################################
+
+name: CMake on Windows
+
+on:
+    push:
+        branches: [ "master" ]
+    pull_request:
+        branches: [ "master" ]
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build_and_test:
+        runs-on: windows-latest
+
+        strategy:
+            # Sets fail-fast to false to ensure that feedback is delivered for all platforms.
+            fail-fast: false
+
+            # Due to a bug in GCC (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111485), building with GCC is disabled.
+            matrix:
+                build_type: [ Release, Debug ]
+
+        steps:
+            # Checks out the repository.
+          - name: Checkout repository
+            uses: actions/checkout@v4
+
+          - name: Set reusable strings
+            id: strings
+            shell: bash
+            run: |
+              echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+            # Configures CMake in a subdirectory.
+          - name: Configure CMake
+            run: >
+                cmake
+                -B ${{ steps.strings.outputs.build-dir }}
+                -S ${{ github.workspace }}
+                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+                -DOASIS_BUILD_IO=ON
+                -DOASIS_BUILD_PARANOID=ON
+
+            # Builds Oasis with the given configuration.
+          - name: Build Oasis
+            run: >
+                cmake
+                --build ${{ steps.strings.outputs.build-dir }}
+                --config ${{ matrix.build_type }}
+                --target Oasis
+
+            # Builds the tests for Oasis with the given configurations.
+          - name: Build OasisTests
+            run: >
+                cmake
+                --build ${{ steps.strings.outputs.build-dir }}
+                --config ${{ matrix.build_type }}
+                --target OasisTests
+
+          - name: Build OasisIOTests
+            run: >
+                cmake
+                --build ${{ steps.strings.outputs.build-dir }}
+                --config Debug
+                --target OasisIOTests
+
+            # Runs the tests registered to CTest by CMake.
+          - name: Test
+            working-directory: ${{ steps.strings.outputs.build-dir }}
+            run: ctest --build-config ${{ matrix.build_type }}
+
+            # Uploads the build, test, and code coverage artifacts.
+          - name: Upload artifacts
+            if: ${{ matrix.build_profiling }}
+            uses: actions/upload-artifact@v3
+            with:
+              name: build-windows-${{ matrix.build_type }}-${{ matrix.c_compiler }}
+              path: |
+                ${{ steps.strings.outputs.build-dir }}
+                !${{ steps.strings.outputs.build-dir }}/_deps

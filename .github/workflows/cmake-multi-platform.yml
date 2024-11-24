@@ -19,24 +19,28 @@ concurrency:
 jobs:
     build_and_test:
         runs-on: ${{ matrix.os }}
+        container: ghcr.io/open-algebra/gh-actions:main
 
         strategy:
             # Sets fail-fast to false to ensure that feedback is delivered for all platforms.
             fail-fast: false
 
+            # Due to a bug in GCC (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111485), building with GCC is disabled.
             matrix:
-                os: [ ubuntu-latest, windows-latest ]
                 build_type: [ Release, Debug ]
-                c_compiler: [ gcc-12, clang-17, cl ]
+                c_compiler: [ gcc, clang-17, cl ]
 
                 include:
                   - os: ubuntu-latest
-                    c_compiler: gcc-12
-                    cpp_compiler: g++-12
+                    c_compiler: gcc
+                    cpp_compiler: g++
                   - os: ubuntu-latest
                     c_compiler: clang-17
                     cpp_compiler: clang++-17
                     build_profiling: true
+                  # - os: windows-latest
+                  #   c_comiler: gcc
+                  #   cpp_compiler: g++
                   - os: windows-latest
                     c_compiler: cl
                     cpp_compiler: cl
@@ -46,7 +50,7 @@ jobs:
                   - os: windows-latest
                     c_compiler: clang-17
                   - os: windows-latest
-                    c_compiler: gcc-12
+                    c_compiler: gcc
         steps:
             # Checks out the repository.
           - name: Checkout repository
@@ -73,24 +77,6 @@ jobs:
                 wget https://apt.llvm.org/llvm.sh
                 chmod +x llvm.sh
                 sudo ./llvm.sh 17
-
-          - name: Install GCC 12
-            if: ${{ matrix.c_compiler == 'gcc-12' }}
-            run: |
-              sudo apt-get update
-              sudo apt-get install -y gcc-12
-
-          - name: Install Valgrind
-            if: ${{ matrix.os == 'ubuntu-latest' }}
-            run: |
-              sudo apt-get update && sudo apt install libc6-dbg
-              wget https://sourceware.org/pub/valgrind/valgrind-3.23.0.tar.bz2
-              tar -xf valgrind-3.23.0.tar.bz2
-              rm valgrind-3.23.0.tar.bz2
-              cd valgrind-*
-              ./configure --prefix=${{ github.workspace }}/valgrind
-              make
-              make install
 
             # Configures CMake in a subdirectory.
           - name: Configure CMake
@@ -150,7 +136,6 @@ jobs:
               llvm-cov-17 show -output-dir reports -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ${{ github.workspace }}/src ${{ github.workspace }}/include
 
           - name: Memory Check
-            if: ${{ matrix.os == 'ubuntu-latest' }}
             working-directory: ${{ steps.strings.outputs.build-dir }}
             run: >
               ${{ github.workspace }}/valgrind/bin/valgrind --leak-check=full --error-exitcode=1 ./tests/OasisTests
@@ -160,7 +145,7 @@ jobs:
             if: ${{ matrix.build_profiling }}
             uses: actions/upload-artifact@v3
             with:
-              name: build-${{ matrix.os }}-${{ matrix.build_type }}-${{ matrix.c_compiler }}
+              name: build-linux-${{ matrix.build_type }}-${{ matrix.c_compiler }}
               path: |
                 ${{ steps.strings.outputs.build-dir }}
                 !${{ steps.strings.outputs.build-dir }}/_deps
