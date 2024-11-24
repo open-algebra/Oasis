@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
     build_and_test:
-        runs-on: ${{ matrix.os }}
+        runs-on: ubuntu-latest
         container: ghcr.io/open-algebra/gh-actions:main
 
         strategy:
@@ -28,29 +28,14 @@ jobs:
             # Due to a bug in GCC (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111485), building with GCC is disabled.
             matrix:
                 build_type: [ Release, Debug ]
-                c_compiler: [ gcc, clang-17, cl ]
+                c_compiler: [ gcc, clang-17 ]
 
                 include:
-                  - os: ubuntu-latest
-                    c_compiler: gcc
+                  - c_compiler: gcc
                     cpp_compiler: g++
-                  - os: ubuntu-latest
-                    c_compiler: clang-17
+                  - c_compiler: clang-17
                     cpp_compiler: clang++-17
                     build_profiling: true
-                  # - os: windows-latest
-                  #   c_comiler: gcc
-                  #   cpp_compiler: g++
-                  - os: windows-latest
-                    c_compiler: cl
-                    cpp_compiler: cl
-                exclude:
-                  - os: ubuntu-latest
-                    c_compiler: cl
-                  - os: windows-latest
-                    c_compiler: clang-17
-                  - os: windows-latest
-                    c_compiler: gcc
         steps:
             # Checks out the repository.
           - name: Checkout repository
