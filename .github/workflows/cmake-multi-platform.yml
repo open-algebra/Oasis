@@ -45,9 +45,9 @@ jobs:
             id: strings
             shell: bash
             run: |
-              echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-              echo "coverage-dir=${{ github.workspace }}/coverage" >> "$GITHUB_OUTPUT"
-              echo "pr-dir=${{ github.workspace }}/pr" >> "$GITHUB_OUTPUT"
+              echo "build-dir=$(pwd)/build" >> "$GITHUB_OUTPUT"
+              echo "coverage-dir=$(pwd)/coverage" >> "$GITHUB_OUTPUT"
+              echo "pr-dir=$(pwd)/pr" >> "$GITHUB_OUTPUT"
 
             # Saves the PR number to use in writing a comment on the PR.
           - name: Save PR number
@@ -68,13 +68,13 @@ jobs:
             run: >
                 cmake
                 -B ${{ steps.strings.outputs.build-dir }}
-                -S ${{ github.workspace }}
                 -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
                 -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
                 -DOASIS_BUILD_IO=ON
                 -DOASIS_BUILD_WITH_COVERAGE=${{ matrix.build_profiling == true && 'ON' || 'OFF'}}
                 -DOASIS_BUILD_PARANOID=ON
+                .
 
             # Builds Oasis with the given configuration.
           - name: Build Oasis
@@ -118,12 +118,12 @@ jobs:
             shell: bash
             run: |
               llvm-profdata-17 merge -sparse oasis.profraw -o oasis.profdata
-              llvm-cov-17 show -output-dir reports -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ${{ github.workspace }}/src ${{ github.workspace }}/include
+              llvm-cov-17 show -output-dir reports -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ./src ./include
 
           - name: Memory Check
             working-directory: ${{ steps.strings.outputs.build-dir }}
             run: >
-              ${{ github.workspace }}/valgrind/bin/valgrind --leak-check=full --error-exitcode=1 ./tests/OasisTests
+              valgrind --leak-check=full --error-exitcode=1 ./tests/OasisTests
 
             # Uploads the build, test, and code coverage artifacts.
           - name: Upload artifacts
