@@ -28,13 +28,13 @@ jobs:
             # Due to a bug in GCC (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111485), building with GCC is disabled.
             matrix:
                 build_type: [ Release, Debug ]
-                c_compiler: [ gcc, clang-17 ]
+                c_compiler: [ gcc, clang ]
 
                 include:
                   - c_compiler: gcc
                     cpp_compiler: g++
-                  - c_compiler: clang-17
-                    cpp_compiler: clang++-17
+                  - c_compiler: clang
+                    cpp_compiler: clang++
                     build_profiling: true
         steps:
             # Checks out the repository.
@@ -54,14 +54,6 @@ jobs:
             run: |
               mkdir -p ${{ steps.strings.outputs.pr-dir }}
               echo "${{ github.event.number }}" > ${{ steps.strings.outputs.pr-dir }}/issue_number
-
-            # Installs LLVM 17 on the Ubuntu runner.
-          - name: Install LLVM 17
-            if: ${{ matrix.c_compiler == 'clang-17' }}
-            run: |
-                wget https://apt.llvm.org/llvm.sh
-                chmod +x llvm.sh
-                sudo ./llvm.sh 17
 
             # Configures CMake in a subdirectory.
           - name: Configure CMake
@@ -117,8 +109,8 @@ jobs:
             working-directory: ${{ steps.strings.outputs.coverage-dir }}
             shell: bash
             run: |
-              llvm-profdata-17 merge -sparse oasis.profraw -o oasis.profdata
-              llvm-cov-17 show -output-dir reports -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ./src ./include
+              llvm-profdata merge -sparse oasis.profraw -o oasis.profdata
+              llvm-cov show -output-dir reports -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ./src ./include
 
           - name: Memory Check
             working-directory: ${{ steps.strings.outputs.build-dir }}
