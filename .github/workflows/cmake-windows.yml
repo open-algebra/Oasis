@@ -1,10 +1,10 @@
 # ##############################################################################
 # OASIS: Open Algebra Software for Inferring Solutions
 #
-# cmake-multi-platform.yml
+# cmake-windows.yml
 # ##############################################################################
 
-name: CMake on multiple platforms
+name: CMake on Windows
 
 on:
     push:
@@ -18,8 +18,7 @@ concurrency:
 
 jobs:
     build_and_test:
-        runs-on: ubuntu-latest
-        container: ghcr.io/open-algebra/gh-actions:main
+        runs-on: windows-latest
 
         strategy:
             # Sets fail-fast to false to ensure that feedback is delivered for all platforms.
@@ -28,14 +27,7 @@ jobs:
             # Due to a bug in GCC (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111485), building with GCC is disabled.
             matrix:
                 build_type: [ Release, Debug ]
-                c_compiler: [ gcc, clang ]
 
-                include:
-                  - c_compiler: gcc
-                    cpp_compiler: g++
-                  - c_compiler: clang
-                    cpp_compiler: clang++
-                    build_profiling: true
         steps:
             # Checks out the repository.
           - name: Checkout repository
@@ -45,28 +37,17 @@ jobs:
             id: strings
             shell: bash
             run: |
-              echo "build-dir=$(pwd)/build" >> "$GITHUB_OUTPUT"
-              echo "coverage-dir=$(pwd)/coverage" >> "$GITHUB_OUTPUT"
-              echo "pr-dir=$(pwd)/pr" >> "$GITHUB_OUTPUT"
-
-            # Saves the PR number to use in writing a comment on the PR.
-          - name: Save PR number
-            run: |
-              mkdir -p ${{ steps.strings.outputs.pr-dir }}
-              echo "${{ github.event.number }}" > ${{ steps.strings.outputs.pr-dir }}/issue_number
+              echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
             # Configures CMake in a subdirectory.
           - name: Configure CMake
             run: >
                 cmake
                 -B ${{ steps.strings.outputs.build-dir }}
-                -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+                -S ${{ github.workspace }}
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
                 -DOASIS_BUILD_IO=ON
-                -DOASIS_BUILD_WITH_COVERAGE=${{ matrix.build_profiling == true && 'ON' || 'OFF'}}
                 -DOASIS_BUILD_PARANOID=ON
-                .
 
             # Builds Oasis with the given configuration.
           - name: Build Oasis
@@ -96,40 +77,12 @@ jobs:
             working-directory: ${{ steps.strings.outputs.build-dir }}
             run: ctest --build-config ${{ matrix.build_type }}
 
-          - name: Collect Coverage
-            if: ${{ matrix.build_profiling }}
-            working-directory: ${{ steps.strings.outputs.build-dir }}
-            run: >
-              LLVM_PROFILE_FILE="${{ steps.strings.outputs.coverage-dir }}/oasis.profraw"
-              ./tests/OasisTests
-
-            # Creates reports from the coverage data.
-          - name: Report Coverage
-            if: ${{ matrix.build_profiling }}
-            working-directory: ${{ steps.strings.outputs.coverage-dir }}
-            shell: bash
-            run: |
-              llvm-profdata merge -sparse oasis.profraw -o oasis.profdata
-              llvm-cov show -output-dir reports -instr-profile oasis.profdata ${{ steps.strings.outputs.build-dir }}/tests/OasisTests -sources ./src ./include
-
-          - name: Memory Check
-            working-directory: ${{ steps.strings.outputs.build-dir }}
-            run: >
-              valgrind --leak-check=full --error-exitcode=1 ./tests/OasisTests
-
             # Uploads the build, test, and code coverage artifacts.
           - name: Upload artifacts
             if: ${{ matrix.build_profiling }}
             uses: actions/upload-artifact@v3
             with:
-              name: build-linux-${{ matrix.build_type }}-${{ matrix.c_compiler }}
+              name: build-windows-${{ matrix.build_type }}-${{ matrix.c_compiler }}
               path: |
                 ${{ steps.strings.outputs.build-dir }}
                 !${{ steps.strings.outputs.build-dir }}/_deps
-                ${{ steps.strings.outputs.coverage-dir }}
-
-          - name: Upload PR number
-            uses: actions/upload-artifact@v3
-            with:
-              name: pr-number
-              path: ${{ steps.strings.outputs.pr-dir }}
