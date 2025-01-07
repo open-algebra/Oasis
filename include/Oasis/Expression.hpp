@@ -1,6 +1,7 @@
 #ifndef OASIS_EXPRESSION_HPP
 #define OASIS_EXPRESSION_HPP
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -142,11 +143,12 @@ public:
         return GetType() == T<Expression>::GetStaticType();
     }
 
-    template <template <typename, typename> typename T>
-    [[nodiscard]] bool Is() const
-    {
-        return GetType() == T<Expression, Expression>::GetStaticType();
-    }
+    // TODO: Investigate.
+    // template <template <typename, typename> typename T>
+    // [[nodiscard]] bool Is() const
+    // {
+    //     return GetType() == T<Expression, Expression>::GetStaticType();
+    // }
 
     /**
      * Simplifies this expression.
