@@ -14,25 +14,19 @@ on:
 jobs:
     format:
         runs-on: ubuntu-latest
+        container: ghcr.io/open-algebra/gh-actions:main
 
         steps:
             # Checks out the repository.
           - name: Checkout repository
             uses: actions/checkout@v4
 
-            # Installs LLVM 17 on the runner.
-          - name: Install LLVM 17
-            run: |
-                wget https://apt.llvm.org/llvm.sh
-                chmod +x llvm.sh
-                sudo ./llvm.sh 17 all
-
             # Commits and pushes changes.
           - name: Format, Commit and Push
             if: |
                 github.event_name == 'workflow_dispatch'
             run: |
-                clang-format-17 -i src/**.cpp include/Oasis/**.hpp;
+                clang-format-18 -i src/**.cpp include/Oasis/**.hpp;
                 git config user.name "github-actions"
                 git config user.email "github-actions@github.com"
                 git commit -am "[Actions] Run clang-format"
