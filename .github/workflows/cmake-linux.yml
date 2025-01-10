@@ -17,7 +17,7 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    build_and_test:
+    build_and_test_linux:
         runs-on: ubuntu-latest
         container: ghcr.io/open-algebra/gh-actions:main
 
