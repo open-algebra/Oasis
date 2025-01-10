@@ -28,7 +28,7 @@ jobs:
             # Due to a bug in GCC (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111485), building with GCC is disabled.
             matrix:
                 build_type: [ Release, Debug ]
-                c_compiler: [ gcc, clang ]
+                c_compiler: [ gcc, clang-18 ]
 
                 include:
                   - c_compiler: gcc
