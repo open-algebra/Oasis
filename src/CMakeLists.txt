@@ -45,4 +45,14 @@ endif()
 target_compile_features(Oasis PUBLIC cxx_std_20)
 target_link_libraries(Oasis PUBLIC Oasis::Headers Eigen3::Eigen Boost::mpl)
 
+string(REPLACE "." ";" VERSION_TOKENS ${CMAKE_CXX_COMPILER_VERSION})
+list(GET VERSION_TOKENS 0 COMPILER_MAJOR_VERSION)
+target_compile_definitions(Oasis PUBLIC OASIS_COMPILER_MAJOR_VERSION=${COMPILER_MAJOR_VERSION})
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_definitions(Oasis PUBLIC OASIS_COMPILER_CLANG)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_definitions(Oasis PUBLIC OASIS_COMPILER_GCC)
+endif ()
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${Oasis_SOURCES})
