@@ -145,8 +145,9 @@ public:
         return GetType() == T<Expression>::GetStaticType();
     }
 
-#ifndef __GNUC__
+#if !defined(__GNUC__) || defined(__clang__)
     // Works with Clang <= 18 and MSVC, does not compile under GCC
+    // Apparently Clang also defines __GNUC__ :sobbing_face:
     template <template <typename, typename> typename T>
     [[nodiscard]] bool Is() const
     {
