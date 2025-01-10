@@ -14,9 +14,10 @@ The library is written in C++20 and is built with CMake. All dependencies are ma
 ### Supported Compilers
 * Clang 16.x to 18.x
 * MSVC
+* GCC
 
 #### Unsupported Tools
-* GCC and Clang 19+ have trouble disambiguating between overloaded template template functions when given template types with default parameters.
+* Clang 19+ broke overloading templated functions based on constraint strictness
 * AppleClang has issues with concepts.
 * NMake seems to have problems. We recommend [Ninja](https://ninja-build.org) or Makefiles.
 

@@ -145,7 +145,7 @@ public:
         return GetType() == T<Expression>::GetStaticType();
     }
 
-#if !defined(__GNUC__) || defined(__clang__)
+#if !defined(OASIS_COMPILER_GCC) && !(defined(OASIS_COMPILER_CLANG) && OASIS_COMPILER_MAJOR_VERSION >= 19)
     // Works with Clang <= 18 and MSVC, does not compile under GCC
     // Apparently Clang also defines __GNUC__ :sobbing_face:
     template <template <typename, typename> typename T>
