@@ -4,7 +4,7 @@
 # cmake-multi-platform.yml
 # ##############################################################################
 
-name: CMake on multiple platforms
+name: CMake on Linux
 
 on:
     push:
