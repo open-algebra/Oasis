@@ -137,18 +137,22 @@ public:
         return GetType() == T::GetStaticType();
     }
 
+    // Because binary expressions have defaulted template arguments, GCC and
+    // Clang >= 19 cannot disambiguate between Add<Real> and Add<Real, Real>.
     template <template <typename> typename T>
     [[nodiscard]] bool Is() const
     {
         return GetType() == T<Expression>::GetStaticType();
     }
 
-    // TODO: Investigate.
-    // template <template <typename, typename> typename T>
-    // [[nodiscard]] bool Is() const
-    // {
-    //     return GetType() == T<Expression, Expression>::GetStaticType();
-    // }
+#ifndef __GNUC__
+    // Works with Clang <= 18 and MSVC, does not compile under GCC
+    template <template <typename, typename> typename T>
+    [[nodiscard]] bool Is() const
+    {
+        return GetType() == T<Expression, Expression>::GetStaticType();
+    }
+#endif
 
     /**
      * Simplifies this expression.
