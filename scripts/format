@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Check if clang-format is installed
+if ! command -v clang-format &> /dev/null; then
+  echo "❌ [ERROR]: clang-format is not installed. Please install it to proceed."
+  exit 1
+fi
+
+# Get the clang-format version
+version=$(clang-format --version | awk '{print $3}')
+
+# Parse the major and minor versions
+major=$(echo $version | cut -d'.' -f1)
+minor=$(echo $version | cut -d'.' -f2)
+
+# Check if the version is 19.1 or newer
+if [[ "$major" -gt 19 ]] || ([[ "$major" -eq 19 ]] && [[ "$minor" -ge 1 ]]); then
+  echo "✅ [INFO]: clang-format version is $major.$minor, running format..."
+  clang-format -i src/*.cpp include/Oasis/*.hpp
+else
+  echo "❌ [ERROR]: clang-format version is $major.$minor. Version 19.1 or newer is required."
+  exit 1
+fi
