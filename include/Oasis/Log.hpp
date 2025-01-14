@@ -48,7 +48,7 @@ public:
     }
 
     Log(const BaseT& base, const ArgumentT& argument)
-        : BinaryExpression<Log, BaseT, ArgumentT>(base, argument) {}
+        : BinaryExpression<Log, BaseT, ArgumentT>(base, argument) { }
 
         ;
 

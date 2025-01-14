@@ -70,7 +70,7 @@ auto RecursiveCast(const Expression& other) -> std::unique_ptr<T>
 }
 
 template <IExpression T>
-requires (!DerivedFromBinaryExpression<T> && !DerivedFromUnaryExpression<T>)
+    requires(!DerivedFromBinaryExpression<T> && !DerivedFromUnaryExpression<T>)
 auto RecursiveCast(const Expression& other) -> std::unique_ptr<T>
 {
     if constexpr (std::is_same_v<T, Expression>)
