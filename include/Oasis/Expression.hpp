@@ -125,6 +125,7 @@ public:
      * @return A solved definite integral of the expression
      */
     [[nodiscard]] virtual auto IntegrateWithBounds(const Expression&, const Expression&, const Expression&) -> std::unique_ptr<Expression>;
+
     /**
      * Gets whether this expression is of a specific type.
      *
@@ -137,23 +138,19 @@ public:
         return GetType() == T::GetStaticType();
     }
 
-    // Because binary expressions have defaulted template arguments, GCC and
-    // Clang >= 19 cannot disambiguate between Add<Real> and Add<Real, Real>.
     template <template <typename> typename T>
+    requires (DerivedFromUnaryExpression<T<Expression>> && !DerivedFromBinaryExpression<T<Expression>>)
     [[nodiscard]] bool Is() const
     {
         return GetType() == T<Expression>::GetStaticType();
     }
 
-#if !defined(OASIS_COMPILER_GCC) && !(defined(OASIS_COMPILER_CLANG) && OASIS_COMPILER_MAJOR_VERSION >= 19)
-    // Works with Clang <= 18 and MSVC, does not compile under GCC
-    // Apparently Clang also defines __GNUC__ :sobbing_face:
     template <template <typename, typename> typename T>
+    requires DerivedFromBinaryExpression<T<Expression, Expression>>
     [[nodiscard]] bool Is() const
     {
         return GetType() == T<Expression, Expression>::GetStaticType();
     }
-#endif
 
     /**
      * Simplifies this expression.
