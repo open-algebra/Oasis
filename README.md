@@ -12,12 +12,11 @@ The library is written in C++20 and is built with CMake. All dependencies are ma
 * A modern C++ compiler (See below)
 
 ### Supported Compilers
-* Clang 16.x to 18.x
+* Clang ≥ 15 (≥ 16 for Ubuntu)
 * MSVC
-* GCC
+* GCC ≥ 13.2.1
 
 #### Unsupported Tools
-* Clang 19+ broke overloading templated functions based on constraint strictness
 * AppleClang has issues with concepts.
 * NMake seems to have problems. We recommend [Ninja](https://ninja-build.org) or Makefiles.
 

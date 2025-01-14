@@ -28,13 +28,13 @@ jobs:
             # Due to a bug in GCC (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111485), building with GCC is disabled.
             matrix:
                 build_type: [ Release, Debug ]
-                c_compiler: [ gcc, clang-18 ]
+                c_compiler: [ gcc, clang ]
 
                 include:
                   - c_compiler: gcc
                     cpp_compiler: g++
-                  - c_compiler: clang-18
-                    cpp_compiler: clang++-18
+                  - c_compiler: clang
+                    cpp_compiler: clang++
                     build_profiling: true
         steps:
             # Checks out the repository.
