@@ -35,16 +35,17 @@ add_library(Oasis::Oasis ALIAS Oasis)
 
 string(REPLACE "." ";" VERSION_TOKENS ${CMAKE_CXX_COMPILER_VERSION})
 list(GET VERSION_TOKENS 0 COMPILER_MAJOR_VERSION)
-target_compile_definitions(Oasis PUBLIC OASIS_COMPILER_MAJOR_VERSION=${COMPILER_MAJOR_VERSION})
+target_compile_definitions(
+    Oasis PUBLIC OASIS_COMPILER_MAJOR_VERSION=${COMPILER_MAJOR_VERSION})
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_definitions(Oasis PUBLIC OASIS_COMPILER_CLANG)
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_definitions(Oasis PUBLIC OASIS_COMPILER_GCC)
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_definitions(Oasis PUBLIC OASIS_COMPILER_MSVC)
     target_compile_options(Oasis PRIVATE /bigobj)
-endif ()
+endif()
 
 if(OASIS_BUILD_PARANOID)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
