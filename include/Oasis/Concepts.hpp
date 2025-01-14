@@ -49,12 +49,12 @@ concept IsAnyOf = (std::same_as<T, U> || ...);
 
 template <typename Derived>
 concept DerivedFromBinaryExpression = requires(Derived& d) {
-    []<template <typename, typename> typename D, IExpression T, IExpression U>(BinaryExpression<D, T, U>&) {}(d);
+    []<template <typename, typename> typename D, IExpression T, IExpression U>(BinaryExpression<D, T, U>&) { }(d);
 };
 
 template <typename Derived>
 concept DerivedFromUnaryExpression = requires(Derived& d) {
-    []<template <typename> typename D, IExpression T>(UnaryExpression<D, T>&) {}(d);
+    []<template <typename> typename D, IExpression T>(UnaryExpression<D, T>&) { }(d);
 };
 
 }
