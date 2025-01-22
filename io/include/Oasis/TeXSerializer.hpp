@@ -5,10 +5,11 @@
 #ifndef LATEXSERIALIZER_HPP
 #define LATEXSERIALIZER_HPP
 
-#include "Oasis/BinaryExpression.hpp"
-#include "Oasis/Serialization.hpp"
 #include <string>
 #include <set>
+
+#include "Oasis/BinaryExpression.hpp"
+#include "Oasis/Visit.hpp"
 
 namespace Oasis {
 
@@ -53,7 +54,7 @@ struct TexOptions {
         : dialect(dt), spacing(sp), character(ch), numPlaces(num), divType(dv) {}
 };
 
-class TeXSerializer final : public SerializationVisitor {
+class TeXSerializer final : public Visitor {
 public:
     TeXSerializer() : TeXSerializer(TexOptions {}) {}
     explicit TeXSerializer(TexOptions options) : latexOptions(options) {}
@@ -73,23 +74,23 @@ public:
     void AddTeXPackage(SupportedPackages package);
     void RemoveTeXPackage(SupportedPackages package);
 
-    void Serialize(const Real& real) override;
-    void Serialize(const Imaginary& imaginary) override;
-    void Serialize(const Matrix& matrix) override;
-    void Serialize(const Variable& variable) override;
-    void Serialize(const Undefined& undefined) override;
-    void Serialize(const Pi&) override;
-    void Serialize(const EulerNumber&) override;
-    void Serialize(const Add<Expression, Expression>& add) override;
-    void Serialize(const Subtract<Expression, Expression>& subtract) override;
-    void Serialize(const Multiply<Expression, Expression>& multiply) override;
-    void Serialize(const Divide<Expression, Expression>& divide) override;
-    void Serialize(const Exponent<Expression, Expression>& exponent) override;
-    void Serialize(const Log<Expression, Expression>& log) override;
-    void Serialize(const Negate<Expression>& negate) override;
-    void Serialize(const Magnitude<Expression>& magnitude) override;
-    void Serialize(const Derivative<Expression, Expression>& derivative) override;
-    void Serialize(const Integral<Expression, Expression>& integral) override;
+    void Visit(const Real& real) override;
+    void Visit(const Imaginary& imaginary) override;
+    void Visit(const Matrix& matrix) override;
+    void Visit(const Variable& variable) override;
+    void Visit(const Undefined& undefined) override;
+    void Visit(const Pi&) override;
+    void Visit(const EulerNumber&) override;
+    void Visit(const Add<Expression, Expression>& add) override;
+    void Visit(const Subtract<Expression, Expression>& subtract) override;
+    void Visit(const Multiply<Expression, Expression>& multiply) override;
+    void Visit(const Divide<Expression, Expression>& divide) override;
+    void Visit(const Exponent<Expression, Expression>& exponent) override;
+    void Visit(const Log<Expression, Expression>& log) override;
+    void Visit(const Negate<Expression>& negate) override;
+    void Visit(const Magnitude<Expression>& magnitude) override;
+    void Visit(const Derivative<Expression, Expression>& derivative) override;
+    void Visit(const Integral<Expression, Expression>& integral) override;
 
     [[nodiscard]] std::string getResult() const;
 

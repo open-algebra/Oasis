@@ -20,117 +20,117 @@
 
 namespace Oasis {
 
-void InFixSerializer::Serialize(const Real& real)
+void InFixSerializer::Visit(const Real& real)
 {
     result = fmt::format("{:.5}", real.GetValue());
 }
 
-void InFixSerializer::Serialize(const Imaginary& imaginary)
+void InFixSerializer::Visit(const Imaginary& imaginary)
 {
     result = "i";
 }
 
-void InFixSerializer::Serialize(const Variable& variable)
+void InFixSerializer::Visit(const Variable& variable)
 {
     result = variable.GetName();
 }
 
-void InFixSerializer::Serialize(const Undefined& undefined)
+void InFixSerializer::Visit(const Undefined& undefined)
 {
     result = "Undefined";
 }
 
-void InFixSerializer::Serialize(const Add<>& add)
+void InFixSerializer::Visit(const Add<>& add)
 {
-    add.GetMostSigOp().Serialize(*this);
+    add.GetMostSigOp().Accept(*this);
     const auto mostSigOpStr = getResult();
 
-    add.GetLeastSigOp().Serialize(*this);
+    add.GetLeastSigOp().Accept(*this);
     const auto leastSigOpStr = getResult();
 
     result = fmt::format("({}+{})", mostSigOpStr, leastSigOpStr);
 }
 
-void InFixSerializer::Serialize(const Subtract<>& subtract)
+void InFixSerializer::Visit(const Subtract<>& subtract)
 {
-    subtract.GetMostSigOp().Serialize(*this);
+    subtract.GetMostSigOp().Accept(*this);
     const auto mostSigOpStr = getResult();
 
-    subtract.GetLeastSigOp().Serialize(*this);
+    subtract.GetLeastSigOp().Accept(*this);
     const auto leastSigOpStr = getResult();
 
     result = fmt::format("({}-{})", mostSigOpStr, leastSigOpStr);
 }
 
-void InFixSerializer::Serialize(const Multiply<>& multiply)
+void InFixSerializer::Visit(const Multiply<>& multiply)
 {
-    multiply.GetMostSigOp().Serialize(*this);
+    multiply.GetMostSigOp().Accept(*this);
     const auto mostSigOpStr = getResult();
 
-    multiply.GetLeastSigOp().Serialize(*this);
+    multiply.GetLeastSigOp().Accept(*this);
     const auto leastSigOpStr = getResult();
 
     result = fmt::format("({}*{})", mostSigOpStr, leastSigOpStr);
 }
 
-void InFixSerializer::Serialize(const Divide<>& divide)
+void InFixSerializer::Visit(const Divide<>& divide)
 {
-    divide.GetMostSigOp().Serialize(*this);
+    divide.GetMostSigOp().Accept(*this);
     const auto mostSigOpStr = getResult();
 
-    divide.GetLeastSigOp().Serialize(*this);
+    divide.GetLeastSigOp().Accept(*this);
     const auto leastSigOpStr = getResult();
 
     result = fmt::format("({}/{})", mostSigOpStr, leastSigOpStr);
 }
 
-void InFixSerializer::Serialize(const Exponent<>& exponent)
+void InFixSerializer::Visit(const Exponent<>& exponent)
 {
-    exponent.GetMostSigOp().Serialize(*this);
+    exponent.GetMostSigOp().Accept(*this);
     const auto mostSigOpStr = getResult();
 
-    exponent.GetLeastSigOp().Serialize(*this);
+    exponent.GetLeastSigOp().Accept(*this);
     const auto leastSigOpStr = getResult();
 
     result = fmt::format("({}^{})", mostSigOpStr, leastSigOpStr);
 }
 
-void InFixSerializer::Serialize(const Log<>& log)
+void InFixSerializer::Visit(const Log<>& log)
 {
-    log.GetMostSigOp().Serialize(*this);
+    log.GetMostSigOp().Accept(*this);
     const auto mostSigOpStr = getResult();
 
-    log.GetLeastSigOp().Serialize(*this);
+    log.GetLeastSigOp().Accept(*this);
     const auto leastSigOpStr = getResult();
 
     result = fmt::format("log({},{})", mostSigOpStr, leastSigOpStr);
 }
 
-void InFixSerializer::Serialize(const Negate<Expression>& negate)
+void InFixSerializer::Visit(const Negate<Expression>& negate)
 {
-    negate.GetOperand().Serialize(*this);
+    negate.GetOperand().Accept(*this);
     const auto opStr = getResult();
 
     result = fmt::format("-({})", opStr);
 }
 
-void InFixSerializer::Serialize(const Derivative<>& derivative)
+void InFixSerializer::Visit(const Derivative<>& derivative)
 {
-    derivative.GetMostSigOp().Serialize(*this);
+    derivative.GetMostSigOp().Accept(*this);
     const auto mostSigOpStr = getResult();
 
-    derivative.GetLeastSigOp().Serialize(*this);
+    derivative.GetLeastSigOp().Accept(*this);
     const auto leastSigOpStr = getResult();
 
     result = fmt::format("dd({},{})", mostSigOpStr, leastSigOpStr);
 }
 
-void InFixSerializer::Serialize(const Integral<>& integral)
+void InFixSerializer::Visit(const Integral<>& integral)
 {
-    integral.GetMostSigOp().Serialize(*this);
+    integral.GetMostSigOp().Accept(*this);
     const auto mostSigOpStr = getResult();
 
-    integral.GetLeastSigOp().Serialize(*this);
+    integral.GetLeastSigOp().Accept(*this);
     const auto leastSigOpStr = getResult();
 
     result = fmt::format("in({},{})", mostSigOpStr, leastSigOpStr);

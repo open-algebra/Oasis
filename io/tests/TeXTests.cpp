@@ -30,8 +30,8 @@ TEST_CASE("LaTeX serialization for various precision", "[LaTeX][Serializer][Real
     Oasis::TeXSerializer serializer2{options2};
     serializer2.SetNumPlaces(2);
 
-    r.Serialize(serializer1);
-    r.Serialize(serializer2);
+    r.Accept(serializer1);
+    r.Accept(serializer2);
 
     auto actual1 = serializer1.getResult();
     auto actual2 = serializer2.getResult();
@@ -48,8 +48,8 @@ TEST_CASE("LaTeX serialization for different imaginary character", "[LaTeX][Seri
     Oasis::TeXSerializer serializer{};
     Oasis::TeXSerializer serializerJ{Oasis::TexOptions {Oasis::CHARACTER_J}};
 
-    i.Serialize(serializer);
-    i.Serialize(serializerJ);
+    i.Accept(serializer);
+    i.Accept(serializerJ);
 
     auto actual = serializer.getResult();
     auto actualJ = serializerJ.getResult();
@@ -67,7 +67,7 @@ TEST_CASE("LaTeX Serialization for Addition", "[LaTeX][Serializer][Add]"){
 
     Oasis::TeXSerializer serializer;
 
-    a.Serialize(serializer);
+    a.Accept(serializer);
 
     auto result = serializer.getResult();
     std::string expected = "\\left(5+x_0\\right)";
@@ -80,7 +80,7 @@ TEST_CASE("LaTeX Serialization for Subtraction", "[LaTeX][Serializer][Subtract]"
 
     Oasis::TeXSerializer serializer;
 
-    s.Serialize(serializer);
+    s.Accept(serializer);
 
     auto result = serializer.getResult();
     std::string expected = "\\left(5-x_0\\right)";
@@ -94,7 +94,7 @@ TEST_CASE("LaTeX Serialization for Multiplication", "[LaTeX][Serializer][Multipl
 
     Oasis::TeXSerializer serializer;
 
-    s.Serialize(serializer);
+    s.Accept(serializer);
 
     auto result = serializer.getResult();
     std::string expected = "\\left(5*x_0\\right)";
@@ -108,7 +108,7 @@ TEST_CASE("LaTeX Serialization for Division", "[LaTeX][Serializer][Divide]")
 
     Oasis::TeXSerializer serializer;
 
-    d.Serialize(serializer);
+    d.Accept(serializer);
 
     auto result = serializer.getResult();
     std::string expected = R"(\left(\frac{5}{x_0}\right))";
@@ -124,7 +124,7 @@ TEST_CASE("LaTeX Serialization for Division with \\div", "[LaTeX][Serializer][Di
 
     assert(serializer.GetDivType() == Oasis::DivisionType::DIV);
 
-    d.Serialize(serializer);
+    d.Accept(serializer);
 
     auto result = serializer.getResult();
     std::string expected = R"(\left({5}\div{x_0}\right))";
@@ -140,7 +140,7 @@ TEST_CASE("LaTeX Serialization with spacing options", "[LaTeX][Serializer][TexOp
 
     Oasis::TeXSerializer serializer{options};
 
-    s.Serialize(serializer);
+    s.Accept(serializer);
 
     auto result = serializer.getResult();
     std::string expected = "\\left(5 * x_0\\right)";
@@ -154,7 +154,7 @@ TEST_CASE("LaTeX Serialization for Exponents", "[LaTeX][Serializer][Exponent]")
 
     Oasis::TeXSerializer serializer{};
 
-    e.Serialize(serializer);
+    e.Accept(serializer);
 
     auto result = serializer.getResult();
     std::string expected = R"(\left(e\right)^{\left(i*x\right)})";
@@ -169,7 +169,7 @@ TEST_CASE("LaTeX Serialization for Logarithms", "[LaTeX][Serializer][Log]")
 
     Oasis::TeXSerializer serializer{};
 
-    e.Serialize(serializer);
+    e.Accept(serializer);
 
     auto result = serializer.getResult();
     std::string expected = R"(\log_{e}\left(x\right))";
@@ -184,7 +184,7 @@ TEST_CASE("LaTeX Serialization for Negate", "[LaTeX][Serializer][Negate]")
 
     Oasis::TeXSerializer serializer{};
 
-    e.Serialize(serializer);
+    e.Accept(serializer);
 
     auto result = serializer.getResult();
     std::string expected = R"(\left(-e\right))";
@@ -199,7 +199,7 @@ TEST_CASE("LaTeX Serialization for Magnitude", "[LaTeX][Serializer][Magnitude]")
 
     Oasis::TeXSerializer serializer{};
 
-    e.Serialize(serializer);
+    e.Accept(serializer);
 
     auto result = serializer.getResult();
     std::string expected = R"(\left|-5\right|)";
@@ -214,7 +214,7 @@ TEST_CASE("LaTeX Serialization for Derivative", "[LaTeX][Serializer][Derivative]
 
     Oasis::TeXSerializer serializer{};
 
-    e.Serialize(serializer);
+    e.Accept(serializer);
 
     auto result = serializer.getResult();
     std::string expected = R"(\frac{d}{dx}\left(x\right))";
@@ -229,7 +229,7 @@ TEST_CASE("LaTeX Serialization for Integral", "[LaTeX][Serializer][Integral]")
 
     Oasis::TeXSerializer serializer{};
 
-    e.Serialize(serializer);
+    e.Accept(serializer);
 
     auto result = serializer.getResult();
     std::string expected = R"(\int\left(x\right)dx)";
@@ -243,7 +243,7 @@ TEST_CASE("LaTeX Serialization for Matrices", "[LaTeX][Serializer][Matrix]")
     Oasis::Matrix mat{Oasis::MatrixXXD{{1,2,3},{4,5,6.2}}};
     Oasis::TeXSerializer serializer{};
 
-    mat.Serialize(serializer);
+    mat.Accept(serializer);
 
     auto result = serializer.getResult();
     auto expected = R"(\begin{bmatrix}

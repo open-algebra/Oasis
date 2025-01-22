@@ -9,31 +9,31 @@
 
 #include "Oasis/BinaryExpression.hpp"
 #include "Oasis/RecursiveCast.hpp"
-#include "Oasis/Serialization.hpp"
+#include "Oasis/Visit.hpp"
 
 namespace Oasis {
 
-class MathMLSerializer final : public SerializationVisitor {
+class MathMLSerializer final : public Visitor {
 public:
     explicit MathMLSerializer(tinyxml2::XMLDocument& doc);
 
-    void Serialize(const Real& real) override;
-    void Serialize(const Imaginary& imaginary) override;
-    void Serialize(const Matrix& matrix) override;
-    void Serialize(const Variable& variable) override;
-    void Serialize(const Undefined& undefined) override;
-    void Serialize(const Pi&) override;
-    void Serialize(const EulerNumber&) override;
-    void Serialize(const Add<Expression, Expression>& add) override;
-    void Serialize(const Subtract<Expression, Expression>& subtract) override;
-    void Serialize(const Multiply<Expression, Expression>& multiply) override;
-    void Serialize(const Divide<Expression, Expression>& divide) override;
-    void Serialize(const Exponent<Expression, Expression>& exponent) override;
-    void Serialize(const Log<Expression, Expression>& log) override;
-    void Serialize(const Negate<Expression>& negate) override;
-    void Serialize(const Magnitude<Expression>& magnitude) override;
-    void Serialize(const Derivative<Expression, Expression>& derivative) override;
-    void Serialize(const Integral<Expression, Expression>& integral) override;
+    void Visit(const Real& real) override;
+    void Visit(const Imaginary& imaginary) override;
+    void Visit(const Matrix& matrix) override;
+    void Visit(const Variable& variable) override;
+    void Visit(const Undefined& undefined) override;
+    void Visit(const Pi&) override;
+    void Visit(const EulerNumber&) override;
+    void Visit(const Add<Expression, Expression>& add) override;
+    void Visit(const Subtract<Expression, Expression>& subtract) override;
+    void Visit(const Multiply<Expression, Expression>& multiply) override;
+    void Visit(const Divide<Expression, Expression>& divide) override;
+    void Visit(const Exponent<Expression, Expression>& exponent) override;
+    void Visit(const Log<Expression, Expression>& log) override;
+    void Visit(const Negate<Expression>& negate) override;
+    void Visit(const Magnitude<Expression>& magnitude) override;
+    void Visit(const Derivative<Expression, Expression>& derivative) override;
+    void Visit(const Integral<Expression, Expression>& integral) override;
 
     [[nodiscard]] tinyxml2::XMLDocument& GetDocument() const;
     [[nodiscard]] tinyxml2::XMLElement* GetResult() const;
@@ -46,14 +46,14 @@ private:
         tinyxml2::XMLElement* mostSig = CreatePlaceholder();
 
         if (binexp.HasMostSigOp()) {
-            binexp.GetMostSigOp().Serialize(*this);
+            binexp.GetMostSigOp().Accept(*this);
             mostSig = GetResult();
         }
 
         tinyxml2::XMLElement* leastSig = CreatePlaceholder();
 
         if (binexp.HasLeastSigOp()) {
-            binexp.GetLeastSigOp().Serialize(*this);
+            binexp.GetLeastSigOp().Accept(*this);
             leastSig = GetResult();
         }
 

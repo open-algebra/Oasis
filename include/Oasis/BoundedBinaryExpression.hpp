@@ -8,7 +8,7 @@
 #include "BoundedExpression.hpp"
 #include "Expression.hpp"
 #include "RecursiveCast.hpp"
-#include "Serialization.hpp"
+#include "Visit.hpp"
 
 namespace Oasis {
 template <template <IExpression, IExpression, IExpression, IExpression> class DerivedT, IExpression MostSigOpT = Expression, IExpression LeastSigOpT = MostSigOpT, IExpression LowerBoundT = Expression, IExpression UpperBoundT = LowerBoundT>

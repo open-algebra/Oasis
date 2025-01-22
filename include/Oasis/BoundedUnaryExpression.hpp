@@ -9,7 +9,7 @@
 
 #include "Bounds.hpp"
 #include "Expression.hpp"
-#include "Serialization.hpp"
+#include "Visit.hpp"
 
 namespace Oasis {
 

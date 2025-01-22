@@ -12,7 +12,7 @@
 
 #include "Expression.hpp"
 #include "RecursiveCast.hpp"
-#include "Serialization.hpp"
+#include "Visit.hpp"
 
 namespace Oasis {
 /**
@@ -378,11 +378,11 @@ public:
 
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 
-    void Serialize(SerializationVisitor& visitor) const override
+    void Accept(Visitor& visitor) const override
     {
         const auto generalized = Generalize();
         const auto& derivedGeneralized = dynamic_cast<const DerivedGeneralized&>(*generalized);
-        visitor.Serialize(derivedGeneralized);
+        visitor.Visit(derivedGeneralized);
     }
 
     std::unique_ptr<MostSigOpT> mostSigOp;
