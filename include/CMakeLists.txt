@@ -20,11 +20,11 @@ set(Oasis_HEADERS
     Oasis/Pi.hpp
     Oasis/Real.hpp
     Oasis/RecursiveCast.hpp
-        Oasis/Visit.hpp
     Oasis/Subtract.hpp
     Oasis/UnaryExpression.hpp
     Oasis/Undefined.hpp
-    Oasis/Variable.hpp)
+    Oasis/Variable.hpp
+    Oasis/Visit.hpp)
 
 # Adds a header-only library target called "OasisHeaders"
 add_library(OasisHeaders INTERFACE)
