@@ -160,8 +160,8 @@ auto Exponent<Expression>::Differentiate(const Expression& differentiationVariab
 
         if (auto samevarBase = RecursiveCast<Exponent<Variable, Expression>>(*simplifiedExponent); samevarBase != nullptr) {
             auto expBase = RecursiveCast<Variable>(samevarBase->GetMostSigOp());
-            if(expBase->GetName() == variable->GetName()) {
-                Multiply derivative { Multiply { Derivative { samevarBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent }, Add {Log { EulerNumber {}, samevarBase->GetMostSigOp() }, Real{1} } };
+            if (expBase->GetName() == variable->GetName()) {
+                Multiply derivative { Multiply { Derivative { samevarBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent }, Add { Log { EulerNumber {}, samevarBase->GetMostSigOp() }, Real { 1 } } };
                 return derivative.Simplify();
             }
         }
@@ -172,9 +172,9 @@ auto Exponent<Expression>::Differentiate(const Expression& differentiationVariab
         }
 
         if (auto generalBase = RecursiveCast<Exponent<Expression, Expression>>(*simplifiedExponent); generalBase != nullptr) {
-            Multiply derivative { Multiply { *simplifiedExponent ,
-                                    Add { Divide { Multiply { generalBase->GetLeastSigOp() , Derivative {generalBase->GetMostSigOp()  , differentiationVariable }  }, generalBase->GetMostSigOp() }  ,
-                                        Multiply { Derivative { generalBase->GetLeastSigOp(), differentiationVariable } , Log { EulerNumber {} , generalBase->GetMostSigOp() } } } } };
+            Multiply derivative { Multiply { *simplifiedExponent,
+                Add { Divide { Multiply { generalBase->GetLeastSigOp(), Derivative { generalBase->GetMostSigOp(), differentiationVariable } }, generalBase->GetMostSigOp() },
+                    Multiply { Derivative { generalBase->GetLeastSigOp(), differentiationVariable }, Log { EulerNumber {}, generalBase->GetMostSigOp() } } } } };
             return derivative.Simplify();
         }
     }
