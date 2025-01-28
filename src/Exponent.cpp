@@ -159,8 +159,8 @@ auto Exponent<Expression>::Differentiate(const Expression& differentiationVariab
         }
 
         if (auto samevarBase = RecursiveCast<Exponent<Variable, Expression>>(*simplifiedExponent); samevarBase != nullptr) {
-            auto expBase = RecursiveCast<Variable>(samevarBase->GetMostSigOp());
-            if (expBase->GetName() == variable->GetName()) {
+            const Variable& expBase = samevarBase->GetMostSigOp();
+            if (expBase.GetName() == variable->GetName()) {
                 Multiply derivative { Multiply { Derivative { samevarBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent }, Add { Log { EulerNumber {}, samevarBase->GetMostSigOp() }, Real { 1 } } };
                 return derivative.Simplify();
             }
