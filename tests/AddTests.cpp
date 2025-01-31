@@ -1,6 +1,8 @@
 //
 // Created by Matthew McCall on 8/7/23.
 //
+#include "Common.hpp"
+
 #include "catch2/catch_test_macros.hpp"
 
 #include "Oasis/Add.hpp"
@@ -10,8 +12,7 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Variable.hpp"
-
-#include <functional>
+#include "Oasis/InFixSerializer.hpp"
 
 TEST_CASE("Addition", "[Add]")
 {
@@ -21,6 +22,9 @@ TEST_CASE("Addition", "[Add]")
             Oasis::Real { 2.0 } },
         Oasis::Real { 3.0 }
     };
+
+    Oasis::InFixSerializer serializer;
+    OASIS_CAPTURE_WITH_SERIALIZER(serializer, add);
 
     auto simplified = add.Simplify();
     REQUIRE(simplified->Is<Oasis::Real>());

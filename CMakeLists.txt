@@ -45,10 +45,10 @@ include(cmake/FetchTinyxml2.cmake)
 add_subdirectory(include)
 add_subdirectory(src)
 
-if(OASIS_BUILD_TESTS)
-    add_subdirectory(tests)
-endif()
-
 if(OASIS_BUILD_IO)
     add_subdirectory(io)
+endif()
+
+if(OASIS_BUILD_TESTS)
+    add_subdirectory(tests)
 endif()

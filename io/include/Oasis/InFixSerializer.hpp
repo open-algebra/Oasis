@@ -26,6 +26,10 @@ public:
     void Visit(const Negate<Expression>& negate) override;
     void Visit(const Derivative<Expression, Expression>& derivative) override;
     void Visit(const Integral<Expression, Expression>& integral) override;
+    void Visit(const Matrix& matrix) override;
+    void Visit(const EulerNumber&) override;
+    void Visit(const Pi&) override;
+    void Visit(const Magnitude<Expression>& magnitude) override;
 
     [[nodiscard]] std::string getResult() const;
 
