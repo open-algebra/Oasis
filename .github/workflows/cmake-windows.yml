@@ -80,7 +80,7 @@ jobs:
             # Uploads the build, test, and code coverage artifacts.
           - name: Upload artifacts
             if: ${{ matrix.build_profiling }}
-            uses: actions/upload-artifact@v3
+            uses: actions/upload-artifact@v4
             with:
               name: build-windows-${{ matrix.build_type }}-${{ matrix.c_compiler }}
               path: |
