@@ -127,9 +127,11 @@ jobs:
                 ${{ steps.strings.outputs.build-dir }}
                 !${{ steps.strings.outputs.build-dir }}/_deps
                 ${{ steps.strings.outputs.coverage-dir }}
+              overwrite: true
 
           - name: Upload PR number
             uses: actions/upload-artifact@v4
             with:
               name: pr-number
               path: ${{ steps.strings.outputs.pr-dir }}
+              overwrite: true
