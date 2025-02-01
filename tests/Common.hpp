@@ -5,13 +5,16 @@
 #ifndef COMMON_HPP
 #define COMMON_HPP
 
+
 #ifdef OASIS_IO_ENABLED
-#define OASIS_CAPTURE_WITH_SERIALIZER(serializer, __expr) \
-__expr.Accept(serializer);                        \
-auto __expr_str = serializer.getResult();          \
+#include "Oasis/InFixSerializer.hpp"
+inline     Oasis::InFixSerializer __serializer;
+#define OASIS_CAPTURE_WITH_SERIALIZER(__expr) \
+__expr.Accept(__serializer);                        \
+auto __expr_str = __serializer.getResult();          \
 INFO(#__expr << " := " << __expr_str);
 #else
-#define OASIS_CAPTURE_WITH_SERIALIZER(serializer, __expr)
+#define OASIS_CAPTURE_WITH_SERIALIZER(__serializer, __expr)
 #endif
 
 #endif //COMMON_HPP
