@@ -14,7 +14,7 @@ __expr.Accept(__serializer);                        \
 auto __expr_str = __serializer.getResult();          \
 INFO(#__expr << " := " << __expr_str);
 #else
-#define OASIS_CAPTURE_WITH_SERIALIZER(__serializer, __expr)
+#define OASIS_CAPTURE_WITH_SERIALIZER(__expr)
 #endif
 
 #endif //COMMON_HPP
