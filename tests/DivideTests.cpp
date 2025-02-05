@@ -178,6 +178,16 @@ TEST_CASE("Symbolic Division, equal exponents", "[Division][Symbolic]")
         Oasis::Variable { "y" } }.Equals(*simplified));
 }
 
+TEST_CASE("Division of equal variables", "[Division][Symbolic]")
+{
+    // x/x = 1
+
+    Oasis::Divide div { Oasis::Variable { "x" }, Oasis::Variable { "x" } };
+    auto simplified = div.Simplify();
+    REQUIRE(Oasis::Real { 1 }.Equals(*simplified));
+}
+
+
 TEST_CASE("Generalized Division", "[Divide][Generalized]")
 {
     Oasis::Divide<Oasis::Expression> subtract {

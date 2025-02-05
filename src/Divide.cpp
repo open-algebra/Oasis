@@ -217,6 +217,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (dividend && !divisor)
         return dividend;
 
+    if (!dividend && !divisor)
+        return Real { 1.0 }.Copy();
+
     return Divide { *dividend, *divisor }.Copy();
 }
 
