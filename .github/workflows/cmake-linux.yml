@@ -120,16 +120,18 @@ jobs:
             # Uploads the build, test, and code coverage artifacts.
           - name: Upload artifacts
             if: ${{ matrix.build_profiling }}
-            uses: actions/upload-artifact@v3
+            uses: actions/upload-artifact@v4
             with:
               name: build-linux-${{ matrix.build_type }}-${{ matrix.c_compiler }}
               path: |
                 ${{ steps.strings.outputs.build-dir }}
                 !${{ steps.strings.outputs.build-dir }}/_deps
                 ${{ steps.strings.outputs.coverage-dir }}
+              overwrite: true
 
           - name: Upload PR number
-            uses: actions/upload-artifact@v3
+            uses: actions/upload-artifact@v4
             with:
               name: pr-number
               path: ${{ steps.strings.outputs.pr-dir }}
+              overwrite: true

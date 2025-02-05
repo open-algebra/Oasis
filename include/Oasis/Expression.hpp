@@ -9,7 +9,7 @@
 
 namespace Oasis {
 
-class SerializationVisitor;
+class Visitor;
 
 /**
  * The type of an expression.
@@ -177,7 +177,7 @@ public:
      *
      * @param visitor The serializer class object to write the Expression data.
      */
-    virtual void Serialize(SerializationVisitor& visitor) const = 0;
+    virtual void Accept(Visitor& visitor) const = 0;
 
     virtual ~Expression() = default;
 };

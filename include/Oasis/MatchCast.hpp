@@ -40,13 +40,9 @@ template <typename ArgumentT, typename Cases>
 class MatchCastImpl {
 public:
     template <typename Lambda>
-    MatchCastImpl<ArgumentT, typename boost::mpl::push_back<Cases, Lambda>::type>
-    Case(Lambda) const
-    {
-        return MatchCastImpl<ArgumentT, typename boost::mpl::push_back<Cases, Lambda>::type>();
-    }
+    auto Case(Lambda) const -> MatchCastImpl<ArgumentT, typename boost::mpl::push_back<Cases, Lambda>::type> { return {}; }
 
-    std::unique_ptr<ArgumentT> Execute(const ArgumentT& arg, std::unique_ptr<ArgumentT>&& fallback) const
+    auto Execute(const ArgumentT& arg, std::unique_ptr<ArgumentT>&& fallback) const -> std::unique_ptr<ArgumentT>
     {
         std::unique_ptr<ArgumentT> result = nullptr;
         boost::mpl::for_each<Cases>([&]<typename CaseTrueCallbackT>(CaseTrueCallbackT caseTrueCallback) {

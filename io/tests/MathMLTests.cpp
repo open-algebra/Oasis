@@ -22,7 +22,7 @@ TEST_CASE("ToMathML Works", "[MathML]")
     tinyxml2::XMLDocument doc;
     Oasis::MathMLSerializer serializer(doc);
 
-    divide.Serialize(serializer);
+    divide.Accept(serializer);
     doc.InsertEndChild(serializer.GetResult());
 
     tinyxml2::XMLPrinter printer;
@@ -53,7 +53,7 @@ Oasis::Matrix mat{Oasis::MatrixXXD{{1,2,3},{4,5,6},{7,8,9}}};
     tinyxml2::XMLDocument doc;
     Oasis::MathMLSerializer serializer(doc);
 
-    mat.Serialize(serializer);
+    mat.Accept(serializer);
     doc.InsertEndChild(serializer.GetResult());
 
     tinyxml2::XMLPrinter printer;
@@ -113,7 +113,7 @@ TEST_CASE("Matrix to MathML 2x2", "[Matrix][MathML]")
     tinyxml2::XMLDocument doc;
     Oasis::MathMLSerializer serializer(doc);
 
-    mat.Serialize(serializer);
+    mat.Accept(serializer);
     doc.InsertEndChild(serializer.GetResult());
 
     tinyxml2::XMLPrinter printer;
@@ -156,7 +156,7 @@ TEST_CASE("Matrix to MathML 2x3", "[Matrix][MathML]")
     tinyxml2::XMLDocument doc;
     Oasis::MathMLSerializer serializer(doc);
 
-    mat.Serialize(serializer);
+    mat.Accept(serializer);
     doc.InsertEndChild(serializer.GetResult());
 
     tinyxml2::XMLPrinter printer;
@@ -205,7 +205,7 @@ TEST_CASE("Matrix to MathML 3x2", "[Matrix][MathML]")
     tinyxml2::XMLDocument doc;
     Oasis::MathMLSerializer serializer(doc);
 
-    mat.Serialize(serializer);
+    mat.Accept(serializer);
     doc.InsertEndChild(serializer.GetResult());
 
     tinyxml2::XMLPrinter printer;

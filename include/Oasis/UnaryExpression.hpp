@@ -6,7 +6,7 @@
 #define UNARYEXPRESSION_HPP
 
 #include "Expression.hpp"
-#include "Serialization.hpp"
+#include "Visit.hpp"
 
 namespace Oasis {
 
@@ -91,11 +91,11 @@ public:
         return ret;
     }
 
-    void Serialize(SerializationVisitor& visitor) const override
+    void Accept(Visitor& visitor) const override
     {
         const auto generalized = Generalize();
         const auto& derivedGeneralized = dynamic_cast<const DerivedGeneralized&>(*generalized);
-        visitor.Serialize(derivedGeneralized);
+        visitor.Visit(derivedGeneralized);
     }
 
 protected:

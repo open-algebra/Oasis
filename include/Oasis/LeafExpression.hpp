@@ -6,7 +6,7 @@
 #define OASIS_LEAFEXPRESSION_HPP
 
 #include "Expression.hpp"
-#include "Serialization.hpp"
+#include "Visit.hpp"
 
 namespace Oasis {
 
@@ -44,11 +44,11 @@ public:
         return this->Copy();
     }
 
-    void Serialize(SerializationVisitor& visitor) const override
+    void Accept(Visitor& visitor) const override
     {
         const auto generalized = Generalize();
         const auto& derivedGeneralized = dynamic_cast<const DerivedT&>(*generalized);
-        visitor.Serialize(derivedGeneralized);
+        visitor.Visit(derivedGeneralized);
     }
 };
 

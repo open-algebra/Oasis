@@ -9,6 +9,7 @@ set(Oasis_TESTS
     # cmake-format: sortable
     AddTests.cpp
     BinaryExpressionTests.cpp
+    Common.hpp
     DifferentiateTests.cpp
     DivideTests.cpp
     ExponentTests.cpp
@@ -34,6 +35,11 @@ else()
 endif()
 
 target_link_libraries(OasisTests PRIVATE Oasis::Oasis Catch2::Catch2WithMain)
+
+if(OASIS_BUILD_IO)
+    target_link_libraries(OasisTests PRIVATE Oasis::IO)
+    target_compile_definitions(OasisTests PRIVATE OASIS_IO_ENABLED)
+endif()
 
 # Automatically registers the tests with CTest.
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
