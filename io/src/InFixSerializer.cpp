@@ -21,120 +21,74 @@
 
 namespace Oasis {
 
-void InFixSerializer::Visit(const Real& real)
+std::any InFixSerializer::Visit(const Real& real)
 {
-    result = fmt::format("{:.5}", real.GetValue());
+    return fmt::format("{:.5}", real.GetValue());
 }
 
-void InFixSerializer::Visit(const Imaginary& imaginary)
+std::any InFixSerializer::Visit(const Imaginary& imaginary)
 {
-    result = "i";
+    return "i";
 }
 
-void InFixSerializer::Visit(const Variable& variable)
+std::any InFixSerializer::Visit(const Variable& variable)
 {
-    result = variable.GetName();
+    return variable.GetName();
 }
 
-void InFixSerializer::Visit(const Undefined& undefined)
+std::any InFixSerializer::Visit(const Undefined& undefined)
 {
-    result = "Undefined";
+    return "Undefined";
 }
 
-void InFixSerializer::Visit(const Add<>& add)
+std::any InFixSerializer::Visit(const Add<>& add)
 {
-    add.GetMostSigOp().Accept(*this);
-    const auto mostSigOpStr = getResult();
-
-    add.GetLeastSigOp().Accept(*this);
-    const auto leastSigOpStr = getResult();
-
-    result = fmt::format("({}+{})", mostSigOpStr, leastSigOpStr);
+    return SerializeArithBinExp(add, "+");
 }
 
-void InFixSerializer::Visit(const Subtract<>& subtract)
+std::any InFixSerializer::Visit(const Subtract<>& subtract)
 {
-    subtract.GetMostSigOp().Accept(*this);
-    const auto mostSigOpStr = getResult();
-
-    subtract.GetLeastSigOp().Accept(*this);
-    const auto leastSigOpStr = getResult();
-
-    result = fmt::format("({}-{})", mostSigOpStr, leastSigOpStr);
+    return SerializeArithBinExp(subtract, "-");
 }
 
-void InFixSerializer::Visit(const Multiply<>& multiply)
+std::any InFixSerializer::Visit(const Multiply<>& multiply)
 {
-    multiply.GetMostSigOp().Accept(*this);
-    const auto mostSigOpStr = getResult();
-
-    multiply.GetLeastSigOp().Accept(*this);
-    const auto leastSigOpStr = getResult();
-
-    result = fmt::format("({}*{})", mostSigOpStr, leastSigOpStr);
+    return SerializeArithBinExp(multiply, "*");
 }
 
-void InFixSerializer::Visit(const Divide<>& divide)
+std::any InFixSerializer::Visit(const Divide<>& divide)
 {
-    divide.GetMostSigOp().Accept(*this);
-    const auto mostSigOpStr = getResult();
-
-    divide.GetLeastSigOp().Accept(*this);
-    const auto leastSigOpStr = getResult();
-
-    result = fmt::format("({}/{})", mostSigOpStr, leastSigOpStr);
+    return SerializeArithBinExp(divide, "/");
 }
 
-void InFixSerializer::Visit(const Exponent<>& exponent)
+std::any InFixSerializer::Visit(const Exponent<>& exponent)
 {
-    exponent.GetMostSigOp().Accept(*this);
-    const auto mostSigOpStr = getResult();
-
-    exponent.GetLeastSigOp().Accept(*this);
-    const auto leastSigOpStr = getResult();
-
-    result = fmt::format("({}^{})", mostSigOpStr, leastSigOpStr);
+    return SerializeArithBinExp(exponent, "^");
 }
 
-void InFixSerializer::Visit(const Log<>& log)
+std::any InFixSerializer::Visit(const Log<>& log)
 {
-    log.GetMostSigOp().Accept(*this);
-    const auto mostSigOpStr = getResult();
-
-    log.GetLeastSigOp().Accept(*this);
-    const auto leastSigOpStr = getResult();
-
-    result = fmt::format("log({},{})", mostSigOpStr, leastSigOpStr);
+    return SerializeArithBinExp(log, "log");
 }
 
-void InFixSerializer::Visit(const Negate<Expression>& negate)
+std::any InFixSerializer::Visit(const Negate<Expression>& negate)
 {
-    negate.GetOperand().Accept(*this);
-    const auto opStr = getResult();
-
-    result = fmt::format("-({})", opStr);
+    try {
+        const auto opStr = std::any_cast<std::string>(negate.GetOperand().Accept(*this));
+        return fmt::format("-({})", opStr);
+    } catch (std::bad_any_cast) {
+        return {};
+    }
 }
 
-void InFixSerializer::Visit(const Derivative<>& derivative)
+std::any InFixSerializer::Visit(const Derivative<>& derivative)
 {
-    derivative.GetMostSigOp().Accept(*this);
-    const auto mostSigOpStr = getResult();
-
-    derivative.GetLeastSigOp().Accept(*this);
-    const auto leastSigOpStr = getResult();
-
-    result = fmt::format("dd({},{})", mostSigOpStr, leastSigOpStr);
+    return SerializeFuncBinExp(derivative, "dd");
 }
 
-void InFixSerializer::Visit(const Integral<>& integral)
+std::any InFixSerializer::Visit(const Integral<>& integral)
 {
-    integral.GetMostSigOp().Accept(*this);
-    const auto mostSigOpStr = getResult();
-
-    integral.GetLeastSigOp().Accept(*this);
-    const auto leastSigOpStr = getResult();
-
-    result = fmt::format("in({},{})", mostSigOpStr, leastSigOpStr);
+    return SerializeFuncBinExp(integral, "in");
 }
 
 void InFixSerializer::Visit(const Matrix& matrix)
