@@ -349,8 +349,10 @@ TEST_CASE("Expresion Base Exponential Derivative", "[Derivative][Exponent]")
 {
     Oasis::Exponent exp{ Oasis::Add { Oasis::Variable{"x"}, Oasis::Real{3.0} } , Oasis::Real{2.0}};
     Oasis::Derivative diffExp{exp, Oasis::Variable{"x"}};
-    Oasis::Multiply expected{ exp, Oasis::Divide { Oasis::Real{2.0} ,
-                                        Oasis::Add {Oasis::Variable{"x"} , Oasis::Real {3.0}} }  };
+    // Oasis::Multiply expected{ exp, Oasis::Divide { Oasis::Real{2.0} ,
+    //                                     Oasis::Add {Oasis::Variable{"x"} , Oasis::Real {3.0}} }  };
+
+    Oasis::Multiply expected{ Oasis::Add {Oasis::Variable{"x"} , Oasis::Real {3.0} }, Oasis::Real{ 2.0}    };
     auto simplified = diffExp.Simplify();
     REQUIRE(simplified->Equals(expected));
 }
