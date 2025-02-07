@@ -69,27 +69,31 @@ TeXDialect TeXSerializer::GetTeXDialect()
 {
     return latexOptions.dialect;
 }
+
 void TeXSerializer::AddTeXPackage(SupportedPackages package)
 {
     latexOptions.packages.insert(package);
 }
+
 void TeXSerializer::RemoveTeXPackage(SupportedPackages package)
 {
     latexOptions.packages.erase(package);
 }
 
-void TeXSerializer::Visit(const Real& real)
+std::any TeXSerializer::Visit(const Real& real)
 {
     result = fmt::format("{:.{}}", real.GetValue(), latexOptions.numPlaces+1);
+    return result;
 }
 
-void TeXSerializer::Visit(const Imaginary& imaginary)
+std::any TeXSerializer::Visit(const Imaginary& imaginary)
 {
     if (latexOptions.character == CHARACTER_J) result = "j";
     else result = "i";
+    return result;
 }
 
-void TeXSerializer::Visit(const Matrix& matrix)
+std::any TeXSerializer::Visit(const Matrix& matrix)
 {
     result = "\\begin{bmatrix}\n";
     MatrixXXD mat = matrix.GetMatrix();
@@ -106,29 +110,34 @@ void TeXSerializer::Visit(const Matrix& matrix)
         result += row;
     }
     result += "\\end{bmatrix}\n";
+    return result;
 }
 
-void TeXSerializer::Visit(const Variable& variable)
+std::any TeXSerializer::Visit(const Variable& variable)
 {
     result = variable.GetName();
+    return result;
 }
 
-void TeXSerializer::Visit(const Undefined& undefined)
+std::any TeXSerializer::Visit(const Undefined& undefined)
 {
     result = "Undefined";
+    return result;
 }
 
-void TeXSerializer::Visit(const Pi&)
+std::any TeXSerializer::Visit(const Pi&)
 {
     result = "\\pi";
+    return result;
 }
 
-void TeXSerializer::Visit(const EulerNumber&)
+std::any TeXSerializer::Visit(const EulerNumber&)
 {
     result = "e";
+    return result;
 }
 
-void TeXSerializer::Visit(const Add<Expression, Expression>& add)
+std::any TeXSerializer::Visit(const Add<Expression, Expression>& add)
 {
     add.GetMostSigOp().Accept(*this);
     const auto mostSigOpStr = getResult();
@@ -139,9 +148,11 @@ void TeXSerializer::Visit(const Add<Expression, Expression>& add)
         result = fmt::format("\\left({}+{}\\right)", mostSigOpStr, leastSigOpStr);
     else if (latexOptions.spacing == SPACING)
         result = fmt::format("\\left({} + {}\\right)", mostSigOpStr, leastSigOpStr);
+
+    return result;
 }
 
-void TeXSerializer::Visit(const Subtract<Expression, Expression>& subtract)
+std::any TeXSerializer::Visit(const Subtract<Expression, Expression>& subtract)
 {
     subtract.GetMostSigOp().Accept(*this);
     const auto mostSigOpStr = getResult();
@@ -153,9 +164,11 @@ void TeXSerializer::Visit(const Subtract<Expression, Expression>& subtract)
         result = fmt::format("\\left({}-{}\\right)", mostSigOpStr, leastSigOpStr);
     else if (latexOptions.spacing == SPACING)
         result = fmt::format("\\left({} - {}\\right)", mostSigOpStr, leastSigOpStr);
+
+    return result;
 }
 
-void TeXSerializer::Visit(const Multiply<Expression, Expression>& multiply)
+std::any TeXSerializer::Visit(const Multiply<Expression, Expression>& multiply)
 {
     multiply.GetMostSigOp().Accept(*this);
     const auto mostSigOpStr = getResult();
@@ -167,9 +180,11 @@ void TeXSerializer::Visit(const Multiply<Expression, Expression>& multiply)
         result = fmt::format("\\left({}*{}\\right)", mostSigOpStr, leastSigOpStr);
     else if (latexOptions.spacing == SPACING)
         result = fmt::format("\\left({} * {}\\right)", mostSigOpStr, leastSigOpStr);
+
+    return result;
 }
 
-void TeXSerializer::Visit(const Divide<Expression, Expression>& divide)
+std::any TeXSerializer::Visit(const Divide<Expression, Expression>& divide)
 {
     divide.GetMostSigOp().Accept(*this);
     const auto mostSigOpStr = getResult();
@@ -182,9 +197,11 @@ void TeXSerializer::Visit(const Divide<Expression, Expression>& divide)
     } else {
         result = fmt::format("\\left(\\frac{{{}}}{{{}}}\\right)", mostSigOpStr, leastSigOpStr);
     }
+
+    return result;
 }
 
-void TeXSerializer::Visit(const Exponent<Expression, Expression>& exponent)
+std::any TeXSerializer::Visit(const Exponent<Expression, Expression>& exponent)
 {
     exponent.GetMostSigOp().Accept(*this);
     const auto mostSigOpStr = getResult();
@@ -193,9 +210,10 @@ void TeXSerializer::Visit(const Exponent<Expression, Expression>& exponent)
     const auto leastSigOpStr = getResult();
 
     result = fmt::format("\\left({}\\right)^{{{}}}", mostSigOpStr, leastSigOpStr);
+    return result;
 }
 
-void TeXSerializer::Visit(const Log<Expression, Expression>& log)
+std::any TeXSerializer::Visit(const Log<Expression, Expression>& log)
 {
     // if (log.GetMostSigOp())
     log.GetMostSigOp().Accept(*this);
@@ -205,25 +223,28 @@ void TeXSerializer::Visit(const Log<Expression, Expression>& log)
     const auto leastSigOpStr = getResult();
 
     result = fmt::format("\\log_{{{}}}\\left({}\\right)", mostSigOpStr, leastSigOpStr);
+    return result;
 }
 
-void TeXSerializer::Visit(const Negate<Expression>& negate)
+std::any TeXSerializer::Visit(const Negate<Expression>& negate)
 {
     negate.GetOperand().Accept(*this);
     const auto op = getResult();
 
     result = fmt::format("\\left(-{}\\right)", op);
+    return result;
 }
 
-void TeXSerializer::Visit(const Magnitude<Expression>& magnitude)
+std::any TeXSerializer::Visit(const Magnitude<Expression>& magnitude)
 {
     magnitude.GetOperand().Accept(*this);
     const auto op = getResult();
 
     result = fmt::format("\\left|{}\\right|", op);
+    return result;
 }
 
-void TeXSerializer::Visit(const Derivative<Expression, Expression>& derivative)
+std::any TeXSerializer::Visit(const Derivative<Expression, Expression>& derivative)
 {
     derivative.GetMostSigOp().Accept(*this);
     const auto MostSigOpStr = getResult();
@@ -232,9 +253,10 @@ void TeXSerializer::Visit(const Derivative<Expression, Expression>& derivative)
     const auto LeastSigOpStr = getResult();
 
     result = fmt::format("\\frac{{d}}{{d{}}}\\left({}\\right)", LeastSigOpStr, MostSigOpStr);
+    return result;
 }
 
-void TeXSerializer::Visit(const Integral<Expression, Expression>& integral)
+std::any TeXSerializer::Visit(const Integral<Expression, Expression>& integral)
 {
     integral.GetMostSigOp().Accept(*this);
     const auto MostSigOpStr = getResult();
@@ -243,6 +265,7 @@ void TeXSerializer::Visit(const Integral<Expression, Expression>& integral)
     const auto LeastSigOpStr = getResult();
 
     result = fmt::format("\\int\\left({}\\right)d{}", MostSigOpStr, LeastSigOpStr);
+    return result;
 }
 
 std::string TeXSerializer::getResult() const

@@ -1,6 +1,7 @@
 #ifndef OASIS_EXPRESSION_HPP
 #define OASIS_EXPRESSION_HPP
 
+#include <any>
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -177,7 +178,7 @@ public:
      *
      * @param visitor The serializer class object to write the Expression data.
      */
-    virtual void Accept(Visitor& visitor) const = 0;
+    virtual std::any Accept(Visitor& visitor) const = 0;
 
     virtual ~Expression() = default;
 };

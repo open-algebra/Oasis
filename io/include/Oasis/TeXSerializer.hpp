@@ -74,23 +74,23 @@ public:
     void AddTeXPackage(SupportedPackages package);
     void RemoveTeXPackage(SupportedPackages package);
 
-    void Visit(const Real& real) override;
-    void Visit(const Imaginary& imaginary) override;
-    void Visit(const Matrix& matrix) override;
-    void Visit(const Variable& variable) override;
-    void Visit(const Undefined& undefined) override;
-    void Visit(const Pi&) override;
-    void Visit(const EulerNumber&) override;
-    void Visit(const Add<Expression, Expression>& add) override;
-    void Visit(const Subtract<Expression, Expression>& subtract) override;
-    void Visit(const Multiply<Expression, Expression>& multiply) override;
-    void Visit(const Divide<Expression, Expression>& divide) override;
-    void Visit(const Exponent<Expression, Expression>& exponent) override;
-    void Visit(const Log<Expression, Expression>& log) override;
-    void Visit(const Negate<Expression>& negate) override;
-    void Visit(const Magnitude<Expression>& magnitude) override;
-    void Visit(const Derivative<Expression, Expression>& derivative) override;
-    void Visit(const Integral<Expression, Expression>& integral) override;
+    std::any Visit(const Real& real) override;
+    std::any Visit(const Imaginary& imaginary) override;
+    std::any Visit(const Matrix& matrix) override;
+    std::any Visit(const Variable& variable) override;
+    std::any Visit(const Undefined& undefined) override;
+    std::any Visit(const Pi&) override;
+    std::any Visit(const EulerNumber&) override;
+    std::any Visit(const Add<Expression, Expression>& add) override;
+    std::any Visit(const Subtract<Expression, Expression>& subtract) override;
+    std::any Visit(const Multiply<Expression, Expression>& multiply) override;
+    std::any Visit(const Divide<Expression, Expression>& divide) override;
+    std::any Visit(const Exponent<Expression, Expression>& exponent) override;
+    std::any Visit(const Log<Expression, Expression>& log) override;
+    std::any Visit(const Negate<Expression>& negate) override;
+    std::any Visit(const Magnitude<Expression>& magnitude) override;
+    std::any Visit(const Derivative<Expression, Expression>& derivative) override;
+    std::any Visit(const Integral<Expression, Expression>& integral) override;
 
     [[nodiscard]] std::string getResult() const;
 
