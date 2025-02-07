@@ -36,14 +36,12 @@ public:
     std::any Visit(const Integral<Expression, Expression>& integral) override;
 
     [[nodiscard]] tinyxml2::XMLDocument& GetDocument() const;
-    [[nodiscard]] tinyxml2::XMLElement* GetResult() const;
 
 private:
     [[nodiscard]] tinyxml2::XMLElement* CreatePlaceholder() const;
     auto GetOpsAsMathMLPair(const DerivedFromBinaryExpression auto& binexp) -> std::pair<tinyxml2::XMLElement*, tinyxml2::XMLElement*>;
 
     tinyxml2::XMLDocument& doc;
-    tinyxml2::XMLElement* result = nullptr;
 };
 
 auto MathMLSerializer::GetOpsAsMathMLPair(const DerivedFromBinaryExpression auto& binexp) -> std::pair<tinyxml2::XMLElement*, tinyxml2::XMLElement*>
