@@ -52,6 +52,40 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
 {
     std::vector<std::unique_ptr<Expression>> results;
     std::vector<std::unique_ptr<Expression>> termsE;
+    if (auto subCase = RecursiveCast<Subtract<Expression>>(*this); subCase != nullptr) {
+        // Check for x² - n pattern
+        if (auto leftTerm = RecursiveCast<Exponent<Variable, Real>>(subCase->GetMostSigOp());
+            leftTerm != nullptr) {
+
+            if (leftTerm->GetLeastSigOp().GetValue() == 2) {
+                if (auto rightTerm = RecursiveCast<Real>(subCase->GetLeastSigOp());
+                    rightTerm != nullptr) {
+
+                    double n = rightTerm->GetValue();
+                    double sqrtN = std::sqrt(n);
+
+                    if (n > 0 && sqrtN == std::floor(sqrtN)) {
+                        // Instead of creating Real values directly, create proper Binary Expressions
+                        // For positive root: n^(1/2)
+                        auto posRoot = std::make_unique<Divide<Expression>>(
+                            Real(1),     // MostSigOp
+                            Real(sqrtN)  // LeastSigOp
+                        );
+
+                        // For negative root: -n^(1/2)
+                        auto negRoot = std::make_unique<Divide<Expression>>(
+                            Real(-1),    // MostSigOp
+                            Real(sqrtN)  // LeastSigOp
+                        );
+
+                        results.push_back(std::move(posRoot));
+                        results.push_back(std::move(negRoot));
+                        return results;
+                    }
+                }
+            }
+        }
+    }
     if (auto addCase = RecursiveCast<Add<Expression>>(*this); addCase != nullptr) {
         addCase->Flatten(termsE);
     } else {
@@ -196,15 +230,28 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
     }
     if (coefficents.size() == 2) {
         results.push_back(Divide(Multiply(Real(-1), *coefficents[0]), *coefficents[1]).Simplify());
-    } else if (coefficents.size() == 3) {
+    }
+    if (coefficents.size() == 3) {
         auto& a = coefficents[2];
         auto& b = coefficents[1];
         auto& c = coefficents[0];
-        auto negB = Multiply(Real(-1.0), *b).Simplify();
-        auto sqrt = Exponent(*Add(Multiply(*b, *b), Multiply(Real(-4), Multiply(*a, *c))).Simplify(), Divide(Real(1), Real(2))).Copy();
-        auto twoA = Multiply(Real(2), *a).Simplify();
-        results.push_back(Divide(Add(*negB, *sqrt), *twoA).Copy());
-        results.push_back(Divide(Subtract(*negB, *sqrt), *twoA).Copy());
+
+        // Calculate discriminant first
+        auto discriminant = Add(Multiply(*b, *b),
+            Multiply(Real(-4), Multiply(*a, *c))).Simplify();
+
+        // Only proceed if discriminant is non-negative
+        if (auto realDisc = RecursiveCast<Real>(*discriminant);
+            realDisc != nullptr && realDisc->GetValue() >= 0) {
+
+            auto negB = Multiply(Real(-1.0), *b).Simplify();
+            auto sqrt = Exponent(*discriminant, Divide(Real(1), Real(2))).Copy();
+            auto twoA = Multiply(Real(2), *a).Simplify();
+
+            // Create both roots
+            results.push_back(Divide(Add(*negB, *sqrt), *twoA).Copy());
+            results.push_back(Divide(Subtract(*negB, *sqrt), *twoA).Copy());
+        }
     }
     return results;
 }

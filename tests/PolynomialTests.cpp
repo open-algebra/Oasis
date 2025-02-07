@@ -3,6 +3,7 @@
 //
 #include "catch2/catch_test_macros.hpp"
 
+#include "Common.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
@@ -11,6 +12,7 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/RecursiveCast.hpp"
+#include "Oasis/InFixSerializer.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 
@@ -18,6 +20,7 @@
 #include <set>
 #include <tuple>
 #include <vector>
+#include <iostream>
 
 // TODO: Figure out what's going out here
 // TEST_CASE("7th degree polynomial with rational roots", "[factor][duplicateRoot]")
@@ -122,5 +125,94 @@ TEST_CASE("linear polynomial", "[factor]")
         REQUIRE(root != nullptr);
         REQUIRE(root->GetMostSigOp().GetValue() == -30);
         REQUIRE(root->GetLeastSigOp().GetValue() == 1);
+    }
+}
+
+TEST_CASE("quadratic polynomial", "[factor]")
+{
+    // x² + 5x + 6
+    Oasis::Add<> add {
+        Oasis::Real(6),  // constant
+        Oasis::Multiply<Oasis::Expression>{  // 5x
+            Oasis::Real(5),
+            Oasis::Variable("x")
+        },
+        Oasis::Exponent<Oasis::Variable, Oasis::Real>{  // x²
+            Oasis::Variable("x"),
+            Oasis::Real(2)
+        }
+    };
+    Oasis::InFixSerializer serializer;
+    OASIS_CAPTURE_WITH_SERIALIZER(serializer, add);
+
+    auto zeros = add.FindZeros();
+    std::cout << "result size: " << zeros.size() << std::endl;
+    if (zeros.size() == 2)
+    {
+        std::cout << "the result has the correct size.\n";
+        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
+        std::cout << "root1 mostsig value: " << root1->GetMostSigOp().GetValue() << " where should be -2" << std::endl;
+        std::cout << "root1 leastsig value: " << root1->GetLeastSigOp().GetValue() << " where should be 1" << std::endl;
+        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
+        if (root2 != nullptr)
+        {
+            std::cout << "root2 mostsig value: " << root2->GetMostSigOp().GetValue() << " where should be -3" << std::endl;
+            std::cout << "root2 leastsig value: " << root2->GetLeastSigOp().GetValue() << " where should be 1" << std::endl;
+        }
+    }
+
+    REQUIRE(zeros.size() == 2);
+
+    if (zeros.size() == 2) {
+        // Check first root (-2)
+        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
+        REQUIRE(root1 != nullptr);
+        REQUIRE(root1->GetMostSigOp().GetValue() == -2);
+        REQUIRE(root1->GetLeastSigOp().GetValue() == 1);
+
+        // Check second root (-3)
+        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
+        REQUIRE(root2 != nullptr);
+        REQUIRE(root2->GetMostSigOp().GetValue() == -3);
+        REQUIRE(root2->GetLeastSigOp().GetValue() == 1);
+    }
+}
+
+TEST_CASE("simple quadra polynomial", "[factor]")
+{
+    // x^2 - 9
+    Oasis::Subtract minus {
+        Oasis::Exponent<Oasis::Variable, Oasis::Real> { // x²
+            Oasis::Variable("x"),
+            Oasis::Real(2) },
+        Oasis::Real(9),
+    };
+    auto zeros = minus.FindZeros();
+    std::cout << "result size: " << zeros.size() << std::endl;
+    if (zeros.size() == 2)
+    {
+        std::cout << "the result has the correct size.\n";
+        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
+        std::cout << "root1 mostsig value: " << root1->GetMostSigOp().GetValue() << " where should be -3" << std::endl;
+        std::cout << "root1 leastsig value: " << root1->GetLeastSigOp().GetValue() << " where should be 1" << std::endl;
+        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
+        if (root2 != nullptr)
+        {
+            std::cout << "root2 mostsig value: " << root2->GetMostSigOp().GetValue() << " where should be -3" << std::endl;
+            std::cout << "root2 leastsig value: " << root2->GetLeastSigOp().GetValue() << " where should be 1" << std::endl;
+        }
+    }
+    Oasis::InFixSerializer serializer;
+    OASIS_CAPTURE_WITH_SERIALIZER(serializer, minus);
+    REQUIRE(zeros.size() == 2);
+    if (zeros.size() == 2) {
+        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
+        REQUIRE(root1 != nullptr);
+        REQUIRE(root1->GetMostSigOp().GetValue() == -3);
+        REQUIRE(root1->GetLeastSigOp().GetValue() == 1);
+        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
+        REQUIRE(root2 != nullptr);
+        REQUIRE(root2->GetMostSigOp().GetValue() == 3);
+        REQUIRE(root2->GetLeastSigOp().GetValue() == 1);
     }
 }
