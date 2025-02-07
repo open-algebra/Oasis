@@ -3,7 +3,6 @@
 //
 #include "catch2/catch_test_macros.hpp"
 
-#include "Common.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
@@ -15,6 +14,7 @@
 #include "Oasis/InFixSerializer.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
+#include "Common.hpp"
 
 #include <cmath>
 #include <set>
@@ -128,6 +128,40 @@ TEST_CASE("linear polynomial", "[factor]")
     }
 }
 
+TEST_CASE("linear polynomial(Real)", "[factor]")
+{
+    Oasis::Add add {
+        Oasis::Real(30),
+        Oasis::Variable("x")
+    };
+    auto result = add.Polynomial_Real();
+    REQUIRE(result.size() == 1);
+    REQUIRE(result[0]->Is<Oasis::Real>());
+
+    auto poly_var_res = dynamic_cast<Oasis::Real&>(*result[0]);
+    REQUIRE(poly_var_res.GetValue() == -30);
+}
+
+TEST_CASE("linear polynomial(2x +30)", "[factor]")
+{
+    Oasis::Add add {
+        Oasis::Real(30),
+        Oasis::Multiply<Oasis::Expression>{  // 5x
+            Oasis::Real(2),
+            Oasis::Variable("x")
+        }
+    };
+    auto zeros = add.FindZeros();
+    REQUIRE(zeros.size() == 1);
+    if (zeros.size() == 1) {
+
+        auto root = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
+        REQUIRE(root != nullptr);
+        REQUIRE(root->GetMostSigOp().GetValue() == -15);
+        REQUIRE(root->GetLeastSigOp().GetValue() == 1);
+    }
+}
+
 TEST_CASE("quadratic polynomial", "[factor]")
 {
     // x² + 5x + 6
@@ -180,39 +214,39 @@ TEST_CASE("quadratic polynomial", "[factor]")
 
 TEST_CASE("simple quadra polynomial", "[factor]")
 {
-    // x^2 - 9
+    // x^2 - 2500
     Oasis::Subtract minus {
         Oasis::Exponent<Oasis::Variable, Oasis::Real> { // x²
             Oasis::Variable("x"),
             Oasis::Real(2) },
-        Oasis::Real(9),
+        Oasis::Real(2500),
     };
     auto zeros = minus.FindZeros();
     std::cout << "result size: " << zeros.size() << std::endl;
-    if (zeros.size() == 2)
-    {
-        std::cout << "the result has the correct size.\n";
-        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
-        std::cout << "root1 mostsig value: " << root1->GetMostSigOp().GetValue() << " where should be -3" << std::endl;
-        std::cout << "root1 leastsig value: " << root1->GetLeastSigOp().GetValue() << " where should be 1" << std::endl;
-        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
-        if (root2 != nullptr)
-        {
-            std::cout << "root2 mostsig value: " << root2->GetMostSigOp().GetValue() << " where should be -3" << std::endl;
-            std::cout << "root2 leastsig value: " << root2->GetLeastSigOp().GetValue() << " where should be 1" << std::endl;
-        }
-    }
+//    if (zeros.size() == 2)
+//    {
+//        std::cout << "the result has the correct size.\n";
+//        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
+//        std::cout << "root1 mostsig value: " << root1->GetMostSigOp().GetValue() << " where should be 3" << std::endl;
+//        std::cout << "root1 leastsig value: " << root1->GetLeastSigOp().GetValue() << " where should be 1" << std::endl;
+//        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
+//        if (root2 != nullptr)
+//        {
+//            std::cout << "root2 mostsig value: " << root2->GetMostSigOp().GetValue() << " where should be -3" << std::endl;
+//            std::cout << "root2 leastsig value: " << root2->GetLeastSigOp().GetValue() << " where should be 1" << std::endl;
+//        }
+//    }
     Oasis::InFixSerializer serializer;
     OASIS_CAPTURE_WITH_SERIALIZER(serializer, minus);
     REQUIRE(zeros.size() == 2);
     if (zeros.size() == 2) {
         auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
         REQUIRE(root1 != nullptr);
-        REQUIRE(root1->GetMostSigOp().GetValue() == -3);
+        REQUIRE(root1->GetMostSigOp().GetValue() == 50);
         REQUIRE(root1->GetLeastSigOp().GetValue() == 1);
         auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
         REQUIRE(root2 != nullptr);
-        REQUIRE(root2->GetMostSigOp().GetValue() == 3);
+        REQUIRE(root2->GetMostSigOp().GetValue() == -50);
         REQUIRE(root2->GetLeastSigOp().GetValue() == 1);
     }
 }

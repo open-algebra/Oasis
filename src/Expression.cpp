@@ -68,14 +68,14 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
                         // Instead of creating Real values directly, create proper Binary Expressions
                         // For positive root: n^(1/2)
                         auto posRoot = std::make_unique<Divide<Expression>>(
-                            Real(1),     // MostSigOp
-                            Real(sqrtN)  // LeastSigOp
+                            Real(sqrtN),     // MostSigOp
+                            Real(1)  // LeastSigOp
                         );
 
                         // For negative root: -n^(1/2)
                         auto negRoot = std::make_unique<Divide<Expression>>(
-                            Real(-1),    // MostSigOp
-                            Real(sqrtN)  // LeastSigOp
+                            Real(-sqrtN),    // MostSigOp
+                            Real(1)  // LeastSigOp
                         );
 
                         results.push_back(std::move(posRoot));
@@ -236,23 +236,107 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
         auto& b = coefficents[1];
         auto& c = coefficents[0];
 
-        // Calculate discriminant first
-        auto discriminant = Add(Multiply(*b, *b),
-            Multiply(Real(-4), Multiply(*a, *c))).Simplify();
+        // Calculate discriminant
+        auto bSquared = Multiply(*b, *b).Simplify();
+        auto fourAC = Multiply(Real(4), Multiply(*a, *c)).Simplify();
+        auto discriminant = Subtract(*bSquared, *fourAC).Simplify();
 
-        // Only proceed if discriminant is non-negative
         if (auto realDisc = RecursiveCast<Real>(*discriminant);
             realDisc != nullptr && realDisc->GetValue() >= 0) {
 
-            auto negB = Multiply(Real(-1.0), *b).Simplify();
-            auto sqrt = Exponent(*discriminant, Divide(Real(1), Real(2))).Copy();
+            auto negB = Multiply(Real(-1), *b).Simplify();
+            auto sqrtDisc = Exponent(*discriminant, Divide(Real(1), Real(2))).Copy();
             auto twoA = Multiply(Real(2), *a).Simplify();
 
-            // Create both roots
-            results.push_back(Divide(Add(*negB, *sqrt), *twoA).Copy());
-            results.push_back(Divide(Subtract(*negB, *sqrt), *twoA).Copy());
+            // First, create the numerators for both roots
+            auto numerator1 = Add(*negB, *sqrtDisc).Simplify();
+            auto numerator2 = Subtract(*negB, *sqrtDisc).Simplify();
+
+            // Now create the Divide expressions properly
+            results.push_back(Divide(*numerator1, *twoA).Copy());
+            results.push_back(Divide(*numerator2, *twoA).Copy());
         }
     }
+    return results;
+}
+
+auto Expression::Polynomial_Real() const -> std::vector<std::unique_ptr<Expression>> {
+    std::vector<std::unique_ptr<Expression>> results;
+    std::vector<std::unique_ptr<Expression>> termsE;
+
+    // First handle x² - n special case
+    if (auto subCase = RecursiveCast<Subtract<Expression>>(*this); subCase != nullptr) {
+        if (auto leftTerm = RecursiveCast<Exponent<Variable, Real>>(subCase->GetMostSigOp());
+            leftTerm != nullptr) {
+            if (leftTerm->GetLeastSigOp().GetValue() == 2) {
+                if (auto rightTerm = RecursiveCast<Real>(subCase->GetLeastSigOp());
+                    rightTerm != nullptr) {
+                    double n = rightTerm->GetValue();
+                    double sqrtN = std::sqrt(n);
+                    if (n > 0 && sqrtN == std::floor(sqrtN)) {
+                        results.push_back(Divide(Real(sqrtN), Real(1)).Copy());
+                        results.push_back(Divide(Real(-sqrtN), Real(1)).Copy());
+                        return results;
+                    }
+                }
+            }
+        }
+    }
+
+    // Process terms
+    if (auto addCase = RecursiveCast<Add<Expression>>(*this); addCase != nullptr) {
+        addCase->Flatten(termsE);
+    } else {
+        termsE.push_back(Copy());
+    }
+
+    // Collect coefficients
+    std::vector<std::unique_ptr<Expression>> coefficients;
+    for (const auto& term : termsE) {
+        if (auto realTerm = RecursiveCast<Real>(*term); realTerm != nullptr) {
+            coefficients.push_back(realTerm->Copy());
+        }
+    }
+
+    // Handle linear equation (ax + b)
+    if (coefficients.size() == 2) {
+        if (auto aReal = RecursiveCast<Real>(*coefficients[1]); aReal != nullptr) {
+            if (auto bReal = RecursiveCast<Real>(*coefficients[0]); bReal != nullptr) {
+                double a = aReal->GetValue();
+                double b = bReal->GetValue();
+
+                // ax + b = 0 → x = -b/a
+                if (a != 0) {
+                    double root = -b / a;
+                    results.push_back(Divide(Real(root), Real(1)).Copy());
+                }
+            }
+        }
+    }
+
+    // Handle quadratic equation (for ax² + bx + c)
+    if (coefficients.size() == 3) {
+        if (auto aReal = RecursiveCast<Real>(*coefficients[2]); aReal != nullptr) {
+            if (auto bReal = RecursiveCast<Real>(*coefficients[1]); bReal != nullptr) {
+                if (auto cReal = RecursiveCast<Real>(*coefficients[0]); cReal != nullptr) {
+                    double a = aReal->GetValue();
+                    double b = bReal->GetValue();
+                    double c = cReal->GetValue();
+
+                    double discriminant = b * b - 4 * a * c;
+                    if (discriminant >= 0) {
+                        double sqrtDisc = std::sqrt(discriminant);
+                        double root1 = (-b + sqrtDisc) / (2 * a);
+                        double root2 = (-b - sqrtDisc) / (2 * a);
+
+                        results.push_back(Divide(Real(root1), Real(1)).Copy());
+                        results.push_back(Divide(Real(root2), Real(1)).Copy());
+                    }
+                }
+            }
+        }
+    }
+
     return results;
 }
 

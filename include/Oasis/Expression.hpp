@@ -89,6 +89,15 @@ public:
     auto FindZeros() const -> std::vector<std::unique_ptr<Expression>>;
 
     /**
+ * Finds the real number roots of a polynomial expression.
+ * This function handles special cases like x² - n (where n is a perfect square)
+ * and general quadratic equations (ax² + bx + c).
+ *
+ * @return A vector of Real values representing the real roots of the polynomial
+     */
+    [[nodiscard]] auto Polynomial_Real() const -> std::vector<std::unique_ptr<Expression>>;
+
+    /**
      * Gets the category of this expression.
      * @return The category of this expression.
      */
