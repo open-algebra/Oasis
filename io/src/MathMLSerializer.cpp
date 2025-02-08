@@ -2,7 +2,7 @@
 // Created by Matthew McCall on 4/28/24.
 //
 
-#include <fmt/format.h>
+#include <format>
 
 #include "Oasis/MathMLSerializer.hpp"
 
@@ -32,7 +32,7 @@ MathMLSerializer::MathMLSerializer(tinyxml2::XMLDocument& doc)
 std::any MathMLSerializer::Visit(const Real& real)
 {
     tinyxml2::XMLElement* result = doc.NewElement("mn");
-    result->SetText(fmt::format("{:.5}", real.GetValue()).c_str());
+    result->SetText(std::format("{:.5}", real.GetValue()).c_str());
     return result;
 }
 
@@ -111,7 +111,7 @@ std::any MathMLSerializer::Visit(const Add<>& add)
     add.Flatten(ops);
 
     for (const auto& op : ops) {
-        const auto opElement = std::any_cast<tinyxml2::XMLElement*>(op->Accept(*this));
+        const auto opElement =op->Accept(*this).value();
 
         mrow->InsertEndChild(opElement);
         // add + mo
@@ -183,7 +183,7 @@ std::any MathMLSerializer::Visit(const Multiply<>& multiply)
         mrow->InsertEndChild(leftParen);
     }
 
-    const auto firstOpElement = std::any_cast<tinyxml2::XMLElement*>(ops.front()->Accept(*this));
+    const auto firstOpElement = ops.front()->Accept(*this).value();
     mrow->InsertEndChild(firstOpElement);
 
     if (surroundWithParens) {
@@ -215,7 +215,7 @@ std::any MathMLSerializer::Visit(const Multiply<>& multiply)
             mrow->InsertEndChild(leftParen);
         }
 
-        tinyxml2::XMLElement* opElement = std::any_cast<tinyxml2::XMLElement*>(ops[i]->Accept(*this));
+        tinyxml2::XMLElement* opElement = ops[i]->Accept(*this).value();
         mrow->InsertEndChild(opElement);
 
         if (surroundWithParens) {
@@ -318,7 +318,7 @@ std::any MathMLSerializer::Visit(const Negate<Expression>& negate)
     leftParen->SetText("(");
     mrow->InsertEndChild(leftParen);
 
-    const auto operandElement = std::any_cast<tinyxml2::XMLElement*>(negate.GetOperand().Accept(*this));
+    const auto operandElement = negate.GetOperand().Accept(*this).value();
     mrow->InsertEndChild(operandElement);
 
     // )

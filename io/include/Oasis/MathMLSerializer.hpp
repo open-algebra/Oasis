@@ -16,6 +16,7 @@ namespace Oasis {
 class MathMLSerializer final : public Visitor {
 public:
     explicit MathMLSerializer(tinyxml2::XMLDocument& doc);
+    using RetT = tinyxml2::XMLElement*;
 
     std::any Visit(const Real& real) override;
     std::any Visit(const Imaginary& imaginary) override;
@@ -47,10 +48,10 @@ private:
 auto MathMLSerializer::GetOpsAsMathMLPair(const DerivedFromBinaryExpression auto& binexp) -> std::pair<tinyxml2::XMLElement*, tinyxml2::XMLElement*>
 {
     tinyxml2::XMLElement* mostSig = CreatePlaceholder();
-    if (binexp.HasMostSigOp()) mostSig = std::any_cast<tinyxml2::XMLElement*>(binexp.GetMostSigOp().Accept(*this));
+    if (binexp.HasMostSigOp()) mostSig = binexp.GetMostSigOp().Accept(*this).value();
 
     tinyxml2::XMLElement* leastSig = CreatePlaceholder();
-    if (binexp.HasLeastSigOp()) leastSig = std::any_cast<tinyxml2::XMLElement*>(binexp.GetLeastSigOp().Accept(*this));
+    if (binexp.HasLeastSigOp()) leastSig = binexp.GetLeastSigOp().Accept(*this).value();
 
     return { mostSig, leastSig };
 }

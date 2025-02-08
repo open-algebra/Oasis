@@ -1,6 +1,7 @@
 //
 // Created by Matthew McCall on 4/21/24.
 //
+#include <format>
 #include <memory>
 #include <regex>
 #include <sstream>
@@ -10,6 +11,7 @@
 #include <Oasis/Derivative.hpp>
 #include <Oasis/Divide.hpp>
 #include <Oasis/Exponent.hpp>
+#include <Oasis/EulerNumber.hpp>
 #include "Oasis/Imaginary.hpp"
 #include <Oasis/Integral.hpp>
 #include <Oasis/Log.hpp>
@@ -18,10 +20,6 @@
 #include <Oasis/Subtract.hpp>
 
 #include "Oasis/FromString.hpp"
-
-#include "fmt/format.h"
-
-#include <Oasis/EulerNumber.hpp>
 
 namespace {
 
@@ -322,7 +320,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
             // function_active = true;
             while (!ops.empty() && ops.top() != "(") {
                 if (!processOp(ops, st)) {
-                    return ParseResult { fmt::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
+                    return ParseResult { std::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
                 }
             }
         }
@@ -330,7 +328,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
         else if (token == ")") {
             while (!ops.empty() && ops.top() != "(") {
                 if (!processOp(ops, st)) {
-                    return ParseResult { fmt::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
+                    return ParseResult { std::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
                 }
             }
 
@@ -343,7 +341,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
                 std::string func = ops.top();
                 ops.pop();
                 if (!processFunction(st, func)) {
-                    return ParseResult { fmt::format(R"(Unknown function: "{}")", token) };
+                    return ParseResult { std::format(R"(Unknown function: "{}")", token) };
                 }
             }
         }
@@ -351,7 +349,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
         else if (is_operator(token)) {
             while (!ops.empty() && prec(ops.top()[0]) >= prec(token[0])) {
                 if (!processOp(ops, st)) {
-                    return ParseResult { fmt::format(R"(Unknown operator: "{}")", token) };
+                    return ParseResult { std::format(R"(Unknown operator: "{}")", token) };
                 }
             }
             ops.push(token);
@@ -363,7 +361,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
     // Process remaining ops
     while (!ops.empty()) {
         if (!processOp(ops, st)) {
-            return ParseResult { fmt::format(R"(Unknown operator: "{}")", token) };
+            return ParseResult { std::format(R"(Unknown operator: "{}")", token) };
         }
     }
 

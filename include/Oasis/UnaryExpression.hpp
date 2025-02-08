@@ -91,7 +91,7 @@ public:
         return ret;
     }
 
-    std::any Accept(Visitor& visitor) const override
+    std::any AcceptInternal(Visitor& visitor) const override
     {
         const auto generalized = Generalize();
         const auto& derivedGeneralized = dynamic_cast<const DerivedGeneralized&>(*generalized);

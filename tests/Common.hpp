@@ -10,7 +10,7 @@
 #include "Oasis/InFixSerializer.hpp"
 inline Oasis::InFixSerializer __serializer;
 #define OASIS_CAPTURE_WITH_SERIALIZER(__expr)                               \
-auto __expr_str = std::any_cast<std::string>(__expr.Accept(__serializer));  \
+auto __expr_str = __expr.Accept(__serializer).value();  \
 INFO(#__expr << " := " << __expr_str);
 #else
 #define OASIS_CAPTURE_WITH_SERIALIZER(__expr)
