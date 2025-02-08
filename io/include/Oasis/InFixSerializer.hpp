@@ -27,8 +27,6 @@ public:
     std::any Visit(const Derivative<Expression, Expression>& derivative) override;
     std::any Visit(const Integral<Expression, Expression>& integral) override;
 
-    [[nodiscard]] std::string getResult() const;
-
 private:
     auto GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::pair<std::string, std::string>;
     auto SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::any;

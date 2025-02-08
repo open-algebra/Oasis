@@ -92,8 +92,6 @@ public:
     std::any Visit(const Derivative<Expression, Expression>& derivative) override;
     std::any Visit(const Integral<Expression, Expression>& integral) override;
 
-    [[nodiscard]] std::string getResult() const;
-
 private:
     std::string result;
     TexOptions latexOptions{};
