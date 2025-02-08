@@ -25,8 +25,6 @@ public:
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> final;
 
-    DECL_SPECIALIZE(Add)
-
     EXPRESSION_TYPE(Add)
     EXPRESSION_CATEGORY(Associative | Commutative | BinExp)
 };
