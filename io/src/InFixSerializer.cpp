@@ -12,6 +12,7 @@
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
+#include "Oasis/Magnitude.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
 #include "Oasis/Real.hpp"
@@ -88,6 +89,27 @@ std::any InFixSerializer::Visit(const Derivative<>& derivative)
 std::any InFixSerializer::Visit(const Integral<>& integral)
 {
     return SerializeFuncBinExp(integral, "in");
+}
+
+std::any InFixSerializer::Visit(const Matrix& matrix)
+{
+    return "NOT IMPLEMENTED";
+}
+
+std::any InFixSerializer::Visit(const EulerNumber&)
+{
+    return "e";
+}
+
+std::any InFixSerializer::Visit(const Pi&)
+{
+    return "pi";
+}
+
+std::any InFixSerializer::Visit(const Magnitude<Expression>& magnitude)
+{
+    const auto opStr = std::any_cast<std::string>(magnitude.GetOperand().Accept(*this));
+    return fmt::format("|({})|", opStr);
 }
 
 } // Oasis

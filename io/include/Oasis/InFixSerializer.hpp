@@ -26,6 +26,10 @@ public:
     std::any Visit(const Negate<Expression>& negate) override;
     std::any Visit(const Derivative<Expression, Expression>& derivative) override;
     std::any Visit(const Integral<Expression, Expression>& integral) override;
+    std::any Visit(const Matrix& matrix) override;
+    std::any Visit(const EulerNumber&) override;
+    std::any Visit(const Pi&) override;
+    std::any Visit(const Magnitude<Expression>& magnitude) override;
 
 private:
     auto GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::pair<std::string, std::string>;
