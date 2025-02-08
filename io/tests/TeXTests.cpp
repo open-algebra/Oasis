@@ -23,12 +23,9 @@
 
 TEST_CASE("LaTeX serialization for various precision", "[LaTeX][Serializer][Real]"){
     Oasis::Real r{111215.0123456};
-    Oasis::TexOptions options1 {};
-    Oasis::TeXSerializer serializer1{options1};
 
-    Oasis::TexOptions options2 {};
-    Oasis::TeXSerializer serializer2{options2};
-    serializer2.SetNumPlaces(2);
+    Oasis::TeXSerializer serializer1 { { .numPlaces = 5 } };
+    Oasis::TeXSerializer serializer2 { { .numPlaces = 2 } };
 
     auto actual1 = std::any_cast<std::string>(r.Accept(serializer1));
     auto actual2 = std::any_cast<std::string>(r.Accept(serializer2));
@@ -42,8 +39,8 @@ TEST_CASE("LaTeX serialization for various precision", "[LaTeX][Serializer][Real
 TEST_CASE("LaTeX serialization for different imaginary character", "[LaTeX][Serializer][Imaginary]"){
     Oasis::Imaginary i{};
 
-    Oasis::TeXSerializer serializer{};
-    Oasis::TeXSerializer serializerJ{Oasis::TexOptions {Oasis::CHARACTER_J}};
+    Oasis::TeXSerializer serializer {};
+    Oasis::TeXSerializer serializerJ { { .character = Oasis::TeXOpts::ImgSym::J } };
 
     auto actual = std::any_cast<std::string>(i.Accept(serializer));
     auto actualJ = std::any_cast<std::string>(i.Accept(serializerJ));
@@ -106,9 +103,8 @@ TEST_CASE("LaTeX Serialization for Division with \\div", "[LaTeX][Serializer][Di
 {
     Oasis::Divide d{Oasis::Real{5.0}, Oasis::Variable{"x_0"}};
 
-    Oasis::TeXSerializer serializer{Oasis::TexOptions {Oasis::DivisionType{Oasis::DIV}}};
-
-    assert(serializer.GetDivType() == Oasis::DivisionType::DIV);
+    Oasis::TeXSerializer serializer { { .divType = Oasis::TeXOpts::DivType::DIV } };
+    assert(serializer.GetDivType() == Oasis::TeXOpts::DivType::DIV);
 
     auto result = std::any_cast<std::string>(d.Accept(serializer));
     std::string expected = R"(\left({5}\div{x_0}\right))";
@@ -120,8 +116,7 @@ TEST_CASE("LaTeX Serialization with spacing options", "[LaTeX][Serializer][TexOp
 {
     Oasis::Multiply s{Oasis::Real{5.0}, Oasis::Variable{"x_0"}};
 
-    Oasis::TexOptions options{Oasis::SPACING};
-
+    Oasis::TeXOpts options {.spacing = Oasis::TeXOpts::Spacing::REGULAR };
     Oasis::TeXSerializer serializer{options};
 
     auto result = std::any_cast<std::string>(s.Accept(serializer));

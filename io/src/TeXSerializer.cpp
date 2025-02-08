@@ -25,7 +25,7 @@
 
 namespace Oasis{
 
-void TeXSerializer::SetImaginaryCharacter(ImaginaryCharacter character)
+void TeXSerializer::SetImaginaryCharacter(TeXOpts::ImgSym character)
 {
     latexOptions.character = character;
 }
@@ -35,24 +35,24 @@ void TeXSerializer::SetNumPlaces(uint8_t num)
     latexOptions.numPlaces = num;
 }
 
-void TeXSerializer::SetSpacing(Spacing sp)
+void TeXSerializer::SetSpacing(TeXOpts::Spacing sp)
 {
     latexOptions.spacing = sp;
 }
-DivisionType TeXSerializer::GetDivType()
+TeXOpts::DivType TeXSerializer::GetDivType()
 {
     return latexOptions.divType;
 }
 
-void TeXSerializer::SetDivType(DivisionType dv)
+void TeXSerializer::SetDivType(TeXOpts::DivType dv)
 {
     latexOptions.divType = dv;
 }
-ImaginaryCharacter TeXSerializer::GetImaginaryCharacter()
+TeXOpts::ImgSym TeXSerializer::GetImaginaryCharacter()
 {
     return latexOptions.character;
 }
-Spacing TeXSerializer::GetSpacing()
+TeXOpts::Spacing TeXSerializer::GetSpacing()
 {
     return latexOptions.spacing;
 }
@@ -61,21 +61,21 @@ uint8_t TeXSerializer::GetNumPlaces()
     return latexOptions.numPlaces;
 }
 
-void TeXSerializer::SetTeXDialect(TeXDialect dt)
+void TeXSerializer::SetTeXDialect(TeXOpts::Dialect dt)
 {
     latexOptions.dialect = dt;
 }
-TeXDialect TeXSerializer::GetTeXDialect()
+TeXOpts::Dialect TeXSerializer::GetTeXDialect()
 {
     return latexOptions.dialect;
 }
 
-void TeXSerializer::AddTeXPackage(SupportedPackages package)
+void TeXSerializer::AddTeXPackage(TeXOpts::Pkgs package)
 {
     latexOptions.packages.insert(package);
 }
 
-void TeXSerializer::RemoveTeXPackage(SupportedPackages package)
+void TeXSerializer::RemoveTeXPackage(TeXOpts::Pkgs package)
 {
     latexOptions.packages.erase(package);
 }
@@ -88,7 +88,7 @@ std::any TeXSerializer::Visit(const Real& real)
 
 std::any TeXSerializer::Visit(const Imaginary& imaginary)
 {
-    if (latexOptions.character == CHARACTER_J) result = "j";
+    if (latexOptions.character == TeXOpts::ImgSym::J) result = "j";
     else result = "i";
     return result;
 }
@@ -141,9 +141,9 @@ std::any TeXSerializer::Visit(const Add<Expression, Expression>& add)
 {
     const auto mostSigOpStr = std::any_cast<std::string>(add.GetMostSigOp().Accept(*this));
     const auto leastSigOpStr = std::any_cast<std::string>(add.GetLeastSigOp().Accept(*this));
-    if (latexOptions.spacing == NO_SPACING)
+    if (latexOptions.spacing == TeXOpts::Spacing::MINIMAL)
         result = fmt::format("\\left({}+{}\\right)", mostSigOpStr, leastSigOpStr);
-    else if (latexOptions.spacing == SPACING)
+    else if (latexOptions.spacing == TeXOpts::Spacing::REGULAR)
         result = fmt::format("\\left({} + {}\\right)", mostSigOpStr, leastSigOpStr);
 
     return result;
@@ -154,9 +154,9 @@ std::any TeXSerializer::Visit(const Subtract<Expression, Expression>& subtract)
     const auto mostSigOpStr = std::any_cast<std::string>(subtract.GetMostSigOp().Accept(*this));
     const auto leastSigOpStr = std::any_cast<std::string>(subtract.GetLeastSigOp().Accept(*this));
 
-    if (latexOptions.spacing == NO_SPACING)
+    if (latexOptions.spacing == TeXOpts::Spacing::MINIMAL)
         result = fmt::format("\\left({}-{}\\right)", mostSigOpStr, leastSigOpStr);
-    else if (latexOptions.spacing == SPACING)
+    else if (latexOptions.spacing == TeXOpts::Spacing::REGULAR)
         result = fmt::format("\\left({} - {}\\right)", mostSigOpStr, leastSigOpStr);
 
     return result;
@@ -167,9 +167,9 @@ std::any TeXSerializer::Visit(const Multiply<Expression, Expression>& multiply)
     const auto mostSigOpStr = std::any_cast<std::string>(multiply.GetMostSigOp().Accept(*this));
     const auto leastSigOpStr = std::any_cast<std::string>(multiply.GetLeastSigOp().Accept(*this));
 
-    if (latexOptions.spacing == NO_SPACING)
+    if (latexOptions.spacing == TeXOpts::Spacing::MINIMAL)
         result = fmt::format("\\left({}*{}\\right)", mostSigOpStr, leastSigOpStr);
-    else if (latexOptions.spacing == SPACING)
+    else if (latexOptions.spacing == TeXOpts::Spacing::REGULAR)
         result = fmt::format("\\left({} * {}\\right)", mostSigOpStr, leastSigOpStr);
 
     return result;
@@ -180,7 +180,7 @@ std::any TeXSerializer::Visit(const Divide<Expression, Expression>& divide)
     const auto mostSigOpStr = std::any_cast<std::string>(divide.GetMostSigOp().Accept(*this));
     const auto leastSigOpStr = std::any_cast<std::string>(divide.GetLeastSigOp().Accept(*this));
 
-    if (latexOptions.divType == DIV){
+    if (latexOptions.divType == TeXOpts::DivType::DIV){
         result = fmt::format("\\left({{{}}}\\div{{{}}}\\right)", mostSigOpStr, leastSigOpStr);
     } else {
         result = fmt::format("\\left(\\frac{{{}}}{{{}}}\\right)", mostSigOpStr, leastSigOpStr);

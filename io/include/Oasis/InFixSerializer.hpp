@@ -5,6 +5,7 @@
 #ifndef INFIXSERIALIZER_HPP
 #define INFIXSERIALIZER_HPP
 
+#include <format>
 #include <string>
 
 #include "Oasis/Visit.hpp"
@@ -50,7 +51,7 @@ auto InFixSerializer::SerializeArithBinExp(const DerivedFromBinaryExpression aut
 {
     try {
         const auto& [mostSigOpStr, leastSigOpStr] = GetOpsOfBinExp(visited);
-        return fmt::format("({}{}{})", mostSigOpStr, op, leastSigOpStr);
+        return std::format("({}{}{})", mostSigOpStr, op, leastSigOpStr);
     } catch (std::bad_any_cast) {
         return {};
     }
@@ -60,7 +61,7 @@ auto InFixSerializer::SerializeFuncBinExp(const DerivedFromBinaryExpression auto
 {
     try {
         const auto& [mostSigOpStr, leastSigOpStr] = GetOpsOfBinExp(visited);
-        return fmt::format("{}({},{})", func, mostSigOpStr, leastSigOpStr);
+        return std::format("{}({},{})", func, mostSigOpStr, leastSigOpStr);
     } catch (std::bad_any_cast) {
         return {};
     }

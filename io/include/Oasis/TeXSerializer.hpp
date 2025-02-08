@@ -13,66 +13,54 @@
 
 namespace Oasis {
 
-enum Spacing{
-    NO_SPACING,
-    SPACING
-};
+struct TeXOpts {
+    enum class Dialect {
+        LATEX
+    } dialect = Dialect::LATEX;
 
-enum ImaginaryCharacter{
-    CHARACTER_I,
-    CHARACTER_J
-};
+    enum class Spacing {
+        MINIMAL,
+        REGULAR
+    } spacing = Spacing::MINIMAL;
 
-enum DivisionType{
-    FRAC,
-    DIV
-};
+    enum class ImgSym {
+        I,
+        J
+    } character = ImgSym::I;
 
-enum TeXDialect{
-    LATEX
-};
+    uint8_t numPlaces = 2;
 
-enum SupportedPackages{
-    ESDIFF,
-};
+    enum class DivType {
+        FRAC,
+        DIV
+    } divType = DivType::FRAC;
 
-struct TexOptions {
-    TeXDialect dialect;
-    Spacing spacing;
-    ImaginaryCharacter character;
-    uint8_t numPlaces;
-    DivisionType divType;
-    std::set<SupportedPackages> packages;
+    enum class Pkgs {
+        ESDIFF,
+    };
 
-    explicit TexOptions(ImaginaryCharacter ch) : TexOptions(LATEX, ch) {}
-    explicit TexOptions(uint8_t num) : TexOptions(LATEX, CHARACTER_I, num, FRAC) {}
-    explicit TexOptions(Spacing spacing) : TexOptions(LATEX, CHARACTER_I, 6, FRAC, spacing) {}
-    explicit TexOptions(DivisionType dv) : TexOptions(LATEX, CHARACTER_I, 6, dv) {}
-
-    TexOptions(TeXDialect dt = LATEX, ImaginaryCharacter ch = CHARACTER_I, uint8_t num = 6,
-                  DivisionType dv = FRAC, Spacing sp = NO_SPACING)
-        : dialect(dt), spacing(sp), character(ch), numPlaces(num), divType(dv) {}
+    std::set<Pkgs> packages = { Pkgs::ESDIFF };
 };
 
 class TeXSerializer final : public Visitor {
 public:
-    TeXSerializer() : TeXSerializer(TexOptions {}) {}
-    explicit TeXSerializer(TexOptions options) : latexOptions(options) {}
+    TeXSerializer() : TeXSerializer(TeXOpts {}) {}
+    explicit TeXSerializer(TeXOpts options) : latexOptions(options) {}
 
-    void SetTeXDialect(TeXDialect dt);
-    void SetImaginaryCharacter(ImaginaryCharacter character);
+    void SetTeXDialect(TeXOpts::Dialect dt);
+    void SetImaginaryCharacter(TeXOpts::ImgSym character);
     void SetNumPlaces(uint8_t num);
-    void SetSpacing(Spacing sp);
-    void SetDivType(DivisionType dv);
+    void SetSpacing(TeXOpts::Spacing sp);
+    void SetDivType(TeXOpts::DivType dv);
 
-    TeXDialect GetTeXDialect();
-    DivisionType GetDivType();
-    Spacing GetSpacing();
+    TeXOpts::Dialect GetTeXDialect();
+    TeXOpts::DivType GetDivType();
+    TeXOpts::Spacing GetSpacing();
     uint8_t GetNumPlaces();
-    ImaginaryCharacter GetImaginaryCharacter();
+    TeXOpts::ImgSym GetImaginaryCharacter();
 
-    void AddTeXPackage(SupportedPackages package);
-    void RemoveTeXPackage(SupportedPackages package);
+    void AddTeXPackage(TeXOpts::Pkgs package);
+    void RemoveTeXPackage(TeXOpts::Pkgs package);
 
     std::any Visit(const Real& real) override;
     std::any Visit(const Imaginary& imaginary) override;
@@ -94,7 +82,7 @@ public:
 
 private:
     std::string result;
-    TexOptions latexOptions{};
+    TeXOpts latexOptions {};
 };
 
 }
