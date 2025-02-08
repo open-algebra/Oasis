@@ -76,7 +76,7 @@ std::any InFixSerializer::Visit(const Negate<Expression>& negate)
     try {
         const auto opStr = std::any_cast<std::string>(negate.GetOperand().Accept(*this));
         return fmt::format("-({})", opStr);
-    } catch (std::bad_any_cast) {
+    } catch (std::bad_any_cast&) {
         return {};
     }
 }
