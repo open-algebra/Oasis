@@ -2,7 +2,7 @@
 // Created by Andrew Nazareth on 9/27/24.
 //
 
-#include <fmt/format.h>
+#include <format>
 
 #include "Oasis/MathMLSerializer.hpp"
 
@@ -82,26 +82,29 @@ void TeXSerializer::RemoveTeXPackage(TeXOpts::Pkgs package)
 
 std::any TeXSerializer::Visit(const Real& real)
 {
-    result = fmt::format("{:.{}}", real.GetValue(), latexOptions.numPlaces+1);
+    auto result = std::format("{:.{}}", real.GetValue(), latexOptions.numPlaces+1);
     return result;
 }
 
 std::any TeXSerializer::Visit(const Imaginary& imaginary)
 {
-    if (latexOptions.character == TeXOpts::ImgSym::J) result = "j";
-    else result = "i";
-    return result;
+    switch (latexOptions.character) {
+    case TeXOpts::ImgSym::J:
+        return std::string { "j" };
+    case TeXOpts::ImgSym::I:
+        return std::string { "i" };
+    }
 }
 
 std::any TeXSerializer::Visit(const Matrix& matrix)
 {
-    result = "\\begin{bmatrix}\n";
+    std::string result = "\\begin{bmatrix}\n";
     MatrixXXD mat = matrix.GetMatrix();
     std::string row{};
     for (int r = 0; r < matrix.GetRows(); r++){
         row = "";
         for (int c = 0; c < matrix.GetCols(); c++){
-            row += fmt::format("{:.5}", mat(r,c));
+            row += std::format("{:.5}", mat(r,c));
             if (c < matrix.GetCols()-1){
                 row += "&";
             }
@@ -115,131 +118,106 @@ std::any TeXSerializer::Visit(const Matrix& matrix)
 
 std::any TeXSerializer::Visit(const Variable& variable)
 {
-    result = variable.GetName();
-    return result;
+    return  variable.GetName();
 }
 
 std::any TeXSerializer::Visit(const Undefined& undefined)
 {
-    result = "Undefined";
-    return result;
+    return std::string { "Undefined" };
 }
 
 std::any TeXSerializer::Visit(const Pi&)
 {
-    result = "\\pi";
-    return result;
+    return std::string { "\\pi" };
 }
 
 std::any TeXSerializer::Visit(const EulerNumber&)
 {
-    result = "e";
-    return result;
+    return std::string { "e" };
 }
 
 std::any TeXSerializer::Visit(const Add<Expression, Expression>& add)
 {
-    const auto mostSigOpStr = std::any_cast<std::string>(add.GetMostSigOp().Accept(*this));
-    const auto leastSigOpStr = std::any_cast<std::string>(add.GetLeastSigOp().Accept(*this));
-    if (latexOptions.spacing == TeXOpts::Spacing::MINIMAL)
-        result = fmt::format("\\left({}+{}\\right)", mostSigOpStr, leastSigOpStr);
-    else if (latexOptions.spacing == TeXOpts::Spacing::REGULAR)
-        result = fmt::format("\\left({} + {}\\right)", mostSigOpStr, leastSigOpStr);
+    auto result = SerializeArithBinExp(add, "+");
+    return result ? result.value() : std::any {};
 
-    return result;
 }
 
 std::any TeXSerializer::Visit(const Subtract<Expression, Expression>& subtract)
 {
-    const auto mostSigOpStr = std::any_cast<std::string>(subtract.GetMostSigOp().Accept(*this));
-    const auto leastSigOpStr = std::any_cast<std::string>(subtract.GetLeastSigOp().Accept(*this));
-
-    if (latexOptions.spacing == TeXOpts::Spacing::MINIMAL)
-        result = fmt::format("\\left({}-{}\\right)", mostSigOpStr, leastSigOpStr);
-    else if (latexOptions.spacing == TeXOpts::Spacing::REGULAR)
-        result = fmt::format("\\left({} - {}\\right)", mostSigOpStr, leastSigOpStr);
-
-    return result;
+    auto result = SerializeArithBinExp(subtract, "-");
+    return result ? result.value() : std::any {};
 }
 
 std::any TeXSerializer::Visit(const Multiply<Expression, Expression>& multiply)
 {
-    const auto mostSigOpStr = std::any_cast<std::string>(multiply.GetMostSigOp().Accept(*this));
-    const auto leastSigOpStr = std::any_cast<std::string>(multiply.GetLeastSigOp().Accept(*this));
-
-    if (latexOptions.spacing == TeXOpts::Spacing::MINIMAL)
-        result = fmt::format("\\left({}*{}\\right)", mostSigOpStr, leastSigOpStr);
-    else if (latexOptions.spacing == TeXOpts::Spacing::REGULAR)
-        result = fmt::format("\\left({} * {}\\right)", mostSigOpStr, leastSigOpStr);
-
-    return result;
+    auto result = SerializeArithBinExp(multiply, "*");
+    return result ? result.value() : std::any {};
 }
 
 std::any TeXSerializer::Visit(const Divide<Expression, Expression>& divide)
 {
-    const auto mostSigOpStr = std::any_cast<std::string>(divide.GetMostSigOp().Accept(*this));
-    const auto leastSigOpStr = std::any_cast<std::string>(divide.GetLeastSigOp().Accept(*this));
+    auto ops = GetOpsOfBinExp(divide);
+    if (!ops) return {};
 
-    if (latexOptions.divType == TeXOpts::DivType::DIV){
-        result = fmt::format("\\left({{{}}}\\div{{{}}}\\right)", mostSigOpStr, leastSigOpStr);
-    } else {
-        result = fmt::format("\\left(\\frac{{{}}}{{{}}}\\right)", mostSigOpStr, leastSigOpStr);
-    }
+    const auto& [mostSigOpStr, leastSigOpStr] = ops.value();
 
-    return result;
+    if (latexOptions.divType == TeXOpts::DivType::DIV)
+        return std::format("\\left({{{}}}\\div{{{}}}\\right)", mostSigOpStr, leastSigOpStr);
+
+    if (latexOptions.divType == TeXOpts::DivType::FRAC)
+        return std::format("\\left(\\frac{{{}}}{{{}}}\\right)", mostSigOpStr, leastSigOpStr);
+
+    return {};
 }
 
 std::any TeXSerializer::Visit(const Exponent<Expression, Expression>& exponent)
 {
-    const auto mostSigOpStr = std::any_cast<std::string>(exponent.GetMostSigOp().Accept(*this));
-    const auto leastSigOpStr = std::any_cast<std::string>(exponent.GetLeastSigOp().Accept(*this));
+    auto ops = GetOpsOfBinExp(exponent);
+    if (!ops) return {};
 
-    result = fmt::format("\\left({}\\right)^{{{}}}", mostSigOpStr, leastSigOpStr);
-    return result;
+    const auto& [mostSigOpStr, leastSigOpStr] = ops.value();
+    return  std::format("\\left({}\\right)^{{{}}}", mostSigOpStr, leastSigOpStr);
 }
 
 std::any TeXSerializer::Visit(const Log<Expression, Expression>& log)
 {
     // if (log.GetMostSigOp())
-    const auto mostSigOpStr = std::any_cast<std::string>(log.GetMostSigOp().Accept(*this));
-    const auto leastSigOpStr = std::any_cast<std::string>(log.GetLeastSigOp().Accept(*this));
+    auto ops = GetOpsOfBinExp(log);
+    if (!ops) return {};
 
-    result = fmt::format("\\log_{{{}}}\\left({}\\right)", mostSigOpStr, leastSigOpStr);
-    return result;
+    const auto& [mostSigOpStr, leastSigOpStr] = ops.value();
+    return  std::format("\\log_{{{}}}\\left({}\\right)", mostSigOpStr, leastSigOpStr);
 }
 
 std::any TeXSerializer::Visit(const Negate<Expression>& negate)
 {
-    const auto op = std::any_cast<std::string>(negate.GetOperand().Accept(*this));
-
-    result = fmt::format("\\left(-{}\\right)", op);
-    return result;
+    const auto op = negate.GetOperand().Accept(*this);
+    return  op ? std::format("\\left(-{}\\right)", op.value()) : std::any {} ;
 }
 
 std::any TeXSerializer::Visit(const Magnitude<Expression>& magnitude)
 {
-    const auto op = std::any_cast<std::string>(magnitude.GetOperand().Accept(*this));
-
-    result = fmt::format("\\left|{}\\right|", op);
-    return result;
+    const auto op = magnitude.GetOperand().Accept(*this);
+    return op? std::format("\\left|{}\\right|", op.value()) : std::any {};
 }
 
 std::any TeXSerializer::Visit(const Derivative<Expression, Expression>& derivative)
 {
-    const auto MostSigOpStr = std::any_cast<std::string>(derivative.GetMostSigOp().Accept(*this));
-    const auto LeastSigOpStr =     std::any_cast<std::string>(derivative.GetLeastSigOp().Accept(*this));
+    auto ops = GetOpsOfBinExp(derivative);
+    if (!ops) return {};
 
-    result = fmt::format("\\frac{{d}}{{d{}}}\\left({}\\right)", LeastSigOpStr, MostSigOpStr);
-    return result;
+    const auto& [mostSigOpStr, leastSigOpStr] = ops.value();
+    return std::format("\\frac{{d}}{{d{}}}\\left({}\\right)", mostSigOpStr, leastSigOpStr);
 }
 
 std::any TeXSerializer::Visit(const Integral<Expression, Expression>& integral)
 {
-    const auto MostSigOpStr = std::any_cast<std::string>(integral.GetMostSigOp().Accept(*this));
-    const auto LeastSigOpStr = std::any_cast<std::string>(integral.GetLeastSigOp().Accept(*this));
+    auto ops = GetOpsOfBinExp(integral);
+    if (!ops) return {};
 
-    result = fmt::format("\\int\\left({}\\right)d{}", MostSigOpStr, LeastSigOpStr);
-    return result;
+    const auto& [mostSigOpStr, leastSigOpStr] = ops.value();
+    return std::format("\\int\\left({}\\right)d{}", mostSigOpStr, leastSigOpStr);
 }
 
 }

@@ -6,7 +6,9 @@
 #define OASIS_CONCEPTS_HPP
 
 namespace Oasis {
+
 class Expression;
+class Visitor;
 enum class ExpressionType;
 
 /**
@@ -55,6 +57,12 @@ concept DerivedFromBinaryExpression = requires(Derived& d) {
 template <typename Derived>
 concept DerivedFromUnaryExpression = requires(Derived& d) {
     []<template <typename> typename D, IExpression T>(UnaryExpression<D, T>&) { }(d);
+};
+
+template <typename T>
+concept IVisitor = requires {
+    typename T::RetT; // Checks for the type alias
+    requires std::is_base_of_v<Visitor, T>; // Ensures T derives from BaseClass
 };
 
 }

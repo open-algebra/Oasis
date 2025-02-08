@@ -3,7 +3,7 @@
 
 #include <any>
 #include <cstdint>
-#include <memory>
+#include <optional>
 #include <vector>
 
 #include "Concepts.hpp"
@@ -173,15 +173,29 @@ public:
 
     [[nodiscard]] virtual auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> = 0;
 
+    template <IVisitor T>
+    std::optional<typename T::RetT> Accept(T& visitor) const;
+
+    virtual ~Expression() = default;
+
+protected:
     /**
      * This function serializes the expression object.
      *
      * @param visitor The serializer class object to write the Expression data.
      */
-    virtual std::any Accept(Visitor& visitor) const = 0;
-
-    virtual ~Expression() = default;
+    virtual std::any AcceptInternal(Visitor& visitor) const = 0;
 };
+
+template <IVisitor T>
+std::optional<typename T::RetT> Expression::Accept(T& visitor) const
+{
+    try {
+        return std::any_cast<typename T::RetT>(this->AcceptInternal(visitor));
+    } catch (std::bad_any_cast&) {
+        return std::nullopt;
+    }
+}
 
 #define EXPRESSION_TYPE(type)                       \
     auto GetType() const -> ExpressionType override \

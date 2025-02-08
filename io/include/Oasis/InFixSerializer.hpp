@@ -14,6 +14,8 @@ namespace Oasis {
 
 class InFixSerializer final : public Visitor {
 public:
+    using RetT = std::string;
+
     std::any Visit(const Real& real) override;
     std::any Visit(const Imaginary& imaginary) override;
     std::any Visit(const Variable& variable) override;
@@ -33,38 +35,38 @@ public:
     std::any Visit(const Magnitude<Expression>& magnitude) override;
 
 private:
-    auto GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::pair<std::string, std::string>;
-    auto SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::any;
-    auto SerializeFuncBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& func) -> std::any;
+    auto GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::optional<std::pair<std::string, std::string>>;
+    auto SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::optional<std::string>;
+    auto SerializeFuncBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& func) -> std::optional<std::string>;
 
     std::string result;
 };
 
-auto InFixSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::pair<std::string, std::string>
+auto InFixSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::optional<std::pair<std::string, std::string>>
 {
-    const auto mostSigOpStr = std::any_cast<std::string>(visited.GetMostSigOp().Accept(*this));
-    const auto leastSigOpStr = std::any_cast<std::string>(visited.GetLeastSigOp().Accept(*this));
-    return { mostSigOpStr, leastSigOpStr };
+    const auto mostSigOpStr = visited.GetMostSigOp().Accept(*this);
+    const auto leastSigOpStr = visited.GetLeastSigOp().Accept(*this);
+    if (!mostSigOpStr || !leastSigOpStr) return {};
+
+    return std::pair { mostSigOpStr.value(), leastSigOpStr.value() };
 }
 
-auto InFixSerializer::SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::any
+auto InFixSerializer::SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::optional<std::string>
 {
-    try {
-        const auto& [mostSigOpStr, leastSigOpStr] = GetOpsOfBinExp(visited);
-        return std::format("({}{}{})", mostSigOpStr, op, leastSigOpStr);
-    } catch (std::bad_any_cast) {
-        return {};
-    }
+    auto ops = GetOpsOfBinExp(visited);
+    if (!ops) return {};
+
+    const auto& [mostSigOpStr, leastSigOpStr] = ops.value();
+    return std::format("({}{}{})", mostSigOpStr, op, leastSigOpStr);
 }
 
-auto InFixSerializer::SerializeFuncBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& func) -> std::any
+auto InFixSerializer::SerializeFuncBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& func) -> std::optional<std::string>
 {
-    try {
-        const auto& [mostSigOpStr, leastSigOpStr] = GetOpsOfBinExp(visited);
-        return std::format("{}({},{})", func, mostSigOpStr, leastSigOpStr);
-    } catch (std::bad_any_cast) {
-        return {};
-    }
+    auto ops = GetOpsOfBinExp(visited);
+    if (!ops) return {};
+
+    const auto& [mostSigOpStr, leastSigOpStr] = ops.value();
+    return std::format("{}({},{})", func, mostSigOpStr, leastSigOpStr);
 }
 
 } // Oasis

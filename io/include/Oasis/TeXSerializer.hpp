@@ -5,6 +5,7 @@
 #ifndef LATEXSERIALIZER_HPP
 #define LATEXSERIALIZER_HPP
 
+#include <format>
 #include <string>
 #include <set>
 
@@ -47,6 +48,8 @@ public:
     TeXSerializer() : TeXSerializer(TeXOpts {}) {}
     explicit TeXSerializer(TeXOpts options) : latexOptions(options) {}
 
+    using RetT = std::string;
+
     void SetTeXDialect(TeXOpts::Dialect dt);
     void SetImaginaryCharacter(TeXOpts::ImgSym character);
     void SetNumPlaces(uint8_t num);
@@ -81,9 +84,36 @@ public:
     std::any Visit(const Integral<Expression, Expression>& integral) override;
 
 private:
-    std::string result;
     TeXOpts latexOptions {};
+
+    auto GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::optional<std::pair<std::string, std::string>>;
+    auto SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::optional<std::string>;
 };
+
+auto TeXSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::optional<std::pair<std::string, std::string>>
+{
+    const auto mostSigOpStr = visited.GetMostSigOp().Accept(*this);
+    const auto leastSigOpStr = visited.GetLeastSigOp().Accept(*this);
+    if (!mostSigOpStr || !leastSigOpStr) return {};
+
+    return std::pair { mostSigOpStr.value(), leastSigOpStr.value() };
+}
+
+auto TeXSerializer::SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::optional<std::string>
+{
+    auto ops = GetOpsOfBinExp(visited);
+    if (!ops) return {};
+
+    const auto& [mostSigOpStr, leastSigOpStr] = ops.value();
+
+    if (latexOptions.spacing == TeXOpts::Spacing::MINIMAL)
+        return std::format("\\left({}{}{}\\right)", mostSigOpStr, op, leastSigOpStr);
+
+    if (latexOptions.spacing == TeXOpts::Spacing::REGULAR)
+        return std::format("\\left({} {} {}\\right)", mostSigOpStr, op, leastSigOpStr);
+
+    return {};
+}
 
 }
 
