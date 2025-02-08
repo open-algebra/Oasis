@@ -46,7 +46,8 @@ auto InFixSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& vis
 {
     const auto mostSigOpStr = visited.GetMostSigOp().Accept(*this);
     const auto leastSigOpStr = visited.GetLeastSigOp().Accept(*this);
-    if (!mostSigOpStr || !leastSigOpStr) return {};
+    if (!mostSigOpStr || !leastSigOpStr)
+        return {};
 
     return std::pair { mostSigOpStr.value(), leastSigOpStr.value() };
 }
@@ -54,7 +55,8 @@ auto InFixSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& vis
 auto InFixSerializer::SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::optional<std::string>
 {
     auto ops = GetOpsOfBinExp(visited);
-    if (!ops) return {};
+    if (!ops)
+        return {};
 
     const auto& [mostSigOpStr, leastSigOpStr] = ops.value();
     return std::format("({}{}{})", mostSigOpStr, op, leastSigOpStr);
@@ -63,7 +65,8 @@ auto InFixSerializer::SerializeArithBinExp(const DerivedFromBinaryExpression aut
 auto InFixSerializer::SerializeFuncBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& func) -> std::optional<std::string>
 {
     auto ops = GetOpsOfBinExp(visited);
-    if (!ops) return {};
+    if (!ops)
+        return {};
 
     const auto& [mostSigOpStr, leastSigOpStr] = ops.value();
     return std::format("{}({},{})", func, mostSigOpStr, leastSigOpStr);

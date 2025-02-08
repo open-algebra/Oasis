@@ -48,10 +48,12 @@ private:
 auto MathMLSerializer::GetOpsAsMathMLPair(const DerivedFromBinaryExpression auto& binexp) -> std::pair<tinyxml2::XMLElement*, tinyxml2::XMLElement*>
 {
     tinyxml2::XMLElement* mostSig = CreatePlaceholder();
-    if (binexp.HasMostSigOp()) mostSig = binexp.GetMostSigOp().Accept(*this).value();
+    if (binexp.HasMostSigOp())
+        mostSig = binexp.GetMostSigOp().Accept(*this).value();
 
     tinyxml2::XMLElement* leastSig = CreatePlaceholder();
-    if (binexp.HasLeastSigOp()) leastSig = binexp.GetLeastSigOp().Accept(*this).value();
+    if (binexp.HasLeastSigOp())
+        leastSig = binexp.GetLeastSigOp().Accept(*this).value();
 
     return { mostSig, leastSig };
 }

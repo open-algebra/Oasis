@@ -26,7 +26,7 @@ std::any InFixSerializer::Visit(const Real& real)
     return std::format("{:.5}", real.GetValue());
 }
 
-std::any InFixSerializer::Visit(const Imaginary& imaginary)
+std::any InFixSerializer::Visit(const Imaginary&)
 {
     return "i";
 }
@@ -36,7 +36,7 @@ std::any InFixSerializer::Visit(const Variable& variable)
     return variable.GetName();
 }
 
-std::any InFixSerializer::Visit(const Undefined& undefined)
+std::any InFixSerializer::Visit(const Undefined&)
 {
     return "Undefined";
 }
@@ -95,7 +95,7 @@ std::any InFixSerializer::Visit(const Integral<>& integral)
     return result ? result.value() : std::any {};
 }
 
-std::any InFixSerializer::Visit(const Matrix& matrix)
+std::any InFixSerializer::Visit(const Matrix&)
 {
     return "NOT IMPLEMENTED";
 }
