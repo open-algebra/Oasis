@@ -7,12 +7,12 @@
 #include <sstream>
 #include <stack>
 
+#include "Oasis/Imaginary.hpp"
 #include <Oasis/Add.hpp>
 #include <Oasis/Derivative.hpp>
 #include <Oasis/Divide.hpp>
-#include <Oasis/Exponent.hpp>
 #include <Oasis/EulerNumber.hpp>
-#include "Oasis/Imaginary.hpp"
+#include <Oasis/Exponent.hpp>
 #include <Oasis/Integral.hpp>
 #include <Oasis/Log.hpp>
 #include <Oasis/Multiply.hpp>
@@ -136,52 +136,6 @@ bool processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const s
     return true;
 }
 
-std::vector<std::string> tokenizeMultiplicands(const std::string& expression)
-{
-    // Insert '*' between digits and letters, and letters and digits
-    std::string explicit_multiplication;
-    for (size_t i = 0; i < expression.size(); i++) {
-        explicit_multiplication += expression[i];
-        if (i < expression.size() - 1) {
-            bool is_digit = isdigit(expression[i]);
-            bool is_letter = isalpha(expression[i]);
-            bool is_digit_next = isdigit(expression[i + 1]);
-            bool is_letter_next = isalpha(expression[i + 1]);
-
-            if ((is_digit && is_letter_next) || (is_letter && is_digit_next)) {
-                explicit_multiplication += '*';
-            }
-
-            if (is_letter && is_letter_next) {
-                explicit_multiplication += '*';
-            }
-        }
-    }
-
-    // Tokenize on '*'
-    std::vector<std::string> tokens;
-    std::string buffer;
-    bool inside_braces = false;
-
-    for (char c : explicit_multiplication) {
-        if (c == '{')
-            inside_braces = true;
-        if (c == '}')
-            inside_braces = false;
-
-        if (c == '*' && !inside_braces) {
-            tokens.push_back(buffer);
-            buffer.clear();
-        } else {
-            buffer += c;
-        }
-    }
-
-    tokens.push_back(buffer); // push back the last token
-
-    return tokens;
-}
-
 template <typename First, typename... T>
 bool is_in(First&& first, T&&... t)
 {
@@ -214,18 +168,23 @@ std::unique_ptr<Oasis::Expression> parseToken(const std::string& token, const Oa
 
 namespace Oasis {
 
-ParseResult::ParseResult(std::unique_ptr<Expression> expr) {
+ParseResult::ParseResult(std::unique_ptr<Expression> expr)
+{
     result = std::move(expr);
 }
 
-ParseResult::ParseResult(std::string err) : result(err) {
+ParseResult::ParseResult(std::string err)
+    : result(err)
+{
 }
 
-bool ParseResult::Ok() const {
+bool ParseResult::Ok() const
+{
     return result.index() == 0;
 }
 
-auto ParseResult::GetResult() const -> const Expression & {
+auto ParseResult::GetResult() const -> const Expression&
+{
     return *std::get<std::unique_ptr<Expression>>(result);
 }
 
@@ -297,7 +256,8 @@ auto PreProcessInFix(const std::string& str) -> std::string
     return PreProcessFirstPass(secondPassResult.str()).str();
 }
 
-auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResult {
+auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResult
+{
     // Based off Dijkstra's Shunting Yard
 
     std::stack<std::unique_ptr<Expression>> st;

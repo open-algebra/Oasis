@@ -9,18 +9,18 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
+#include "Oasis/EulerNumber.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
-#include "Oasis/Multiply.hpp"
+#include "Oasis/Magnitude.hpp"
 #include "Oasis/Matrix.hpp"
+#include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
+#include "Oasis/Pi.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
-#include "Oasis/EulerNumber.hpp"
-#include "Oasis/Pi.hpp"
-#include "Oasis/Magnitude.hpp"
 
 namespace Oasis {
 
@@ -36,7 +36,7 @@ std::any MathMLSerializer::Visit(const Real& real)
     return result;
 }
 
-std::any MathMLSerializer::Visit(const Imaginary& imaginary)
+std::any MathMLSerializer::Visit(const Imaginary&)
 {
     tinyxml2::XMLElement* result = doc.NewElement("mi");
     result->SetText("i");
@@ -57,12 +57,12 @@ std::any MathMLSerializer::Visit(const Matrix& matrix)
 
     tinyxml2::XMLElement* table = doc.NewElement("mtable");
 
-    for (int r = 0; r < matrix.GetRows(); r++){
+    for (size_t r = 0; r < matrix.GetRows(); r++) {
         tinyxml2::XMLElement* row = doc.NewElement("mtr");
-        for (int c = 0; c < matrix.GetCols(); c++){
+        for (size_t c = 0; c < matrix.GetCols(); c++) {
             tinyxml2::XMLElement* mtd = doc.NewElement("mtd");
             tinyxml2::XMLElement* mn = doc.NewElement("mn");
-            mn->SetText(mat(r,c));
+            mn->SetText(mat(r, c));
             mtd->InsertEndChild(mn);
             row->InsertEndChild(mtd);
         }
@@ -96,7 +96,7 @@ std::any MathMLSerializer::Visit(const Variable& variable)
     return result;
 }
 
-std::any MathMLSerializer::Visit(const Undefined& undefined)
+std::any MathMLSerializer::Visit(const Undefined&)
 {
     tinyxml2::XMLElement* const mtext = doc.NewElement("mtext");
     mtext->SetText("Undefined");
@@ -111,7 +111,7 @@ std::any MathMLSerializer::Visit(const Add<>& add)
     add.Flatten(ops);
 
     for (const auto& op : ops) {
-        const auto opElement =op->Accept(*this).value();
+        const auto opElement = op->Accept(*this).value();
 
         mrow->InsertEndChild(opElement);
         // add + mo
@@ -192,7 +192,7 @@ std::any MathMLSerializer::Visit(const Multiply<>& multiply)
         mrow->InsertEndChild(rightParen);
     }
 
-    for (int i = 1; i < ops.size(); ++i) {
+    for (size_t i = 1; i < ops.size(); ++i) {
         const auto& leftOp = ops[i - 1];
         const auto& rightOp = ops[i];
 

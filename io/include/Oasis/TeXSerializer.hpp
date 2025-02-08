@@ -6,8 +6,8 @@
 #define LATEXSERIALIZER_HPP
 
 #include <format>
-#include <string>
 #include <set>
+#include <string>
 
 #include "Oasis/BinaryExpression.hpp"
 #include "Oasis/Visit.hpp"
@@ -17,24 +17,28 @@ namespace Oasis {
 struct TeXOpts {
     enum class Dialect {
         LATEX
-    } dialect = Dialect::LATEX;
+    } dialect
+        = Dialect::LATEX;
 
     enum class Spacing {
         MINIMAL,
         REGULAR
-    } spacing = Spacing::MINIMAL;
+    } spacing
+        = Spacing::MINIMAL;
 
     enum class ImgSym {
         I,
         J
-    } character = ImgSym::I;
+    } character
+        = ImgSym::I;
 
     uint8_t numPlaces = 2;
 
     enum class DivType {
         FRAC,
         DIV
-    } divType = DivType::FRAC;
+    } divType
+        = DivType::FRAC;
 
     enum class Pkgs {
         ESDIFF,
@@ -45,8 +49,14 @@ struct TeXOpts {
 
 class TeXSerializer final : public Visitor {
 public:
-    TeXSerializer() : TeXSerializer(TeXOpts {}) {}
-    explicit TeXSerializer(TeXOpts options) : latexOptions(options) {}
+    TeXSerializer()
+        : TeXSerializer(TeXOpts {})
+    {
+    }
+    explicit TeXSerializer(TeXOpts options)
+        : latexOptions(options)
+    {
+    }
 
     using RetT = std::string;
 
@@ -94,7 +104,8 @@ auto TeXSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visit
 {
     const auto mostSigOpStr = visited.GetMostSigOp().Accept(*this);
     const auto leastSigOpStr = visited.GetLeastSigOp().Accept(*this);
-    if (!mostSigOpStr || !leastSigOpStr) return {};
+    if (!mostSigOpStr || !leastSigOpStr)
+        return {};
 
     return std::pair { mostSigOpStr.value(), leastSigOpStr.value() };
 }
@@ -102,7 +113,8 @@ auto TeXSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visit
 auto TeXSerializer::SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::optional<std::string>
 {
     auto ops = GetOpsOfBinExp(visited);
-    if (!ops) return {};
+    if (!ops)
+        return {};
 
     const auto& [mostSigOpStr, leastSigOpStr] = ops.value();
 
