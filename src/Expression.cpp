@@ -246,8 +246,6 @@ auto Expression::Simplify() const -> std::unique_ptr<Expression>
     return Copy();
 }
 
-
-
 } // namespace Oasis
 std::unique_ptr<Oasis::Expression> operator+(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
 {
