@@ -94,6 +94,8 @@ std::any TeXSerializer::Visit(const Imaginary&)
     case TeXOpts::ImgSym::I:
         return std::string { "i" };
     }
+
+    return {};
 }
 
 std::any TeXSerializer::Visit(const Matrix& matrix)
