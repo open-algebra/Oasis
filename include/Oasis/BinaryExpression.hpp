@@ -75,7 +75,7 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
  * @tparam MostSigOpT The type of the most significant operand.
  * @tparam LeastSigOpT The type of the least significant operand.
  */
-template <template <IExpression, IExpression> class DerivedT, IExpression MostSigOpT = Expression, IExpression LeastSigOpT = MostSigOpT>
+template <template <IExpression, IExpression> class DerivedT, IExpression MostSigOpT = Expression, IExpression LeastSigOpT = MostSigOpT, template<typename> class SmartPtr = std::unique_ptr>
 class BinaryExpression : public Expression {
 
     using DerivedSpecialized = DerivedT<MostSigOpT, LeastSigOpT>;
@@ -385,8 +385,8 @@ public:
         visitor.Serialize(derivedGeneralized);
     }
 
-    std::unique_ptr<MostSigOpT> mostSigOp;
-    std::unique_ptr<LeastSigOpT> leastSigOp;
+    SmartPtr<MostSigOpT> mostSigOp;
+    SmartPtr<LeastSigOpT> leastSigOp;
 };
 
 } // Oasis
