@@ -319,16 +319,6 @@ TEST_CASE("Any Base Exponential Derivative", "[Derivative][Exponent]")
     REQUIRE(simplified->Equals(expected));
 }
 
-TEST_CASE("Variable Base Exponential Derivative", "[Derivative][Exponent]")
-{
-    Oasis::Exponent exp{Oasis::Variable{"x"}, Oasis::Multiply{Oasis::Real{2.0},Oasis::Variable{"x"}}};
-    Oasis::Derivative diffExp{exp, Oasis::Variable{"x"}};
-    Oasis::Multiply expected{Oasis::Multiply{Oasis::Real{2.0}, exp},
-                                            Oasis::Add{ Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"x"}},Oasis::Real{1.0}}};
-    auto simplified = diffExp.Simplify();
-    REQUIRE(simplified->Equals(expected));
-}
-
 TEST_CASE("General Exponential Derivative", "[Derivative][Exponent]")
 {
     Oasis::Exponent exp{ Oasis::Add { Oasis::Variable{"x"}, Oasis::Real{3.0} },

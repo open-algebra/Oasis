@@ -158,23 +158,15 @@ auto Exponent<Expression>::Differentiate(const Expression& differentiationVariab
             return derivative.Simplify();
         }
 
-        if (auto samevarBase = RecursiveCast<Exponent<Variable, Expression>>(*simplifiedExponent); samevarBase != nullptr) {
-            const Variable& expBase = samevarBase->GetMostSigOp();
-            if (expBase.GetName() == variable->GetName()) {
-                Multiply derivative { Multiply { Derivative { samevarBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent }, Add { Log { EulerNumber {}, samevarBase->GetMostSigOp() }, Real { 1 } } };
-                return derivative.Simplify();
-            }
-        }
-
         if (auto varBase = RecursiveCast<Exponent<Variable, Expression>>(*simplifiedExponent); varBase != nullptr) {
             Multiply derivative { Multiply { Derivative { varBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent }, Log { EulerNumber {}, varBase->GetMostSigOp() } };
             return derivative.Simplify();
         }
 
-        if (auto generalBase = RecursiveCast<Exponent<Expression, Expression>>(*simplifiedExponent); generalBase != nullptr) {
+        if (auto generalCase = RecursiveCast<Exponent<Expression, Expression>>(*simplifiedExponent); generalCase != nullptr) {
             Multiply derivative { Multiply { *simplifiedExponent,
-                Add { Divide { Multiply { generalBase->GetLeastSigOp(), Derivative { generalBase->GetMostSigOp(), differentiationVariable } }, generalBase->GetMostSigOp() },
-                    Multiply { Derivative { generalBase->GetLeastSigOp(), differentiationVariable }, Log { EulerNumber {}, generalBase->GetMostSigOp() } } } } };
+                Add { Divide { Multiply { generalCase->GetLeastSigOp(), Derivative { generalCase->GetMostSigOp(), differentiationVariable } }, generalCase->GetMostSigOp() },
+                    Multiply { Derivative { generalCase->GetLeastSigOp(), differentiationVariable }, Log { EulerNumber {}, generalCase->GetMostSigOp() } } } } };
             return derivative.Simplify();
         }
     }
