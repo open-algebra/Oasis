@@ -93,10 +93,7 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() }.Simplify();
         return Divide<Expression> { *m, (multCase->GetLeastSigOp().GetLeastSigOp()) }.Simplify();
     }
-    if (auto multCase = RecursiveCast<Multiply<Divide<Expression>, Expression>>(simplifiedMultiply); multCase != nullptr) {
-        auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetMostSigOp().GetMostSigOp() }.Simplify();
-        return Divide<Expression> { *m, (multCase->GetMostSigOp().GetLeastSigOp()) }.Simplify();
-    }
+
     if (auto multCase = RecursiveCast<Multiply<Divide<Expression>, Divide<Expression>>>(simplifiedMultiply); multCase != nullptr) {
         auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() }.Simplify();
         auto n = Multiply<Expression> { multCase->GetMostSigOp().GetLeastSigOp(), multCase->GetLeastSigOp().GetLeastSigOp() }.Simplify();
