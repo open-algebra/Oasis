@@ -58,7 +58,7 @@ TEST_CASE("LaTeX Serialization for Addition", "[LaTeX][Serializer][Add]"){
 
     Oasis::TeXSerializer serializer;
 
-    auto result = std::any_cast<std::string>(a.AcceptInternal(serializer));
+    auto result = a.Accept(serializer).value();
     std::string expected = "\\left(5+x_0\\right)";
 
     REQUIRE(expected == result);
@@ -69,7 +69,7 @@ TEST_CASE("LaTeX Serialization for Subtraction", "[LaTeX][Serializer][Subtract]"
 
     Oasis::TeXSerializer serializer;
 
-    auto result = std::any_cast<std::string>(s.AcceptInternal(serializer));
+    auto result = s.Accept(serializer).value();
     std::string expected = "\\left(5-x_0\\right)";
 
     REQUIRE(expected == result);
@@ -81,7 +81,7 @@ TEST_CASE("LaTeX Serialization for Multiplication", "[LaTeX][Serializer][Multipl
 
     Oasis::TeXSerializer serializer;
 
-    auto result = std::any_cast<std::string>(s.AcceptInternal(serializer));
+    auto result = s.Accept(serializer).value();
     std::string expected = "\\left(5*x_0\\right)";
 
     REQUIRE(expected == result);
@@ -93,7 +93,7 @@ TEST_CASE("LaTeX Serialization for Division", "[LaTeX][Serializer][Divide]")
 
     Oasis::TeXSerializer serializer;
 
-    auto result = std::any_cast<std::string>(d.AcceptInternal(serializer));
+    auto result = d.Accept(serializer).value();
     std::string expected = R"(\left(\frac{5}{x_0}\right))";
 
     REQUIRE(expected == result);
@@ -106,7 +106,7 @@ TEST_CASE("LaTeX Serialization for Division with \\div", "[LaTeX][Serializer][Di
     Oasis::TeXSerializer serializer { { .divType = Oasis::TeXOpts::DivType::DIV } };
     assert(serializer.GetDivType() == Oasis::TeXOpts::DivType::DIV);
 
-    auto result = std::any_cast<std::string>(d.AcceptInternal(serializer));
+    auto result = d.Accept(serializer).value();
     std::string expected = R"(\left({5}\div{x_0}\right))";
 
     REQUIRE(expected == result);
@@ -119,7 +119,7 @@ TEST_CASE("LaTeX Serialization with spacing options", "[LaTeX][Serializer][TexOp
     Oasis::TeXOpts options {.spacing = Oasis::TeXOpts::Spacing::REGULAR };
     Oasis::TeXSerializer serializer{options};
 
-    auto result = std::any_cast<std::string>(s.AcceptInternal(serializer));
+    auto result = s.Accept(serializer).value();
     std::string expected = "\\left(5 * x_0\\right)";
 
     REQUIRE(expected == result);

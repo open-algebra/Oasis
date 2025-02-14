@@ -44,7 +44,7 @@ public:
         return this->Copy();
     }
 
-    std::any AcceptInternal(Visitor& visitor) const override
+    auto AcceptInternal(Visitor& visitor) const -> any override
     {
         const auto generalized = Generalize();
         const auto& derivedGeneralized = dynamic_cast<const DerivedT&>(*generalized);
