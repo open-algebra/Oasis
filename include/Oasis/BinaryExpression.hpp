@@ -378,7 +378,7 @@ public:
 
     auto operator=(const BinaryExpression& other) -> BinaryExpression& = default;
 
-    std::any AcceptInternal(Visitor& visitor) const override
+    auto AcceptInternal(Visitor& visitor) const -> any override
     {
         const auto generalized = Generalize();
         const auto& derivedGeneralized = dynamic_cast<const DerivedGeneralized&>(*generalized);

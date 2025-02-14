@@ -6,5 +6,5 @@ FetchContent_Declare(
         EXCLUDE_FROM_ALL
 )
 
-set(BOOST_INCLUDE_LIBRARIES mpl)
+set(BOOST_INCLUDE_LIBRARIES any mpl)
 FetchContent_MakeAvailable(Boost)

@@ -16,23 +16,23 @@ class InFixSerializer final : public Visitor {
 public:
     using RetT = std::string;
 
-    std::any Visit(const Real& real) override;
-    std::any Visit(const Imaginary& imaginary) override;
-    std::any Visit(const Variable& variable) override;
-    std::any Visit(const Undefined& undefined) override;
-    std::any Visit(const Add<Expression, Expression>& add) override;
-    std::any Visit(const Subtract<Expression, Expression>& subtract) override;
-    std::any Visit(const Multiply<Expression, Expression>& multiply) override;
-    std::any Visit(const Divide<Expression, Expression>& divide) override;
-    std::any Visit(const Exponent<Expression, Expression>& exponent) override;
-    std::any Visit(const Log<Expression, Expression>& log) override;
-    std::any Visit(const Negate<Expression>& negate) override;
-    std::any Visit(const Derivative<Expression, Expression>& derivative) override;
-    std::any Visit(const Integral<Expression, Expression>& integral) override;
-    std::any Visit(const Matrix& matrix) override;
-    std::any Visit(const EulerNumber&) override;
-    std::any Visit(const Pi&) override;
-    std::any Visit(const Magnitude<Expression>& magnitude) override;
+    any Visit(const Real& real) override;
+    any Visit(const Imaginary& imaginary) override;
+    any Visit(const Variable& variable) override;
+    any Visit(const Undefined& undefined) override;
+    any Visit(const Add<Expression, Expression>& add) override;
+    any Visit(const Subtract<Expression, Expression>& subtract) override;
+    any Visit(const Multiply<Expression, Expression>& multiply) override;
+    any Visit(const Divide<Expression, Expression>& divide) override;
+    any Visit(const Exponent<Expression, Expression>& exponent) override;
+    any Visit(const Log<Expression, Expression>& log) override;
+    any Visit(const Negate<Expression>& negate) override;
+    any Visit(const Derivative<Expression, Expression>& derivative) override;
+    any Visit(const Integral<Expression, Expression>& integral) override;
+    any Visit(const Matrix& matrix) override;
+    any Visit(const EulerNumber&) override;
+    any Visit(const Pi&) override;
+    any Visit(const Magnitude<Expression>& magnitude) override;
 
 private:
     auto GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::optional<std::pair<std::string, std::string>>;

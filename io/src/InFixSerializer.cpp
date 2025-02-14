@@ -21,99 +21,99 @@
 
 namespace Oasis {
 
-std::any InFixSerializer::Visit(const Real& real)
+any InFixSerializer::Visit(const Real& real)
 {
     return std::format("{:.5}", real.GetValue());
 }
 
-std::any InFixSerializer::Visit(const Imaginary&)
+any InFixSerializer::Visit(const Imaginary&)
 {
     return "i";
 }
 
-std::any InFixSerializer::Visit(const Variable& variable)
+any InFixSerializer::Visit(const Variable& variable)
 {
     return variable.GetName();
 }
 
-std::any InFixSerializer::Visit(const Undefined&)
+any InFixSerializer::Visit(const Undefined&)
 {
     return "Undefined";
 }
 
-std::any InFixSerializer::Visit(const Add<>& add)
+any InFixSerializer::Visit(const Add<>& add)
 {
     auto result = SerializeArithBinExp(add, "+");
-    return result ? result.value() : std::any {};
+    return result ? result.value() : any {};
 }
 
-std::any InFixSerializer::Visit(const Subtract<>& subtract)
+any InFixSerializer::Visit(const Subtract<>& subtract)
 {
     auto result = SerializeArithBinExp(subtract, "-");
-    return result ? result.value() : std::any {};
+    return result ? result.value() : any {};
 }
 
-std::any InFixSerializer::Visit(const Multiply<>& multiply)
+any InFixSerializer::Visit(const Multiply<>& multiply)
 {
     auto result = SerializeArithBinExp(multiply, "*");
-    return result ? result.value() : std::any {};
+    return result ? result.value() : any {};
 }
 
-std::any InFixSerializer::Visit(const Divide<>& divide)
+any InFixSerializer::Visit(const Divide<>& divide)
 {
     auto result = SerializeArithBinExp(divide, "/");
-    return result ? result.value() : std::any {};
+    return result ? result.value() : any {};
 }
 
-std::any InFixSerializer::Visit(const Exponent<>& exponent)
+any InFixSerializer::Visit(const Exponent<>& exponent)
 {
     auto result = SerializeArithBinExp(exponent, "^");
-    return result ? result.value() : std::any {};
+    return result ? result.value() : any {};
 }
 
-std::any InFixSerializer::Visit(const Log<>& log)
+any InFixSerializer::Visit(const Log<>& log)
 {
     auto result = SerializeArithBinExp(log, "log");
-    return result ? result.value() : std::any {};
+    return result ? result.value() : any {};
 }
 
-std::any InFixSerializer::Visit(const Negate<Expression>& negate)
+any InFixSerializer::Visit(const Negate<Expression>& negate)
 {
     auto opStr = negate.GetOperand().Accept(*this);
-    return opStr ? std::format("-({})", opStr.value()) : std::any {};
+    return opStr ? std::format("-({})", opStr.value()) : any {};
 }
 
-std::any InFixSerializer::Visit(const Derivative<>& derivative)
+any InFixSerializer::Visit(const Derivative<>& derivative)
 {
     auto result = SerializeFuncBinExp(derivative, "dd");
-    return result ? result.value() : std::any {};
+    return result ? result.value() : any {};
 }
 
-std::any InFixSerializer::Visit(const Integral<>& integral)
+any InFixSerializer::Visit(const Integral<>& integral)
 {
     auto result = SerializeFuncBinExp(integral, "in");
-    return result ? result.value() : std::any {};
+    return result ? result.value() : any {};
 }
 
-std::any InFixSerializer::Visit(const Matrix&)
+any InFixSerializer::Visit(const Matrix&)
 {
     return "NOT IMPLEMENTED";
 }
 
-std::any InFixSerializer::Visit(const EulerNumber&)
+any InFixSerializer::Visit(const EulerNumber&)
 {
     return "e";
 }
 
-std::any InFixSerializer::Visit(const Pi&)
+any InFixSerializer::Visit(const Pi&)
 {
     return "pi";
 }
 
-std::any InFixSerializer::Visit(const Magnitude<Expression>& magnitude)
+any InFixSerializer::Visit(const Magnitude<Expression>& magnitude)
 {
     const auto opStr = magnitude.GetOperand().Accept(*this);
-    return opStr ? std::format("|({})|", opStr.value()) : std::any {};
+    return opStr ? std::format("|({})|", opStr.value()) : any {};
 }
 
 } // Oasis

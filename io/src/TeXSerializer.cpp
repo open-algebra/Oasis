@@ -80,13 +80,13 @@ void TeXSerializer::RemoveTeXPackage(TeXOpts::Pkgs package)
     latexOptions.packages.erase(package);
 }
 
-std::any TeXSerializer::Visit(const Real& real)
+any TeXSerializer::Visit(const Real& real)
 {
     auto result = std::format("{:.{}}", real.GetValue(), latexOptions.numPlaces + 1);
     return result;
 }
 
-std::any TeXSerializer::Visit(const Imaginary&)
+any TeXSerializer::Visit(const Imaginary&)
 {
     switch (latexOptions.character) {
     case TeXOpts::ImgSym::J:
@@ -98,7 +98,7 @@ std::any TeXSerializer::Visit(const Imaginary&)
     return {};
 }
 
-std::any TeXSerializer::Visit(const Matrix& matrix)
+any TeXSerializer::Visit(const Matrix& matrix)
 {
     std::string result = "\\begin{bmatrix}\n";
     MatrixXXD mat = matrix.GetMatrix();
@@ -118,45 +118,45 @@ std::any TeXSerializer::Visit(const Matrix& matrix)
     return result;
 }
 
-std::any TeXSerializer::Visit(const Variable& variable)
+any TeXSerializer::Visit(const Variable& variable)
 {
     return variable.GetName();
 }
 
-std::any TeXSerializer::Visit(const Undefined&)
+any TeXSerializer::Visit(const Undefined&)
 {
     return std::string { "Undefined" };
 }
 
-std::any TeXSerializer::Visit(const Pi&)
+any TeXSerializer::Visit(const Pi&)
 {
     return std::string { "\\pi" };
 }
 
-std::any TeXSerializer::Visit(const EulerNumber&)
+any TeXSerializer::Visit(const EulerNumber&)
 {
     return std::string { "e" };
 }
 
-std::any TeXSerializer::Visit(const Add<Expression, Expression>& add)
+any TeXSerializer::Visit(const Add<Expression, Expression>& add)
 {
     auto result = SerializeArithBinExp(add, "+");
-    return result ? result.value() : std::any {};
+    return result ? result.value() : any {};
 }
 
-std::any TeXSerializer::Visit(const Subtract<Expression, Expression>& subtract)
+any TeXSerializer::Visit(const Subtract<Expression, Expression>& subtract)
 {
     auto result = SerializeArithBinExp(subtract, "-");
-    return result ? result.value() : std::any {};
+    return result ? result.value() : any {};
 }
 
-std::any TeXSerializer::Visit(const Multiply<Expression, Expression>& multiply)
+any TeXSerializer::Visit(const Multiply<Expression, Expression>& multiply)
 {
     auto result = SerializeArithBinExp(multiply, "*");
-    return result ? result.value() : std::any {};
+    return result ? result.value() : any {};
 }
 
-std::any TeXSerializer::Visit(const Divide<Expression, Expression>& divide)
+any TeXSerializer::Visit(const Divide<Expression, Expression>& divide)
 {
     auto ops = GetOpsOfBinExp(divide);
     if (!ops)
@@ -173,7 +173,7 @@ std::any TeXSerializer::Visit(const Divide<Expression, Expression>& divide)
     return {};
 }
 
-std::any TeXSerializer::Visit(const Exponent<Expression, Expression>& exponent)
+any TeXSerializer::Visit(const Exponent<Expression, Expression>& exponent)
 {
     auto ops = GetOpsOfBinExp(exponent);
     if (!ops)
@@ -183,7 +183,7 @@ std::any TeXSerializer::Visit(const Exponent<Expression, Expression>& exponent)
     return std::format("\\left({}\\right)^{{{}}}", mostSigOpStr, leastSigOpStr);
 }
 
-std::any TeXSerializer::Visit(const Log<Expression, Expression>& log)
+any TeXSerializer::Visit(const Log<Expression, Expression>& log)
 {
     // if (log.GetMostSigOp())
     auto ops = GetOpsOfBinExp(log);
@@ -194,19 +194,19 @@ std::any TeXSerializer::Visit(const Log<Expression, Expression>& log)
     return std::format("\\log_{{{}}}\\left({}\\right)", mostSigOpStr, leastSigOpStr);
 }
 
-std::any TeXSerializer::Visit(const Negate<Expression>& negate)
+any TeXSerializer::Visit(const Negate<Expression>& negate)
 {
     const auto op = negate.GetOperand().Accept(*this);
-    return op ? std::format("\\left(-{}\\right)", op.value()) : std::any {};
+    return op ? std::format("\\left(-{}\\right)", op.value()) : any {};
 }
 
-std::any TeXSerializer::Visit(const Magnitude<Expression>& magnitude)
+any TeXSerializer::Visit(const Magnitude<Expression>& magnitude)
 {
     const auto op = magnitude.GetOperand().Accept(*this);
-    return op ? std::format("\\left|{}\\right|", op.value()) : std::any {};
+    return op ? std::format("\\left|{}\\right|", op.value()) : any {};
 }
 
-std::any TeXSerializer::Visit(const Derivative<Expression, Expression>& derivative)
+any TeXSerializer::Visit(const Derivative<Expression, Expression>& derivative)
 {
     auto ops = GetOpsOfBinExp(derivative);
     if (!ops)
@@ -216,7 +216,7 @@ std::any TeXSerializer::Visit(const Derivative<Expression, Expression>& derivati
     return std::format("\\frac{{d}}{{d{}}}\\left({}\\right)", mostSigOpStr, leastSigOpStr);
 }
 
-std::any TeXSerializer::Visit(const Integral<Expression, Expression>& integral)
+any TeXSerializer::Visit(const Integral<Expression, Expression>& integral)
 {
     auto ops = GetOpsOfBinExp(integral);
     if (!ops)

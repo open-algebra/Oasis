@@ -1,15 +1,18 @@
 #ifndef OASIS_EXPRESSION_HPP
 #define OASIS_EXPRESSION_HPP
 
-#include <any>
 #include <cstdint>
 #include <memory>
 #include <optional>
 #include <vector>
 
+#include <boost/any/unique_any.hpp>
+
 #include "Concepts.hpp"
 
 namespace Oasis {
+
+using any = boost::anys::unique_any;
 
 class Visitor;
 
@@ -185,15 +188,15 @@ protected:
      *
      * @param visitor The serializer class object to write the Expression data.
      */
-    virtual std::any AcceptInternal(Visitor& visitor) const = 0;
+    virtual any AcceptInternal(Visitor& visitor) const = 0;
 };
 
 template <IVisitor T>
 std::optional<typename T::RetT> Expression::Accept(T& visitor) const
 {
     try {
-        return std::any_cast<typename T::RetT>(this->AcceptInternal(visitor));
-    } catch (std::bad_any_cast&) {
+        return boost::any_cast<typename T::RetT>(this->AcceptInternal(visitor));
+    } catch (boost::bad_any_cast&) {
         return std::nullopt;
     }
 }
