@@ -13,8 +13,10 @@
 #include "Expression.hpp"
 #include "RecursiveCast.hpp"
 #include "Serialization.hpp"
+#include "Oasis/OasisPointers.hpp"
 
 namespace Oasis {
+
 /**
  * A concept for an operand of a binary expression.
  * @tparam MostSigOpT The type of the most significant operand.
@@ -75,7 +77,7 @@ auto BuildFromVector(const std::vector<std::unique_ptr<Expression>>& ops) -> std
  * @tparam MostSigOpT The type of the most significant operand.
  * @tparam LeastSigOpT The type of the least significant operand.
  */
-template <template <IExpression, IExpression> class DerivedT, IExpression MostSigOpT = Expression, IExpression LeastSigOpT = MostSigOpT, template<typename> class SmartPtr = std::unique_ptr>
+template <template <IExpression, IExpression> class DerivedT, IExpression MostSigOpT = Expression, IExpression LeastSigOpT = MostSigOpT, template<typename> class SmartPtr>
 class BinaryExpression : public Expression {
 
     using DerivedSpecialized = DerivedT<MostSigOpT, LeastSigOpT>;

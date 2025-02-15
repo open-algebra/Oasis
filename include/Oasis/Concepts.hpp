@@ -5,6 +5,7 @@
 #ifndef OASIS_CONCEPTS_HPP
 #define OASIS_CONCEPTS_HPP
 
+#include "Oasis/OasisPointers.hpp"
 namespace Oasis {
 class Expression;
 enum class ExpressionType;
@@ -31,7 +32,7 @@ concept IExpression = (requires(T, const Expression& other) {
     } -> std::same_as<ExpressionType>;
 } && std::derived_from<T, Expression>) || std::is_same_v<T, Expression>;
 
-template <template <IExpression, IExpression> class DerivedT, IExpression MostSigOpT, IExpression LeastSigOpT>
+template <template <IExpression, IExpression> class DerivedT, IExpression MostSigOpT, IExpression LeastSigOpT, template<typename> class SmartPtr = UniquePtr>
 class BinaryExpression;
 
 template <template <IExpression> class DerivedT, IExpression OpT>
