@@ -40,7 +40,7 @@ template <typename ArgumentT, typename Cases>
 class MatchCastImpl {
 public:
     template <typename Lambda>
-    auto Case(Lambda) const -> MatchCastImpl<ArgumentT, typename boost::mpl::push_back<Cases, Lambda>::type> { return {}; }
+    consteval auto Case(Lambda) const -> MatchCastImpl<ArgumentT, typename boost::mpl::push_back<Cases, Lambda>::type> { return {}; }
 
     auto Execute(const ArgumentT& arg, std::unique_ptr<ArgumentT>&& fallback) const -> std::unique_ptr<ArgumentT>
     {
