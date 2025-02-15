@@ -18,10 +18,10 @@ TEST_CASE("In-Fix Parsing Works for Simple Trees", "[Parsing]")
     };
 
     const auto result = Oasis::FromInFix("1 + 2");
-    REQUIRE(result.Ok());
+    REQUIRE(result.has_value());
 
-    const auto& parsed = result.GetResult();
-    REQUIRE(parsed.Equals(expected));
+    const auto& parsed = result.value();
+    REQUIRE(parsed->Equals(expected));
 }
 
 TEST_CASE("In-Fix Parsing Respects Order of Operations", "[Parsing]")
@@ -34,10 +34,10 @@ TEST_CASE("In-Fix Parsing Respects Order of Operations", "[Parsing]")
     };
 
     const auto result = Oasis::FromInFix("1 + 2 * 3");
-    REQUIRE(result.Ok());
+    REQUIRE(result.has_value());
 
-    const auto& parsed = result.GetResult();
-    REQUIRE(parsed.Equals(expected));
+    const auto& parsed = result.value();
+    REQUIRE(parsed->Equals(expected));
 }
 
 TEST_CASE("In-Fix Parsing Works with Functions", "[Parsing]")
@@ -50,10 +50,10 @@ TEST_CASE("In-Fix Parsing Works with Functions", "[Parsing]")
     };
 
     const auto result = Oasis::FromInFix("1 + log ( 2 , 3 )");
-    REQUIRE(result.Ok());
+    REQUIRE(result.has_value());
 
-    const auto& parsed = result.GetResult();
-    REQUIRE(parsed.Equals(expected));
+    const auto& parsed = result.value();
+    REQUIRE(parsed->Equals(expected));
 }
 
 TEST_CASE("In-Fix Parsing Works with Variables", "[Parsing]")
@@ -69,11 +69,11 @@ TEST_CASE("In-Fix Parsing Works with Variables", "[Parsing]")
 
     const auto preprocessed = Oasis::PreProcessInFix("1x+y3");
     const auto result = Oasis::FromInFix(preprocessed);
-    REQUIRE(result.Ok());
+    REQUIRE(result.has_value());
 
 
-    const auto& parsed = result.GetResult();
-    REQUIRE(parsed.Equals(expected));
+    const auto& parsed = result.value();
+    REQUIRE(parsed->Equals(expected));
 }
 
 TEST_CASE("In-Fix Preprocessor Works", "[Parsing]")

@@ -2,8 +2,8 @@
 #define OASIS_EXPRESSION_HPP
 
 #include <cstdint>
+#include <expected>
 #include <memory>
-#include <optional>
 #include <vector>
 
 #include <boost/any/unique_any.hpp>
@@ -178,7 +178,7 @@ public:
     [[nodiscard]] virtual auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> = 0;
 
     template <IVisitor T>
-    std::optional<typename T::RetT> Accept(T& visitor) const;
+    auto Accept(T& visitor) const -> std::expected<typename T::RetT, std::string>;
 
     virtual ~Expression() = default;
 
@@ -192,12 +192,12 @@ protected:
 };
 
 template <IVisitor T>
-std::optional<typename T::RetT> Expression::Accept(T& visitor) const
+auto Expression::Accept(T& visitor) const -> std::expected<typename T::RetT, std::string>
 {
     try {
         return boost::any_cast<typename T::RetT>(this->AcceptInternal(visitor));
-    } catch (boost::bad_any_cast&) {
-        return std::nullopt;
+    } catch (boost::bad_any_cast& e) {
+        return std::unexpected { e.what() };
     }
 }
 
