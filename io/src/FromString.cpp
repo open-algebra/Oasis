@@ -168,35 +168,6 @@ std::unique_ptr<Oasis::Expression> parseToken(const std::string& token, const Oa
 
 namespace Oasis {
 
-ParseResult::ParseResult(std::unique_ptr<Expression> expr)
-{
-    result = std::move(expr);
-}
-
-ParseResult::ParseResult(std::string err)
-    : result(err)
-{
-}
-
-bool ParseResult::Ok() const
-{
-    return result.index() == 0;
-}
-
-auto ParseResult::GetResult() const -> const Expression&
-{
-    return *std::get<std::unique_ptr<Expression>>(result);
-}
-
-std::string ParseResult::GetErrorMessage() const
-{
-    if (const auto message = std::get_if<std::string>(&result)) {
-        return *message;
-    }
-
-    return "No Error";
-}
-
 auto PreProcessFirstPass(const std::string& str) -> std::stringstream
 {
     std::stringstream result;
@@ -256,7 +227,7 @@ auto PreProcessInFix(const std::string& str) -> std::string
     return PreProcessFirstPass(secondPassResult.str()).str();
 }
 
-auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResult
+auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expected<std::unique_ptr<Expression>, std::string>
 {
     // Based off Dijkstra's Shunting Yard
 
@@ -280,7 +251,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
             // function_active = true;
             while (!ops.empty() && ops.top() != "(") {
                 if (!processOp(ops, st)) {
-                    return ParseResult { std::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
+                    return std::unexpected { std::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
                 }
             }
         }
@@ -288,12 +259,12 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
         else if (token == ")") {
             while (!ops.empty() && ops.top() != "(") {
                 if (!processOp(ops, st)) {
-                    return ParseResult { std::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
+                    return std::unexpected { std::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
                 }
             }
 
             if (ops.empty() || ops.top() != "(") {
-                return ParseResult { "Mismatched parenthesis" };
+                return std::unexpected { "Mismatched parenthesis" };
             }
 
             ops.pop(); // pop '('
@@ -301,7 +272,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
                 std::string func = ops.top();
                 ops.pop();
                 if (!processFunction(st, func)) {
-                    return ParseResult { std::format(R"(Unknown function: "{}")", token) };
+                    return std::unexpected { std::format(R"(Unknown function: "{}")", token) };
                 }
             }
         }
@@ -309,7 +280,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
         else if (is_operator(token)) {
             while (!ops.empty() && prec(ops.top()[0]) >= prec(token[0])) {
                 if (!processOp(ops, st)) {
-                    return ParseResult { std::format(R"(Unknown operator: "{}")", token) };
+                    return std::unexpected { std::format(R"(Unknown operator: "{}")", token) };
                 }
             }
             ops.push(token);
@@ -321,15 +292,12 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
     // Process remaining ops
     while (!ops.empty()) {
         if (!processOp(ops, st)) {
-            return ParseResult { std::format(R"(Unknown operator: "{}")", token) };
+            return std::unexpected { std::format(R"(Unknown operator: "{}")", token) };
         }
     }
 
-    if (st.empty()) {
-        return ParseResult { "Parsing failed" };
-    }
-
-    return ParseResult { st.top()->Copy() }; // root of the expression tree
+    if (st.empty()) return std::unexpected { "Parsing failed" };
+    return st.top()->Copy(); // root of the expression tree
 }
 
 }
