@@ -17,24 +17,18 @@
 #ifndef OASIS_MATCHCAST_HPP
 #define OASIS_MATCHCAST_HPP
 
+#include <boost/callable_traits/args.hpp>
 #include <boost/mpl/for_each.hpp>
 #include <boost/mpl/push_back.hpp>
 #include <boost/mpl/vector.hpp>
 
 #include <functional>
+#include <tuple>
 
 namespace Oasis {
 
-template <typename T>
-struct lambda_traits;
-
-template <typename Ret, typename ClassType, typename Arg>
-struct lambda_traits<Ret (ClassType::*)(Arg) const> {
-    using argument_type = std::remove_cvref_t<Arg>;
-};
-
 template <typename Lambda>
-using lambda_argument_type = typename lambda_traits<decltype(&Lambda::operator())>::argument_type;
+using lambda_argument_type = std::remove_cvref_t<std::tuple_element_t<0, boost::callable_traits::args_t<Lambda>>>;
 
 template <typename ArgumentT, typename Cases>
 class MatchCastImpl {
