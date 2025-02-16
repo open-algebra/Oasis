@@ -7,10 +7,11 @@
 
 #include "Expression.hpp"
 #include "Serialization.hpp"
+#include "Oasis/OasisPointers.hpp"
 
 namespace Oasis {
 
-template <template <IExpression> class DerivedT, IExpression OperandT>
+template <template <IExpression> class DerivedT, IExpression OperandT, template <typename> class SmartPtr>
 class UnaryExpression : public Expression {
 
     using DerivedSpecialized = DerivedT<OperandT>;
@@ -99,7 +100,7 @@ public:
     }
 
 protected:
-    std::unique_ptr<OperandT> op;
+    SmartPtr<OperandT> op;
 };
 
 } // Oasis

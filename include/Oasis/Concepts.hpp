@@ -35,7 +35,7 @@ concept IExpression = (requires(T, const Expression& other) {
 template <template <IExpression, IExpression> class DerivedT, IExpression MostSigOpT, IExpression LeastSigOpT, template<typename> class SmartPtr = UniquePtr>
 class BinaryExpression;
 
-template <template <IExpression> class DerivedT, IExpression OpT>
+template <template <IExpression> class DerivedT, IExpression OpT, template<typename> class SmartPtr = UniquePtr>
 class UnaryExpression;
 
 /**
