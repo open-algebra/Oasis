@@ -65,6 +65,12 @@ concept IVisitor = requires {
     requires std::is_base_of_v<Visitor, T>; // Ensures T derives from BaseClass
 };
 
+template <typename T>
+concept ExpectedWithStringView = requires {
+    typename T::unexpected_type;
+    std::same_as<typename T::unexpected_type, std::unexpected<std::string_view>>;
+};
+
 }
 
 #endif // OASIS_CONCEPTS_HPP

@@ -178,7 +178,10 @@ public:
     [[nodiscard]] virtual auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> = 0;
 
     template <IVisitor T>
-    auto Accept(T& visitor) const -> std::expected<typename T::RetT, std::string>;
+    auto Accept(T& visitor) const -> std::expected<typename T::RetT, std::string_view>;
+
+    template <IVisitor T> requires ExpectedWithStringView<typename T::RetT>
+    auto Accept(T& visitor) const -> typename T::RetT;
 
     virtual ~Expression() = default;
 
@@ -192,7 +195,17 @@ protected:
 };
 
 template <IVisitor T>
-auto Expression::Accept(T& visitor) const -> std::expected<typename T::RetT, std::string>
+auto Expression::Accept(T& visitor) const -> std::expected<typename T::RetT, std::string_view>
+{
+    try {
+        return boost::any_cast<typename T::RetT>(this->AcceptInternal(visitor));
+    } catch (boost::bad_any_cast& e) {
+        return std::unexpected { e.what() };
+    }
+}
+
+template <IVisitor T> requires ExpectedWithStringView<typename T::RetT>
+auto Expression::Accept(T& visitor) const -> typename T::RetT
 {
     try {
         return boost::any_cast<typename T::RetT>(this->AcceptInternal(visitor));
