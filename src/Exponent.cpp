@@ -26,87 +26,85 @@ Exponent<Expression>::Exponent(const Expression& base, const Expression& power)
 auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     static auto match_cast = MatchCast<Expression>()
-                                   .Case(
-                                       [](const Exponent<Expression, Real>& zeroCase) -> bool {
-                                           // TODO: Optimize. We're calling RecursiveCast<Expression<Real, Expression> twice. Perhaps a map of expression types to a vector of lambdas?
-                                           const Real& power = zeroCase.GetLeastSigOp();
-                                           return power.GetValue() == 0.0;
-                                        },
-                                        [](const Exponent<Expression, Real>&) -> std::unique_ptr<Expression> {
-                                            return std::make_unique<Real>(1.0);
-                                        }
-                                   )
-                                   .Case(
-                                       [](const Exponent<Real, Expression>& zeroCase) -> bool {
-                                           const Real& base = zeroCase.GetMostSigOp();
-                                           return base.GetValue() == 0.0;
-                                        },
-                                        [](const Exponent<Real, Expression>&) -> std::unique_ptr<Expression> {
-                                            return std::make_unique<Real>(0.0);
-                                        }
-                                   )
-                                   .Case(
-                                       [](const Exponent<Real>&) { return true; },
-                                       [](const Exponent<Real>& realCase) -> std::unique_ptr<Expression> {
-                                       const Real& base = realCase.GetMostSigOp();
-                                       const Real& power = realCase.GetLeastSigOp();
-                                       return std::make_unique<Real>(pow(base.GetValue(), power.GetValue()));
-                                   })
-                                   .Case(
-                                       [](const Exponent<Expression, Real>& oneCase) -> bool {
-                                           const Real& power = oneCase.GetLeastSigOp();
-                                           return power.GetValue() == 1.0;
-                                       },
-                                       [](const Exponent<Expression, Real>& oneCase) -> std::unique_ptr<Expression> {
-                                           return oneCase.GetMostSigOp().Copy();
-                                   })
-                                   .Case(
-                                       [](const Exponent<Real, Expression>& oneCase) -> bool {
-                                           const Real& base = oneCase.GetMostSigOp();
-                                           return base.GetValue() == 1.0;
-                                       },
-                                       [](const Exponent<Real, Expression>&) -> std::unique_ptr<Expression> {
-                                       return std::make_unique<Real>(1.0);
-                                   })
-                                   .Case(
-                                       [](const Exponent<Imaginary, Real>&) -> bool { return true; },
-                                       [](const Exponent<Imaginary, Real>& ImgCase) -> std::unique_ptr<Expression> {
-                                           switch (const auto power = std::fmod((ImgCase.GetLeastSigOp()).GetValue(), 4); static_cast<int>(power)) {
-                                       case 0:
-                                           return std::make_unique<Real>(1);
-                                       case 1:
-                                           return std::make_unique<Imaginary>();
-                                       case 2:
-                                           return std::make_unique<Real>(-1);
-                                       case 3:
-                                           return std::make_unique<Multiply<Real, Imaginary>>(Real{ -1 }, Imaginary{});
-                                       default:
-                                           return {};
-                                       }
-                                   })
-                                   .Case(
-                                       [](const Exponent<Multiply<Real, Expression>, Real>& ImgCase) -> bool {
-                                           return ImgCase.GetMostSigOp().GetMostSigOp().GetValue() < 0 && ImgCase.GetLeastSigOp().GetValue() == 0.5;
-                                       },
-                                       [](const Exponent<Multiply<Real, Expression>, Real>& ImgCase) -> std::unique_ptr<Expression> {
-                                           return std::make_unique<Multiply<>>(
-                                               Multiply{ Real{ pow(std::abs(ImgCase.GetMostSigOp().GetMostSigOp().GetValue()), 0.5) },
-                                                         Exponent{ ImgCase.GetMostSigOp().GetLeastSigOp(), Real{ 0.5 } } },
-                                               Imaginary{});
-                                   })
-                                   .Case(
-                                    [](const Exponent<Exponent<>, Expression>&) -> bool { return true; },
-                                   [](const Exponent<Exponent<>, Expression>& expExpCase) -> std::unique_ptr<Expression> {
-                                       return std::make_unique<Exponent<>>(expExpCase.GetMostSigOp().GetMostSigOp(),
-                                           *(Multiply{ expExpCase.GetMostSigOp().GetLeastSigOp(), expExpCase.GetLeastSigOp() }.Simplify()));
-                                   })
-                                   .Case(
-                                    [](const Exponent<Expression, Log<>>& logCase) -> bool {
-                                        return logCase.GetMostSigOp().Equals(logCase.GetLeastSigOp().GetMostSigOp());
-                                    },
-                                   [](const Exponent<Expression, Log<>>& logCase) -> std::unique_ptr<Expression> {
-                                        return logCase.GetLeastSigOp().GetLeastSigOp().Copy();
-                                   });
+                                 .Case(
+                                     [](const Exponent<Expression, Real>& zeroCase) -> bool {
+                                         // TODO: Optimize. We're calling RecursiveCast<Expression<Real, Expression> twice. Perhaps a map of expression types to a vector of lambdas?
+                                         const Real& power = zeroCase.GetLeastSigOp();
+                                         return power.GetValue() == 0.0;
+                                     },
+                                     [](const Exponent<Expression, Real>&) -> std::unique_ptr<Expression> {
+                                         return std::make_unique<Real>(1.0);
+                                     })
+                                 .Case(
+                                     [](const Exponent<Real, Expression>& zeroCase) -> bool {
+                                         const Real& base = zeroCase.GetMostSigOp();
+                                         return base.GetValue() == 0.0;
+                                     },
+                                     [](const Exponent<Real, Expression>&) -> std::unique_ptr<Expression> {
+                                         return std::make_unique<Real>(0.0);
+                                     })
+                                 .Case(
+                                     [](const Exponent<Real>&) { return true; },
+                                     [](const Exponent<Real>& realCase) -> std::unique_ptr<Expression> {
+                                         const Real& base = realCase.GetMostSigOp();
+                                         const Real& power = realCase.GetLeastSigOp();
+                                         return std::make_unique<Real>(pow(base.GetValue(), power.GetValue()));
+                                     })
+                                 .Case(
+                                     [](const Exponent<Expression, Real>& oneCase) -> bool {
+                                         const Real& power = oneCase.GetLeastSigOp();
+                                         return power.GetValue() == 1.0;
+                                     },
+                                     [](const Exponent<Expression, Real>& oneCase) -> std::unique_ptr<Expression> {
+                                         return oneCase.GetMostSigOp().Copy();
+                                     })
+                                 .Case(
+                                     [](const Exponent<Real, Expression>& oneCase) -> bool {
+                                         const Real& base = oneCase.GetMostSigOp();
+                                         return base.GetValue() == 1.0;
+                                     },
+                                     [](const Exponent<Real, Expression>&) -> std::unique_ptr<Expression> {
+                                         return std::make_unique<Real>(1.0);
+                                     })
+                                 .Case(
+                                     [](const Exponent<Imaginary, Real>&) -> bool { return true; },
+                                     [](const Exponent<Imaginary, Real>& ImgCase) -> std::unique_ptr<Expression> {
+                                         switch (const auto power = std::fmod((ImgCase.GetLeastSigOp()).GetValue(), 4); static_cast<int>(power)) {
+                                         case 0:
+                                             return std::make_unique<Real>(1);
+                                         case 1:
+                                             return std::make_unique<Imaginary>();
+                                         case 2:
+                                             return std::make_unique<Real>(-1);
+                                         case 3:
+                                             return std::make_unique<Multiply<Real, Imaginary>>(Real { -1 }, Imaginary {});
+                                         default:
+                                             return {};
+                                         }
+                                     })
+                                 .Case(
+                                     [](const Exponent<Multiply<Real, Expression>, Real>& ImgCase) -> bool {
+                                         return ImgCase.GetMostSigOp().GetMostSigOp().GetValue() < 0 && ImgCase.GetLeastSigOp().GetValue() == 0.5;
+                                     },
+                                     [](const Exponent<Multiply<Real, Expression>, Real>& ImgCase) -> std::unique_ptr<Expression> {
+                                         return std::make_unique<Multiply<>>(
+                                             Multiply { Real { pow(std::abs(ImgCase.GetMostSigOp().GetMostSigOp().GetValue()), 0.5) },
+                                                 Exponent { ImgCase.GetMostSigOp().GetLeastSigOp(), Real { 0.5 } } },
+                                             Imaginary {});
+                                     })
+                                 .Case(
+                                     [](const Exponent<Exponent<>, Expression>&) -> bool { return true; },
+                                     [](const Exponent<Exponent<>, Expression>& expExpCase) -> std::unique_ptr<Expression> {
+                                         return std::make_unique<Exponent<>>(expExpCase.GetMostSigOp().GetMostSigOp(),
+                                             *(Multiply { expExpCase.GetMostSigOp().GetLeastSigOp(), expExpCase.GetLeastSigOp() }.Simplify()));
+                                     })
+                                 .Case(
+                                     [](const Exponent<Expression, Log<>>& logCase) -> bool {
+                                         return logCase.GetMostSigOp().Equals(logCase.GetLeastSigOp().GetMostSigOp());
+                                     },
+                                     [](const Exponent<Expression, Log<>>& logCase) -> std::unique_ptr<Expression> {
+                                         return logCase.GetLeastSigOp().GetLeastSigOp().Copy();
+                                     });
 
     const auto simplifiedBase = mostSigOp->Simplify();
     const auto simplifiedPower = leastSigOp->Simplify();
