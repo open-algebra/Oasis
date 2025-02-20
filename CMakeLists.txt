@@ -17,6 +17,10 @@ option(OASIS_BUILD_WITH_COVERAGE
 option(OASIS_BUILD_PARANOID
        "Enables the -Werror flag friends when building Oasis" OFF)
 
+if (OASIS_BUILD_CLI)
+    set(OASIS_BUILD_IO ON CACHE BOOL "OASIS_BUILD_IO enabled by OASIS_BUILD_CLI" FORCE)
+endif ()
+
 # Adds compiler flags for code coverage. Note that only the Clang compiler is
 # currently supported for code coverage.
 if(OASIS_BUILD_WITH_COVERAGE)
@@ -34,13 +38,14 @@ FetchContent_MakeAvailable(Catch2)
 
 include(cmake/FetchBoost.cmake)
 include(cmake/FetchEigen.cmake)
-include(cmake/FetchTinyxml2.cmake)
 
 # Processes the CMakeLists.txt for each target.
 add_subdirectory(include)
 add_subdirectory(src)
 
 if(OASIS_BUILD_IO)
+    include(cmake/FetchTinyxml2.cmake)
+
     FetchContent_Declare(
         GSL
         GIT_REPOSITORY "https://github.com/microsoft/GSL"
@@ -55,3 +60,16 @@ endif()
 if(OASIS_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
+
+if (OASIS_BUILD_CLI)
+    include(cmake/FetchLinenoise.cmake)
+
+    FetchContent_Declare(
+            fmt
+            GIT_REPOSITORY https://github.com/fmtlib/fmt
+            GIT_TAG        11.1.3)
+
+    FetchContent_MakeAvailable(fmt)
+
+    add_subdirectory(cli)
+endif ()
