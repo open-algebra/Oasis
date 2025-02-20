@@ -26,49 +26,47 @@
 #include <functional>
 #include <tuple>
 
-namespace Oasis
-{
-    template <typename Lambda>
-    using lambda_argument_type = std::remove_cvref_t<std::tuple_element_t<0, boost::callable_traits::args_t<Lambda>>>;
+namespace Oasis {
+template <typename Lambda>
+using lambda_argument_type = std::remove_cvref_t<std::tuple_element_t<0, boost::callable_traits::args_t<Lambda>>>;
 
-    template <typename CheckF, typename TransformerF>
-    concept TransformerAcceptsCheckArg = requires(CheckF f1, TransformerF f2, const lambda_argument_type<CheckF>& t)
+template <typename CheckF, typename TransformerF>
+concept TransformerAcceptsCheckArg = requires(CheckF f1, TransformerF f2, const lambda_argument_type<CheckF>& t) {
+    { f1(t) } -> std::convertible_to<bool>;
+    { f2(t) } -> std::same_as<std::unique_ptr<Expression>>;
+};
+
+template <typename ArgumentT, typename Cases>
+class MatchCastImpl {
+public:
+    template <typename Check, typename Transformer>
+        requires TransformerAcceptsCheckArg<Check, Transformer>
+    consteval auto Case(
+        Check,
+        Transformer) const -> MatchCastImpl<ArgumentT, typename boost::mpl::push_back<Cases, std::pair<Check, Transformer>>::type>
     {
-        { f1(t) } -> std::convertible_to<bool>;
-        { f2(t) } -> std::same_as<std::unique_ptr<Expression>>;
-    };
+        return {};
+    }
 
-    template <typename ArgumentT, typename Cases>
-    class MatchCastImpl
+    auto Execute(const ArgumentT& arg, std::unique_ptr<ArgumentT>&& fallback) const -> std::unique_ptr<ArgumentT>
     {
-    public:
-        template <typename Check, typename Transformer> requires TransformerAcceptsCheckArg<Check, Transformer>
-        consteval auto Case(
-            Check,
-            Transformer) const -> MatchCastImpl<ArgumentT, typename boost::mpl::push_back<
-                                                    Cases, std::pair<Check, Transformer>>::type> { return {}; }
+        std::unique_ptr<ArgumentT> result = nullptr;
+        boost::mpl::for_each<Cases>(
+            [&]<typename Check, typename Transformer>(std::pair<Check, Transformer> checkAndTransformer) {
+                using CaseType = lambda_argument_type<Check>;
+                if (result)
+                    return;
 
-        auto Execute(const ArgumentT& arg, std::unique_ptr<ArgumentT>&& fallback) const -> std::unique_ptr<ArgumentT>
-        {
-            std::unique_ptr<ArgumentT> result = nullptr;
-            boost::mpl::for_each<Cases>(
-                [&]<typename Check, typename Transformer>(std::pair<Check, Transformer> checkAndTransformer)
-                {
-                    using CaseType = lambda_argument_type<Check>;
-                    if (result)
-                        return;
+                auto [check, transformer] = checkAndTransformer;
+                if (std::unique_ptr<CaseType> castResult = RecursiveCast<CaseType>(arg); castResult && check(*castResult))
+                    result = transformer(*castResult);
+            });
+        return result ? std::move(result) : std::move(fallback);
+    }
+};
 
-                    auto [check, transformer] = checkAndTransformer;
-                    if (std::unique_ptr<CaseType> castResult = RecursiveCast<CaseType>(arg); castResult && check(
-                        *castResult))
-                        result = transformer(*castResult);
-                });
-            return result ? std::move(result) : std::move(fallback);
-        }
-    };
-
-    template <typename ArgumentT>
-    using MatchCast = MatchCastImpl<ArgumentT, boost::mpl::vector<>>;
+template <typename ArgumentT>
+using MatchCast = MatchCastImpl<ArgumentT, boost::mpl::vector<>>;
 }
 
 #endif // OASIS_MATCHCAST_HPP

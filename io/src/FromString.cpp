@@ -296,7 +296,8 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
         }
     }
 
-    if (st.empty()) return std::unexpected { "Parsing failed" };
+    if (st.empty())
+        return std::unexpected { "Parsing failed" };
     return st.top()->Copy(); // root of the expression tree
 }
 
