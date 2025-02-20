@@ -21,99 +21,93 @@
 
 namespace Oasis {
 
-any InFixSerializer::Visit(const Real& real)
+auto InFixSerializer::TypedVisit(const Real& real) -> RetT
 {
-    return std::format("{:.5}", real.GetValue());
+    return std::expected<std::string, std::string_view> { std::format("{:.5}", real.GetValue()) };
 }
 
-any InFixSerializer::Visit(const Imaginary&)
+auto InFixSerializer::TypedVisit(const Imaginary&) -> RetT
 {
     return "i";
 }
 
-any InFixSerializer::Visit(const Variable& variable)
+auto InFixSerializer::TypedVisit(const Variable& variable) -> RetT
 {
     return variable.GetName();
 }
 
-any InFixSerializer::Visit(const Undefined&)
+auto InFixSerializer::TypedVisit(const Undefined&) -> RetT
 {
     return "Undefined";
 }
 
-any InFixSerializer::Visit(const Add<>& add)
+auto InFixSerializer::TypedVisit(const Add<>& add) -> RetT
 {
-    auto result = SerializeArithBinExp(add, "+");
-    return result ? result.value() : any {};
+    return SerializeArithBinExp(add, "+");
 }
 
-any InFixSerializer::Visit(const Subtract<>& subtract)
+auto InFixSerializer::TypedVisit(const Subtract<>& subtract) -> RetT
 {
-    auto result = SerializeArithBinExp(subtract, "-");
-    return result ? result.value() : any {};
+    return SerializeArithBinExp(subtract, "-");
 }
 
-any InFixSerializer::Visit(const Multiply<>& multiply)
+auto InFixSerializer::TypedVisit(const Multiply<>& multiply) -> RetT
 {
-    auto result = SerializeArithBinExp(multiply, "*");
-    return result ? result.value() : any {};
+    return SerializeArithBinExp(multiply, "*");
 }
 
-any InFixSerializer::Visit(const Divide<>& divide)
+auto InFixSerializer::TypedVisit(const Divide<>& divide) -> RetT
 {
-    auto result = SerializeArithBinExp(divide, "/");
-    return result ? result.value() : any {};
+    return SerializeArithBinExp(divide, "/");
 }
 
-any InFixSerializer::Visit(const Exponent<>& exponent)
+auto InFixSerializer::TypedVisit(const Exponent<>& exponent) -> RetT
 {
-    auto result = SerializeArithBinExp(exponent, "^");
-    return result ? result.value() : any {};
+    return SerializeArithBinExp(exponent, "^");
 }
 
-any InFixSerializer::Visit(const Log<>& log)
+auto InFixSerializer::TypedVisit(const Log<>& log) -> RetT
 {
-    auto result = SerializeArithBinExp(log, "log");
-    return result ? result.value() : any {};
+    return SerializeArithBinExp(log, "log");
 }
 
-any InFixSerializer::Visit(const Negate<Expression>& negate)
+auto InFixSerializer::TypedVisit(const Negate<Expression>& negate) -> RetT
 {
-    auto opStr = negate.GetOperand().Accept(*this);
-    return opStr ? std::format("-({})", opStr.value()) : any {};
+    return negate.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("-({})", str);
+    });
 }
 
-any InFixSerializer::Visit(const Derivative<>& derivative)
+auto InFixSerializer::TypedVisit(const Derivative<>& derivative) -> RetT
 {
-    auto result = SerializeFuncBinExp(derivative, "dd");
-    return result ? result.value() : any {};
+    return SerializeFuncBinExp(derivative, "dd");
 }
 
-any InFixSerializer::Visit(const Integral<>& integral)
+auto InFixSerializer::TypedVisit(const Integral<>& integral) -> RetT
 {
-    auto result = SerializeFuncBinExp(integral, "in");
-    return result ? result.value() : any {};
+    return SerializeFuncBinExp(integral, "in");
 }
 
-any InFixSerializer::Visit(const Matrix&)
+auto InFixSerializer::TypedVisit(const Matrix&) -> RetT
 {
-    return "NOT IMPLEMENTED";
+    return std::unexpected { "NOT IMPLEMENTED" };
 }
 
-any InFixSerializer::Visit(const EulerNumber&)
+auto InFixSerializer::TypedVisit(const EulerNumber&) -> RetT
 {
     return "e";
 }
 
-any InFixSerializer::Visit(const Pi&)
+auto InFixSerializer::TypedVisit(const Pi&) -> RetT
 {
     return "pi";
 }
 
-any InFixSerializer::Visit(const Magnitude<Expression>& magnitude)
+auto InFixSerializer::TypedVisit(const Magnitude<Expression>& magnitude) -> RetT
 {
-    const auto opStr = magnitude.GetOperand().Accept(*this);
-    return opStr ? std::format("|({})|", opStr.value()) : any {};
+    return magnitude.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("|{}|", str);
+    });
 }
 
 } // Oasis

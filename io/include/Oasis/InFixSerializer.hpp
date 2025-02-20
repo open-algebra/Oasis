@@ -12,64 +12,54 @@
 
 namespace Oasis {
 
-class InFixSerializer final : public Visitor {
+class InFixSerializer final : public TypedVisitor<std::expected<std::string, std::string_view>> {
 public:
-    using RetT = std::string;
-
-    any Visit(const Real& real) override;
-    any Visit(const Imaginary& imaginary) override;
-    any Visit(const Variable& variable) override;
-    any Visit(const Undefined& undefined) override;
-    any Visit(const Add<Expression, Expression>& add) override;
-    any Visit(const Subtract<Expression, Expression>& subtract) override;
-    any Visit(const Multiply<Expression, Expression>& multiply) override;
-    any Visit(const Divide<Expression, Expression>& divide) override;
-    any Visit(const Exponent<Expression, Expression>& exponent) override;
-    any Visit(const Log<Expression, Expression>& log) override;
-    any Visit(const Negate<Expression>& negate) override;
-    any Visit(const Derivative<Expression, Expression>& derivative) override;
-    any Visit(const Integral<Expression, Expression>& integral) override;
-    any Visit(const Matrix& matrix) override;
-    any Visit(const EulerNumber&) override;
-    any Visit(const Pi&) override;
-    any Visit(const Magnitude<Expression>& magnitude) override;
+    auto TypedVisit(const Real& real) -> RetT override;
+    auto TypedVisit(const Imaginary& imaginary) -> RetT override;
+    auto TypedVisit(const Variable& variable) -> RetT override;
+    auto TypedVisit(const Undefined& undefined) -> RetT override;
+    auto TypedVisit(const Add<Expression, Expression>& add) -> RetT override;
+    auto TypedVisit(const Subtract<Expression, Expression>& subtract) -> RetT override;
+    auto TypedVisit(const Multiply<Expression, Expression>& multiply) -> RetT override;
+    auto TypedVisit(const Divide<Expression, Expression>& divide) -> RetT override;
+    auto TypedVisit(const Exponent<Expression, Expression>& exponent) -> RetT override;
+    auto TypedVisit(const Log<Expression, Expression>& log) -> RetT override;
+    auto TypedVisit(const Negate<Expression>& negate) -> RetT override;
+    auto TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT override;
+    auto TypedVisit(const Integral<Expression, Expression>& integral) -> RetT override;
+    auto TypedVisit(const Matrix& matrix) -> RetT override;
+    auto TypedVisit(const EulerNumber&) -> RetT override;
+    auto TypedVisit(const Pi&) -> RetT override;
+    auto TypedVisit(const Magnitude<Expression>& magnitude) -> RetT override;
 
 private:
-    auto GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::optional<std::pair<std::string, std::string>>;
-    auto SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::optional<std::string>;
-    auto SerializeFuncBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& func) -> std::optional<std::string>;
-
-    std::string result;
+    auto GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::expected<std::pair<std::string, std::string>, std::string_view>;
+    auto SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::expected<std::string, std::string_view>;
+    auto SerializeFuncBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& func) -> std::expected<std::string, std::string_view>;
 };
 
-auto InFixSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::optional<std::pair<std::string, std::string>>
+auto InFixSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::expected<std::pair<std::string, std::string>, std::string_view>
 {
-    const auto mostSigOpStr = visited.GetMostSigOp().Accept(*this);
-    const auto leastSigOpStr = visited.GetLeastSigOp().Accept(*this);
-    if (!mostSigOpStr || !leastSigOpStr)
-        return {};
-
-    return std::pair { mostSigOpStr.value(), leastSigOpStr.value() };
+    InFixSerializer& thisSerializer = *this;
+    return visited.GetMostSigOp().Accept(thisSerializer).and_then([&thisSerializer, &visited](const auto& mostSigOpStr) {
+        return visited.GetLeastSigOp().Accept(thisSerializer).transform([&mostSigOpStr](const auto& leastSigOpStr) {
+            return std::pair { mostSigOpStr, leastSigOpStr };
+        });
+    });
 }
 
-auto InFixSerializer::SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::optional<std::string>
+auto InFixSerializer::SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::expected<std::string, std::string_view>
 {
-    auto ops = GetOpsOfBinExp(visited);
-    if (!ops)
-        return {};
-
-    const auto& [mostSigOpStr, leastSigOpStr] = ops.value();
-    return std::format("({}{}{})", mostSigOpStr, op, leastSigOpStr);
+    return GetOpsOfBinExp(visited).transform([&op](const auto& ops) {
+        return std::format("({}{}{})", ops.first, op, ops.second);
+    });
 }
 
-auto InFixSerializer::SerializeFuncBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& func) -> std::optional<std::string>
+auto InFixSerializer::SerializeFuncBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& func) -> std::expected<std::string, std::string_view>
 {
-    auto ops = GetOpsOfBinExp(visited);
-    if (!ops)
-        return {};
-
-    const auto& [mostSigOpStr, leastSigOpStr] = ops.value();
-    return std::format("{}({},{})", func, mostSigOpStr, leastSigOpStr);
+    return GetOpsOfBinExp(visited).transform([&func](const auto& ops) {
+        return std::format("{}({},{})", func, ops.first, ops.second);
+    });
 }
 
 } // Oasis
