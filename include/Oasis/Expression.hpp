@@ -1,15 +1,18 @@
 #ifndef OASIS_EXPRESSION_HPP
 #define OASIS_EXPRESSION_HPP
 
-#include <any>
 #include <cstdint>
+#include <expected>
 #include <memory>
-#include <optional>
 #include <vector>
+
+#include <boost/any/unique_any.hpp>
 
 #include "Concepts.hpp"
 
 namespace Oasis {
+
+using any = boost::anys::unique_any;
 
 class Visitor;
 
@@ -175,7 +178,7 @@ public:
     [[nodiscard]] virtual auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> = 0;
 
     template <IVisitor T>
-    std::optional<typename T::RetT> Accept(T& visitor) const;
+    auto Accept(T& visitor) const -> std::expected<typename T::RetT, std::string>;
 
     virtual ~Expression() = default;
 
@@ -185,16 +188,16 @@ protected:
      *
      * @param visitor The serializer class object to write the Expression data.
      */
-    virtual std::any AcceptInternal(Visitor& visitor) const = 0;
+    virtual any AcceptInternal(Visitor& visitor) const = 0;
 };
 
 template <IVisitor T>
-std::optional<typename T::RetT> Expression::Accept(T& visitor) const
+auto Expression::Accept(T& visitor) const -> std::expected<typename T::RetT, std::string>
 {
     try {
-        return std::any_cast<typename T::RetT>(this->AcceptInternal(visitor));
-    } catch (std::bad_any_cast&) {
-        return std::nullopt;
+        return boost::any_cast<typename T::RetT>(this->AcceptInternal(visitor));
+    } catch (boost::bad_any_cast& e) {
+        return std::unexpected { e.what() };
     }
 }
 

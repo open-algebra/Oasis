@@ -75,23 +75,23 @@ public:
     void AddTeXPackage(TeXOpts::Pkgs package);
     void RemoveTeXPackage(TeXOpts::Pkgs package);
 
-    std::any Visit(const Real& real) override;
-    std::any Visit(const Imaginary& imaginary) override;
-    std::any Visit(const Matrix& matrix) override;
-    std::any Visit(const Variable& variable) override;
-    std::any Visit(const Undefined& undefined) override;
-    std::any Visit(const Pi&) override;
-    std::any Visit(const EulerNumber&) override;
-    std::any Visit(const Add<Expression, Expression>& add) override;
-    std::any Visit(const Subtract<Expression, Expression>& subtract) override;
-    std::any Visit(const Multiply<Expression, Expression>& multiply) override;
-    std::any Visit(const Divide<Expression, Expression>& divide) override;
-    std::any Visit(const Exponent<Expression, Expression>& exponent) override;
-    std::any Visit(const Log<Expression, Expression>& log) override;
-    std::any Visit(const Negate<Expression>& negate) override;
-    std::any Visit(const Magnitude<Expression>& magnitude) override;
-    std::any Visit(const Derivative<Expression, Expression>& derivative) override;
-    std::any Visit(const Integral<Expression, Expression>& integral) override;
+    auto Visit(const Real& real) -> any override;
+    auto Visit(const Imaginary& imaginary) -> any override;
+    auto Visit(const Matrix& matrix) -> any override;
+    auto Visit(const Variable& variable) -> any override;
+    auto Visit(const Undefined& undefined) -> any override;
+    auto Visit(const Pi&) -> any override;
+    auto Visit(const EulerNumber&) -> any override;
+    auto Visit(const Add<Expression, Expression>& add) -> any override;
+    auto Visit(const Subtract<Expression, Expression>& subtract) -> any override;
+    auto Visit(const Multiply<Expression, Expression>& multiply) -> any override;
+    auto Visit(const Divide<Expression, Expression>& divide) -> any override;
+    auto Visit(const Exponent<Expression, Expression>& exponent) -> any override;
+    auto Visit(const Log<Expression, Expression>& log) -> any override;
+    auto Visit(const Negate<Expression>& negate) -> any override;
+    auto Visit(const Magnitude<Expression>& magnitude) -> any override;
+    auto Visit(const Derivative<Expression, Expression>& derivative) -> any override;
+    auto Visit(const Integral<Expression, Expression>& integral) -> any override;
 
 private:
     TeXOpts latexOptions {};

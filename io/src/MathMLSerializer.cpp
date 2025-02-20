@@ -29,21 +29,21 @@ MathMLSerializer::MathMLSerializer(tinyxml2::XMLDocument& doc)
 {
 }
 
-std::any MathMLSerializer::Visit(const Real& real)
+any MathMLSerializer::Visit(const Real& real)
 {
     tinyxml2::XMLElement* result = doc.NewElement("mn");
     result->SetText(std::format("{:.5}", real.GetValue()).c_str());
     return result;
 }
 
-std::any MathMLSerializer::Visit(const Imaginary&)
+any MathMLSerializer::Visit(const Imaginary&)
 {
     tinyxml2::XMLElement* result = doc.NewElement("mi");
     result->SetText("i");
     return result;
 }
 
-std::any MathMLSerializer::Visit(const Matrix& matrix)
+any MathMLSerializer::Visit(const Matrix& matrix)
 {
     tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
 
@@ -75,35 +75,35 @@ std::any MathMLSerializer::Visit(const Matrix& matrix)
     return mrow;
 }
 
-std::any MathMLSerializer::Visit(const Oasis::Pi&)
+any MathMLSerializer::Visit(const Oasis::Pi&)
 {
     tinyxml2::XMLElement* result = doc.NewElement("mi");
     result->SetText("&pi;");
     return result;
 }
 
-std::any MathMLSerializer::Visit(const Oasis::EulerNumber&)
+any MathMLSerializer::Visit(const Oasis::EulerNumber&)
 {
     tinyxml2::XMLElement* result = doc.NewElement("mi");
     result->SetText("e");
     return result;
 }
 
-std::any MathMLSerializer::Visit(const Variable& variable)
+any MathMLSerializer::Visit(const Variable& variable)
 {
     tinyxml2::XMLElement* result = doc.NewElement("mi");
     result->SetText(variable.GetName().c_str());
     return result;
 }
 
-std::any MathMLSerializer::Visit(const Undefined&)
+any MathMLSerializer::Visit(const Undefined&)
 {
     tinyxml2::XMLElement* const mtext = doc.NewElement("mtext");
     mtext->SetText("Undefined");
     return mtext;
 }
 
-std::any MathMLSerializer::Visit(const Add<>& add)
+any MathMLSerializer::Visit(const Add<>& add)
 {
     tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
 
@@ -125,7 +125,7 @@ std::any MathMLSerializer::Visit(const Add<>& add)
     return mrow;
 }
 
-std::any MathMLSerializer::Visit(const Subtract<>& subtract)
+any MathMLSerializer::Visit(const Subtract<>& subtract)
 {
     // mrow
     tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
@@ -168,7 +168,7 @@ std::any MathMLSerializer::Visit(const Subtract<>& subtract)
     return mrow;
 }
 
-std::any MathMLSerializer::Visit(const Multiply<>& multiply)
+any MathMLSerializer::Visit(const Multiply<>& multiply)
 {
     tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
 
@@ -228,7 +228,7 @@ std::any MathMLSerializer::Visit(const Multiply<>& multiply)
     return mrow;
 }
 
-std::any MathMLSerializer::Visit(const Divide<>& divide)
+any MathMLSerializer::Visit(const Divide<>& divide)
 {
     tinyxml2::XMLElement* mfrac = doc.NewElement("mfrac");
 
@@ -240,7 +240,7 @@ std::any MathMLSerializer::Visit(const Divide<>& divide)
     return mfrac;
 }
 
-std::any MathMLSerializer::Visit(const Exponent<>& exponent)
+any MathMLSerializer::Visit(const Exponent<>& exponent)
 {
     tinyxml2::XMLElement* msup = doc.NewElement("msup");
 
@@ -271,7 +271,7 @@ std::any MathMLSerializer::Visit(const Exponent<>& exponent)
     return msup;
 }
 
-std::any MathMLSerializer::Visit(const Log<>& log)
+any MathMLSerializer::Visit(const Log<>& log)
 {
     // mrow
     tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
@@ -303,7 +303,7 @@ std::any MathMLSerializer::Visit(const Log<>& log)
     return mrow;
 }
 
-std::any MathMLSerializer::Visit(const Negate<Expression>& negate)
+any MathMLSerializer::Visit(const Negate<Expression>& negate)
 {
     // mrow
     tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
@@ -329,7 +329,7 @@ std::any MathMLSerializer::Visit(const Negate<Expression>& negate)
     return mrow;
 }
 
-std::any MathMLSerializer::Visit(const Derivative<>& derivative)
+any MathMLSerializer::Visit(const Derivative<>& derivative)
 {
     tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
 
@@ -367,7 +367,7 @@ std::any MathMLSerializer::Visit(const Derivative<>& derivative)
     return mrow;
 }
 
-std::any MathMLSerializer::Visit(const Integral<>& integral)
+any MathMLSerializer::Visit(const Integral<>& integral)
 {
     tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
 
@@ -406,7 +406,7 @@ tinyxml2::XMLElement* MathMLSerializer::CreatePlaceholder() const
     return mspace;
 }
 
-std::any MathMLSerializer::Visit(const Magnitude<Expression>& magnitude)
+any MathMLSerializer::Visit(const Magnitude<Expression>& magnitude)
 {
     // mrow
     tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
@@ -416,7 +416,7 @@ std::any MathMLSerializer::Visit(const Magnitude<Expression>& magnitude)
     leftParen->SetText("|");
     mrow->InsertEndChild(leftParen);
 
-    const auto operandElement = std::any_cast<tinyxml2::XMLElement*>(magnitude.GetOperand().Accept(*this));
+    const auto operandElement = magnitude.GetOperand().Accept(*this).value();
     mrow->InsertEndChild(operandElement);
 
     // )
