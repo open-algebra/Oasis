@@ -174,7 +174,7 @@ auto TeXSerializer::TypedVisit(const Exponent<Expression, Expression>& exponent)
 
 auto TeXSerializer::TypedVisit(const Log<Expression, Expression>& log) -> RetT
 {
-    return GetOpsOfBinExp(log).transform([this](const std::pair<std::string, std::string>& ops) {
+    return GetOpsOfBinExp(log).transform([](const std::pair<std::string, std::string>& ops) {
         return std::format("\\log_{{{}}}\\left({}\\right)", ops.first, ops.second);
     });
 }
@@ -195,14 +195,14 @@ auto TeXSerializer::TypedVisit(const Magnitude<Expression>& magnitude) -> RetT
 
 auto TeXSerializer::TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT
 {
-    return GetOpsOfBinExp(derivative).transform([this](const std::pair<std::string, std::string>& ops) {
+    return GetOpsOfBinExp(derivative).transform([](const std::pair<std::string, std::string>& ops) {
         return std::format("\\frac{{d}}{{d{}}}\\left({}\\right)", ops.first, ops.second);
     });
 }
 
 auto TeXSerializer::TypedVisit(const Integral<Expression, Expression>& integral) -> RetT
 {
-    return GetOpsOfBinExp(integral).transform([this](const std::pair<std::string, std::string>& ops) {
+    return GetOpsOfBinExp(integral).transform([](const std::pair<std::string, std::string>& ops) {
         return std::format("\\int\\left({}\\right)d{}", ops.first, ops.second);
     });
 }
