@@ -41,8 +41,8 @@ private:
 auto InFixSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::expected<std::pair<std::string, std::string>, std::string_view>
 {
     InFixSerializer& thisSerializer = *this;
-    return visited.GetMostSigOp().Accept(thisSerializer).and_then([&thisSerializer, &visited](const auto& mostSigOpStr) {
-        return visited.GetLeastSigOp().Accept(thisSerializer).transform([&mostSigOpStr](const auto& leastSigOpStr) {
+    return visited.GetMostSigOp().Accept(thisSerializer).and_then([&thisSerializer, &visited](const std::string& mostSigOpStr) {
+        return visited.GetLeastSigOp().Accept(thisSerializer).transform([&mostSigOpStr](const std::string& leastSigOpStr) {
             return std::pair { mostSigOpStr, leastSigOpStr };
         });
     });

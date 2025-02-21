@@ -12,7 +12,7 @@ add_library(OasisIO ${OASIS_IO_SOURCES} ${OASIS_IO_HEADERS})
 add_library(Oasis::IO ALIAS OasisIO)
 
 target_include_directories(OasisIO PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(OasisIO PUBLIC Oasis::Oasis tinyxml2::tinyxml2)
+target_link_libraries(OasisIO PUBLIC Oasis::Oasis Microsoft.GSL::GSL tinyxml2::tinyxml2)
 
 if(OASIS_BUILD_PARANOID)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
