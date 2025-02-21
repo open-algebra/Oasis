@@ -280,33 +280,33 @@ auto MathMLSerializer::TypedVisit(const Log<>& log) -> RetT
 {
     return GetOpsAsMathMLPair(log).transform([this, log](const auto& ops) {
         // mrow
-         tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+        tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
 
-         // log
-         tinyxml2::XMLElement* const msub = doc.NewElement("msub");
+        // log
+        tinyxml2::XMLElement* const msub = doc.NewElement("msub");
 
-         tinyxml2::XMLElement* const logElement = doc.NewElement("mi");
-         logElement->SetText("log");
+        tinyxml2::XMLElement* const logElement = doc.NewElement("mi");
+        logElement->SetText("log");
 
-         auto [baseElement, argElement] = ops;
+        auto [baseElement, argElement] = ops;
 
-         msub->InsertFirstChild(logElement);
-         msub->InsertEndChild(baseElement);
-         mrow->InsertFirstChild(msub);
+        msub->InsertFirstChild(logElement);
+        msub->InsertEndChild(baseElement);
+        mrow->InsertFirstChild(msub);
 
-         // (
-         tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
-         leftParen->SetText("(");
+        // (
+        tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+        leftParen->SetText("(");
 
-         // )
-         tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
-         rightParen->SetText(")");
+        // )
+        tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+        rightParen->SetText(")");
 
-         mrow->InsertEndChild(leftParen);
-         mrow->InsertEndChild(argElement);
-         mrow->InsertEndChild(rightParen);
+        mrow->InsertEndChild(leftParen);
+        mrow->InsertEndChild(argElement);
+        mrow->InsertEndChild(rightParen);
 
-         return mrow;
+        return mrow;
     });
 }
 

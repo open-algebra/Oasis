@@ -18,23 +18,23 @@ class MathMLSerializer final : public TypedVisitor<std::expected<gsl::not_null<t
 public:
     explicit MathMLSerializer(tinyxml2::XMLDocument& doc);
 
-    auto TypedVisit(const Real& real)-> RetT override;
-    auto TypedVisit(const Imaginary& imaginary)-> RetT override;
-    auto TypedVisit(const Matrix& matrix)-> RetT override;
-    auto TypedVisit(const Variable& variable)-> RetT override;
-    auto TypedVisit(const Undefined& undefined)-> RetT override;
-    auto TypedVisit(const Pi&)-> RetT override;
-    auto TypedVisit(const EulerNumber&)-> RetT override;
-    auto TypedVisit(const Add<Expression, Expression>& add)-> RetT override;
-    auto TypedVisit(const Subtract<Expression, Expression>& subtract)-> RetT override;
-    auto TypedVisit(const Multiply<Expression, Expression>& multiply)-> RetT override;
-    auto TypedVisit(const Divide<Expression, Expression>& divide)-> RetT override;
-    auto TypedVisit(const Exponent<Expression, Expression>& exponent)-> RetT override;
-    auto TypedVisit(const Log<Expression, Expression>& log)-> RetT override;
-    auto TypedVisit(const Negate<Expression>& negate)-> RetT override;
-    auto TypedVisit(const Magnitude<Expression>& magnitude)-> RetT override;
-    auto TypedVisit(const Derivative<Expression, Expression>& derivative)-> RetT override;
-    auto TypedVisit(const Integral<Expression, Expression>& integral)-> RetT override;
+    auto TypedVisit(const Real& real) -> RetT override;
+    auto TypedVisit(const Imaginary& imaginary) -> RetT override;
+    auto TypedVisit(const Matrix& matrix) -> RetT override;
+    auto TypedVisit(const Variable& variable) -> RetT override;
+    auto TypedVisit(const Undefined& undefined) -> RetT override;
+    auto TypedVisit(const Pi&) -> RetT override;
+    auto TypedVisit(const EulerNumber&) -> RetT override;
+    auto TypedVisit(const Add<Expression, Expression>& add) -> RetT override;
+    auto TypedVisit(const Subtract<Expression, Expression>& subtract) -> RetT override;
+    auto TypedVisit(const Multiply<Expression, Expression>& multiply) -> RetT override;
+    auto TypedVisit(const Divide<Expression, Expression>& divide) -> RetT override;
+    auto TypedVisit(const Exponent<Expression, Expression>& exponent) -> RetT override;
+    auto TypedVisit(const Log<Expression, Expression>& log) -> RetT override;
+    auto TypedVisit(const Negate<Expression>& negate) -> RetT override;
+    auto TypedVisit(const Magnitude<Expression>& magnitude) -> RetT override;
+    auto TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT override;
+    auto TypedVisit(const Integral<Expression, Expression>& integral) -> RetT override;
 
     [[nodiscard]] tinyxml2::XMLDocument& GetDocument() const;
 
