@@ -9,6 +9,7 @@
 #include <Oasis/Subtract.hpp>
 #include <Oasis/Variable.hpp>
 #include <iostream>
+#include <set>
 
 std::vector<long long> getAllFactors(long long n)
 {
@@ -271,6 +272,49 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
                 // Now create the Divide expressions properly
                 results.push_back(Divide(*numerator1, *twoA).Copy());
                 results.push_back(Divide(*numerator2, *twoA).Copy());
+//                results.push_back(Divide(Add(*negB, *sqrtDisc), *twoA).Copy());
+//                results.push_back(Divide(Subtract(*negB, *sqrtDisc), *twoA).Copy());
+            }
+        }
+        else if (coefficents.size() == 4) {  // Cubic equation: ax³ + bx² + cx + d = 0
+            long long a = termsC[0];  // coefficient of x³
+            long long b = termsC[1];  // coefficient of x²
+            long long c = termsC[2];  // coefficient of x
+            long long d = termsC[3];  // constant term
+
+            // Get factors of constant term for possible p values
+            std::vector<long long> p_factors;
+            for (long long i = 1; i <= std::abs(d); i++) {
+                if (d % i == 0) {
+                    p_factors.push_back(i);
+                    p_factors.push_back(-i);
+                }
+            }
+
+            // Get factors of leading coefficient for possible q values
+            std::vector<long long> q_factors;
+            for (long long i = 1; i <= std::abs(a); i++) {
+                if (a % i == 0) {
+                    q_factors.push_back(i);
+                }
+            }
+
+            for (long long p : p_factors) {
+                for (long long q : q_factors) {
+                    // For each potential root p/q, evaluate the polynomial
+                    long long x_p3 = p * p * p;
+                    long long x_p2 = p * p;
+                    long long x_q3 = q * q * q;
+
+                    // Evaluate ax³ + bx² + cx + d = 0 at x = p/q
+                    // Multiply all terms by q³ to eliminate denominators:
+                    // a(p³) + b(p²q) + c(pq²) + d(q³) = 0
+                    long long val = a * x_p3 + b * x_p2 * q + c * p * q * q + d * x_q3;
+
+                    if (val == 0) {  // If this is a root
+                        results.push_back(Divide(Real(p), Real(q)).Copy());
+                    }
+                }
             }
         }
     }

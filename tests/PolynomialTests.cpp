@@ -336,3 +336,173 @@ TEST_CASE("Quadratic polynomial test 5: x² - 25", "[factor]")
         REQUIRE(root2->GetLeastSigOp().GetValue() == 1);
     }
 }
+
+TEST_CASE("Rational Quadratic polynomial test 1: 2x² + x - 1", "[factor]")
+{
+    // 2x² + x - 1
+    Oasis::Add<> add{
+        Oasis::Multiply{
+            Oasis::Real(2),
+            Oasis::Exponent<Oasis::Variable, Oasis::Real>{
+                        Oasis::Variable("x"),
+                        Oasis::Real(2)
+            }
+        },
+        Oasis::Variable("x"),
+        Oasis::Real(-1)
+    };
+    Oasis::InFixSerializer serializer;
+    OASIS_CAPTURE_WITH_SERIALIZER(serializer, add);
+
+    auto zeros = add.FindZeros();
+    std::cout << "result size: " << zeros.size() << std::endl;
+
+    REQUIRE(zeros.size() == 2);
+
+    if (zeros.size() == 2) {
+        // Check first root (1/2)
+        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
+        auto denominator1 = root1->GetLeastSigOp().GetValue();
+        auto numerator1 = root1->GetMostSigOp().GetValue();
+        REQUIRE(root1 != nullptr);
+        REQUIRE(numerator1/denominator1 == 1.0/2.0);
+
+
+        // Check second root (-1)
+        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
+        auto denominator2 = root2->GetLeastSigOp().GetValue();
+        auto numerator2 = root2->GetMostSigOp().GetValue();
+        REQUIRE(root2 != nullptr);
+        REQUIRE(numerator2/denominator2 == -1);
+
+    }
+}
+
+TEST_CASE("Rational Quadratic polynomial test 2: 6x² - 5x + 1", "[factor]")
+{
+    // 6x² - 5x + 1
+    Oasis::Add<> add{
+        Oasis::Multiply{
+            Oasis::Real(6),
+            Oasis::Exponent<Oasis::Variable, Oasis::Real>{
+                Oasis::Variable("x"),
+                Oasis::Real(2)
+            }
+        },
+        Oasis::Multiply{
+                Oasis::Real(-5),
+                Oasis::Variable("x")
+        },
+        Oasis::Real(1)
+    };
+    Oasis::InFixSerializer serializer;
+    OASIS_CAPTURE_WITH_SERIALIZER(serializer, add);
+
+    auto zeros = add.FindZeros();
+    std::cout << "result size: " << zeros.size() << std::endl;
+
+    REQUIRE(zeros.size() == 2);
+
+    if (zeros.size() == 2) {
+
+        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
+        auto denominator = root1->GetLeastSigOp().GetValue();
+        auto numerator = root1->GetMostSigOp().GetValue();
+        REQUIRE(root1 != nullptr);
+        REQUIRE(numerator/denominator == 1.0/2.0);
+
+        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
+        auto denominator2 = root2->GetLeastSigOp().GetValue();
+        auto numerator2 = root2->GetMostSigOp().GetValue();
+        REQUIRE(root2 != nullptr);
+        REQUIRE(numerator2/denominator2 == 1.0/3.0);
+    }
+}
+
+TEST_CASE("Irrational Quadratic polynomial test 1: x² + 2x - 1/4", "[factor]")
+{
+    // x² + 2x - 1/4
+    Oasis::Add<> add{
+        Oasis::Exponent<Oasis::Variable, Oasis::Real>{
+            Oasis::Variable("x"),
+            Oasis::Real(2)
+        },
+        Oasis::Multiply {
+            Oasis::Real(2),
+            Oasis::Variable("x")
+        },
+        Oasis::Divide{
+            Oasis::Real(1),
+            Oasis::Real(4)
+
+        }
+    };
+    Oasis::InFixSerializer serializer;
+    OASIS_CAPTURE_WITH_SERIALIZER(serializer, add);
+
+    auto zeros = add.FindZeros();
+    std::cout << "result size: " << zeros.size() << std::endl;
+
+    REQUIRE(zeros.size() == 2);
+
+    if (zeros.size() == 2) {
+        // Check first root x = -1 - sqrt(5)/2
+        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
+        REQUIRE(root1 != nullptr);
+        REQUIRE(root1->GetMostSigOp().GetValue() == 2);
+        REQUIRE(root1->GetLeastSigOp().GetValue() == 4);
+
+        // Check second root x = sqrt(5)/2 - 1
+        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
+        REQUIRE(root2 != nullptr);
+        REQUIRE(root2->GetMostSigOp().GetValue() == -4);
+        REQUIRE(root2->GetLeastSigOp().GetValue() == 4);
+    }
+}
+
+TEST_CASE("Cubic polynomial test 1: 3x³ - 16x² + 23x - 6:", "[factor]")
+{
+    // 3x³ - 16x² + 23x - 6:
+    Oasis::Add<> cubic{
+        Oasis::Multiply{          // 3x³ term
+            Oasis::Real(3),
+            Oasis::Exponent<Oasis::Variable, Oasis::Real>{
+                Oasis::Variable("x"),
+                Oasis::Real(3)
+            }
+        },
+        Oasis::Multiply{          // -16x² term
+            Oasis::Real(-16),
+            Oasis::Exponent<Oasis::Variable, Oasis::Real>{
+                Oasis::Variable("x"),
+                Oasis::Real(2)
+            }
+        },
+        Oasis::Multiply{          // 23x term
+            Oasis::Real(23),
+            Oasis::Variable("x")
+        },
+        Oasis::Real(-6)          // -6 term
+    };
+    Oasis::InFixSerializer serializer;
+    OASIS_CAPTURE_WITH_SERIALIZER(serializer, cubic);
+
+    auto zeros = cubic.FindZeros();
+    std::cout << "result size: " << zeros.size() << std::endl;
+
+    REQUIRE(zeros.size() == 3);
+
+    if (zeros.size() == 2) {
+        // Check first root x = -1 - sqrt(5)/2
+        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
+        REQUIRE(root1 != nullptr);
+        REQUIRE(root1->GetMostSigOp().GetValue() == 2);
+        REQUIRE(root1->GetLeastSigOp().GetValue() == 4);
+
+        // Check second root x = sqrt(5)/2 - 1
+        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
+        REQUIRE(root2 != nullptr);
+        REQUIRE(root2->GetMostSigOp().GetValue() == -4);
+        REQUIRE(root2->GetLeastSigOp().GetValue() == 4);
+    }
+}
