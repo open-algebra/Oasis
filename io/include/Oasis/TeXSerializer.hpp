@@ -47,7 +47,7 @@ struct TeXOpts {
     std::set<Pkgs> packages = { Pkgs::ESDIFF };
 };
 
-class TeXSerializer final : public Visitor {
+class TeXSerializer final : public TypedVisitor<std::expected<std::string, std::string_view>> {
 public:
     TeXSerializer()
         : TeXSerializer(TeXOpts {})
@@ -57,8 +57,6 @@ public:
         : latexOptions(options)
     {
     }
-
-    using RetT = std::string;
 
     void SetTeXDialect(TeXOpts::Dialect dt);
     void SetImaginaryCharacter(TeXOpts::ImgSym character);
@@ -75,56 +73,53 @@ public:
     void AddTeXPackage(TeXOpts::Pkgs package);
     void RemoveTeXPackage(TeXOpts::Pkgs package);
 
-    auto Visit(const Real& real) -> any override;
-    auto Visit(const Imaginary& imaginary) -> any override;
-    auto Visit(const Matrix& matrix) -> any override;
-    auto Visit(const Variable& variable) -> any override;
-    auto Visit(const Undefined& undefined) -> any override;
-    auto Visit(const Pi&) -> any override;
-    auto Visit(const EulerNumber&) -> any override;
-    auto Visit(const Add<Expression, Expression>& add) -> any override;
-    auto Visit(const Subtract<Expression, Expression>& subtract) -> any override;
-    auto Visit(const Multiply<Expression, Expression>& multiply) -> any override;
-    auto Visit(const Divide<Expression, Expression>& divide) -> any override;
-    auto Visit(const Exponent<Expression, Expression>& exponent) -> any override;
-    auto Visit(const Log<Expression, Expression>& log) -> any override;
-    auto Visit(const Negate<Expression>& negate) -> any override;
-    auto Visit(const Magnitude<Expression>& magnitude) -> any override;
-    auto Visit(const Derivative<Expression, Expression>& derivative) -> any override;
-    auto Visit(const Integral<Expression, Expression>& integral) -> any override;
+    auto TypedVisit(const Real& real) -> RetT override;
+    auto TypedVisit(const Imaginary& imaginary) -> RetT override;
+    auto TypedVisit(const Matrix& matrix) -> RetT override;
+    auto TypedVisit(const Variable& variable) -> RetT override;
+    auto TypedVisit(const Undefined& undefined) -> RetT override;
+    auto TypedVisit(const Pi&) -> RetT override;
+    auto TypedVisit(const EulerNumber&) -> RetT override;
+    auto TypedVisit(const Add<Expression, Expression>& add) -> RetT override;
+    auto TypedVisit(const Subtract<Expression, Expression>& subtract) -> RetT override;
+    auto TypedVisit(const Multiply<Expression, Expression>& multiply) -> RetT override;
+    auto TypedVisit(const Divide<Expression, Expression>& divide) -> RetT override;
+    auto TypedVisit(const Exponent<Expression, Expression>& exponent) -> RetT override;
+    auto TypedVisit(const Log<Expression, Expression>& log) -> RetT override;
+    auto TypedVisit(const Negate<Expression>& negate) -> RetT override;
+    auto TypedVisit(const Magnitude<Expression>& magnitude) -> RetT override;
+    auto TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT override;
+    auto TypedVisit(const Integral<Expression, Expression>& integral) -> RetT override;
 
 private:
     TeXOpts latexOptions {};
 
-    auto GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::optional<std::pair<std::string, std::string>>;
-    auto SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::optional<std::string>;
+    auto GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::expected<std::pair<std::string, std::string>, std::string_view>;
+    auto SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::expected<std::string, std::string_view>;
 };
 
-auto TeXSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::optional<std::pair<std::string, std::string>>
+auto TeXSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::expected<std::pair<std::string, std::string>, std::string_view>
 {
-    const auto mostSigOpStr = visited.GetMostSigOp().Accept(*this);
-    const auto leastSigOpStr = visited.GetLeastSigOp().Accept(*this);
-    if (!mostSigOpStr || !leastSigOpStr)
-        return {};
-
-    return std::pair { mostSigOpStr.value(), leastSigOpStr.value() };
+    TeXSerializer& thisSerializer = *this;
+    return visited.GetMostSigOp().Accept(thisSerializer).and_then([&thisSerializer, &visited](const std::string& mostSigOpStr) {
+        return visited.GetLeastSigOp().Accept(thisSerializer).transform([&mostSigOpStr](const std::string& leastSigOpStr) {
+            return std::pair { mostSigOpStr, leastSigOpStr };
+        });
+    });
 }
 
-auto TeXSerializer::SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::optional<std::string>
+auto TeXSerializer::SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::expected<std::string, std::string_view>
 {
-    auto ops = GetOpsOfBinExp(visited);
-    if (!ops)
-        return {};
+    return GetOpsOfBinExp(visited).and_then([&op, this](const std::pair<std::string, std::string>& ops) -> std::expected<std::string, std::string_view> {
+        const auto& [mostSigOpStr, leastSigOpStr] = ops;
+        if (latexOptions.spacing == TeXOpts::Spacing::MINIMAL)
+            return std::format("\\left({}{}{}\\right)", mostSigOpStr, op, leastSigOpStr);
 
-    const auto& [mostSigOpStr, leastSigOpStr] = ops.value();
+        if (latexOptions.spacing == TeXOpts::Spacing::REGULAR)
+            return std::format("\\left({} {} {}\\right)", mostSigOpStr, op, leastSigOpStr);
 
-    if (latexOptions.spacing == TeXOpts::Spacing::MINIMAL)
-        return std::format("\\left({}{}{}\\right)", mostSigOpStr, op, leastSigOpStr);
-
-    if (latexOptions.spacing == TeXOpts::Spacing::REGULAR)
-        return std::format("\\left({} {} {}\\right)", mostSigOpStr, op, leastSigOpStr);
-
-    return {};
+        return std::unexpected { "Invalid spacing option" };
+    });
 }
 
 }
