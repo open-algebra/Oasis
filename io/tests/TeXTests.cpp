@@ -158,7 +158,7 @@ TEST_CASE("LaTeX Serialization for Negate", "[LaTeX][Serializer][Negate]")
     Oasis::TeXSerializer serializer{};
 
     auto result = e.Accept(serializer).value();
-    std::string expected = R"(\left(-e\right))";
+    std::string expected = R"(-\left(e\right))";
 
     REQUIRE(expected == result);
 
