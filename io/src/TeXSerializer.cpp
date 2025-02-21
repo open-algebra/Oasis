@@ -167,7 +167,7 @@ auto TeXSerializer::TypedVisit(const Divide<Expression, Expression>& divide) -> 
 
 auto TeXSerializer::TypedVisit(const Exponent<Expression, Expression>& exponent) -> RetT
 {
-    return GetOpsOfBinExp(exponent).transform([this](const std::pair<std::string, std::string>& ops) {
+    return GetOpsOfBinExp(exponent).transform([](const std::pair<std::string, std::string>& ops) {
         return std::format("\\left({}\\right)^{{{}}}", ops.first, ops.second);
     });
 }
