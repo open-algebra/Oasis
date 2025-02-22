@@ -36,7 +36,13 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
     GIT_TAG v3.4.0)
 
-FetchContent_MakeAvailable(Catch2)
+# Perhaps one day use Microsoft.GSL if https://github.com/microsoft/GSL/issues/991 gets addressed
+FetchContent_Declare(
+    GSL
+    GIT_REPOSITORY "https://github.com/gsl-lite/gsl-lite.git"
+    GIT_TAG v0.42.0)
+
+FetchContent_MakeAvailable(Catch2 GSL)
 
 include(cmake/FetchBoost.cmake)
 include(cmake/FetchEigen.cmake)
@@ -47,15 +53,6 @@ add_subdirectory(src)
 
 if(OASIS_BUILD_IO)
     include(cmake/FetchTinyxml2.cmake)
-
-    FetchContent_Declare(
-        GSL
-        GIT_REPOSITORY "https://github.com/microsoft/GSL"
-        GIT_TAG "v4.1.0"
-        GIT_SHALLOW ON)
-
-    FetchContent_MakeAvailable(GSL)
-
     add_subdirectory(io)
 endif()
 
