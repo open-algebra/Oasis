@@ -30,17 +30,16 @@ namespace Oasis {
 template <typename Lambda>
 using lambda_argument_type = std::remove_cvref_t<std::tuple_element_t<0, boost::callable_traits::args_t<Lambda>>>;
 
-template <typename CheckF, typename TransformerF>
-concept TransformerAcceptsCheckArg = requires(CheckF f1, TransformerF f2, const lambda_argument_type<CheckF>& t) {
-    { f1(t) } -> std::convertible_to<bool>;
-    { f2(t) } -> std::same_as<std::unique_ptr<Expression>>;
-};
+template <typename CheckF, typename TransformerF, typename ArgumentT>
+concept TransformerAcceptsCheckArg = requires(TransformerF f, const lambda_argument_type<CheckF>& t) {
+    { f(t) } -> std::same_as<std::unique_ptr<ArgumentT>>;
+} && std::predicate<CheckF, const lambda_argument_type<CheckF>&>;
 
 template <typename ArgumentT, typename Cases>
 class MatchCastImpl {
 public:
     template <typename Check, typename Transformer>
-        requires TransformerAcceptsCheckArg<Check, Transformer>
+        requires TransformerAcceptsCheckArg<Check, Transformer, ArgumentT>
     consteval auto Case(
         Check,
         Transformer) const -> MatchCastImpl<ArgumentT, typename boost::mpl::push_back<Cases, std::pair<Check, Transformer>>::type>
