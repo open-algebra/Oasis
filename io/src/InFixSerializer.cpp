@@ -68,7 +68,7 @@ auto InFixSerializer::TypedVisit(const Exponent<>& exponent) -> RetT
 
 auto InFixSerializer::TypedVisit(const Log<>& log) -> RetT
 {
-    return SerializeArithBinExp(log, "log");
+    return SerializeFuncBinExp(log, "log");
 }
 
 auto InFixSerializer::TypedVisit(const Negate<Expression>& negate) -> RetT
