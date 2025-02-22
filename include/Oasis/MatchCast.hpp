@@ -32,7 +32,7 @@ using lambda_argument_type = std::remove_cvref_t<std::tuple_element_t<0, boost::
 
 template <typename CheckF, typename TransformerF, typename ArgumentT>
 concept TransformerAcceptsCheckArg = requires(TransformerF f, const lambda_argument_type<CheckF>& t) {
-    { f(t) } -> std::same_as<std::unique_ptr<ArgumentT>>;
+    { f(t, nullptr) } -> std::same_as<std::unique_ptr<ArgumentT>>;
 } && std::predicate<CheckF, const lambda_argument_type<CheckF>&>;
 
 template <typename ArgumentT, typename Cases>
@@ -47,7 +47,8 @@ public:
         return {};
     }
 
-    auto Execute(const ArgumentT& arg) const -> std::unique_ptr<ArgumentT>
+    template <typename VisitorPtrT> requires IVisitor<std::remove_pointer_t<VisitorPtrT>> || std::same_as<VisitorPtrT, std::nullptr_t>
+    auto Execute(const ArgumentT& arg, VisitorPtrT visitor) const -> std::unique_ptr<ArgumentT>
     {
         std::unique_ptr<ArgumentT> result = nullptr;
         boost::mpl::for_each<Cases>(
@@ -58,7 +59,7 @@ public:
 
                 auto [check, transformer] = checkAndTransformer;
                 if (std::unique_ptr<CaseType> castResult = RecursiveCast<CaseType>(arg); castResult && check(*castResult))
-                    result = transformer(*castResult);
+                    result = transformer(*castResult, visitor);
             });
         return result;
     }
