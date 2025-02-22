@@ -49,7 +49,8 @@ public:
         return {};
     }
 
-    template <typename VisitorPtrT> requires IVisitor<std::remove_pointer_t<VisitorPtrT>> || std::same_as<VisitorPtrT, std::nullptr_t>
+    template <typename VisitorPtrT>
+        requires IVisitor<std::remove_pointer_t<VisitorPtrT>> || std::same_as<VisitorPtrT, std::nullptr_t>
     auto Execute(const ArgumentT& arg, VisitorPtrT visitor) const -> std::expected<std::unique_ptr<ArgumentT>, std::string_view>
     {
         std::expected<std::unique_ptr<ArgumentT>, std::string_view> result = nullptr;
