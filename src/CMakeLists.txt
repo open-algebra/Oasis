@@ -56,7 +56,8 @@ if(OASIS_BUILD_PARANOID)
 endif()
 
 target_compile_features(Oasis PUBLIC cxx_std_23)
-target_link_libraries(Oasis PUBLIC Oasis::Headers Eigen3::Eigen Boost::any
-                                   Boost::callable_traits Boost::mpl gsl::gsl-lite-v1)
+target_link_libraries(
+    Oasis PUBLIC Oasis::Headers Eigen3::Eigen Boost::any Boost::callable_traits
+                 Boost::mpl gsl::gsl-lite-v1)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${Oasis_SOURCES})
