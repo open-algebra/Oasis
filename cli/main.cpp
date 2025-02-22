@@ -25,12 +25,12 @@ int main(int argc, char **argv) {
 
         auto parseResult = Oasis::FromInFix(Oasis::PreProcessInFix(input));
         auto err_style = fg(fmt::color::indian_red);
-        if (!parseResult.Ok()) {
-            print(err_style, "  Failed to parse: {}\n", parseResult.GetErrorMessage());
+        if (!parseResult) {
+            print(err_style, "  Failed to parse: {}\n", parseResult.error());
             continue;
         }
 
-        auto simplifyResult = parseResult.GetResult().Simplify();
+        const auto simplifyResult = parseResult.value()->Simplify();
         if (!simplifyResult) {
             print(err_style, "  Failed to simplify\n");
             continue;
@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
 
         auto serializeResult = simplifyResult->Accept(serializer);
         if (!serializeResult) {
-            print(err_style, "  Failed to serialize\n");
+            print(err_style, "  Failed to serialize: {}\n", serializeResult.error());
             continue;
         }
 
