@@ -47,7 +47,7 @@ public:
         return {};
     }
 
-    auto Execute(const ArgumentT& arg, std::unique_ptr<ArgumentT>&& fallback) const -> std::unique_ptr<ArgumentT>
+    auto Execute(const ArgumentT& arg) const -> std::unique_ptr<ArgumentT>
     {
         std::unique_ptr<ArgumentT> result = nullptr;
         boost::mpl::for_each<Cases>(
@@ -60,7 +60,7 @@ public:
                 if (std::unique_ptr<CaseType> castResult = RecursiveCast<CaseType>(arg); castResult && check(*castResult))
                     result = transformer(*castResult);
             });
-        return result ? std::move(result) : std::move(fallback);
+        return result;
     }
 };
 
