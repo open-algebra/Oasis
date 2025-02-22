@@ -22,6 +22,8 @@
 #include <boost/mpl/push_back.hpp>
 #include <boost/mpl/vector.hpp>
 
+#include <gsl/gsl-lite.hpp>
+
 #include <concepts>
 #include <functional>
 #include <tuple>
@@ -32,7 +34,7 @@ using lambda_argument_type = std::remove_cvref_t<std::tuple_element_t<0, boost::
 
 template <typename CheckF, typename TransformerF, typename ArgumentT>
 concept TransformerAcceptsCheckArg = requires(TransformerF f, const lambda_argument_type<CheckF>& t) {
-    { f(t, nullptr) } -> std::same_as<std::unique_ptr<ArgumentT>>;
+    { f(t, nullptr) } -> std::same_as<std::expected<gsl::not_null<std::unique_ptr<ArgumentT>>, std::string_view>>;
 } && std::predicate<CheckF, const lambda_argument_type<CheckF>&>;
 
 template <typename ArgumentT, typename Cases>
@@ -48,18 +50,18 @@ public:
     }
 
     template <typename VisitorPtrT> requires IVisitor<std::remove_pointer_t<VisitorPtrT>> || std::same_as<VisitorPtrT, std::nullptr_t>
-    auto Execute(const ArgumentT& arg, VisitorPtrT visitor) const -> std::unique_ptr<ArgumentT>
+    auto Execute(const ArgumentT& arg, VisitorPtrT visitor) const -> std::expected<std::unique_ptr<ArgumentT>, std::string_view>
     {
-        std::unique_ptr<ArgumentT> result = nullptr;
+        std::expected<std::unique_ptr<ArgumentT>, std::string_view> result = nullptr;
         boost::mpl::for_each<Cases>(
             [&]<typename Check, typename Transformer>(std::pair<Check, Transformer> checkAndTransformer) {
                 using CaseType = lambda_argument_type<Check>;
-                if (result)
+                if (!result.has_value() || (result.has_value() && *result))
                     return;
 
                 auto [check, transformer] = checkAndTransformer;
                 if (std::unique_ptr<CaseType> castResult = RecursiveCast<CaseType>(arg); castResult && check(*castResult))
-                    result = transformer(*castResult, visitor);
+                    result = transformer(*castResult, visitor).transform([](gsl::not_null<std::unique_ptr<ArgumentT>>&& transformResult) { return std::move(transformResult); });
             });
         return result;
     }

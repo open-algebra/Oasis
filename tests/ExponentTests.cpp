@@ -8,6 +8,7 @@
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Negate.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
@@ -471,7 +472,7 @@ TEST_CASE("Imaginary Exponent Rule", "[Imaginary][Exponent]")
 
     REQUIRE(i.Is<Oasis::Imaginary>());
     REQUIRE(Oasis::Imaginary {}.Equals(*simplified1));
-    REQUIRE(Oasis::Multiply { Oasis::Real { -1 }, Oasis::Imaginary {} }.Equals(*simplified3));
+    REQUIRE(Oasis::Negate { Oasis::Imaginary {} }.Equals(*simplified3));
     REQUIRE(Oasis::Real { -1.0 }.Equals(*simplified2));
     REQUIRE(Oasis::Real { 1.0 }.Equals(*simplified4));
     REQUIRE(Oasis::Multiply { Oasis::Multiply {
