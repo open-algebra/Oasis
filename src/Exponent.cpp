@@ -110,8 +110,8 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
     const auto simplifiedPower = leastSigOp->Simplify();
 
     const Exponent simplifiedExponent { *simplifiedBase, *simplifiedPower };
-
-    return match_cast.Execute(simplifiedExponent, simplifiedExponent.Copy());
+    auto matchResult = match_cast.Execute(simplifiedExponent);
+    return matchResult ? std::move(matchResult) : std::move(simplifiedExponent.Copy());
 }
 
 auto Exponent<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
