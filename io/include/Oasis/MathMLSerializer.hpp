@@ -5,7 +5,8 @@
 #ifndef MATHMLSERIALIZER_HPP
 #define MATHMLSERIALIZER_HPP
 
-#include <gsl/pointers>
+#define gsl_CONFIG_NOT_NULL_EXPLICIT_CTOR 0
+#include <gsl/gsl-lite.hpp>
 #include <tinyxml2.h>
 
 #include "Oasis/BinaryExpression.hpp"
