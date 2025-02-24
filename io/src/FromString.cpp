@@ -184,16 +184,22 @@ auto SpaceAroundOperators(const std::string& str) -> std::string
 auto ImplicitMultiplication(const std::string& str) -> std::string
 {
     std::stringstream secondPassResult, sstr { str };
-    std::string token;
+    std::string lastToken = "", token;
 
     while (sstr >> token) {
-        std::string updatedToken;
-
-        if (is_function(token)) {
-            updatedToken = token;
-            secondPassResult << updatedToken;
+        if (is_function(token) || is_operator(token)) {
+            secondPassResult << token;
+            lastToken = token;
             continue;
         }
+
+        if (lastToken == ")" && token == "(") {
+            secondPassResult << '*' << token;
+            lastToken = token;
+            continue;
+        }
+
+        std::string updatedToken;
 
         for (size_t i = 0; i < token.size(); i++) {
             updatedToken += token[i];
@@ -212,13 +218,10 @@ auto ImplicitMultiplication(const std::string& str) -> std::string
             if (is_letter && is_letter_next) {
                 updatedToken += "*";
             }
-
-            if (token[i] == ')' && token[i + 1] == '(') {
-                updatedToken += "*";
-            }
         }
 
         secondPassResult << updatedToken;
+        lastToken = token;
     }
 
     return secondPassResult.str();
