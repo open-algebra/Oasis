@@ -23,7 +23,8 @@ int main(int argc, char** argv)
     linenoiseHistorySetMaxLen(16);
 
     Oasis::InFixSerializer serializer;
-    auto err_style = fg(fmt::color::indian_red);
+    constexpr auto err_style = fg(fmt::color::indian_red);
+    constexpr auto success_style = fg(fmt::color::green);
 
     const char* line;
     while ((line = linenoise("> ")) != nullptr) {
@@ -43,9 +44,7 @@ int main(int argc, char** argv)
                 return expr->Accept(serializer);
             });
 
-        if (result.has_value()) fmt::println("  {}", result.value());
-        else fmt::println("  {}", styled(result.error(), err_style));
-
+        fmt::println("  {}", fmt::styled(result.value_or(result.error()), result.has_value() ? success_style : err_style));
         std::fflush(stdout);
     }
 
