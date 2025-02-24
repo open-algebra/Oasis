@@ -45,7 +45,7 @@ void setOps(T& exp, const std::unique_ptr<Oasis::Expression>& op1, const std::un
     }
 }
 
-auto processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::Expression>>& st) -> std::expected<std::unique_ptr<Oasis::Expression>, std::string>
+auto processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::Expression>>& st) -> Oasis::FromInFixResult
 {
     if (st.size() < 2) {
         return std::unexpected { "Invalid number of operands" };
@@ -57,12 +57,10 @@ auto processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::E
     const std::unique_ptr<Oasis::Expression> left = std::move(st.top());
     st.pop();
 
-    const auto op = ops.top();
-    assert(op.size() == 1);
-
+    const auto op = ops.top().front();
     std::unique_ptr<Oasis::Expression> opExp;
 
-    switch (op[0]) {
+    switch (op) {
     case '+': {
         Oasis::Add add { *left, *right };
         opExp = add.Copy();
@@ -85,6 +83,7 @@ auto processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::E
         break;
     }
     default:
+        if (op == '(' || op == ')') return std::unexpected { "Mismatched parenthesis" };
         return std::unexpected { std::format(R"(Unknown operator: "{}")", op) };
     }
 
@@ -92,40 +91,35 @@ auto processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::E
     return opExp;
 }
 
-bool processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const std::string& function_token)
+auto processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const std::string& function_token) -> Oasis::FromInFixResult
 {
     if (st.size() < 2) {
-        // TODO: Pass error message up
-        // throw std::runtime_error("Invalid number of arguments");
-        return false;
+        return std::unexpected { "Invalid number of operands" };
     }
 
     // If we have a function active, the second operand has just been pushed onto the stack
-    auto second_operand = std::move(st.top());
+    const auto second_operand = std::move(st.top());
     st.pop();
-    auto first_operand = std::move(st.top());
+    const auto first_operand = std::move(st.top());
     st.pop();
 
     std::unique_ptr<Oasis::Expression> func;
 
     if (function_token == "log") {
-        Oasis::Log<> log;
-        setOps(log, first_operand, second_operand);
+        Oasis::Log<> log { *first_operand, *second_operand };
         func = log.Copy();
     } else if (function_token == "dd") {
-        Oasis::Derivative<> dd;
-        setOps(dd, first_operand, second_operand);
+        Oasis::Derivative<> dd { *first_operand, *second_operand };
         func = dd.Copy();
     } else if (function_token == "in") {
         Oasis::Integral<> in;
         setOps(in, first_operand, second_operand);
         func = in.Copy();
     } else {
-        return false;
+        return std::unexpected { std::format(R"(Unknown function: "{}")", function_token) };
     }
 
-    st.emplace(std::move(func));
-    return true;
+    return func;
 }
 
 template <typename First, typename... T>
@@ -276,9 +270,9 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
             if (!ops.empty() && is_function(ops.top())) {
                 std::string func = ops.top();
                 ops.pop();
-                if (!processFunction(st, func)) {
-                    return std::unexpected { std::format(R"(Unknown function: "{}")", token) };
-                }
+                auto processFunctionResult = processFunction(st, func);
+                if (!processFunctionResult) return std::unexpected { processFunctionResult.error() };
+                st.emplace(std::move(processFunctionResult.value()));
             }
         }
         // Operator

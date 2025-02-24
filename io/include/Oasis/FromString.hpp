@@ -19,7 +19,8 @@ enum class ParseImaginaryOption {
 
 auto PreProcessInFix(const std::string& str) -> std::string;
 
-auto FromInFix(const std::string& str, ParseImaginaryOption option = ParseImaginaryOption::UseI) -> std::expected<std::unique_ptr<Expression>, std::string>;
+using FromInFixResult = std::expected<std::unique_ptr<Expression>, std::string>;
+auto FromInFix(const std::string& str, ParseImaginaryOption option = ParseImaginaryOption::UseI) -> FromInFixResult;
 
 }
 
