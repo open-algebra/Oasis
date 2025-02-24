@@ -45,12 +45,10 @@ void setOps(T& exp, const std::unique_ptr<Oasis::Expression>& op1, const std::un
     }
 }
 
-bool processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::Expression>>& st)
+auto processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::Expression>>& st) -> std::expected<std::unique_ptr<Oasis::Expression>, std::string>
 {
     if (st.size() < 2) {
-        // TODO: Pass error message up
-        // throw std::runtime_error("Invalid number of arguments");
-        return false;
+        return std::unexpected { "Invalid number of operands" };
     }
 
     const std::unique_ptr<Oasis::Expression> right = std::move(st.top());
@@ -66,38 +64,32 @@ bool processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::E
 
     switch (op[0]) {
     case '+': {
-        Oasis::Add<> add;
-        setOps(add, left, right);
+        Oasis::Add add { *left, *right };
         opExp = add.Copy();
     } break;
     case '-': {
-        Oasis::Subtract<> subtract;
-        setOps(subtract, left, right);
+        Oasis::Subtract subtract { *left, *right };
         opExp = subtract.Copy();
     } break;
     case '*': {
-        Oasis::Multiply<> multiply;
-        setOps(multiply, left, right);
+        Oasis::Multiply multiply { *left, *right };
         opExp = multiply.Copy();
     } break;
     case '/': {
-        Oasis::Divide<> divide;
-        setOps(divide, left, right);
+        Oasis::Divide divide { *left, *right };
         opExp = divide.Copy();
     } break;
     case '^': {
-        Oasis::Exponent<> exponent;
-        setOps(exponent, left, right);
+        Oasis::Exponent exponent { *left, *right };
         opExp = exponent.Copy();
         break;
     }
     default:
-        return false;
+        return std::unexpected { std::format(R"(Unknown operator: "{}")", op) };
     }
 
-    st.emplace(std::move(opExp));
     ops.pop();
-    return true;
+    return opExp;
 }
 
 bool processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const std::string& function_token)
@@ -260,17 +252,17 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
         else if (token == ",") {
             // function_active = true;
             while (!ops.empty() && ops.top() != "(") {
-                if (!processOp(ops, st)) {
-                    return std::unexpected { std::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
-                }
+                auto processOpResult = processOp(ops, st);
+                if (!processOpResult) return std::unexpected { processOpResult.error() };
+                st.emplace(std::move(processOpResult.value()));
             }
         }
         // ')'
         else if (token == ")") {
             while (!ops.empty() && ops.top() != "(") {
-                if (!processOp(ops, st)) {
-                    return std::unexpected { std::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
-                }
+                auto processOpResult = processOp(ops, st);
+                if (!processOpResult) return std::unexpected { processOpResult.error() };
+                st.emplace(std::move(processOpResult.value()));
             }
 
             if (ops.empty() || ops.top() != "(") {
@@ -289,9 +281,9 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
         // Operator
         else if (is_operator(token)) {
             while (!ops.empty() && prec(ops.top()[0]) >= prec(token[0])) {
-                if (!processOp(ops, st)) {
-                    return std::unexpected { std::format(R"(Unknown operator: "{}")", token) };
-                }
+                auto processOpResult = processOp(ops, st);
+                if (!processOpResult) return std::unexpected { processOpResult.error() };
+                st.emplace(std::move(processOpResult.value()));
             }
             ops.push(token);
         } else if (ss.peek() != '(') {
@@ -301,13 +293,12 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
 
     // Process remaining ops
     while (!ops.empty()) {
-        if (!processOp(ops, st)) {
-            return std::unexpected { std::format(R"(Unknown operator: "{}")", token) };
-        }
+        auto processOpResult = processOp(ops, st);
+        if (!processOpResult) return std::unexpected { processOpResult.error() };
+        st.emplace(std::move(processOpResult.value()));
     }
 
-    if (st.empty())
-        return std::unexpected { "Parsing failed" };
+    if (st.empty()) return std::unexpected { "Parsing failed" };
     return st.top()->Copy(); // root of the expression tree
 }
 
