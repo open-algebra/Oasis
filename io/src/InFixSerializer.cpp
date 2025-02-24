@@ -23,7 +23,7 @@ namespace Oasis {
 
 auto InFixSerializer::TypedVisit(const Real& real) -> RetT
 {
-    return std::expected<std::string, std::string_view> { std::format("{:.5}", real.GetValue()) };
+    return std::format("{:.5}", real.GetValue());
 }
 
 auto InFixSerializer::TypedVisit(const Imaginary&) -> RetT

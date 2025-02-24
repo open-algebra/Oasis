@@ -14,7 +14,7 @@
 
 namespace Oasis {
 
-class MathMLSerializer final : public TypedVisitor<std::expected<gsl::not_null<tinyxml2::XMLElement*>, std::string_view>> {
+class MathMLSerializer final : public TypedVisitor<std::expected<gsl::not_null<tinyxml2::XMLElement*>, std::string>> {
 public:
     explicit MathMLSerializer(tinyxml2::XMLDocument& doc);
 
@@ -39,11 +39,11 @@ public:
     [[nodiscard]] tinyxml2::XMLDocument& GetDocument() const;
 
 private:
-    auto GetOpsAsMathMLPair(const DerivedFromBinaryExpression auto& binexp) -> std::expected<std::pair<gsl::not_null<tinyxml2::XMLElement*>, gsl::not_null<tinyxml2::XMLElement*>>, std::string_view>;
+    auto GetOpsAsMathMLPair(const DerivedFromBinaryExpression auto& binexp) -> std::expected<std::pair<gsl::not_null<tinyxml2::XMLElement*>, gsl::not_null<tinyxml2::XMLElement*>>, std::string>;
     tinyxml2::XMLDocument& doc;
 };
 
-auto MathMLSerializer::GetOpsAsMathMLPair(const DerivedFromBinaryExpression auto& binexp) -> std::expected<std::pair<gsl::not_null<tinyxml2::XMLElement*>, gsl::not_null<tinyxml2::XMLElement*>>, std::string_view>
+auto MathMLSerializer::GetOpsAsMathMLPair(const DerivedFromBinaryExpression auto& binexp) -> std::expected<std::pair<gsl::not_null<tinyxml2::XMLElement*>, gsl::not_null<tinyxml2::XMLElement*>>, std::string>
 {
     MathMLSerializer& thisSerializer = *this;
     return binexp.GetMostSigOp().Accept(thisSerializer).and_then([&binexp, &thisSerializer](gsl::not_null<tinyxml2::XMLElement*> mostSigOp) {

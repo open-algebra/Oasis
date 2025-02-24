@@ -181,7 +181,7 @@ public:
     auto Accept(T& visitor) const -> std::expected<typename T::RetT, std::string_view>;
 
     template <IVisitor T>
-        requires ExpectedWithStringView<typename T::RetT>
+        requires ExpectedWithString<typename T::RetT>
     auto Accept(T& visitor) const -> typename T::RetT;
 
     virtual ~Expression() = default;
@@ -206,7 +206,7 @@ auto Expression::Accept(T& visitor) const -> std::expected<typename T::RetT, std
 }
 
 template <IVisitor T>
-    requires ExpectedWithStringView<typename T::RetT>
+    requires ExpectedWithString<typename T::RetT>
 auto Expression::Accept(T& visitor) const -> typename T::RetT
 {
     try {

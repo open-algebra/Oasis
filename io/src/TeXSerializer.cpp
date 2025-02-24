@@ -155,7 +155,7 @@ auto TeXSerializer::TypedVisit(const Multiply<Expression, Expression>& multiply)
 
 auto TeXSerializer::TypedVisit(const Divide<Expression, Expression>& divide) -> RetT
 {
-    return GetOpsOfBinExp(divide).and_then([this](const auto& ops) -> std::expected<std::string, std::string_view> {
+    return GetOpsOfBinExp(divide).and_then([this](const auto& ops) -> RetT {
         const auto& [mostSigOpStr, leastSigOpStr] = ops;
         if (latexOptions.divType == TeXOpts::DivType::DIV)
             return std::format("\\left({{{}}}\\div{{{}}}\\right)", mostSigOpStr, leastSigOpStr);

@@ -66,9 +66,9 @@ concept IVisitor = requires {
 };
 
 template <typename T>
-concept ExpectedWithStringView = requires {
+concept ExpectedWithString = requires {
     typename T::unexpected_type;
-    requires std::same_as<typename T::unexpected_type, std::unexpected<std::string_view>>;
+    requires std::same_as<typename T::unexpected_type, std::unexpected<std::string>>;
 };
 
 }
