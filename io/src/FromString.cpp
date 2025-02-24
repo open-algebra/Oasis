@@ -34,17 +34,6 @@ int prec(const char c)
     return -1;
 }
 
-template <typename T>
-void setOps(T& exp, const std::unique_ptr<Oasis::Expression>& op1, const std::unique_ptr<Oasis::Expression>& op2)
-{
-    if (op1) {
-        exp.SetMostSigOp(*op1);
-    }
-    if (op2) {
-        exp.SetLeastSigOp(*op2);
-    }
-}
-
 auto processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::Expression>>& st) -> Oasis::FromInFixResult
 {
     if (st.size() < 2) {
@@ -61,30 +50,26 @@ auto processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::E
     std::unique_ptr<Oasis::Expression> opExp;
 
     switch (op) {
-    case '+': {
-        Oasis::Add add { *left, *right };
-        opExp = add.Copy();
-    } break;
-    case '-': {
-        Oasis::Subtract subtract { *left, *right };
-        opExp = subtract.Copy();
-    } break;
-    case '*': {
-        Oasis::Multiply multiply { *left, *right };
-        opExp = multiply.Copy();
-    } break;
-    case '/': {
-        Oasis::Divide divide { *left, *right };
-        opExp = divide.Copy();
-    } break;
-    case '^': {
-        Oasis::Exponent exponent { *left, *right };
-        opExp = exponent.Copy();
+    case '+':
+        opExp = Oasis::Add{ *left, *right }.Copy();
         break;
-    }
+    case '-':
+        opExp = Oasis::Subtract{ *left, *right }.Copy();
+        break;
+    case '*':
+        opExp = Oasis::Multiply{ *left, *right }.Copy();
+        break;
+    case '/':
+        opExp = Oasis::Divide{ *left, *right }.Copy();
+        break;
+    case '^':
+        opExp = Oasis::Exponent{ *left, *right }.Copy();
+        break;
     default:
-        if (op == '(' || op == ')') return std::unexpected { "Mismatched parenthesis" };
-        return std::unexpected { std::format(R"(Unknown operator: "{}")", op) };
+        if (op == '(' || op == ')')
+            return std::unexpected{ "Mismatched parenthesis" };
+
+        return std::unexpected{ std::format(R"(Unknown operator: "{}")", op) };
     }
 
     ops.pop();
@@ -105,21 +90,11 @@ auto processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const s
 
     std::unique_ptr<Oasis::Expression> func;
 
-    if (function_token == "log") {
-        Oasis::Log<> log { *first_operand, *second_operand };
-        func = log.Copy();
-    } else if (function_token == "dd") {
-        Oasis::Derivative<> dd { *first_operand, *second_operand };
-        func = dd.Copy();
-    } else if (function_token == "in") {
-        Oasis::Integral<> in;
-        setOps(in, first_operand, second_operand);
-        func = in.Copy();
-    } else {
-        return std::unexpected { std::format(R"(Unknown function: "{}")", function_token) };
-    }
-
-    return func;
+    if (function_token == "log") return Oasis::Log { *first_operand, *second_operand }.Copy();
+    if (function_token == "dd") return Oasis::Derivative{ *first_operand, *second_operand }.Copy();
+    if (function_token == "in") return Oasis::Integral { *first_operand, *second_operand }.Copy();
+    
+    return std::unexpected { std::format(R"(Unknown function: "{}")", function_token) };
 }
 
 template <typename First, typename... T>
