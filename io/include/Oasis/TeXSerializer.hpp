@@ -47,7 +47,7 @@ struct TeXOpts {
     std::set<Pkgs> packages = { Pkgs::ESDIFF };
 };
 
-class TeXSerializer final : public TypedVisitor<std::expected<std::string, std::string_view>> {
+class TeXSerializer final : public TypedVisitor<std::expected<std::string, std::string>> {
 public:
     TeXSerializer()
         : TeXSerializer(TeXOpts {})
@@ -94,11 +94,11 @@ public:
 private:
     TeXOpts latexOptions {};
 
-    auto GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::expected<std::pair<std::string, std::string>, std::string_view>;
-    auto SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::expected<std::string, std::string_view>;
+    auto GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::expected<std::pair<std::string, std::string>, std::string>;
+    auto SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::expected<std::string, std::string>;
 };
 
-auto TeXSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::expected<std::pair<std::string, std::string>, std::string_view>
+auto TeXSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::expected<std::pair<std::string, std::string>, std::string>
 {
     TeXSerializer& thisSerializer = *this;
     return visited.GetMostSigOp().Accept(thisSerializer).and_then([&thisSerializer, &visited](const std::string& mostSigOpStr) {
@@ -108,9 +108,9 @@ auto TeXSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visit
     });
 }
 
-auto TeXSerializer::SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::expected<std::string, std::string_view>
+auto TeXSerializer::SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::expected<std::string, std::string>
 {
-    return GetOpsOfBinExp(visited).and_then([&op, this](const std::pair<std::string, std::string>& ops) -> std::expected<std::string, std::string_view> {
+    return GetOpsOfBinExp(visited).and_then([&op, this](const std::pair<std::string, std::string>& ops) -> std::expected<std::string, std::string> {
         const auto& [mostSigOpStr, leastSigOpStr] = ops;
         if (latexOptions.spacing == TeXOpts::Spacing::MINIMAL)
             return std::format("\\left({}{}{}\\right)", mostSigOpStr, op, leastSigOpStr);
