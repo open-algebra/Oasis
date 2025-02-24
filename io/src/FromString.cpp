@@ -166,9 +166,14 @@ std::unique_ptr<Oasis::Expression> parseToken(const std::string& token, const Oa
 
 }
 
+auto operator|(const std::string& input, const std::function<std::string(const std::string&)>& func) -> std::string
+{
+    return func(input);
+}
+
 namespace Oasis {
 
-auto PreProcessFirstPass(const std::string& str) -> std::stringstream
+auto SpaceAroundOperators(const std::string& str) -> std::string
 {
     std::stringstream result;
     std::string operators = "+-*/^(),";
@@ -181,50 +186,55 @@ auto PreProcessFirstPass(const std::string& str) -> std::stringstream
         }
     }
 
-    return result;
+    return result.str();
 }
 
-auto PreProcessSecondPass(std::stringstream str) -> std::stringstream
+auto ImplicitMultiplication(const std::string& str) -> std::string
 {
-    std::stringstream secondPassResult;
+    std::stringstream secondPassResult, sstr { str };
     std::string token;
 
-    while (str >> token) {
+    while (sstr >> token) {
         std::string updatedToken;
 
-        if (!is_function(token)) {
-            for (size_t i = 0; i < token.size(); i++) {
-                updatedToken += token[i];
-                if (i < token.size() - 1) {
-                    bool is_digit = isdigit(token[i]);
-                    bool is_letter = isalpha(token[i]);
-                    bool is_digit_next = isdigit(token[i + 1]);
-                    bool is_letter_next = isalpha(token[i + 1]);
-
-                    if ((is_digit && is_letter_next) || (is_letter && is_digit_next)) {
-                        updatedToken += "*";
-                    }
-
-                    if (is_letter && is_letter_next) {
-                        updatedToken += "*";
-                    }
-                }
-            }
-        } else {
+        if (is_function(token)) {
             updatedToken = token;
+            secondPassResult << updatedToken;
+            continue;
         }
+
+        for (size_t i = 0; i < token.size(); i++) {
+            updatedToken += token[i];
+
+            if (i >= token.size() - 1) { continue; }
+
+            bool is_digit = isdigit(token[i]);
+            bool is_letter = isalpha(token[i]);
+            bool is_digit_next = isdigit(token[i + 1]);
+            bool is_letter_next = isalpha(token[i + 1]);
+
+            if ((is_digit && is_letter_next) || (is_letter && is_digit_next)) {
+                updatedToken += "*";
+            }
+
+            if (is_letter && is_letter_next) {
+                updatedToken += "*";
+            }
+
+            if (token[i] == ')' && token[i + 1] == '(') {
+                updatedToken += "*";
+            }
+        }
+
         secondPassResult << updatedToken;
     }
 
-    return secondPassResult;
+    return secondPassResult.str();
 }
 
 auto PreProcessInFix(const std::string& str) -> std::string
 {
-    std::stringstream firstPassResult = PreProcessFirstPass(str);
-    std::stringstream secondPassResult = PreProcessSecondPass(std::move(firstPassResult));
-
-    return PreProcessFirstPass(secondPassResult.str()).str();
+    return str | SpaceAroundOperators | ImplicitMultiplication | SpaceAroundOperators;
 }
 
 auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expected<std::unique_ptr<Expression>, std::string>
