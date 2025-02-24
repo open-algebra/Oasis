@@ -12,6 +12,7 @@
 #include <linenoise.h>
 
 int main(int argc, char **argv) {
+    std::setvbuf(stdout, nullptr, _IONBF, 0);
     linenoiseHistorySetMaxLen(16);
 
     Oasis::InFixSerializer serializer;
@@ -21,28 +22,26 @@ int main(int argc, char **argv) {
         std::string input { line };
         delete[] line;
 
+        if (input.empty()) {
+            continue;
+        }
+
         linenoiseHistoryAdd(input.c_str());
 
         auto parseResult = Oasis::FromInFix(Oasis::PreProcessInFix(input));
-        auto err_style = fg(fmt::color::indian_red);
-        if (!parseResult) {
-            print(err_style, "  Failed to parse: {}\n", parseResult.error());
-            continue;
-        }
 
-        const auto simplifyResult = parseResult.value()->Simplify();
-        if (!simplifyResult) {
-            print(err_style, "  Failed to simplify\n");
-            continue;
-        }
-
-        auto serializeResult = simplifyResult->Accept(serializer);
-        if (!serializeResult) {
-            print(err_style, "  Failed to serialize: {}\n", serializeResult.error());
-            continue;
-        }
-
-        fmt::println("  {}", serializeResult.value());
+        Oasis::FromInFix(Oasis::PreProcessInFix(input))
+        .and_then([&serializer](const std::unique_ptr<Oasis::Expression>& expr) -> std::expected<std::string, std::string> {
+            return expr->Accept(serializer);
+        })
+        .transform([&](const std::string& str) -> void {
+            fmt::println("  {}", str);
+        })
+        .transform_error([&](const std::string& err) -> std::string {
+            static auto err_style = fg(fmt::color::indian_red);
+            print(err_style, "  {}\n", err);
+            return err;
+        });
     }
 
     return EXIT_SUCCESS;
