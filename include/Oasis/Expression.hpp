@@ -92,7 +92,6 @@ public:
      * @tparam origonalExpresion The expression for which all the factors will be found.
      */
     auto FindZeros() const -> std::vector<std::unique_ptr<Expression>>;
-    
 
     /**
      * Gets the category of this expression.
