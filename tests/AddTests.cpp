@@ -23,8 +23,7 @@ TEST_CASE("Addition", "[Add]")
         Oasis::Real { 3.0 }
     };
 
-    Oasis::InFixSerializer serializer;
-    OASIS_CAPTURE_WITH_SERIALIZER(serializer, add);
+    OASIS_CAPTURE_WITH_SERIALIZER(add);
 
     auto simplified = add.Simplify();
     REQUIRE(simplified->Is<Oasis::Real>());

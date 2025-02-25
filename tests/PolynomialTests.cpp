@@ -135,8 +135,7 @@ TEST_CASE("linear polynomial test 2: 3x - 6", "[factor]")
         },
         Oasis::Real(6)
     };
-    Oasis::InFixSerializer serializer;
-    OASIS_CAPTURE_WITH_SERIALIZER(serializer, minus);
+    OASIS_CAPTURE_WITH_SERIALIZER(minus);
     auto result = minus.FindZeros();
     REQUIRE(result.size() == 1);
     REQUIRE(result[0]->Is<Oasis::Real>());
@@ -176,8 +175,7 @@ TEST_CASE("Quadratic polynomial test 1: x² + 5x + 6", "[factor]")
             Oasis::Real(2)
         }
     };
-    Oasis::InFixSerializer serializer;
-    OASIS_CAPTURE_WITH_SERIALIZER(serializer, add);
+    OASIS_CAPTURE_WITH_SERIALIZER(add);
 
     auto zeros = add.FindZeros();
     std::cout << "result size: " << zeros.size() << std::endl;
@@ -226,8 +224,7 @@ TEST_CASE("Quadratic polynomial test 2: x² - 2x -3", "[factor]")
         },
         Oasis::Real(-3)
     };
-    Oasis::InFixSerializer serializer;
-    OASIS_CAPTURE_WITH_SERIALIZER(serializer, add);
+    OASIS_CAPTURE_WITH_SERIALIZER(add);
 
     auto zeros = add.FindZeros();
     std::cout << "result size: " << zeros.size() << std::endl;
@@ -272,8 +269,7 @@ TEST_CASE("Quadratic polynomial test 3: x² - 9", "[factor]")
     };
     auto zeros = minus.FindZeros();
     std::cout << "result size: " << zeros.size() << std::endl;
-    Oasis::InFixSerializer serializer;
-    OASIS_CAPTURE_WITH_SERIALIZER(serializer, minus);
+    OASIS_CAPTURE_WITH_SERIALIZER(minus);
     REQUIRE(zeros.size() == 2);
     if (zeros.size() == 2) {
         auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
@@ -297,8 +293,7 @@ TEST_CASE("Quadratic polynomial test 4: x² - 16", "[factor]")
     };
     auto zeros = minus.FindZeros();
     std::cout << "result size: " << zeros.size() << std::endl;
-    Oasis::InFixSerializer serializer;
-    OASIS_CAPTURE_WITH_SERIALIZER(serializer, minus);
+    OASIS_CAPTURE_WITH_SERIALIZER(minus);
     REQUIRE(zeros.size() == 2);
     if (zeros.size() == 2) {
         auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
@@ -322,8 +317,7 @@ TEST_CASE("Quadratic polynomial test 5: x² - 25", "[factor]")
     };
     auto zeros = minus.FindZeros();
     std::cout << "result size: " << zeros.size() << std::endl;
-    Oasis::InFixSerializer serializer;
-    OASIS_CAPTURE_WITH_SERIALIZER(serializer, minus);
+    OASIS_CAPTURE_WITH_SERIALIZER(minus);
     REQUIRE(zeros.size() == 2);
     if (zeros.size() == 2) {
         auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
@@ -351,8 +345,7 @@ TEST_CASE("Rational Quadratic polynomial test 1: 2x² + x - 1", "[factor]")
         Oasis::Variable("x"),
         Oasis::Real(-1)
     };
-    Oasis::InFixSerializer serializer;
-    OASIS_CAPTURE_WITH_SERIALIZER(serializer, add);
+    OASIS_CAPTURE_WITH_SERIALIZER(add);
 
     auto zeros = add.FindZeros();
     std::cout << "result size: " << zeros.size() << std::endl;
@@ -395,8 +388,7 @@ TEST_CASE("Rational Quadratic polynomial test 2: 6x² - 5x + 1", "[factor]")
         },
         Oasis::Real(1)
     };
-    Oasis::InFixSerializer serializer;
-    OASIS_CAPTURE_WITH_SERIALIZER(serializer, add);
+    OASIS_CAPTURE_WITH_SERIALIZER(add);
 
     auto zeros = add.FindZeros();
     std::cout << "result size: " << zeros.size() << std::endl;
@@ -437,8 +429,7 @@ TEST_CASE("Irrational Quadratic polynomial test 1: x² + 2x - 1/4", "[factor]")
 
         }
     };
-    Oasis::InFixSerializer serializer;
-    OASIS_CAPTURE_WITH_SERIALIZER(serializer, add);
+    OASIS_CAPTURE_WITH_SERIALIZER(add);
 
     auto zeros = add.FindZeros();
     std::cout << "result size: " << zeros.size() << std::endl;
@@ -484,8 +475,7 @@ TEST_CASE("Cubic polynomial test 1: 3x³ - 16x² + 23x - 6:", "[factor]")
         },
         Oasis::Real(-6)          // -6 term
     };
-    Oasis::InFixSerializer serializer;
-    OASIS_CAPTURE_WITH_SERIALIZER(serializer, cubic);
+    OASIS_CAPTURE_WITH_SERIALIZER(cubic);
 
     auto zeros = cubic.FindZeros();
     std::cout << "result size: " << zeros.size() << std::endl;
