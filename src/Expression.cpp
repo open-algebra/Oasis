@@ -9,8 +9,8 @@
 #include <Oasis/Subtract.hpp>
 #include <Oasis/Variable.hpp>
 #include <iostream>
-#include <set>
 #include <numeric>
+#include <set>
 
 std::vector<long long> getAllFactors(long long n)
 {
@@ -70,14 +70,14 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
                         // Instead of creating Real values directly, create proper Binary Expressions
                         // For positive root: n^(1/2)
                         auto posRoot = std::make_unique<Divide<Expression>>(
-                            Real(sqrtN),     // MostSigOp
-                            Real(1)  // LeastSigOp
+                            Real(sqrtN), // MostSigOp
+                            Real(1) // LeastSigOp
                         );
 
                         // For negative root: -n^(1/2)
                         auto negRoot = std::make_unique<Divide<Expression>>(
-                            Real(-sqrtN),    // MostSigOp
-                            Real(1)  // LeastSigOp
+                            Real(-sqrtN), // MostSigOp
+                            Real(1) // LeastSigOp
                         );
 
                         results.push_back(std::move(posRoot));
@@ -92,7 +92,7 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
         addCase->Flatten(termsE);
     } else if (auto subCase = RecursiveCast<Subtract<Expression>>(*this); subCase != nullptr) {
         // Handle subtraction by converting to addition
-        termsE.push_back(subCase->GetMostSigOp().Copy());  // First term
+        termsE.push_back(subCase->GetMostSigOp().Copy()); // First term
         // Add negative of second term
         auto negTerm = Multiply(Real(-1), subCase->GetLeastSigOp()).Copy();
         termsE.push_back(std::move(negTerm));
@@ -185,15 +185,14 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
         }
     }
     if (termsC.size() == coefficents.size()) {
-        if (coefficents.size() == 2) {  // Linear equation ax + b = 0
+        if (coefficents.size() == 2) { // Linear equation ax + b = 0
             if (auto aReal = RecursiveCast<Real>(*coefficents[1]); aReal != nullptr) {
                 if (auto bReal = RecursiveCast<Real>(*coefficents[0]); bReal != nullptr) {
                     // Use Oasis expressions: -b/a
                     results.push_back(Divide(Multiply(Real(-1), *coefficents[0]), *coefficents[1]).Simplify());
                 }
             }
-        }
-        else if (coefficents.size() == 3) {  // Quadratic equation ax + b + c = 0
+        } else if (coefficents.size() == 3) { // Quadratic equation ax + b + c = 0
             auto& a = coefficents[2];
             auto& b = coefficents[1];
             auto& c = coefficents[0];
@@ -217,15 +216,14 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
                 // Now create the Divide expressions properly
                 results.push_back(Divide(*numerator1, *twoA).Copy());
                 results.push_back(Divide(*numerator2, *twoA).Copy());
-//                results.push_back(Divide(Add(*negB, *sqrtDisc), *twoA).Copy());
-//                results.push_back(Divide(Subtract(*negB, *sqrtDisc), *twoA).Copy());
+                //                results.push_back(Divide(Add(*negB, *sqrtDisc), *twoA).Copy());
+                //                results.push_back(Divide(Subtract(*negB, *sqrtDisc), *twoA).Copy());
             }
-        }
-        else if (coefficents.size() == 4) {  // Cubic equation: ax³ + bx² + cx + d = 0
-            long long a = termsC[0];  // coefficient of x³
-            long long b = termsC[1];  // coefficient of x²
-            long long c = termsC[2];  // coefficient of x
-            long long d = termsC[3];  // constant term
+        } else if (coefficents.size() == 4) { // Cubic equation: ax³ + bx² + cx + d = 0
+            long long a = termsC[0]; // coefficient of x³
+            long long b = termsC[1]; // coefficient of x²
+            long long c = termsC[2]; // coefficient of x
+            long long d = termsC[3]; // constant term
 
             // To track found roots and avoid duplicates
             std::set<std::pair<long long, long long>> found_roots;
@@ -250,7 +248,8 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             for (long long p : p_factors) {
                 for (long long q : q_factors) {
                     // Skip if q is 0
-                    if (q == 0) continue;
+                    if (q == 0)
+                        continue;
 
                     // Simplify the fraction p/q
                     long long g = std::gcd(std::abs(p), q);
@@ -264,7 +263,7 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
                     }
 
                     // Check if we've already found this root
-                    if (found_roots.find({num, den}) != found_roots.end()) {
+                    if (found_roots.find({ num, den }) != found_roots.end()) {
                         continue;
                     }
 
@@ -277,9 +276,9 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
                     // Multiply all terms by q³ to eliminate denominators
                     long long val = a * x_p3 + b * x_p2 * q + c * p * q * q + d * x_q3;
 
-                    if (val == 0) {  // If this is a root
+                    if (val == 0) { // If this is a root
                         results.push_back(Divide(Real(num), Real(den)).Copy());
-                        found_roots.insert({num, den});
+                        found_roots.insert({ num, den });
                     }
                 }
             }
@@ -287,7 +286,6 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
     }
     return results;
 }
-
 
 auto Expression::GetCategory() const -> uint32_t
 {
