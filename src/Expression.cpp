@@ -53,7 +53,6 @@ namespace Oasis {
  */
 auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
 {
-    std::cout << "start of the function" << std::endl;
     std::vector<std::unique_ptr<Expression>> results;
     std::vector<std::unique_ptr<Expression>> termsE;
     if (auto subCase = RecursiveCast<Subtract<Expression>>(*this); subCase != nullptr) {
@@ -162,8 +161,6 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
     while (posCoefficents.size() > 0 && RecursiveCast<Real>(*posCoefficents.back()) != nullptr && RecursiveCast<Real>(*posCoefficents.back())->GetValue() == 0) {
         posCoefficents.pop_back();
     }
-    std::cout << "posCoefficents size: " << posCoefficents.size() << std::endl;
-    std::cout << "negCoefficents size: " << negCoefficents.size() << std::endl;
     std::vector<std::unique_ptr<Expression>> coefficents;
     for (size_t i = negCoefficents.size(); i > 1; i--) {
         coefficents.push_back(negCoefficents[i - 1]->Simplify());
@@ -171,7 +168,6 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
     for (const std::unique_ptr<Expression>& i : posCoefficents) {
         coefficents.push_back(i->Simplify());
     }
-    std::cout << "Final coefficients size: " << coefficents.size() << std::endl;
     if (coefficents.size() <= 1) {
         return {};
     }

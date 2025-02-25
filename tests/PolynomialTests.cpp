@@ -178,20 +178,6 @@ TEST_CASE("Quadratic polynomial test 1: x² + 5x + 6", "[factor]")
     OASIS_CAPTURE_WITH_SERIALIZER(add);
 
     auto zeros = add.FindZeros();
-    std::cout << "result size: " << zeros.size() << std::endl;
-    if (zeros.size() == 2)
-    {
-        std::cout << "the result has the correct size.\n";
-        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
-        std::cout << "root1 mostsig value: " << root1->GetMostSigOp().GetValue() << " where should be -2" << std::endl;
-        std::cout << "root1 leastsig value: " << root1->GetLeastSigOp().GetValue() << " where should be 1" << std::endl;
-        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
-        if (root2 != nullptr)
-        {
-            std::cout << "root2 mostsig value: " << root2->GetMostSigOp().GetValue() << " where should be -3" << std::endl;
-            std::cout << "root2 leastsig value: " << root2->GetLeastSigOp().GetValue() << " where should be 1" << std::endl;
-        }
-    }
 
     REQUIRE(zeros.size() == 2);
 
@@ -227,20 +213,6 @@ TEST_CASE("Quadratic polynomial test 2: x² - 2x -3", "[factor]")
     OASIS_CAPTURE_WITH_SERIALIZER(add);
 
     auto zeros = add.FindZeros();
-    std::cout << "result size: " << zeros.size() << std::endl;
-    if (zeros.size() == 2)
-    {
-        std::cout << "the result has the correct size.\n";
-        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
-        std::cout << "root1 mostsig value: " << root1->GetMostSigOp().GetValue() << " where should be -2" << std::endl;
-        std::cout << "root1 leastsig value: " << root1->GetLeastSigOp().GetValue() << " where should be 1" << std::endl;
-        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
-        if (root2 != nullptr)
-        {
-            std::cout << "root2 mostsig value: " << root2->GetMostSigOp().GetValue() << " where should be -3" << std::endl;
-            std::cout << "root2 leastsig value: " << root2->GetLeastSigOp().GetValue() << " where should be 1" << std::endl;
-        }
-    }
 
     REQUIRE(zeros.size() == 2);
 
@@ -268,7 +240,6 @@ TEST_CASE("Quadratic polynomial test 3: x² - 9", "[factor]")
         Oasis::Real(9),
     };
     auto zeros = minus.FindZeros();
-    std::cout << "result size: " << zeros.size() << std::endl;
     OASIS_CAPTURE_WITH_SERIALIZER(minus);
     REQUIRE(zeros.size() == 2);
     if (zeros.size() == 2) {
@@ -292,7 +263,6 @@ TEST_CASE("Quadratic polynomial test 4: x² - 16", "[factor]")
         Oasis::Real(16),
     };
     auto zeros = minus.FindZeros();
-    std::cout << "result size: " << zeros.size() << std::endl;
     OASIS_CAPTURE_WITH_SERIALIZER(minus);
     REQUIRE(zeros.size() == 2);
     if (zeros.size() == 2) {
@@ -316,7 +286,6 @@ TEST_CASE("Quadratic polynomial test 5: x² - 25", "[factor]")
         Oasis::Real(25),
     };
     auto zeros = minus.FindZeros();
-    std::cout << "result size: " << zeros.size() << std::endl;
     OASIS_CAPTURE_WITH_SERIALIZER(minus);
     REQUIRE(zeros.size() == 2);
     if (zeros.size() == 2) {
@@ -348,7 +317,6 @@ TEST_CASE("Rational Quadratic polynomial test 1: 2x² + x - 1", "[factor]")
     OASIS_CAPTURE_WITH_SERIALIZER(add);
 
     auto zeros = add.FindZeros();
-    std::cout << "result size: " << zeros.size() << std::endl;
 
     REQUIRE(zeros.size() == 2);
 
@@ -391,7 +359,6 @@ TEST_CASE("Rational Quadratic polynomial test 2: 6x² - 5x + 1", "[factor]")
     OASIS_CAPTURE_WITH_SERIALIZER(add);
 
     auto zeros = add.FindZeros();
-    std::cout << "result size: " << zeros.size() << std::endl;
 
     REQUIRE(zeros.size() == 2);
 
@@ -432,7 +399,6 @@ TEST_CASE("Irrational Quadratic polynomial test 1: x² + 2x - 1/4", "[factor]")
     OASIS_CAPTURE_WITH_SERIALIZER(add);
 
     auto zeros = add.FindZeros();
-    std::cout << "result size: " << zeros.size() << std::endl;
 
     REQUIRE(zeros.size() == 2);
 
@@ -478,7 +444,6 @@ TEST_CASE("Cubic polynomial test 1: 3x³ - 16x² + 23x - 6:", "[factor]")
     OASIS_CAPTURE_WITH_SERIALIZER(cubic);
 
     auto zeros = cubic.FindZeros();
-    std::cout << "result size: " << zeros.size() << std::endl;
 
     REQUIRE(zeros.size() == 3);
 
