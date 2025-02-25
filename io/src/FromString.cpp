@@ -160,14 +160,19 @@ std::unique_ptr<Oasis::Expression> ParseOperand(const std::string& token, const 
 
 }
 
-auto operator|(const std::string& input, const std::function<std::string(const std::string&)>& func) -> std::string
+auto operator|(const std::string& input, const std::function<std::stringstream(const std::string&)>& func) -> std::stringstream
 {
     return func(input);
 }
 
+auto operator|(std::stringstream&& input, const std::function<std::string(std::stringstream&&)>& func) -> std::string
+{
+    return func(std::move(input));
+}
+
 namespace Oasis {
 
-auto SpaceAroundOperators(const std::string& str) -> std::string
+auto SpaceAroundOperators(const std::string& str) -> std::stringstream
 {
     std::stringstream result;
     std::string operators = "+-*/^(),";
@@ -180,12 +185,12 @@ auto SpaceAroundOperators(const std::string& str) -> std::string
         }
     }
 
-    return result.str();
+    return result;
 }
 
-auto ImplicitMultiplication(const std::string& str) -> std::string
+auto ImplicitMultiplication(std::stringstream&& sstr) -> std::string
 {
-    std::stringstream secondPassResult, sstr { str };
+    std::stringstream secondPassResult;
     std::string lastToken, token;
 
     while (sstr >> token) {
@@ -231,7 +236,7 @@ auto ImplicitMultiplication(const std::string& str) -> std::string
 
 auto PreProcessInFix(const std::string& str) -> std::string
 {
-    return str | SpaceAroundOperators | ImplicitMultiplication | SpaceAroundOperators;
+    return (str | SpaceAroundOperators | ImplicitMultiplication | SpaceAroundOperators).str();
 }
 
 auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expected<std::unique_ptr<Expression>, std::string>
