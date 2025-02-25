@@ -6,6 +6,7 @@
 #include <regex>
 #include <sstream>
 #include <stack>
+#include <variant>
 
 #include "Oasis/Imaginary.hpp"
 #include <Oasis/Add.hpp>
@@ -23,18 +24,38 @@
 
 namespace {
 
-int prec(const char c)
+enum class Operator {
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+    Exponent
+};
+
+enum class Function {
+    Log,
+    Derivative,
+    Integral,
+};
+
+struct OpenParens {};
+
+int prec(std::variant<Operator, Function, OpenParens> c)
 {
-    if (c == '^')
+    if (!std::holds_alternative<Operator>(c)) return -1;
+    auto op = std::get<Operator>(c);
+
+    if (op == Operator::Exponent)
         return 3;
-    if (c == '*' || c == '/')
+    if (op == Operator::Multiply || op == Operator::Divide)
         return 2;
-    if (c == '+' || c == '-')
+    if (op == Operator::Add || op == Operator::Subtract)
         return 1;
+
     return -1;
 }
 
-auto processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::Expression>>& st) -> Oasis::FromInFixResult
+auto processOp(std::stack<std::variant<Operator, Function, OpenParens>>& ops, std::stack<std::unique_ptr<Oasis::Expression>>& st) -> Oasis::FromInFixResult
 {
     if (st.size() < 2) {
         return std::unexpected { "Invalid number of operands" };
@@ -46,37 +67,36 @@ auto processOp(std::stack<std::string>& ops, std::stack<std::unique_ptr<Oasis::E
     const std::unique_ptr<Oasis::Expression> left = std::move(st.top());
     st.pop();
 
-    const auto op = ops.top().front();
+    const auto topOp = ops.top();
+    if (!std::holds_alternative<Operator>(topOp)) return std::unexpected { "Invalid operator" };
+    const auto op = std::get<Operator>(topOp);
     std::unique_ptr<Oasis::Expression> opExp;
 
     switch (op) {
-    case '+':
+    case Operator::Add:
         opExp = Oasis::Add{ *left, *right }.Copy();
         break;
-    case '-':
+    case Operator::Subtract:
         opExp = Oasis::Subtract{ *left, *right }.Copy();
         break;
-    case '*':
+    case Operator::Multiply:
         opExp = Oasis::Multiply{ *left, *right }.Copy();
         break;
-    case '/':
+    case Operator::Divide:
         opExp = Oasis::Divide{ *left, *right }.Copy();
         break;
-    case '^':
+    case Operator::Exponent:
         opExp = Oasis::Exponent{ *left, *right }.Copy();
         break;
     default:
-        if (op == '(' || op == ')')
-            return std::unexpected{ "Mismatched parenthesis" };
-
-        return std::unexpected{ std::format(R"(Unknown operator: "{}")", op) };
+        return std::unexpected{ "Invalid operator" };
     }
 
     ops.pop();
     return opExp;
 }
 
-auto processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const std::string& function_token) -> Oasis::FromInFixResult
+auto processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const Function function_token) -> Oasis::FromInFixResult
 {
     if (st.size() < 2) {
         return std::unexpected { "Invalid number of operands" };
@@ -88,28 +108,41 @@ auto processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const s
     const auto first_operand = std::move(st.top());
     st.pop();
 
-    std::unique_ptr<Oasis::Expression> func;
-
-    if (function_token == "log") return Oasis::Log { *first_operand, *second_operand }.Copy();
-    if (function_token == "dd") return Oasis::Derivative{ *first_operand, *second_operand }.Copy();
-    if (function_token == "in") return Oasis::Integral { *first_operand, *second_operand }.Copy();
+    if (function_token == Function::Log) return Oasis::Log { *first_operand, *second_operand }.Copy();
+    if (function_token == Function::Derivative) return Oasis::Derivative{ *first_operand, *second_operand }.Copy();
+    if (function_token == Function::Integral) return Oasis::Integral { *first_operand, *second_operand }.Copy();
     
-    return std::unexpected { std::format(R"(Unknown function: "{}")", function_token) };
+    return std::unexpected { "Invalid function" };
 }
 
-template <typename First, typename... T>
-bool is_in(First&& first, T&&... t)
+auto is_operator(const std::string& token) -> std::optional<Operator>
 {
-    return ((first == t) || ...);
+    if (token == "+") return Operator::Add;
+    if (token == "-") return Operator::Subtract;
+    if (token == "*") return Operator::Multiply;
+    if (token == "/") return Operator::Divide;
+    if (token == "^") return Operator::Exponent;
+    return {};
 }
 
-bool is_operator(const std::string& token) { return is_in(token, "+", "-", "*", "/", "^"); }
+auto is_function(const std::string& token) -> std::optional<Function>
+{
+    if (token == "log") return Function::Log;
+    if (token == "dd") return Function::Derivative;
+    if (token == "in") return Function::Integral;
+    return {};
+}
 
-bool is_function(const std::string& token) { return is_in(token, "log", "dd", "in"); }
+auto is_number(const std::string& token) -> std::optional<float>
+{
+    try {
+        return std::stof(token);
+    } catch (const std::exception&) {
+        return {};
+    }
+}
 
-bool is_number(const std::string& token) { return std::regex_match(token, std::regex(R"(^-?\d+(\.\d+)?$)")); }
-
-std::unique_ptr<Oasis::Expression> parseToken(const std::string& token, const Oasis::ParseImaginaryOption option)
+std::unique_ptr<Oasis::Expression> ParseOperand(const std::string& token, const Oasis::ParseImaginaryOption option)
 {
     if (is_number(token)) {
         return std::make_unique<Oasis::Real>(std::stof(token));
@@ -153,7 +186,7 @@ auto SpaceAroundOperators(const std::string& str) -> std::string
 auto ImplicitMultiplication(const std::string& str) -> std::string
 {
     std::stringstream secondPassResult, sstr { str };
-    std::string lastToken = "", token;
+    std::string lastToken, token;
 
     while (sstr >> token) {
         if (is_function(token) || is_operator(token)) {
@@ -206,7 +239,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
     // Based off Dijkstra's Shunting Yard
 
     std::stack<std::unique_ptr<Expression>> st;
-    std::stack<std::string> ops;
+    std::stack<std::variant<Operator, Function, OpenParens>> ops;
 
     std::string token, function_token;
     std::stringstream ss(str);
@@ -217,13 +250,17 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
             st.push(std::make_unique<Real>(std::stof(token)));
         }
         // '(' or function
-        else if (token == "(" || is_function(token)) {
-            ops.push(token);
+        else if (token == "(") {
+            ops.emplace(OpenParens());
+        }
+        else if (auto func = is_function(token); func) {
+            ops.emplace(func.value());
         }
         // ','
         else if (token == ",") {
+            auto topOp = ops.top();
             // function_active = true;
-            while (!ops.empty() && ops.top() != "(") {
+            while (!ops.empty() && !std::holds_alternative<OpenParens>(topOp)) {
                 auto processOpResult = processOp(ops, st);
                 if (!processOpResult) return std::unexpected { processOpResult.error() };
                 st.emplace(std::move(processOpResult.value()));
@@ -231,19 +268,22 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
         }
         // ')'
         else if (token == ")") {
-            while (!ops.empty() && ops.top() != "(") {
+            auto topOp = ops.top();
+            while (!ops.empty() && !std::holds_alternative<OpenParens>(topOp)) {
                 auto processOpResult = processOp(ops, st);
                 if (!processOpResult) return std::unexpected { processOpResult.error() };
                 st.emplace(std::move(processOpResult.value()));
             }
 
-            if (ops.empty() || ops.top() != "(") {
+            topOp = ops.top();
+            if (ops.empty() || !std::holds_alternative<OpenParens>(topOp)) {
                 return std::unexpected { "Mismatched parenthesis" };
             }
 
             ops.pop(); // pop '('
-            if (!ops.empty() && is_function(ops.top())) {
-                std::string func = ops.top();
+            topOp = ops.top();
+            if (!ops.empty() && std::holds_alternative<Function>(topOp)) {
+                auto func = std::get<Function>(topOp);
                 ops.pop();
                 auto processFunctionResult = processFunction(st, func);
                 if (!processFunctionResult) return std::unexpected { processFunctionResult.error() };
@@ -251,15 +291,15 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
             }
         }
         // Operator
-        else if (is_operator(token)) {
-            while (!ops.empty() && prec(ops.top()[0]) >= prec(token[0])) {
+        else if (auto newOp = is_operator(token); newOp) {
+            while (!ops.empty() && prec(ops.top()) >= prec(newOp.value())) {
                 auto processOpResult = processOp(ops, st);
                 if (!processOpResult) return std::unexpected { processOpResult.error() };
                 st.emplace(std::move(processOpResult.value()));
             }
-            ops.push(token);
+            ops.emplace(newOp.value());
         } else if (ss.peek() != '(') {
-            st.push(parseToken(token, option));
+            st.push(ParseOperand(token, option));
         }
     }
 
