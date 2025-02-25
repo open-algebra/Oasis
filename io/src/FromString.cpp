@@ -38,11 +38,12 @@ enum class Function {
     Integral,
 };
 
-struct OpenParens {};
+struct OpenParens { };
 
 int prec(std::variant<Operator, Function, OpenParens> c)
 {
-    if (!std::holds_alternative<Operator>(c)) return -1;
+    if (!std::holds_alternative<Operator>(c))
+        return -1;
     auto op = std::get<Operator>(c);
 
     if (op == Operator::Exponent)
@@ -68,28 +69,29 @@ auto processOp(std::stack<std::variant<Operator, Function, OpenParens>>& ops, st
     st.pop();
 
     const auto topOp = ops.top();
-    if (!std::holds_alternative<Operator>(topOp)) return std::unexpected { "Invalid operator" };
+    if (!std::holds_alternative<Operator>(topOp))
+        return std::unexpected { "Invalid operator" };
     const auto op = std::get<Operator>(topOp);
     std::unique_ptr<Oasis::Expression> opExp;
 
     switch (op) {
     case Operator::Add:
-        opExp = Oasis::Add{ *left, *right }.Copy();
+        opExp = Oasis::Add { *left, *right }.Copy();
         break;
     case Operator::Subtract:
-        opExp = Oasis::Subtract{ *left, *right }.Copy();
+        opExp = Oasis::Subtract { *left, *right }.Copy();
         break;
     case Operator::Multiply:
-        opExp = Oasis::Multiply{ *left, *right }.Copy();
+        opExp = Oasis::Multiply { *left, *right }.Copy();
         break;
     case Operator::Divide:
-        opExp = Oasis::Divide{ *left, *right }.Copy();
+        opExp = Oasis::Divide { *left, *right }.Copy();
         break;
     case Operator::Exponent:
-        opExp = Oasis::Exponent{ *left, *right }.Copy();
+        opExp = Oasis::Exponent { *left, *right }.Copy();
         break;
     default:
-        return std::unexpected{ "Invalid operator" };
+        return std::unexpected { "Invalid operator" };
     }
 
     ops.pop();
@@ -108,28 +110,39 @@ auto processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const F
     const auto first_operand = std::move(st.top());
     st.pop();
 
-    if (function_token == Function::Log) return Oasis::Log { *first_operand, *second_operand }.Copy();
-    if (function_token == Function::Derivative) return Oasis::Derivative{ *first_operand, *second_operand }.Copy();
-    if (function_token == Function::Integral) return Oasis::Integral { *first_operand, *second_operand }.Copy();
-    
+    if (function_token == Function::Log)
+        return Oasis::Log { *first_operand, *second_operand }.Copy();
+    if (function_token == Function::Derivative)
+        return Oasis::Derivative { *first_operand, *second_operand }.Copy();
+    if (function_token == Function::Integral)
+        return Oasis::Integral { *first_operand, *second_operand }.Copy();
+
     return std::unexpected { "Invalid function" };
 }
 
 auto is_operator(const std::string& token) -> std::optional<Operator>
 {
-    if (token == "+") return Operator::Add;
-    if (token == "-") return Operator::Subtract;
-    if (token == "*") return Operator::Multiply;
-    if (token == "/") return Operator::Divide;
-    if (token == "^") return Operator::Exponent;
+    if (token == "+")
+        return Operator::Add;
+    if (token == "-")
+        return Operator::Subtract;
+    if (token == "*")
+        return Operator::Multiply;
+    if (token == "/")
+        return Operator::Divide;
+    if (token == "^")
+        return Operator::Exponent;
     return {};
 }
 
 auto is_function(const std::string& token) -> std::optional<Function>
 {
-    if (token == "log") return Function::Log;
-    if (token == "dd") return Function::Derivative;
-    if (token == "in") return Function::Integral;
+    if (token == "log")
+        return Function::Log;
+    if (token == "dd")
+        return Function::Derivative;
+    if (token == "in")
+        return Function::Integral;
     return {};
 }
 
@@ -211,7 +224,9 @@ auto ImplicitMultiplication(std::stringstream&& sstr) -> std::string
         for (size_t i = 0; i < token.size(); i++) {
             updatedToken += token[i];
 
-            if (i >= token.size() - 1) { continue; }
+            if (i >= token.size() - 1) {
+                continue;
+            }
 
             bool is_digit = isdigit(token[i]);
             bool is_letter = isalpha(token[i]);
@@ -257,8 +272,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
         // '(' or function
         else if (token == "(") {
             ops.emplace(OpenParens());
-        }
-        else if (auto func = is_function(token); func) {
+        } else if (auto func = is_function(token); func) {
             ops.emplace(func.value());
         }
         // ','
@@ -267,7 +281,8 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
             // function_active = true;
             while (!ops.empty() && !std::holds_alternative<OpenParens>(topOp)) {
                 auto processOpResult = processOp(ops, st);
-                if (!processOpResult) return std::unexpected { processOpResult.error() };
+                if (!processOpResult)
+                    return std::unexpected { processOpResult.error() };
                 st.emplace(std::move(processOpResult.value()));
             }
         }
@@ -276,7 +291,8 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
             auto topOp = ops.top();
             while (!ops.empty() && !std::holds_alternative<OpenParens>(topOp)) {
                 auto processOpResult = processOp(ops, st);
-                if (!processOpResult) return std::unexpected { processOpResult.error() };
+                if (!processOpResult)
+                    return std::unexpected { processOpResult.error() };
                 st.emplace(std::move(processOpResult.value()));
             }
 
@@ -291,7 +307,8 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
                 auto func = std::get<Function>(topOp);
                 ops.pop();
                 auto processFunctionResult = processFunction(st, func);
-                if (!processFunctionResult) return std::unexpected { processFunctionResult.error() };
+                if (!processFunctionResult)
+                    return std::unexpected { processFunctionResult.error() };
                 st.emplace(std::move(processFunctionResult.value()));
             }
         }
@@ -299,7 +316,8 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
         else if (auto newOp = is_operator(token); newOp) {
             while (!ops.empty() && prec(ops.top()) >= prec(newOp.value())) {
                 auto processOpResult = processOp(ops, st);
-                if (!processOpResult) return std::unexpected { processOpResult.error() };
+                if (!processOpResult)
+                    return std::unexpected { processOpResult.error() };
                 st.emplace(std::move(processOpResult.value()));
             }
             ops.emplace(newOp.value());
@@ -311,11 +329,13 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
     // Process remaining ops
     while (!ops.empty()) {
         auto processOpResult = processOp(ops, st);
-        if (!processOpResult) return std::unexpected { processOpResult.error() };
+        if (!processOpResult)
+            return std::unexpected { processOpResult.error() };
         st.emplace(std::move(processOpResult.value()));
     }
 
-    if (st.empty()) return std::unexpected { "Parsing failed" };
+    if (st.empty())
+        return std::unexpected { "Parsing failed" };
     return st.top()->Copy(); // root of the expression tree
 }
 
