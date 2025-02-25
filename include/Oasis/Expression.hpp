@@ -2,12 +2,17 @@
 #define OASIS_EXPRESSION_HPP
 
 #include <cstdint>
+#include <expected>
 #include <memory>
 #include <vector>
+
+#include <boost/any/unique_any.hpp>
 
 #include "Concepts.hpp"
 
 namespace Oasis {
+
+using any = boost::anys::unique_any;
 
 class Visitor;
 
@@ -181,15 +186,44 @@ public:
 
     [[nodiscard]] virtual auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> = 0;
 
+    template <IVisitor T>
+    auto Accept(T& visitor) const -> std::expected<typename T::RetT, std::string_view>;
+
+    template <IVisitor T>
+        requires ExpectedWithStringView<typename T::RetT>
+    auto Accept(T& visitor) const -> typename T::RetT;
+
+    virtual ~Expression() = default;
+
+protected:
     /**
      * This function serializes the expression object.
      *
      * @param visitor The serializer class object to write the Expression data.
      */
-    virtual void Accept(Visitor& visitor) const = 0;
-
-    virtual ~Expression() = default;
+    virtual any AcceptInternal(Visitor& visitor) const = 0;
 };
+
+template <IVisitor T>
+auto Expression::Accept(T& visitor) const -> std::expected<typename T::RetT, std::string_view>
+{
+    try {
+        return boost::any_cast<typename T::RetT>(this->AcceptInternal(visitor));
+    } catch (boost::bad_any_cast& e) {
+        return std::unexpected { e.what() };
+    }
+}
+
+template <IVisitor T>
+    requires ExpectedWithStringView<typename T::RetT>
+auto Expression::Accept(T& visitor) const -> typename T::RetT
+{
+    try {
+        return boost::any_cast<typename T::RetT>(this->AcceptInternal(visitor));
+    } catch (boost::bad_any_cast& e) {
+        return std::unexpected { e.what() };
+    }
+}
 
 #define EXPRESSION_TYPE(type)                       \
     auto GetType() const -> ExpressionType override \
@@ -212,8 +246,6 @@ public:
     {                                                     \
         return category;                                  \
     }
-
-#define DECL_SPECIALIZE(type)
 
 } // namespace Oasis
 

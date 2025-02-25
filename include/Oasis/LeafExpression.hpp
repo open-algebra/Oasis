@@ -44,11 +44,11 @@ public:
         return this->Copy();
     }
 
-    void Accept(Visitor& visitor) const override
+    auto AcceptInternal(Visitor& visitor) const -> any override
     {
         const auto generalized = Generalize();
         const auto& derivedGeneralized = dynamic_cast<const DerivedT&>(*generalized);
-        visitor.Visit(derivedGeneralized);
+        return visitor.Visit(derivedGeneralized);
     }
 };
 

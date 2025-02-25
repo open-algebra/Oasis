@@ -11,6 +11,8 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/RecursiveCast.hpp"
 
+#include <Oasis/Divide.hpp>
+
 TEST_CASE("Multiplication", "[Multiply]")
 {
     Oasis::Multiply subtract {
@@ -123,6 +125,25 @@ TEST_CASE("Variadic Multiply Constructor", "[Multiply]")
     };
 
     const Oasis::Real expected { 432.0 };
+
+    const auto simplified = multiply.Simplify();
+    REQUIRE(expected.Equals(*simplified));
+}
+
+TEST_CASE("Multiplying Fractions", "[Multiply]")
+{
+    const Oasis::Multiply<Oasis::Divide<>,Oasis::Divide<>> multiply {
+            Oasis::Divide<> { Oasis::Multiply{ Oasis::Variable{ "a"},
+                        Oasis::Variable{"b"} },
+                Oasis::Multiply{ Oasis::Variable{ "c"},
+                        Oasis::Real{4.0} } },
+            Oasis::Divide<> { Oasis::Multiply{ Oasis::Variable{ "c"},
+                    Oasis::Real{12.0} },
+                Oasis::Multiply{ Oasis::Variable{ "b"},
+                        Oasis::Variable{"a"} } }
+    };
+
+    const Oasis::Real expected { 3.0 };
 
     const auto simplified = multiply.Simplify();
     REQUIRE(expected.Equals(*simplified));

@@ -1,16 +1,18 @@
 //
 // Created by Matthew McCall on 4/21/24.
 //
+#include <format>
 #include <memory>
 #include <regex>
 #include <sstream>
 #include <stack>
 
+#include "Oasis/Imaginary.hpp"
 #include <Oasis/Add.hpp>
 #include <Oasis/Derivative.hpp>
 #include <Oasis/Divide.hpp>
+#include <Oasis/EulerNumber.hpp>
 #include <Oasis/Exponent.hpp>
-#include "Oasis/Imaginary.hpp"
 #include <Oasis/Integral.hpp>
 #include <Oasis/Log.hpp>
 #include <Oasis/Multiply.hpp>
@@ -18,10 +20,6 @@
 #include <Oasis/Subtract.hpp>
 
 #include "Oasis/FromString.hpp"
-
-#include "fmt/format.h"
-
-#include <Oasis/EulerNumber.hpp>
 
 namespace {
 
@@ -138,52 +136,6 @@ bool processFunction(std::stack<std::unique_ptr<Oasis::Expression>>& st, const s
     return true;
 }
 
-std::vector<std::string> tokenizeMultiplicands(const std::string& expression)
-{
-    // Insert '*' between digits and letters, and letters and digits
-    std::string explicit_multiplication;
-    for (size_t i = 0; i < expression.size(); i++) {
-        explicit_multiplication += expression[i];
-        if (i < expression.size() - 1) {
-            bool is_digit = isdigit(expression[i]);
-            bool is_letter = isalpha(expression[i]);
-            bool is_digit_next = isdigit(expression[i + 1]);
-            bool is_letter_next = isalpha(expression[i + 1]);
-
-            if ((is_digit && is_letter_next) || (is_letter && is_digit_next)) {
-                explicit_multiplication += '*';
-            }
-
-            if (is_letter && is_letter_next) {
-                explicit_multiplication += '*';
-            }
-        }
-    }
-
-    // Tokenize on '*'
-    std::vector<std::string> tokens;
-    std::string buffer;
-    bool inside_braces = false;
-
-    for (char c : explicit_multiplication) {
-        if (c == '{')
-            inside_braces = true;
-        if (c == '}')
-            inside_braces = false;
-
-        if (c == '*' && !inside_braces) {
-            tokens.push_back(buffer);
-            buffer.clear();
-        } else {
-            buffer += c;
-        }
-    }
-
-    tokens.push_back(buffer); // push back the last token
-
-    return tokens;
-}
-
 template <typename First, typename... T>
 bool is_in(First&& first, T&&... t)
 {
@@ -215,30 +167,6 @@ std::unique_ptr<Oasis::Expression> parseToken(const std::string& token, const Oa
 }
 
 namespace Oasis {
-
-ParseResult::ParseResult(std::unique_ptr<Expression> expr) {
-    result = std::move(expr);
-}
-
-ParseResult::ParseResult(std::string err) : result(err) {
-}
-
-bool ParseResult::Ok() const {
-    return result.index() == 0;
-}
-
-auto ParseResult::GetResult() const -> const Expression & {
-    return *std::get<std::unique_ptr<Expression>>(result);
-}
-
-std::string ParseResult::GetErrorMessage() const
-{
-    if (const auto message = std::get_if<std::string>(&result)) {
-        return *message;
-    }
-
-    return "No Error";
-}
 
 auto PreProcessFirstPass(const std::string& str) -> std::stringstream
 {
@@ -299,7 +227,8 @@ auto PreProcessInFix(const std::string& str) -> std::string
     return PreProcessFirstPass(secondPassResult.str()).str();
 }
 
-auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResult {
+auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expected<std::unique_ptr<Expression>, std::string>
+{
     // Based off Dijkstra's Shunting Yard
 
     std::stack<std::unique_ptr<Expression>> st;
@@ -322,7 +251,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
             // function_active = true;
             while (!ops.empty() && ops.top() != "(") {
                 if (!processOp(ops, st)) {
-                    return ParseResult { fmt::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
+                    return std::unexpected { std::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
                 }
             }
         }
@@ -330,12 +259,12 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
         else if (token == ")") {
             while (!ops.empty() && ops.top() != "(") {
                 if (!processOp(ops, st)) {
-                    return ParseResult { fmt::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
+                    return std::unexpected { std::format(R"(Unknown operator: "{}, or invalid number of operands")", token) };
                 }
             }
 
             if (ops.empty() || ops.top() != "(") {
-                return ParseResult { "Mismatched parenthesis" };
+                return std::unexpected { "Mismatched parenthesis" };
             }
 
             ops.pop(); // pop '('
@@ -343,7 +272,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
                 std::string func = ops.top();
                 ops.pop();
                 if (!processFunction(st, func)) {
-                    return ParseResult { fmt::format(R"(Unknown function: "{}")", token) };
+                    return std::unexpected { std::format(R"(Unknown function: "{}")", token) };
                 }
             }
         }
@@ -351,7 +280,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
         else if (is_operator(token)) {
             while (!ops.empty() && prec(ops.top()[0]) >= prec(token[0])) {
                 if (!processOp(ops, st)) {
-                    return ParseResult { fmt::format(R"(Unknown operator: "{}")", token) };
+                    return std::unexpected { std::format(R"(Unknown operator: "{}")", token) };
                 }
             }
             ops.push(token);
@@ -363,15 +292,13 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> ParseResu
     // Process remaining ops
     while (!ops.empty()) {
         if (!processOp(ops, st)) {
-            return ParseResult { fmt::format(R"(Unknown operator: "{}")", token) };
+            return std::unexpected { std::format(R"(Unknown operator: "{}")", token) };
         }
     }
 
-    if (st.empty()) {
-        return ParseResult { "Parsing failed" };
-    }
-
-    return ParseResult { st.top()->Copy() }; // root of the expression tree
+    if (st.empty())
+        return std::unexpected { "Parsing failed" };
+    return st.top()->Copy(); // root of the expression tree
 }
 
 }

@@ -30,12 +30,7 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
     GIT_TAG v3.4.0)
 
-FetchContent_Declare(
-    fmt
-    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-    GIT_TAG 10.2.1)
-
-FetchContent_MakeAvailable(Catch2 fmt)
+FetchContent_MakeAvailable(Catch2)
 
 include(cmake/FetchBoost.cmake)
 include(cmake/FetchEigen.cmake)
@@ -46,6 +41,14 @@ add_subdirectory(include)
 add_subdirectory(src)
 
 if(OASIS_BUILD_IO)
+    FetchContent_Declare(
+        GSL
+        GIT_REPOSITORY "https://github.com/microsoft/GSL"
+        GIT_TAG "v4.1.0"
+        GIT_SHALLOW ON)
+
+    FetchContent_MakeAvailable(GSL)
+
     add_subdirectory(io)
 endif()
 

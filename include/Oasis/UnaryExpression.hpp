@@ -91,11 +91,11 @@ public:
         return ret;
     }
 
-    void Accept(Visitor& visitor) const override
+    auto AcceptInternal(Visitor& visitor) const -> any override
     {
         const auto generalized = Generalize();
         const auto& derivedGeneralized = dynamic_cast<const DerivedGeneralized&>(*generalized);
-        visitor.Visit(derivedGeneralized);
+        return visitor.Visit(derivedGeneralized);
     }
 
 protected:

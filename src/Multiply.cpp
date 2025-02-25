@@ -89,6 +89,17 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     //                   Multiply{negated->GetMostSigOp(), negated->GetLeastSigOp().GetLeastSigOp()}}.Simplify();
     //    }
 
+    if (auto multCase = RecursiveCast<Multiply<Expression, Divide<Expression>>>(simplifiedMultiply); multCase != nullptr) {
+        auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() }.Simplify();
+        return Divide<Expression> { *m, (multCase->GetLeastSigOp().GetLeastSigOp()) }.Simplify();
+    }
+
+    if (auto multCase = RecursiveCast<Multiply<Divide<Expression>, Divide<Expression>>>(simplifiedMultiply); multCase != nullptr) {
+        auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() }.Simplify();
+        auto n = Multiply<Expression> { multCase->GetMostSigOp().GetLeastSigOp(), multCase->GetLeastSigOp().GetLeastSigOp() }.Simplify();
+        return Divide<Expression> { *m, *n }.Simplify();
+    }
+
     if (auto exprCase = RecursiveCast<Multiply<Expression, Exponent<Expression, Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp())) {
             return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(),

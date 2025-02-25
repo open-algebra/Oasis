@@ -2,25 +2,25 @@
 // Created by Matthew McCall on 4/28/24.
 //
 
-#include <fmt/format.h>
+#include <format>
 
 #include "Oasis/MathMLSerializer.hpp"
 
 #include "Oasis/Add.hpp"
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
+#include "Oasis/EulerNumber.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
-#include "Oasis/Multiply.hpp"
+#include "Oasis/Magnitude.hpp"
 #include "Oasis/Matrix.hpp"
+#include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
+#include "Oasis/Pi.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
-#include "Oasis/EulerNumber.hpp"
-#include "Oasis/Pi.hpp"
-#include "Oasis/Magnitude.hpp"
 
 namespace Oasis {
 
@@ -29,19 +29,21 @@ MathMLSerializer::MathMLSerializer(tinyxml2::XMLDocument& doc)
 {
 }
 
-void MathMLSerializer::Visit(const Real& real)
+auto MathMLSerializer::TypedVisit(const Real& real) -> RetT
 {
-    result = doc.NewElement("mn");
-    result->SetText(fmt::format("{:.5}", real.GetValue()).c_str());
+    tinyxml2::XMLElement* result = doc.NewElement("mn");
+    result->SetText(std::format("{:.5}", real.GetValue()).c_str());
+    return result;
 }
 
-void MathMLSerializer::Visit(const Imaginary& imaginary)
+auto MathMLSerializer::TypedVisit(const Imaginary&) -> RetT
 {
-    result = doc.NewElement("mi");
+    tinyxml2::XMLElement* result = doc.NewElement("mi");
     result->SetText("i");
+    return result;
 }
 
-void MathMLSerializer::Visit(const Matrix& matrix)
+auto MathMLSerializer::TypedVisit(const Matrix& matrix) -> RetT
 {
     tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
 
@@ -55,12 +57,12 @@ void MathMLSerializer::Visit(const Matrix& matrix)
 
     tinyxml2::XMLElement* table = doc.NewElement("mtable");
 
-    for (int r = 0; r < matrix.GetRows(); r++){
+    for (size_t r = 0; r < matrix.GetRows(); r++) {
         tinyxml2::XMLElement* row = doc.NewElement("mtr");
-        for (int c = 0; c < matrix.GetCols(); c++){
+        for (size_t c = 0; c < matrix.GetCols(); c++) {
             tinyxml2::XMLElement* mtd = doc.NewElement("mtd");
             tinyxml2::XMLElement* mn = doc.NewElement("mn");
-            mn->SetText(mat(r,c));
+            mn->SetText(mat(r, c));
             mtd->InsertEndChild(mn);
             row->InsertEndChild(mtd);
         }
@@ -70,34 +72,38 @@ void MathMLSerializer::Visit(const Matrix& matrix)
     mrow->InsertEndChild(table);
     mrow->InsertEndChild(closeBrace);
 
-    result = mrow;
+    return mrow;
 }
 
-void MathMLSerializer::Visit(const Oasis::Pi&)
+auto MathMLSerializer::TypedVisit(const Oasis::Pi&) -> RetT
 {
-    result = doc.NewElement("mi");
+    tinyxml2::XMLElement* result = doc.NewElement("mi");
     result->SetText("&pi;");
+    return result;
 }
 
-void MathMLSerializer::Visit(const Oasis::EulerNumber&)
+auto MathMLSerializer::TypedVisit(const Oasis::EulerNumber&) -> RetT
 {
-    result = doc.NewElement("mi");
+    tinyxml2::XMLElement* result = doc.NewElement("mi");
     result->SetText("e");
+    return result;
 }
 
-void MathMLSerializer::Visit(const Variable& variable)
+auto MathMLSerializer::TypedVisit(const Variable& variable) -> RetT
 {
-    result = doc.NewElement("mi");
+    tinyxml2::XMLElement* result = doc.NewElement("mi");
     result->SetText(variable.GetName().c_str());
+    return result;
 }
 
-void MathMLSerializer::Visit(const Undefined& undefined)
+auto MathMLSerializer::TypedVisit(const Undefined&) -> RetT
 {
     tinyxml2::XMLElement* const mtext = doc.NewElement("mtext");
     mtext->SetText("Undefined");
+    return mtext;
 }
 
-void MathMLSerializer::Visit(const Add<>& add)
+auto MathMLSerializer::TypedVisit(const Add<>& add) -> RetT
 {
     tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
 
@@ -105,8 +111,7 @@ void MathMLSerializer::Visit(const Add<>& add)
     add.Flatten(ops);
 
     for (const auto& op : ops) {
-        op->Accept(*this);
-        tinyxml2::XMLElement* opElement = GetResult();
+        const auto opElement = op->Accept(*this).value();
 
         mrow->InsertEndChild(opElement);
         // add + mo
@@ -117,53 +122,54 @@ void MathMLSerializer::Visit(const Add<>& add)
 
     // remove last mo
     mrow->DeleteChild(mrow->LastChild());
-    result = mrow;
+    return mrow;
 }
 
-void MathMLSerializer::Visit(const Subtract<>& subtract)
+auto MathMLSerializer::TypedVisit(const Subtract<>& subtract) -> RetT
 {
-    // mrow
-    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+    return GetOpsAsMathMLPair(subtract).transform([this, subtract](const auto& ops) {
+        // mrow
+        tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+        auto [minuendElement, subtrahendElement] = ops;
 
-    auto [minuendElement, subtrahendElement] = GetOpsAsMathMLPair(subtract);
+        mrow->InsertFirstChild(minuendElement);
 
-    mrow->InsertFirstChild(minuendElement);
+        bool surroundWithParens = true;
 
-    bool surroundWithParens = true;
-
-    if (subtract.HasLeastSigOp()) {
-        if (auto realSubtrahend = RecursiveCast<Real>(subtract.GetLeastSigOp()); realSubtrahend != nullptr) {
-            if (realSubtrahend->GetValue() >= 0) {
-                surroundWithParens = false;
+        if (subtract.HasLeastSigOp()) {
+            if (auto realSubtrahend = RecursiveCast<Real>(subtract.GetLeastSigOp()); realSubtrahend != nullptr) {
+                if (realSubtrahend->GetValue() >= 0) {
+                    surroundWithParens = false;
+                }
             }
         }
-    }
 
-    // mo
-    tinyxml2::XMLElement* const mo = doc.NewElement("mo");
-    mo->SetText("-");
-    mrow->InsertEndChild(mo);
+        // mo
+        tinyxml2::XMLElement* const mo = doc.NewElement("mo");
+        mo->SetText("-");
+        mrow->InsertEndChild(mo);
 
-    if (surroundWithParens) {
-        // (
-        tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
-        leftParen->SetText("(");
-        mrow->InsertEndChild(leftParen);
-    }
+        if (surroundWithParens) {
+            // (
+            tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+            leftParen->SetText("(");
+            mrow->InsertEndChild(leftParen);
+        }
 
-    mrow->InsertEndChild(subtrahendElement);
+        mrow->InsertEndChild(subtrahendElement);
 
-    if (surroundWithParens) {
-        // )
-        tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
-        rightParen->SetText(")");
-        mrow->InsertEndChild(rightParen);
-    }
+        if (surroundWithParens) {
+            // )
+            tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+            rightParen->SetText(")");
+            mrow->InsertEndChild(rightParen);
+        }
 
-    result = mrow;
+        return mrow;
+    });
 }
 
-void MathMLSerializer::Visit(const Multiply<>& multiply)
+auto MathMLSerializer::TypedVisit(const Multiply<>& multiply) -> RetT
 {
     tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
 
@@ -178,8 +184,7 @@ void MathMLSerializer::Visit(const Multiply<>& multiply)
         mrow->InsertEndChild(leftParen);
     }
 
-    ops.front()->Accept(*this);
-    tinyxml2::XMLElement* firstOpElement = GetResult();
+    const auto firstOpElement = ops.front()->Accept(*this).value();
     mrow->InsertEndChild(firstOpElement);
 
     if (surroundWithParens) {
@@ -188,7 +193,7 @@ void MathMLSerializer::Visit(const Multiply<>& multiply)
         mrow->InsertEndChild(rightParen);
     }
 
-    for (int i = 1; i < ops.size(); ++i) {
+    for (size_t i = 1; i < ops.size(); ++i) {
         const auto& leftOp = ops[i - 1];
         const auto& rightOp = ops[i];
 
@@ -211,8 +216,7 @@ void MathMLSerializer::Visit(const Multiply<>& multiply)
             mrow->InsertEndChild(leftParen);
         }
 
-        ops[i]->Accept(*this);
-        tinyxml2::XMLElement* opElement = GetResult();
+        tinyxml2::XMLElement* opElement = ops[i]->Accept(*this).value();
         mrow->InsertEndChild(opElement);
 
         if (surroundWithParens) {
@@ -222,28 +226,74 @@ void MathMLSerializer::Visit(const Multiply<>& multiply)
         }
     }
 
-    result = mrow;
+    return mrow;
 }
 
-void MathMLSerializer::Visit(const Divide<>& divide)
+auto MathMLSerializer::TypedVisit(const Divide<>& divide) -> RetT
 {
-    tinyxml2::XMLElement* mfrac = doc.NewElement("mfrac");
+    return GetOpsAsMathMLPair(divide).transform([this, divide](const auto& ops) {
+        tinyxml2::XMLElement* mfrac = doc.NewElement("mfrac");
 
-    auto [dividendElement, divisorElement] = GetOpsAsMathMLPair(divide);
+        auto [dividendElement, divisorElement] = ops;
 
-    mfrac->InsertEndChild(dividendElement);
-    mfrac->InsertEndChild(divisorElement);
+        mfrac->InsertEndChild(dividendElement);
+        mfrac->InsertEndChild(divisorElement);
 
-    result = mfrac;
+        return mfrac;
+    });
 }
 
-void MathMLSerializer::Visit(const Exponent<>& exponent)
+auto MathMLSerializer::TypedVisit(const Exponent<>& exponent) -> RetT
 {
-    tinyxml2::XMLElement* msup = doc.NewElement("msup");
+    return GetOpsAsMathMLPair(exponent).transform([this, exponent](const auto& ops) {
+        tinyxml2::XMLElement* msup = doc.NewElement("msup");
 
-    auto [baseElement, powerElement] = GetOpsAsMathMLPair(exponent);
+        auto [baseElement, powerElement] = ops;
 
-    if (exponent.HasMostSigOp() && !exponent.GetMostSigOp().Is<Real>() && !exponent.GetMostSigOp().Is<Variable>()) {
+        if (exponent.HasMostSigOp() && !exponent.GetMostSigOp().Is<Real>() && !exponent.GetMostSigOp().Is<Variable>()) {
+            // (
+            tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+            leftParen->SetText("(");
+
+            // )
+            tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+            rightParen->SetText(")");
+
+            tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
+
+            mrow->InsertEndChild(leftParen);
+            mrow->InsertEndChild(baseElement);
+            mrow->InsertEndChild(rightParen);
+
+            msup->InsertEndChild(mrow);
+        } else {
+            msup->InsertEndChild(baseElement);
+        }
+
+        msup->InsertEndChild(powerElement);
+
+        return msup;
+    });
+}
+
+auto MathMLSerializer::TypedVisit(const Log<>& log) -> RetT
+{
+    return GetOpsAsMathMLPair(log).transform([this, log](const auto& ops) {
+        // mrow
+        tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+
+        // log
+        tinyxml2::XMLElement* const msub = doc.NewElement("msub");
+
+        tinyxml2::XMLElement* const logElement = doc.NewElement("mi");
+        logElement->SetText("log");
+
+        auto [baseElement, argElement] = ops;
+
+        msub->InsertFirstChild(logElement);
+        msub->InsertEndChild(baseElement);
+        mrow->InsertFirstChild(msub);
+
         // (
         tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
         leftParen->SetText("(");
@@ -252,55 +302,15 @@ void MathMLSerializer::Visit(const Exponent<>& exponent)
         tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
         rightParen->SetText(")");
 
-        tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
-
         mrow->InsertEndChild(leftParen);
-        mrow->InsertEndChild(baseElement);
+        mrow->InsertEndChild(argElement);
         mrow->InsertEndChild(rightParen);
 
-        msup->InsertEndChild(mrow);
-    } else {
-        msup->InsertEndChild(baseElement);
-    }
-
-    msup->InsertEndChild(powerElement);
-
-    result = msup;
+        return mrow;
+    });
 }
 
-void MathMLSerializer::Visit(const Log<>& log)
-{
-    // mrow
-    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
-
-    // log
-    tinyxml2::XMLElement* const msub = doc.NewElement("msub");
-
-    tinyxml2::XMLElement* const logElement = doc.NewElement("mi");
-    logElement->SetText("log");
-
-    auto [baseElement, argElement] = GetOpsAsMathMLPair(log);
-
-    msub->InsertFirstChild(logElement);
-    msub->InsertEndChild(baseElement);
-    mrow->InsertFirstChild(msub);
-
-    // (
-    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
-    leftParen->SetText("(");
-
-    // )
-    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
-    rightParen->SetText(")");
-
-    mrow->InsertEndChild(leftParen);
-    mrow->InsertEndChild(argElement);
-    mrow->InsertEndChild(rightParen);
-
-    result = mrow;
-}
-
-void MathMLSerializer::Visit(const Negate<Expression>& negate)
+auto MathMLSerializer::TypedVisit(const Negate<Expression>& negate) -> RetT
 {
     // mrow
     tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
@@ -315,8 +325,7 @@ void MathMLSerializer::Visit(const Negate<Expression>& negate)
     leftParen->SetText("(");
     mrow->InsertEndChild(leftParen);
 
-    negate.GetOperand().Accept(*this);
-    tinyxml2::XMLElement* operandElement = GetResult();
+    const auto operandElement = negate.GetOperand().Accept(*this).value();
     mrow->InsertEndChild(operandElement);
 
     // )
@@ -324,70 +333,74 @@ void MathMLSerializer::Visit(const Negate<Expression>& negate)
     rightParen->SetText(")");
     mrow->InsertEndChild(rightParen);
 
-    result = mrow;
+    return mrow;
 }
 
-void MathMLSerializer::Visit(const Derivative<>& derivative)
+auto MathMLSerializer::TypedVisit(const Derivative<>& derivative) -> RetT
 {
-    tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
+    return GetOpsAsMathMLPair(derivative).transform([this, derivative](const auto& ops) {
+        tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
 
-    tinyxml2::XMLElement* mfrac = doc.NewElement("mfrac");
+        tinyxml2::XMLElement* mfrac = doc.NewElement("mfrac");
 
-    tinyxml2::XMLElement* dNode = doc.NewElement("mo");
-    dNode->SetText("d");
+        tinyxml2::XMLElement* dNode = doc.NewElement("mo");
+        dNode->SetText("d");
 
-    tinyxml2::XMLElement* dXNode = doc.NewElement("mo");
-    dXNode->SetText("d");
+        tinyxml2::XMLElement* dXNode = doc.NewElement("mo");
+        dXNode->SetText("d");
 
-    auto [expElement, varElement] = GetOpsAsMathMLPair(derivative);
+        auto [expElement, varElement] = ops;
 
-    tinyxml2::XMLElement* denominator = doc.NewElement("mrow");
-    denominator->InsertEndChild(dXNode);
-    denominator->InsertEndChild(varElement);
+        tinyxml2::XMLElement* denominator = doc.NewElement("mrow");
+        denominator->InsertEndChild(dXNode);
+        denominator->InsertEndChild(varElement);
 
-    mfrac->InsertEndChild(dNode);
-    mfrac->InsertEndChild(denominator);
+        mfrac->InsertEndChild(dNode);
+        mfrac->InsertEndChild(denominator);
 
-    mrow->InsertEndChild(mfrac);
+        mrow->InsertEndChild(mfrac);
 
-    // (
-    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
-    leftParen->SetText("(");
+        // (
+        tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+        leftParen->SetText("(");
 
-    // )
-    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
-    rightParen->SetText(")");
+        // )
+        tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+        rightParen->SetText(")");
 
-    mrow->InsertEndChild(leftParen);
-    mrow->InsertEndChild(expElement);
-    mrow->InsertEndChild(rightParen);
+        mrow->InsertEndChild(leftParen);
+        mrow->InsertEndChild(expElement);
+        mrow->InsertEndChild(rightParen);
 
-    result = mrow;
+        return mrow;
+    });
 }
 
-void MathMLSerializer::Visit(const Integral<>& integral)
+auto MathMLSerializer::TypedVisit(const Integral<>& integral) -> RetT
 {
-    tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
+    return GetOpsAsMathMLPair(integral).transform([this, integral](const auto& ops) {
+        tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
 
-    // Integral symbol
-    tinyxml2::XMLElement* inte = doc.NewElement("mo");
-    inte->SetText("\u222B");
+        // Integral symbol
+        tinyxml2::XMLElement* inte = doc.NewElement("mo");
+        inte->SetText(u8"\u222B");
 
-    tinyxml2::XMLElement* dNode = doc.NewElement("mo");
-    dNode->SetText("d");
+        tinyxml2::XMLElement* dNode = doc.NewElement("mo");
+        dNode->SetText("d");
 
-    auto [expElement, varElement] = GetOpsAsMathMLPair(integral);
+        auto [expElement, varElement] = ops;
 
-    // d variable
-    tinyxml2::XMLElement* dVar = doc.NewElement("mrow");
-    dVar->InsertEndChild(dNode);
-    dVar->InsertEndChild(varElement);
+        // d variable
+        tinyxml2::XMLElement* dVar = doc.NewElement("mrow");
+        dVar->InsertEndChild(dNode);
+        dVar->InsertEndChild(varElement);
 
-    mrow->InsertEndChild(inte);
-    mrow->InsertEndChild(expElement);
-    mrow->InsertEndChild(dVar);
+        mrow->InsertEndChild(inte);
+        mrow->InsertEndChild(expElement);
+        mrow->InsertEndChild(dVar);
 
-    result = mrow;
+        return mrow;
+    });
 }
 
 tinyxml2::XMLDocument& MathMLSerializer::GetDocument() const
@@ -395,20 +408,7 @@ tinyxml2::XMLDocument& MathMLSerializer::GetDocument() const
     return doc;
 }
 
-tinyxml2::XMLElement* MathMLSerializer::GetResult() const
-{
-    return result;
-}
-
-tinyxml2::XMLElement* MathMLSerializer::CreatePlaceholder() const
-{
-    tinyxml2::XMLElement* mspace = doc.NewElement("mspace");
-    mspace->SetAttribute("style", "border: dashed gray 1.5pt;");
-    mspace->SetAttribute("width", "1em");
-    mspace->SetAttribute("height", "1em");
-    return mspace;
-}
-void MathMLSerializer::Visit(const Magnitude<Expression>& magnitude)
+auto MathMLSerializer::TypedVisit(const Magnitude<Expression>& magnitude) -> RetT
 {
     // mrow
     tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
@@ -418,8 +418,7 @@ void MathMLSerializer::Visit(const Magnitude<Expression>& magnitude)
     leftParen->SetText("|");
     mrow->InsertEndChild(leftParen);
 
-    magnitude.GetOperand().Accept(*this);
-    tinyxml2::XMLElement* operandElement = GetResult();
+    const auto operandElement = magnitude.GetOperand().Accept(*this).value();
     mrow->InsertEndChild(operandElement);
 
     // )
@@ -427,7 +426,7 @@ void MathMLSerializer::Visit(const Magnitude<Expression>& magnitude)
     rightParen->SetText("|");
     mrow->InsertEndChild(rightParen);
 
-    result = mrow;
+    return mrow;
 }
 
 }

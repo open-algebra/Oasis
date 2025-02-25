@@ -5,99 +5,122 @@
 #ifndef LATEXSERIALIZER_HPP
 #define LATEXSERIALIZER_HPP
 
-#include <string>
+#include <format>
 #include <set>
+#include <string>
 
 #include "Oasis/BinaryExpression.hpp"
 #include "Oasis/Visit.hpp"
 
 namespace Oasis {
 
-enum Spacing{
-    NO_SPACING,
-    SPACING
+struct TeXOpts {
+    enum class Dialect {
+        LATEX
+    } dialect
+        = Dialect::LATEX;
+
+    enum class Spacing {
+        MINIMAL,
+        REGULAR
+    } spacing
+        = Spacing::MINIMAL;
+
+    enum class ImgSym {
+        I,
+        J
+    } character
+        = ImgSym::I;
+
+    uint8_t numPlaces = 2;
+
+    enum class DivType {
+        FRAC,
+        DIV
+    } divType
+        = DivType::FRAC;
+
+    enum class Pkgs {
+        ESDIFF,
+    };
+
+    std::set<Pkgs> packages = { Pkgs::ESDIFF };
 };
 
-enum ImaginaryCharacter{
-    CHARACTER_I,
-    CHARACTER_J
-};
-
-enum DivisionType{
-    FRAC,
-    DIV
-};
-
-enum TeXDialect{
-    LATEX
-};
-
-enum SupportedPackages{
-    ESDIFF,
-};
-
-struct TexOptions {
-    TeXDialect dialect;
-    Spacing spacing;
-    ImaginaryCharacter character;
-    uint8_t numPlaces;
-    DivisionType divType;
-    std::set<SupportedPackages> packages;
-
-    explicit TexOptions(ImaginaryCharacter ch) : TexOptions(LATEX, ch) {}
-    explicit TexOptions(uint8_t num) : TexOptions(LATEX, CHARACTER_I, num, FRAC) {}
-    explicit TexOptions(Spacing spacing) : TexOptions(LATEX, CHARACTER_I, 6, FRAC, spacing) {}
-    explicit TexOptions(DivisionType dv) : TexOptions(LATEX, CHARACTER_I, 6, dv) {}
-
-    TexOptions(TeXDialect dt = LATEX, ImaginaryCharacter ch = CHARACTER_I, uint8_t num = 6,
-                  DivisionType dv = FRAC, Spacing sp = NO_SPACING)
-        : dialect(dt), spacing(sp), character(ch), numPlaces(num), divType(dv) {}
-};
-
-class TeXSerializer final : public Visitor {
+class TeXSerializer final : public TypedVisitor<std::expected<std::string, std::string_view>> {
 public:
-    TeXSerializer() : TeXSerializer(TexOptions {}) {}
-    explicit TeXSerializer(TexOptions options) : latexOptions(options) {}
+    TeXSerializer()
+        : TeXSerializer(TeXOpts {})
+    {
+    }
+    explicit TeXSerializer(TeXOpts options)
+        : latexOptions(options)
+    {
+    }
 
-    void SetTeXDialect(TeXDialect dt);
-    void SetImaginaryCharacter(ImaginaryCharacter character);
+    void SetTeXDialect(TeXOpts::Dialect dt);
+    void SetImaginaryCharacter(TeXOpts::ImgSym character);
     void SetNumPlaces(uint8_t num);
-    void SetSpacing(Spacing sp);
-    void SetDivType(DivisionType dv);
+    void SetSpacing(TeXOpts::Spacing sp);
+    void SetDivType(TeXOpts::DivType dv);
 
-    TeXDialect GetTeXDialect();
-    DivisionType GetDivType();
-    Spacing GetSpacing();
+    TeXOpts::Dialect GetTeXDialect();
+    TeXOpts::DivType GetDivType();
+    TeXOpts::Spacing GetSpacing();
     uint8_t GetNumPlaces();
-    ImaginaryCharacter GetImaginaryCharacter();
+    TeXOpts::ImgSym GetImaginaryCharacter();
 
-    void AddTeXPackage(SupportedPackages package);
-    void RemoveTeXPackage(SupportedPackages package);
+    void AddTeXPackage(TeXOpts::Pkgs package);
+    void RemoveTeXPackage(TeXOpts::Pkgs package);
 
-    void Visit(const Real& real) override;
-    void Visit(const Imaginary& imaginary) override;
-    void Visit(const Matrix& matrix) override;
-    void Visit(const Variable& variable) override;
-    void Visit(const Undefined& undefined) override;
-    void Visit(const Pi&) override;
-    void Visit(const EulerNumber&) override;
-    void Visit(const Add<Expression, Expression>& add) override;
-    void Visit(const Subtract<Expression, Expression>& subtract) override;
-    void Visit(const Multiply<Expression, Expression>& multiply) override;
-    void Visit(const Divide<Expression, Expression>& divide) override;
-    void Visit(const Exponent<Expression, Expression>& exponent) override;
-    void Visit(const Log<Expression, Expression>& log) override;
-    void Visit(const Negate<Expression>& negate) override;
-    void Visit(const Magnitude<Expression>& magnitude) override;
-    void Visit(const Derivative<Expression, Expression>& derivative) override;
-    void Visit(const Integral<Expression, Expression>& integral) override;
-
-    [[nodiscard]] std::string getResult() const;
+    auto TypedVisit(const Real& real) -> RetT override;
+    auto TypedVisit(const Imaginary& imaginary) -> RetT override;
+    auto TypedVisit(const Matrix& matrix) -> RetT override;
+    auto TypedVisit(const Variable& variable) -> RetT override;
+    auto TypedVisit(const Undefined& undefined) -> RetT override;
+    auto TypedVisit(const Pi&) -> RetT override;
+    auto TypedVisit(const EulerNumber&) -> RetT override;
+    auto TypedVisit(const Add<Expression, Expression>& add) -> RetT override;
+    auto TypedVisit(const Subtract<Expression, Expression>& subtract) -> RetT override;
+    auto TypedVisit(const Multiply<Expression, Expression>& multiply) -> RetT override;
+    auto TypedVisit(const Divide<Expression, Expression>& divide) -> RetT override;
+    auto TypedVisit(const Exponent<Expression, Expression>& exponent) -> RetT override;
+    auto TypedVisit(const Log<Expression, Expression>& log) -> RetT override;
+    auto TypedVisit(const Negate<Expression>& negate) -> RetT override;
+    auto TypedVisit(const Magnitude<Expression>& magnitude) -> RetT override;
+    auto TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT override;
+    auto TypedVisit(const Integral<Expression, Expression>& integral) -> RetT override;
 
 private:
-    std::string result;
-    TexOptions latexOptions{};
+    TeXOpts latexOptions {};
+
+    auto GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::expected<std::pair<std::string, std::string>, std::string_view>;
+    auto SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::expected<std::string, std::string_view>;
 };
+
+auto TeXSerializer::GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::expected<std::pair<std::string, std::string>, std::string_view>
+{
+    TeXSerializer& thisSerializer = *this;
+    return visited.GetMostSigOp().Accept(thisSerializer).and_then([&thisSerializer, &visited](const std::string& mostSigOpStr) {
+        return visited.GetLeastSigOp().Accept(thisSerializer).transform([&mostSigOpStr](const std::string& leastSigOpStr) {
+            return std::pair { mostSigOpStr, leastSigOpStr };
+        });
+    });
+}
+
+auto TeXSerializer::SerializeArithBinExp(const DerivedFromBinaryExpression auto& visited, const std::string& op) -> std::expected<std::string, std::string_view>
+{
+    return GetOpsOfBinExp(visited).and_then([&op, this](const std::pair<std::string, std::string>& ops) -> std::expected<std::string, std::string_view> {
+        const auto& [mostSigOpStr, leastSigOpStr] = ops;
+        if (latexOptions.spacing == TeXOpts::Spacing::MINIMAL)
+            return std::format("\\left({}{}{}\\right)", mostSigOpStr, op, leastSigOpStr);
+
+        if (latexOptions.spacing == TeXOpts::Spacing::REGULAR)
+            return std::format("\\left({} {} {}\\right)", mostSigOpStr, op, leastSigOpStr);
+
+        return std::unexpected { "Invalid spacing option" };
+    });
+}
 
 }
 
