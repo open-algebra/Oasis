@@ -277,7 +277,7 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
                     long long val = a * x_p3 + b * x_p2 * q + c * p * q * q + d * x_q3;
 
                     if (val == 0) { // If this is a root
-                        results.push_back(Divide(Real(num), Real(den)).Copy());
+                        results.push_back(Divide(Real(static_cast<double>(num)), Real(static_cast<double>(den))).Copy());
                         found_roots.insert({ num, den });
                     }
                 }
