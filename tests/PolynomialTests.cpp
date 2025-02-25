@@ -492,17 +492,23 @@ TEST_CASE("Cubic polynomial test 1: 3x³ - 16x² + 23x - 6:", "[factor]")
 
     REQUIRE(zeros.size() == 3);
 
-    if (zeros.size() == 2) {
-        // Check first root x = -1 - sqrt(5)/2
+    if (zeros.size() == 3) {
         auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
+        auto denominator = root1->GetLeastSigOp().GetValue();
+        auto numerator = root1->GetMostSigOp().GetValue();
         REQUIRE(root1 != nullptr);
-        REQUIRE(root1->GetMostSigOp().GetValue() == 2);
-        REQUIRE(root1->GetLeastSigOp().GetValue() == 4);
+        REQUIRE(numerator/denominator == 1.0/2.0);
 
-        // Check second root x = sqrt(5)/2 - 1
         auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
+        auto denominator2 = root2->GetLeastSigOp().GetValue();
+        auto numerator2 = root2->GetMostSigOp().GetValue();
         REQUIRE(root2 != nullptr);
-        REQUIRE(root2->GetMostSigOp().GetValue() == -4);
-        REQUIRE(root2->GetLeastSigOp().GetValue() == 4);
+        REQUIRE(numerator2/denominator2 == 1.0/3.0);
+
+        auto root3 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[2]);
+        auto denominator3 = root3->GetLeastSigOp().GetValue();
+        auto numerator3 = root3->GetMostSigOp().GetValue();
+        REQUIRE(root2 != nullptr);
+        REQUIRE(numerator3/denominator3 == 3.0/1.0);
     }
 }

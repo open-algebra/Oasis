@@ -10,6 +10,7 @@
 #include <Oasis/Variable.hpp>
 #include <iostream>
 #include <set>
+#include <numeric>
 
 std::vector<long long> getAllFactors(long long n)
 {
@@ -282,6 +283,9 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             long long c = termsC[2];  // coefficient of x
             long long d = termsC[3];  // constant term
 
+            // To track found roots and avoid duplicates
+            std::set<std::pair<long long, long long>> found_roots;
+
             // Get factors of constant term for possible p values
             std::vector<long long> p_factors;
             for (long long i = 1; i <= std::abs(d); i++) {
@@ -301,18 +305,37 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
 
             for (long long p : p_factors) {
                 for (long long q : q_factors) {
+                    // Skip if q is 0
+                    if (q == 0) continue;
+
+                    // Simplify the fraction p/q
+                    long long g = std::gcd(std::abs(p), q);
+                    long long num = p / g;
+                    long long den = q / g;
+
+                    // Ensure denominator is positive
+                    if (den < 0) {
+                        num = -num;
+                        den = -den;
+                    }
+
+                    // Check if we've already found this root
+                    if (found_roots.find({num, den}) != found_roots.end()) {
+                        continue;
+                    }
+
                     // For each potential root p/q, evaluate the polynomial
                     long long x_p3 = p * p * p;
                     long long x_p2 = p * p;
                     long long x_q3 = q * q * q;
 
                     // Evaluate ax³ + bx² + cx + d = 0 at x = p/q
-                    // Multiply all terms by q³ to eliminate denominators:
-                    // a(p³) + b(p²q) + c(pq²) + d(q³) = 0
+                    // Multiply all terms by q³ to eliminate denominators
                     long long val = a * x_p3 + b * x_p2 * q + c * p * q * q + d * x_q3;
 
                     if (val == 0) {  // If this is a root
-                        results.push_back(Divide(Real(p), Real(q)).Copy());
+                        results.push_back(Divide(Real(num), Real(den)).Copy());
+                        found_roots.insert({num, den});
                     }
                 }
             }
