@@ -262,7 +262,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
     std::stack<std::variant<Operator, Function, OpenParens>> ops;
 
     std::string token;
-    std::stringstream ss{ str };
+    std::stringstream ss { str };
 
     while (ss >> token) {
         // Operand
@@ -276,7 +276,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
             while (!ops.empty() && prec(ops.top()) >= prec(newOp.value())) {
                 auto processOpResult = processOp(ops, st);
                 if (!processOpResult)
-                    return std::unexpected{ processOpResult.error() };
+                    return std::unexpected { processOpResult.error() };
                 st.emplace(std::move(processOpResult.value()));
             }
             ops.emplace(newOp.value());
@@ -315,8 +315,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
                     return std::unexpected { processFunctionResult.error() };
                 st.emplace(std::move(processFunctionResult.value()));
             }
-        }
-        else if (ss.peek() != '(') {
+        } else if (ss.peek() != '(') {
             st.push(ParseOperand(token, option));
         }
     }
