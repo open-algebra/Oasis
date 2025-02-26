@@ -261,15 +261,15 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
     std::stack<std::unique_ptr<Expression>> st;
     std::stack<std::variant<Operator, Function, OpenParens>> ops;
 
-    std::string token, function_token;
-    std::stringstream ss(str);
+    std::string token;
+    std::stringstream ss{ str };
 
     while (ss >> token) {
         // Operand
         if (auto newNumber = is_number(token); newNumber) {
             st.push(std::make_unique<Real>(newNumber.value()));
-        } else if (auto func = is_function(token); func) {
-            ops.emplace(func.value());
+        } else if (auto newFunc = is_function(token); newFunc) {
+            ops.emplace(newFunc.value());
         }
         // Operator
         else if (auto newOp = is_operator(token); newOp) {
