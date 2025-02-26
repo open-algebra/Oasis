@@ -285,9 +285,8 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
         }
         // ','
         else if (token == ",") {
-            auto topOp = ops.top();
             // function_active = true;
-            while (!ops.empty() && !std::holds_alternative<OpenParens>(topOp)) {
+            while (!ops.empty() && !std::holds_alternative<OpenParens>(ops.top())) {
                 auto processOpResult = processOp(ops, st);
                 if (!processOpResult)
                     return std::unexpected { processOpResult.error() };
@@ -296,22 +295,19 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
         }
         // ')'
         else if (token == ")") {
-            auto topOp = ops.top();
-            while (!ops.empty() && !std::holds_alternative<OpenParens>(topOp)) {
+            while (!ops.empty() && !std::holds_alternative<OpenParens>(ops.top())) {
                 auto processOpResult = processOp(ops, st);
                 if (!processOpResult)
                     return std::unexpected { processOpResult.error() };
                 st.emplace(std::move(processOpResult.value()));
             }
 
-            topOp = ops.top();
-            if (ops.empty() || !std::holds_alternative<OpenParens>(topOp)) {
+            if (auto topOp = ops.top(); ops.empty() || !std::holds_alternative<OpenParens>(topOp)) {
                 return std::unexpected { "Mismatched parenthesis" };
             }
 
             ops.pop(); // pop '('
-            topOp = ops.top();
-            if (!ops.empty() && std::holds_alternative<Function>(topOp)) {
+            if (auto topOp = ops.top(); !ops.empty() && std::holds_alternative<Function>(topOp)) {
                 auto func = std::get<Function>(topOp);
                 ops.pop();
                 auto processFunctionResult = processFunction(st, func);
