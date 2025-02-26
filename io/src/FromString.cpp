@@ -266,14 +266,22 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
 
     while (ss >> token) {
         // Operand
-        if (is_number(token)) {
-            st.push(std::make_unique<Real>(std::stof(token)));
-        }
-        // '(' or function
-        else if (token == "(") {
-            ops.emplace(OpenParens());
+        if (auto newNumber = is_number(token); newNumber) {
+            st.push(std::make_unique<Real>(newNumber.value()));
         } else if (auto func = is_function(token); func) {
             ops.emplace(func.value());
+        }
+        // Operator
+        else if (auto newOp = is_operator(token); newOp) {
+            while (!ops.empty() && prec(ops.top()) >= prec(newOp.value())) {
+                auto processOpResult = processOp(ops, st);
+                if (!processOpResult)
+                    return std::unexpected{ processOpResult.error() };
+                st.emplace(std::move(processOpResult.value()));
+            }
+            ops.emplace(newOp.value());
+        } else if (token == "(") {
+            ops.emplace(OpenParens());
         }
         // ','
         else if (token == ",") {
@@ -312,16 +320,7 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
                 st.emplace(std::move(processFunctionResult.value()));
             }
         }
-        // Operator
-        else if (auto newOp = is_operator(token); newOp) {
-            while (!ops.empty() && prec(ops.top()) >= prec(newOp.value())) {
-                auto processOpResult = processOp(ops, st);
-                if (!processOpResult)
-                    return std::unexpected { processOpResult.error() };
-                st.emplace(std::move(processOpResult.value()));
-            }
-            ops.emplace(newOp.value());
-        } else if (ss.peek() != '(') {
+        else if (ss.peek() != '(') {
             st.push(ParseOperand(token, option));
         }
     }
