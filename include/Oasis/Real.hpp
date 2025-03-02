@@ -7,6 +7,13 @@
 
 #include "LeafExpression.hpp"
 #include "Unit.hpp"
+#include <boost/units/systems/si.hpp>
+#include <boost/units/io.hpp>
+#include <boost/units/cmath.hpp>
+#include <boost/units/systems/si/length.hpp>
+#include <boost/units/systems/si/io.hpp>
+#include <boost/units/conversion.hpp>
+
 
 namespace Oasis {
 
@@ -25,7 +32,7 @@ public:
     EXPRESSION_TYPE(Real)
     EXPRESSION_CATEGORY(UnExp)
 
-    auto ConvertTo(Unit TargetUnit) const -> Real;
+    auto ConvertTo(Unit targetUnit) const -> Real;
     /**
      * Gets the value of the real number.
      * @return The value of the real number.
@@ -43,6 +50,8 @@ public:
 private:
     double value {};
     Unit unit = Unit::None;
+
+    auto GetFactor(Unit from, Unit to) const -> double;
 };
 
 } // Oasis

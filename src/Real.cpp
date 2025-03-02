@@ -28,14 +28,32 @@ auto Real::Equals(const Expression& other) const -> bool
     return other.Is<Real>() && value == dynamic_cast<const Real&>(other).value;
 }
 
-auto Real::ConvertTo(Unit TargetUnit) const -> Real
+auto Real::GetFactor(Unit from, Unit to) const -> double
+{
+    using namespace boost::units;
+    using namespace boost::units::si;
+
+    quantity<si::length> one_meter(1.0 * meter);
+    quantity<si::length> one_kilometer(1000 * meter);
+    if (from == Unit::Meter && to == Unit::Kilogram) {
+        return one_meter.value() / one_kilometer.value();
+    }
+    if (from == Unit::Kilogram && to == Unit::Meter) {
+        return one_kilometer.value() / one_meter.value();
+    }
+
+    //Other Cases
+    return 1.0;
+}
+
+auto Real::ConvertTo(Unit targetUnit) const -> Real
 {   //template of the ConvertTo AS OF NOW
-    if (TargetUnit == unit) {
+    if (unit == targetUnit) {
         return *this;
     }
 
-    double factor = 1.00;
-    return Real(value * factor, TargetUnit);
+    double factor = GetFactor(unit, targetUnit);
+    return Real(value * factor, targetUnit);
 }
 
 auto Real::GetValue() const -> double

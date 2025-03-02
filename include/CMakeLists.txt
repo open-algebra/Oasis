@@ -33,6 +33,10 @@ add_library(Oasis::Headers ALIAS OasisHeaders)
 target_compile_features(OasisHeaders INTERFACE cxx_std_20)
 target_include_directories(
     OasisHeaders INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-                           $<INSTALL_INTERFACE:include>)
+                           $<INSTALL_INTERFACE:include>
+                            /opt/homebrew/include
+)
+
+target_compile_options(OasisHeaders INTERFACE -Wno-error=language-extension-token)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${Oasis_HEADERS})
