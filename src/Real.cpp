@@ -13,8 +13,8 @@
 
 namespace Oasis {
 
-Real::Real(double value)
-    : value(value)
+Real::Real(double value, Unit unit)
+    : value(value), unit(unit)
 {
 }
 
@@ -28,9 +28,24 @@ auto Real::Equals(const Expression& other) const -> bool
     return other.Is<Real>() && value == dynamic_cast<const Real&>(other).value;
 }
 
+auto Real::ConvertTo(Unit TargetUnit) const -> Real
+{   //template of the ConvertTo AS OF NOW
+    if (TargetUnit == unit) {
+        return *this;
+    }
+
+    double factor = 1.00;
+    return Real(value * factor, TargetUnit);
+}
+
 auto Real::GetValue() const -> double
 {
     return value;
+}
+
+auto Real::GetUnit() const -> Unit
+{
+    return unit;
 }
 
 auto Real::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>

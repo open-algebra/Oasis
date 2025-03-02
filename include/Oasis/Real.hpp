@@ -6,6 +6,7 @@
 #define OASIS_REAL_HPP
 
 #include "LeafExpression.hpp"
+#include "Unit.hpp"
 
 namespace Oasis {
 
@@ -17,18 +18,21 @@ public:
     Real() = default;
     Real(const Real& other) = default;
 
-    explicit Real(double value);
+    explicit Real(double value, Unit unit = Unit::None);
 
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final;
 
     EXPRESSION_TYPE(Real)
     EXPRESSION_CATEGORY(UnExp)
 
+    auto ConvertTo(Unit TargetUnit) const -> Real;
     /**
      * Gets the value of the real number.
      * @return The value of the real number.
      */
     [[nodiscard]] auto GetValue() const -> double;
+
+    [[nodiscard]] auto GetUnit() const -> Unit;
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
 
@@ -38,6 +42,7 @@ public:
 
 private:
     double value {};
+    Unit unit = Unit::None;
 };
 
 } // Oasis
