@@ -13,8 +13,8 @@
 
 namespace Oasis {
 
-Variable::Variable(std::string name)
-    : name(std::move(name))
+Variable::Variable(std::string name, Unit unit)
+    : name(std::move(name)), unit(unit)
 {
 }
 
@@ -26,6 +26,11 @@ auto Variable::Equals(const Expression& other) const -> bool
 auto Variable::GetName() const -> std::string
 {
     return name;
+}
+
+auto Variable::GetUnit() const -> Unit
+{
+    return unit;
 }
 
 auto Variable::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>

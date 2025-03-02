@@ -9,6 +9,7 @@
 #include <string>
 
 #include "LeafExpression.hpp"
+#include "Unit.hpp"
 
 namespace Oasis {
 
@@ -23,7 +24,7 @@ public:
     Variable() = default;
     Variable(const Variable& other) = default;
 
-    explicit Variable(std::string name);
+    explicit Variable(std::string name, Unit unit = Unit::None);
 
     [[nodiscard]] virtual auto Equals(const Expression& other) const -> bool final;
 
@@ -37,6 +38,8 @@ public:
      */
     [[nodiscard]] auto GetName() const -> std::string;
 
+    [[nodiscard]] auto GetUnit() const -> Unit;
+
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
@@ -47,6 +50,7 @@ public:
 
 private:
     std::string name {};
+    Unit unit = Unit::None;
 };
 
 } // Oasis
