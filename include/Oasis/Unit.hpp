@@ -7,6 +7,8 @@ namespace Oasis {
 enum class Unit {
     None,
     Meter,
+    Kilometer,
+    Gram,
     Kilogram,
     Second,
     Ampere,

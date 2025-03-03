@@ -11,7 +11,30 @@
 #include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Variable.hpp"
 
+#include <catch2/catch_approx.hpp>
 #include <functional>
+
+TEST_CASE("Real Unit Conversion: Meter to Kilometer", "[Real][UnitConversion]")
+{
+    Oasis::Real meterValue{1000.0, Oasis::Unit::Meter};
+    auto kmValue = meterValue.ConvertTo(Oasis::Unit::Kilometer);
+    REQUIRE(kmValue.GetValue() == Catch::Approx(1.0));
+    REQUIRE(kmValue.GetUnit() == Oasis::Unit::Kilometer);
+}
+
+TEST_CASE("Real Unit Conversion: Kilometer to Meter", "[Real][UnitConversion]") {
+    Oasis::Real kmValue{2.0, Oasis::Unit::Kilometer};
+    auto meterValue = kmValue.ConvertTo(Oasis::Unit::Meter);
+    REQUIRE(meterValue.GetValue() == Catch::Approx(2000.0));
+    REQUIRE(meterValue.GetUnit() == Oasis::Unit::Meter);
+}
+
+TEST_CASE("Real Unit Conversion: No Conversion Needed", "[Real][UnitConversion]") {
+    Oasis::Real value{123.45, Oasis::Unit::Meter};
+    auto converted = value.ConvertTo(Oasis::Unit::Meter);
+    REQUIRE(converted.GetValue() == Catch::Approx(123.45));
+    REQUIRE(converted.GetUnit() == Oasis::Unit::Meter);
+}
 
 TEST_CASE("Addition", "[Add]")
 {

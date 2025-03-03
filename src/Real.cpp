@@ -35,10 +35,10 @@ auto Real::GetFactor(Unit from, Unit to) const -> double
 
     quantity<si::length> one_meter(1.0 * meter);
     quantity<si::length> one_kilometer(1000 * meter);
-    if (from == Unit::Meter && to == Unit::Kilogram) {
+    if (from == Unit::Meter && to == Unit::Kilometer) {
         return one_meter.value() / one_kilometer.value();
     }
-    if (from == Unit::Kilogram && to == Unit::Meter) {
+    if (from == Unit::Kilometer && to == Unit::Meter) {
         return one_kilometer.value() / one_meter.value();
     }
 
