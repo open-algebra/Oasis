@@ -27,7 +27,8 @@ set(Oasis_HEADERS
     Oasis/Variable.hpp)
 
 # Adds a header-only library target called "OasisHeaders"
-add_library(OasisHeaders INTERFACE)
+add_library(OasisHeaders INTERFACE
+        Oasis/UnitGraph.hpp)
 add_library(Oasis::Headers ALIAS OasisHeaders)
 
 target_compile_features(OasisHeaders INTERFACE cxx_std_20)
