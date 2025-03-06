@@ -8,6 +8,9 @@
 #include <Oasis/RecursiveCast.hpp>
 #include <Oasis/Subtract.hpp>
 #include <Oasis/Variable.hpp>
+#include <iostream>
+#include <numeric>
+#include <set>
 
 std::vector<long long> getAllFactors(long long n)
 {
@@ -52,8 +55,47 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
 {
     std::vector<std::unique_ptr<Expression>> results;
     std::vector<std::unique_ptr<Expression>> termsE;
+    if (auto subCase = RecursiveCast<Subtract<Expression>>(*this); subCase != nullptr) {
+        // Check for x² - n pattern
+        if (auto leftTerm = RecursiveCast<Exponent<Variable, Real>>(subCase->GetMostSigOp());
+            leftTerm != nullptr) {
+            if (leftTerm->GetLeastSigOp().GetValue() == 2) {
+                if (auto rightTerm = RecursiveCast<Real>(subCase->GetLeastSigOp());
+                    rightTerm != nullptr) {
+
+                    double n = rightTerm->GetValue();
+                    double sqrtN = std::sqrt(n);
+
+                    if (n > 0 && sqrtN == std::floor(sqrtN)) {
+                        // Instead of creating Real values directly, create proper Binary Expressions
+                        // For positive root: n^(1/2)
+                        auto posRoot = std::make_unique<Divide<Expression>>(
+                            Real(sqrtN), // MostSigOp
+                            Real(1) // LeastSigOp
+                        );
+
+                        // For negative root: -n^(1/2)
+                        auto negRoot = std::make_unique<Divide<Expression>>(
+                            Real(-sqrtN), // MostSigOp
+                            Real(1) // LeastSigOp
+                        );
+
+                        results.push_back(std::move(posRoot));
+                        results.push_back(std::move(negRoot));
+                        return results;
+                    }
+                }
+            }
+        }
+    }
     if (auto addCase = RecursiveCast<Add<Expression>>(*this); addCase != nullptr) {
         addCase->Flatten(termsE);
+    } else if (auto subCase = RecursiveCast<Subtract<Expression>>(*this); subCase != nullptr) {
+        // Handle subtraction by converting to addition
+        termsE.push_back(subCase->GetMostSigOp().Copy()); // First term
+        // Add negative of second term
+        auto negTerm = Multiply(Real(-1), subCase->GetLeastSigOp()).Copy();
+        termsE.push_back(std::move(negTerm));
     } else {
         termsE.push_back(Copy());
     }
@@ -143,68 +185,104 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
         }
     }
     if (termsC.size() == coefficents.size()) {
-        std::reverse(termsC.begin(), termsC.end());
-        for (auto pv : getAllFactors(termsC.back())) {
-            for (auto qv : getAllFactors(termsC.front())) {
-                if (gcf(pv, qv) == 1) {
-                    for (long long sign : { -1, 1 }) {
-                        bool doAdd = true;
-                        while (true) {
-                            long long mpv = pv * sign;
-                            std::vector<long long> newTermsC;
-                            long long h = 0;
-                            for (long long i : termsC) {
-                                h *= mpv;
-                                if (h % qv != 0) {
-                                    break;
-                                }
-                                h /= qv;
-                                h += i;
-                                newTermsC.push_back(h);
-                            }
-                            if (newTermsC.size() == termsC.size() && newTermsC.back() == 0) {
-                                termsC = newTermsC;
-                                if (doAdd) {
-                                    results.push_back(std::make_unique<Divide<Real>>(Real(1.0 * mpv), Real(1.0 * qv)));
-                                    doAdd = false;
-                                }
-                                do {
-                                    termsC.pop_back();
-                                } while (termsC.back() == 0);
-                                if (termsC.size() <= 1) {
-                                    break;
-                                }
-                            } else {
-                                break;
-                            }
-                        }
+        if (coefficents.size() == 2) { // Linear equation ax + b = 0
+            if (auto aReal = RecursiveCast<Real>(*coefficents[1]); aReal != nullptr) {
+                if (auto bReal = RecursiveCast<Real>(*coefficents[0]); bReal != nullptr) {
+                    // Use Oasis expressions: -b/a
+                    results.push_back(Divide(Multiply(Real(-1), *coefficents[0]), *coefficents[1]).Simplify());
+                }
+            }
+        } else if (coefficents.size() == 3) { // Quadratic equation ax + b + c = 0
+            auto& a = coefficents[2];
+            auto& b = coefficents[1];
+            auto& c = coefficents[0];
+
+            // Calculate discriminant
+            auto bSquared = Multiply(*b, *b).Simplify();
+            auto fourAC = Multiply(Real(4), Multiply(*a, *c)).Simplify();
+            auto discriminant = Subtract(*bSquared, *fourAC).Simplify();
+
+            if (auto realDisc = RecursiveCast<Real>(*discriminant);
+                realDisc != nullptr && realDisc->GetValue() >= 0) {
+
+                auto negB = Multiply(Real(-1), *b).Simplify();
+                auto sqrtDisc = Exponent(*discriminant, Divide(Real(1), Real(2))).Copy();
+                auto twoA = Multiply(Real(2), *a).Simplify();
+
+                // First, create the numerators for both roots
+                auto numerator1 = Add(*negB, *sqrtDisc).Simplify();
+                auto numerator2 = Subtract(*negB, *sqrtDisc).Simplify();
+
+                // Now create the Divide expressions properly
+                results.push_back(Divide(*numerator1, *twoA).Copy());
+                results.push_back(Divide(*numerator2, *twoA).Copy());
+                //                results.push_back(Divide(Add(*negB, *sqrtDisc), *twoA).Copy());
+                //                results.push_back(Divide(Subtract(*negB, *sqrtDisc), *twoA).Copy());
+            }
+        } else if (coefficents.size() == 4) { // Cubic equation: ax³ + bx² + cx + d = 0
+            long long a = termsC[0]; // coefficient of x³
+            long long b = termsC[1]; // coefficient of x²
+            long long c = termsC[2]; // coefficient of x
+            long long d = termsC[3]; // constant term
+
+            // To track found roots and avoid duplicates
+            std::set<std::pair<long long, long long>> found_roots;
+
+            // Get factors of constant term for possible p values
+            std::vector<long long> p_factors;
+            for (long long i = 1; i <= std::abs(d); i++) {
+                if (d % i == 0) {
+                    p_factors.push_back(i);
+                    p_factors.push_back(-i);
+                }
+            }
+
+            // Get factors of leading coefficient for possible q values
+            std::vector<long long> q_factors;
+            for (long long i = 1; i <= std::abs(a); i++) {
+                if (a % i == 0) {
+                    q_factors.push_back(i);
+                }
+            }
+
+            for (long long p : p_factors) {
+                for (long long q : q_factors) {
+                    // Skip if q is 0
+                    if (q == 0)
+                        continue;
+
+                    // Simplify the fraction p/q
+                    long long g = std::gcd(std::abs(p), q);
+                    long long num = p / g;
+                    long long den = q / g;
+
+                    // Ensure denominator is positive
+                    if (den < 0) {
+                        num = -num;
+                        den = -den;
+                    }
+
+                    // Check if we've already found this root
+                    if (found_roots.find({ num, den }) != found_roots.end()) {
+                        continue;
+                    }
+
+                    // For each potential root p/q, evaluate the polynomial
+                    long long x_p3 = p * p * p;
+                    long long x_p2 = p * p;
+                    long long x_q3 = q * q * q;
+
+                    // Evaluate ax³ + bx² + cx + d = 0 at x = p/q
+                    // Multiply all terms by q³ to eliminate denominators
+                    long long val = a * x_p3 + b * x_p2 * q + c * p * q * q + d * x_q3;
+
+                    if (val == 0) { // If this is a root
+                        results.push_back(Divide(Real(static_cast<double>(num)), Real(static_cast<double>(den))).Copy());
+                        found_roots.insert({ num, den });
                     }
                 }
-                if (termsC.size() <= 1) {
-                    break;
-                }
-            }
-            if (termsC.size() <= 1) {
-                break;
             }
         }
-        coefficents.clear();
-        std::reverse(termsC.begin(), termsC.end());
-        for (auto i : termsC) {
-            coefficents.push_back(Real(i * 1.0).Copy());
-        }
-    }
-    if (coefficents.size() == 2) {
-        results.push_back(Divide(Multiply(Real(-1), *coefficents[0]), *coefficents[1]).Simplify());
-    } else if (coefficents.size() == 3) {
-        auto& a = coefficents[2];
-        auto& b = coefficents[1];
-        auto& c = coefficents[0];
-        auto negB = Multiply(Real(-1.0), *b).Simplify();
-        auto sqrt = Exponent(*Add(Multiply(*b, *b), Multiply(Real(-4), Multiply(*a, *c))).Simplify(), Divide(Real(1), Real(2))).Copy();
-        auto twoA = Multiply(Real(2), *a).Simplify();
-        results.push_back(Divide(Add(*negB, *sqrt), *twoA).Copy());
-        results.push_back(Divide(Subtract(*negB, *sqrt), *twoA).Copy());
     }
     return results;
 }
