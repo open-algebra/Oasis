@@ -28,7 +28,8 @@ set(Oasis_SOURCES
     # Summation.cpp
     Undefined.cpp
     Variable.cpp
-        UnitGraph.cpp)
+        UnitGraph.cpp
+        GlobalUnitGraph.cpp)
 
 # Adds a library target called "Oasis" to be built from source files.
 add_library(Oasis ${Oasis_SOURCES})
