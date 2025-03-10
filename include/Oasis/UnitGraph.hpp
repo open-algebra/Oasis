@@ -6,9 +6,12 @@
 #define OASIS_UNIT_GRAPH_HPP
 
 #include "Unit.hpp"
+#include <iostream>
 #include <boost/graph/adjacency_list.hpp>
 #include <optional>
 #include <unordered_map>
+#include <boost/graph/graph_traits.hpp>
+#include <queue>
 
 namespace Oasis {
 
