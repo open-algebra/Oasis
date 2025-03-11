@@ -49,9 +49,9 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2 GSL)
 
-if (NOT OASIS_BUILD_JS)
-include(cmake/FetchBoost.cmake)
-endif ()
+if(NOT OASIS_BUILD_JS)
+    include(cmake/FetchBoost.cmake)
+endif()
 
 include(cmake/FetchEigen.cmake)
 
