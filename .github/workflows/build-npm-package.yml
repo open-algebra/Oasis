@@ -30,16 +30,16 @@ jobs:
             id: strings
             shell: bash
             run: |
-              echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+              echo "build-dir=$(pwd)/build" >> "$GITHUB_OUTPUT"
 
             # Configures CMake in a subdirectory.
           - name: Configure CMake
             run: >
                 cmake
                 -B ${{ steps.strings.outputs.build-dir }}
-                -S ${{ github.workspace }}
                 -DOASIS_BUILD_JS=ON
                 -DOASIS_BUILD_PARANOID=ON
+                .
 
             # Builds Oasis with the given configuration.
           - name: Build Oasis
@@ -50,11 +50,11 @@ jobs:
 
             # Runs the tests registered to CTest by CMake.
           - name: Test
-            working-directory: ${{ github.workspace }}/bindings/js
+            working-directory: ./bindings/js
             run: npm install && npm test
 
           - name: Build NPM Package
-            working-directory: ${{ github.workspace }}/bindings/js
+            working-directory: ./bindings/js
             run: |
               cp ${{ steps.strings.outputs.build-dir }}/bindings/js/oasis* .
               npm pack
@@ -64,5 +64,5 @@ jobs:
             uses: actions/upload-artifact@v4
             with:
               name: npm-package-archive
-              path: ${{ github.workspace }}/bindings/js/oasis-0.0.1.tgz
+              path: ./bindings/js/oasis-0.0.1.tgz
               overwrite: true
