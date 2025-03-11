@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import loadOasis from "../../../cmake-build-debug-emscripten/bindings/js/oasis"
+import loadOasis from "../oasis"
 
 test("Addition of Real Numbers", async () => {
     const Oasis = await loadOasis();
