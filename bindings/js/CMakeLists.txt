@@ -2,6 +2,9 @@ set(OasisJS_SOURCES src/bindings.cpp)
 
 add_executable(OasisJS ${OasisJS_SOURCES})
 
+target_compile_options(Oasis PUBLIC --use-port=boost_headers)
+target_link_options(Oasis PUBLIC --use-port=boost_headers)
+
 target_compile_options(OasisIO PUBLIC -fexceptions)
 target_link_options(OasisIO PUBLIC -fexceptions)
 
