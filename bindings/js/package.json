@@ -1,0 +1,32 @@
+{
+  "name": "oasis",
+  "version": "0.0.1",
+  "description": "Open Algebra Software for Inferring Solutions",
+  "main": "oasis.js",
+  "files": [
+    "oasis.js",
+    "oasis.wasm",
+    "oasis.d.ts"
+  ],
+  "scripts": {
+    "test": "node -r @swc-node/register --test tests/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/open-algebra/Oasis.git"
+  },
+  "keywords": [
+    "computer",
+    "algebra"
+  ],
+  "author": "Open Algebra Project",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/open-algebra/Oasis/issues"
+  },
+  "homepage": "https://openalgebra.org",
+  "dependencies": {
+    "@swc-node/register": "^1.10.9",
+    "@types/node": "^22.13.10"
+  }
+}
