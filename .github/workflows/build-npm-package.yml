@@ -32,6 +32,10 @@ jobs:
             run: |
               echo "build-dir=$(pwd)/build" >> "$GITHUB_OUTPUT"
 
+          - name: Setup Emscripten
+            working-directory: ${{ env.EMSDK }}/emscripten/upstream
+            run: npm install
+
             # Configures CMake in a subdirectory.
           - name: Configure CMake
             run: >
