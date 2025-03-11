@@ -49,16 +49,16 @@ jobs:
                 --build ${{ steps.strings.outputs.build-dir }}
                 --target OasisJS
 
-            # Runs the tests registered to CTest by CMake.
           - name: Test
-            working-directory: ./bindings/js
-            run: npm install && npm test
-
-          - name: Build NPM Package
             working-directory: ./bindings/js
             run: |
               cp ${{ steps.strings.outputs.build-dir }}/bindings/js/oasis* .
-              npm pack
+              npm install
+              npm test
+
+          - name: Build NPM Package
+            working-directory: ./bindings/js
+            run: npm pack
 
             # Uploads the build, test, and code coverage artifacts.
           - name: Upload artifacts
