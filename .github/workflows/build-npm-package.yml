@@ -67,3 +67,4 @@ jobs:
               name: npm-package-archive
               path: ./bindings/js/oasis-0.0.1.tgz
               overwrite: true
+              compression-level: 0
