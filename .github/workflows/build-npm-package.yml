@@ -35,7 +35,7 @@ jobs:
             # Configures CMake in a subdirectory.
           - name: Configure CMake
             run: >
-                cmake
+                emcmake cmake
                 -B ${{ steps.strings.outputs.build-dir }}
                 -DOASIS_BUILD_JS=ON
                 -DOASIS_BUILD_PARANOID=ON
@@ -44,7 +44,7 @@ jobs:
             # Builds Oasis with the given configuration.
           - name: Build Oasis
             run: >
-                cmake
+                emmake cmake
                 --build ${{ steps.strings.outputs.build-dir }}
                 --target OasisJS
 
