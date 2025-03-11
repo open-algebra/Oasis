@@ -22,7 +22,9 @@ option(OASIS_BUILD_JS "Compiles Oasis to WebAssembly via Emscripten" OFF)
 if(OASIS_BUILD_CLI OR OASIS_BUILD_JS)
     set(OASIS_BUILD_IO
         ON
-        CACHE BOOL "OASIS_BUILD_IO enabled by OASIS_BUILD_CLI or OASIS_BUILD_JS" FORCE)
+        CACHE BOOL
+              "OASIS_BUILD_IO enabled by OASIS_BUILD_CLI or OASIS_BUILD_JS"
+              FORCE)
 endif()
 
 # Adds compiler flags for code coverage. Note that only the Clang compiler is
@@ -76,6 +78,6 @@ if(OASIS_BUILD_CLI)
     add_subdirectory(cli)
 endif()
 
-if (OASIS_BUILD_JS)
+if(OASIS_BUILD_JS)
     add_subdirectory(bindings/js)
-endif ()
+endif()
