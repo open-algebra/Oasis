@@ -69,6 +69,13 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
+    // log[a](a) = 1
+    if (const auto sameCase = RecursiveCast<Log<Expression, Expression>>(simplifiedLog); sameCase != nullptr) {
+        if(sameCase->leastSigOp->Equals(*sameCase->mostSigOp)) {
+            return Real {1}.Generalize();
+        }
+    }
+
     // log[a](b^x) = x * log[a](b)
     if (const auto expCase = RecursiveCast<Log<Expression, Exponent<>>>(simplifiedLog); expCase != nullptr) {
         const auto exponent = expCase->GetLeastSigOp();
@@ -92,15 +99,17 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
             if (multiplyCase->GetLeastSigOp().Equals(integrationVariable)) {
                 return Subtract<Expression> { Multiply<Expression> { integrationVariable, *this }, integrationVariable }.Simplify();
             } else {
-                return Multiply<Expression> { integrationVariable, *this }.Simplify();
+                //Only works if the argument is constant
+                return Add {Multiply<Expression> { integrationVariable, *this }, Variable {"C"} }.Simplify();
             }
         }
     } else {
         auto numer = Log<Expression> { EulerNumber {}, *(this->leastSigOp->Generalize()) };
         auto denom = Log<Expression> { EulerNumber {}, *(this->mostSigOp->Generalize()) };
         if (numer.Equals(denom))
-            return integrationVariable.Generalize();
-        return Divide { Integral { numer, integrationVariable }, denom }.Simplify();
+            return Add {integrationVariable, Variable {"C"} }.Generalize();
+        //Only works if logaritm base is a constant
+        return Add {Divide { Integral { numer, integrationVariable }, denom }, Variable {"C"} }.Simplify();
     }
 
     return Integral<Expression> { *this, integrationVariable }.Generalize();
@@ -120,6 +129,9 @@ auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVari
         Derivative chain { *leastSigOp, differentiationVariable };
 
         Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(differentiationVariable) };
+        // idk will evaluate correctly for non-constant base except gets simplified back before derivative is taken
+        // Divide rewrite { Log { EulerNumber{}, *leastSigOp}, Log { EulerNumber{}, *mostSigOp} };
+        // Derivative result { rewrite , differentiationVariable };
         return result.Simplify();
     }
 }
