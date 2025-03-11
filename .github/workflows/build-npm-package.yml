@@ -19,7 +19,6 @@ concurrency:
 jobs:
     build_npm_package:
         runs-on: ubuntu-latest
-        container: docker.io/emscripten/emsdk
 
         steps:
             # Checks out the repository.
@@ -32,9 +31,7 @@ jobs:
             run: |
               echo "build-dir=$(pwd)/build" >> "$GITHUB_OUTPUT"
 
-          - name: Setup Emscripten
-            working-directory: ${{ env.EMSDK }}/emscripten/upstream
-            run: npm install
+          - uses: mymindstorm/setup-emsdk@v14
 
             # Configures CMake in a subdirectory.
           - name: Configure CMake
