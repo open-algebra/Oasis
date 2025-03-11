@@ -16,11 +16,13 @@ option(OASIS_BUILD_WITH_COVERAGE
        "Enables building Oasis with code coverage enabled" OFF)
 option(OASIS_BUILD_PARANOID
        "Enables the -Werror flag friends when building Oasis" OFF)
+option(OASIS_BUILD_CLI "Compiles the Oasis CLI" OFF)
+option(OASIS_BUILD_JS "Compiles Oasis to WebAssembly via Emscripten" OFF)
 
-if(OASIS_BUILD_CLI)
+if(OASIS_BUILD_CLI OR OASIS_BUILD_JS)
     set(OASIS_BUILD_IO
         ON
-        CACHE BOOL "OASIS_BUILD_IO enabled by OASIS_BUILD_CLI" FORCE)
+        CACHE BOOL "OASIS_BUILD_IO enabled by OASIS_BUILD_CLI or OASIS_BUILD_JS" FORCE)
 endif()
 
 # Adds compiler flags for code coverage. Note that only the Clang compiler is
@@ -73,3 +75,7 @@ if(OASIS_BUILD_CLI)
 
     add_subdirectory(cli)
 endif()
+
+if (OASIS_BUILD_JS)
+    add_subdirectory(bindings/js)
+endif ()
