@@ -7,6 +7,7 @@
 
 #include "LeafExpression.hpp"
 #include "Unit.hpp"
+#include "GlobalUnitGraph.hpp"
 #include <boost/units/systems/si.hpp>
 #include <boost/units/io.hpp>
 #include <boost/units/cmath.hpp>
@@ -51,7 +52,6 @@ private:
     double value {};
     Unit unit = Unit::None;
 
-    auto GetFactor(Unit from, Unit to) const -> double;
 };
 
 } // Oasis
