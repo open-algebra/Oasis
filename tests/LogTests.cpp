@@ -228,6 +228,13 @@ TEST_CASE("Change of Base", "[Log][Divide]")
     REQUIRE_THAT(logBase3Simplified.GetValue(), Catch::Matchers::WithinAbs(dynamic_cast<Oasis::Real&>(*(logBase3.Simplify())).GetValue(), EPSILON)); //PROBLEM
 }
 
+TEST_CASE("Log of Equal Base and Argument", "[Log][Expression]") {
+    Oasis::Log log {Oasis::Variable{"x"},Oasis::Variable {"x"}};
+    auto simplifiedLog = log.Simplify();
+    Oasis::Real expected {1};
+    REQUIRE(simplifiedLog->Equals(expected));
+}
+
 TEST_CASE("Undefined", "[UNDEFINED][UNDEFINED]") {
     REQUIRE(!Oasis::Undefined().Equals(Oasis::Undefined()));
     REQUIRE(Oasis::Log<Oasis::Real, Oasis::Real>(Oasis::Real(-1.0), Oasis::Real(5.0)).Simplify()->Is<Oasis::Undefined>());
@@ -264,7 +271,7 @@ TEST_CASE("Integral of Non-Natural variable base Log", "[Integral][Log][Variable
 
     REQUIRE(simp1->Equals(*eq1.Simplify()));
     REQUIRE(simp2->Equals(*eq2.Simplify()));
-    REQUIRE(simpEq->Equals(Oasis::Variable{"x"}));
+    REQUIRE(simpEq->Equals(Oasis::Add {Oasis::Variable{"x"}, Oasis::Variable{"C"} }));
 }
 
 TEST_CASE("Integral of Non-natural real base log", "[Integral][Log][Variable]")
