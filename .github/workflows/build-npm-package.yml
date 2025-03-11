@@ -17,7 +17,7 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    build_and_test_windows:
+    build_npm_package:
         runs-on: ubuntu-latest
         container: docker.io/emscripten/emsdk
 
