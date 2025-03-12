@@ -1,12 +1,12 @@
 {
-  "name": "oasis",
+  "name": "@open-algebra/oasis",
   "version": "0.0.1",
   "description": "Open Algebra Software for Inferring Solutions",
-  "main": "oasis.js",
+  "main": "oasis-node.js",
   "files": [
-    "oasis.js",
-    "oasis.wasm",
-    "oasis.d.ts"
+    "oasis-*.js",
+    "oasis-*.wasm",
+    "oasis-*.d.ts"
   ],
   "scripts": {
     "test": "node -r @swc-node/register --test tests/index.ts"

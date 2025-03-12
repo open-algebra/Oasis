@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import loadOasis from "../oasis"
+import loadOasis from "../oasis-node"
 
 test("Addition of Real Numbers", async () => {
     const Oasis = await loadOasis();

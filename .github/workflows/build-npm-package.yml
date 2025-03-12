@@ -52,7 +52,7 @@ jobs:
           - name: Test
             working-directory: ./bindings/js
             run: |
-              cp ${{ steps.strings.outputs.build-dir }}/bindings/js/oasis* .
+              cp ${{ steps.strings.outputs.build-dir }}/bindings/js/oasis-* .
               npm install
               npm test
 
