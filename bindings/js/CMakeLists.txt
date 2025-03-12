@@ -24,14 +24,12 @@ function(configure_oasis_target target_name target_environment output_name)
     add_executable(${target_name})
     target_link_libraries(${target_name} PUBLIC OasisJS)
     set_target_properties(${target_name} PROPERTIES OUTPUT_NAME ${output_name})
-    target_link_options(${target_name} PUBLIC
-            -sENVIRONMENT=${target_environment}
-            --emit-tsd
-            "${CMAKE_CURRENT_BINARY_DIR}/${output_name}.d.ts")
+    target_link_options(
+        ${target_name} PUBLIC -sENVIRONMENT=${target_environment} --emit-tsd
+        "${CMAKE_CURRENT_BINARY_DIR}/${output_name}.d.ts")
 endfunction()
 
 configure_oasis_target(OasisJSWeb "'web'" "oasis-web")
 configure_oasis_target(OasisJSNode "'node'" "oasis-node")
-
 
 file(COPY package.json DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
