@@ -47,7 +47,7 @@ jobs:
             run: >
                 emmake cmake
                 --build ${{ steps.strings.outputs.build-dir }}
-                --target OasisJS
+                --target OasisJSWeb OasisJSNode
 
           - name: Test
             working-directory: ./bindings/js
