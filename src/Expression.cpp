@@ -281,16 +281,21 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
                     }
                 }
             }
-        } else if (coefficents.size() == 5) {  // Quartic equation ax⁴ + bx³ + cx² + dx + e = 0
+        } else if (coefficents.size() == 5) { // Quartic equation ax⁴ + bx³ + cx² + dx + e = 0
             // coefficients
             long long a = 0, b = 0, c = 0, d = 0, e = 0;
 
             // Convert coefficients to numbers if possible
-            if (auto aReal = RecursiveCast<Real>(*coefficents[4]); aReal != nullptr) a = static_cast<long long>(aReal->GetValue());
-            if (auto bReal = RecursiveCast<Real>(*coefficents[3]); bReal != nullptr) b = static_cast<long long>(bReal->GetValue());
-            if (auto cReal = RecursiveCast<Real>(*coefficents[2]); cReal != nullptr) c = static_cast<long long>(cReal->GetValue());
-            if (auto dReal = RecursiveCast<Real>(*coefficents[1]); dReal != nullptr) d = static_cast<long long>(dReal->GetValue());
-            if (auto eReal = RecursiveCast<Real>(*coefficents[0]); eReal != nullptr) e = static_cast<long long>(eReal->GetValue());
+            if (auto aReal = RecursiveCast<Real>(*coefficents[4]); aReal != nullptr)
+                a = static_cast<long long>(aReal->GetValue());
+            if (auto bReal = RecursiveCast<Real>(*coefficents[3]); bReal != nullptr)
+                b = static_cast<long long>(bReal->GetValue());
+            if (auto cReal = RecursiveCast<Real>(*coefficents[2]); cReal != nullptr)
+                c = static_cast<long long>(cReal->GetValue());
+            if (auto dReal = RecursiveCast<Real>(*coefficents[1]); dReal != nullptr)
+                d = static_cast<long long>(dReal->GetValue());
+            if (auto eReal = RecursiveCast<Real>(*coefficents[0]); eReal != nullptr)
+                e = static_cast<long long>(eReal->GetValue());
 
             // Find potential rational roots using the rational root theorem
             // Possible rational roots are p/q where:
@@ -320,7 +325,8 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             for (long long p : p_factors) {
                 for (long long q : q_factors) {
                     // Skip if q is 0
-                    if (q == 0) continue;
+                    if (q == 0)
+                        continue;
 
                     // Simplify the fraction p/q
                     long long g = std::gcd(std::abs(p), q);
@@ -334,7 +340,7 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
                     }
 
                     // Check if we've already found this root
-                    if (found_roots.find({num, den}) != found_roots.end()) {
+                    if (found_roots.find({ num, den }) != found_roots.end()) {
                         continue;
                     }
 
@@ -352,9 +358,9 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
 
                     long long val = a * p4 + b * p3 * q + c * p2 * q2 + d * p * q3 + e * q4;
 
-                    if (val == 0) {  // If this is a root
+                    if (val == 0) { // If this is a root
                         results.push_back(Divide(Real(static_cast<double>(num)), Real(static_cast<double>(den))).Copy());
-                        found_roots.insert({num, den});
+                        found_roots.insert({ num, den });
                     }
                 }
             }
