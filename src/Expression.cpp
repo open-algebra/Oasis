@@ -8,6 +8,8 @@
 #include <Oasis/RecursiveCast.hpp>
 #include <Oasis/Subtract.hpp>
 #include <Oasis/Variable.hpp>
+#include <numeric>
+#include <set>
 
 std::vector<long long> getAllFactors(long long n)
 {
@@ -52,8 +54,47 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
 {
     std::vector<std::unique_ptr<Expression>> results;
     std::vector<std::unique_ptr<Expression>> termsE;
+    if (auto subCase = RecursiveCast<Subtract<Expression>>(*this); subCase != nullptr) {
+        // Check for x² - n pattern
+        if (auto leftTerm = RecursiveCast<Exponent<Variable, Real>>(subCase->GetMostSigOp());
+            leftTerm != nullptr) {
+            if (leftTerm->GetLeastSigOp().GetValue() == 2) {
+                if (auto rightTerm = RecursiveCast<Real>(subCase->GetLeastSigOp());
+                    rightTerm != nullptr) {
+
+                    double n = rightTerm->GetValue();
+                    double sqrtN = std::sqrt(n);
+
+                    if (n > 0 && sqrtN == std::floor(sqrtN)) {
+                        // Instead of creating Real values directly, create proper Binary Expressions
+                        // For positive root: n^(1/2)
+                        auto posRoot = std::make_unique<Divide<Expression>>(
+                            Real(sqrtN), // MostSigOp
+                            Real(1) // LeastSigOp
+                        );
+
+                        // For negative root: -n^(1/2)
+                        auto negRoot = std::make_unique<Divide<Expression>>(
+                            Real(-sqrtN), // MostSigOp
+                            Real(1) // LeastSigOp
+                        );
+
+                        results.push_back(std::move(posRoot));
+                        results.push_back(std::move(negRoot));
+                        return results;
+                    }
+                }
+            }
+        }
+    }
     if (auto addCase = RecursiveCast<Add<Expression>>(*this); addCase != nullptr) {
         addCase->Flatten(termsE);
+    } else if (auto subCase = RecursiveCast<Subtract<Expression>>(*this); subCase != nullptr) {
+        // Handle subtraction by converting to addition
+        termsE.push_back(subCase->GetMostSigOp().Copy()); // First term
+        // Add negative of second term
+        auto negTerm = Multiply(Real(-1), subCase->GetLeastSigOp()).Copy();
+        termsE.push_back(std::move(negTerm));
     } else {
         termsE.push_back(Copy());
     }
@@ -143,68 +184,187 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
         }
     }
     if (termsC.size() == coefficents.size()) {
-        std::reverse(termsC.begin(), termsC.end());
-        for (auto pv : getAllFactors(termsC.back())) {
-            for (auto qv : getAllFactors(termsC.front())) {
-                if (gcf(pv, qv) == 1) {
-                    for (long long sign : { -1, 1 }) {
-                        bool doAdd = true;
-                        while (true) {
-                            long long mpv = pv * sign;
-                            std::vector<long long> newTermsC;
-                            long long h = 0;
-                            for (long long i : termsC) {
-                                h *= mpv;
-                                if (h % qv != 0) {
-                                    break;
-                                }
-                                h /= qv;
-                                h += i;
-                                newTermsC.push_back(h);
-                            }
-                            if (newTermsC.size() == termsC.size() && newTermsC.back() == 0) {
-                                termsC = newTermsC;
-                                if (doAdd) {
-                                    results.push_back(std::make_unique<Divide<Real>>(Real(1.0 * mpv), Real(1.0 * qv)));
-                                    doAdd = false;
-                                }
-                                do {
-                                    termsC.pop_back();
-                                } while (termsC.back() == 0);
-                                if (termsC.size() <= 1) {
-                                    break;
-                                }
-                            } else {
-                                break;
-                            }
-                        }
+        if (coefficents.size() == 2) { // Linear equation ax + b = 0
+            if (auto aReal = RecursiveCast<Real>(*coefficents[1]); aReal != nullptr) {
+                if (auto bReal = RecursiveCast<Real>(*coefficents[0]); bReal != nullptr) {
+                    // Use Oasis expressions: -b/a
+                    results.push_back(Divide(Multiply(Real(-1), *coefficents[0]), *coefficents[1]).Simplify());
+                }
+            }
+        } else if (coefficents.size() == 3) { // Quadratic equation ax + b + c = 0
+            auto& a = coefficents[2];
+            auto& b = coefficents[1];
+            auto& c = coefficents[0];
+
+            // Calculate discriminant
+            auto bSquared = Multiply(*b, *b).Simplify();
+            auto fourAC = Multiply(Real(4), Multiply(*a, *c)).Simplify();
+            auto discriminant = Subtract(*bSquared, *fourAC).Simplify();
+
+            if (auto realDisc = RecursiveCast<Real>(*discriminant);
+                realDisc != nullptr && realDisc->GetValue() >= 0) {
+
+                auto negB = Multiply(Real(-1), *b).Simplify();
+                auto sqrtDisc = Exponent(*discriminant, Divide(Real(1), Real(2))).Copy();
+                auto twoA = Multiply(Real(2), *a).Simplify();
+
+                // First, create the numerators for both roots
+                auto numerator1 = Add(*negB, *sqrtDisc).Simplify();
+                auto numerator2 = Subtract(*negB, *sqrtDisc).Simplify();
+
+                // Now create the Divide expressions properly
+                results.push_back(Divide(*numerator1, *twoA).Copy());
+                results.push_back(Divide(*numerator2, *twoA).Copy());
+                //                results.push_back(Divide(Add(*negB, *sqrtDisc), *twoA).Copy());
+                //                results.push_back(Divide(Subtract(*negB, *sqrtDisc), *twoA).Copy());
+            }
+        } else if (coefficents.size() == 4) { // Cubic equation: ax³ + bx² + cx + d = 0
+            long long a = termsC[0]; // coefficient of x³
+            long long b = termsC[1]; // coefficient of x²
+            long long c = termsC[2]; // coefficient of x
+            long long d = termsC[3]; // constant term
+
+            // To track found roots and avoid duplicates
+            std::set<std::pair<long long, long long>> found_roots;
+
+            // Get factors of constant term for possible p values
+            std::vector<long long> p_factors;
+            for (long long i = 1; i <= std::abs(d); i++) {
+                if (d % i == 0) {
+                    p_factors.push_back(i);
+                    p_factors.push_back(-i);
+                }
+            }
+
+            // Get factors of leading coefficient for possible q values
+            std::vector<long long> q_factors;
+            for (long long i = 1; i <= std::abs(a); i++) {
+                if (a % i == 0) {
+                    q_factors.push_back(i);
+                }
+            }
+
+            for (long long p : p_factors) {
+                for (long long q : q_factors) {
+                    // Skip if q is 0
+                    if (q == 0)
+                        continue;
+
+                    // Simplify the fraction p/q
+                    long long g = std::gcd(std::abs(p), q);
+                    long long num = p / g;
+                    long long den = q / g;
+
+                    // Ensure denominator is positive
+                    if (den < 0) {
+                        num = -num;
+                        den = -den;
+                    }
+
+                    // Check if we've already found this root
+                    if (found_roots.find({ num, den }) != found_roots.end()) {
+                        continue;
+                    }
+
+                    // For each potential root p/q, evaluate the polynomial
+                    long long x_p3 = p * p * p;
+                    long long x_p2 = p * p;
+                    long long x_q3 = q * q * q;
+
+                    // Evaluate ax³ + bx² + cx + d = 0 at x = p/q
+                    // Multiply all terms by q³ to eliminate denominators
+                    long long val = a * x_p3 + b * x_p2 * q + c * p * q * q + d * x_q3;
+
+                    if (val == 0) { // If this is a root
+                        results.push_back(Divide(Real(static_cast<double>(num)), Real(static_cast<double>(den))).Copy());
+                        found_roots.insert({ num, den });
                     }
                 }
-                if (termsC.size() <= 1) {
-                    break;
+            }
+        } else if (coefficents.size() == 5) { // Quartic equation ax⁴ + bx³ + cx² + dx + e = 0
+            // coefficients
+            long long a = 0, b = 0, c = 0, d = 0, e = 0;
+
+            // Convert coefficients to numbers if possible
+            if (auto aReal = RecursiveCast<Real>(*coefficents[4]); aReal != nullptr)
+                a = static_cast<long long>(aReal->GetValue());
+            if (auto bReal = RecursiveCast<Real>(*coefficents[3]); bReal != nullptr)
+                b = static_cast<long long>(bReal->GetValue());
+            if (auto cReal = RecursiveCast<Real>(*coefficents[2]); cReal != nullptr)
+                c = static_cast<long long>(cReal->GetValue());
+            if (auto dReal = RecursiveCast<Real>(*coefficents[1]); dReal != nullptr)
+                d = static_cast<long long>(dReal->GetValue());
+            if (auto eReal = RecursiveCast<Real>(*coefficents[0]); eReal != nullptr)
+                e = static_cast<long long>(eReal->GetValue());
+
+            // Find potential rational roots using the rational root theorem
+            // Possible rational roots are p/q where:
+            // - p is a factor of the constant term (e)
+            // - q is a factor of the leading coefficient (a)
+
+            // Get factors of constant term for possible p values
+            std::vector<long long> p_factors;
+            for (long long i = 1; i <= std::abs(e); i++) {
+                if (e % i == 0) {
+                    p_factors.push_back(i);
+                    p_factors.push_back(-i);
                 }
             }
-            if (termsC.size() <= 1) {
-                break;
+
+            // Get factors of leading coefficient for possible q values
+            std::vector<long long> q_factors;
+            for (long long i = 1; i <= std::abs(a); i++) {
+                if (a % i == 0) {
+                    q_factors.push_back(i);
+                }
+            }
+
+            // To track found roots and avoid duplicates
+            std::set<std::pair<long long, long long>> found_roots;
+
+            for (long long p : p_factors) {
+                for (long long q : q_factors) {
+                    // Skip if q is 0
+                    if (q == 0)
+                        continue;
+
+                    // Simplify the fraction p/q
+                    long long g = std::gcd(std::abs(p), q);
+                    long long num = p / g;
+                    long long den = q / g;
+
+                    // Ensure denominator is positive
+                    if (den < 0) {
+                        num = -num;
+                        den = -den;
+                    }
+
+                    // Check if we've already found this root
+                    if (found_roots.find({ num, den }) != found_roots.end()) {
+                        continue;
+                    }
+
+                    // Evaluate the polynomial at p/q using synthetic division
+                    // For a quartic: a(p/q)⁴ + b(p/q)³ + c(p/q)² + d(p/q) + e
+
+                    // Multiply by q⁴ to clear denominators:
+                    // a*p⁴ + b*p³*q + c*p²*q² + d*p*q³ + e*q⁴
+                    long long p2 = p * p;
+                    long long p3 = p2 * p;
+                    long long p4 = p3 * p;
+                    long long q2 = q * q;
+                    long long q3 = q2 * q;
+                    long long q4 = q3 * q;
+
+                    long long val = a * p4 + b * p3 * q + c * p2 * q2 + d * p * q3 + e * q4;
+
+                    if (val == 0) { // If this is a root
+                        results.push_back(Divide(Real(static_cast<double>(num)), Real(static_cast<double>(den))).Copy());
+                        found_roots.insert({ num, den });
+                    }
+                }
             }
         }
-        coefficents.clear();
-        std::reverse(termsC.begin(), termsC.end());
-        for (auto i : termsC) {
-            coefficents.push_back(Real(i * 1.0).Copy());
-        }
-    }
-    if (coefficents.size() == 2) {
-        results.push_back(Divide(Multiply(Real(-1), *coefficents[0]), *coefficents[1]).Simplify());
-    } else if (coefficents.size() == 3) {
-        auto& a = coefficents[2];
-        auto& b = coefficents[1];
-        auto& c = coefficents[0];
-        auto negB = Multiply(Real(-1.0), *b).Simplify();
-        auto sqrt = Exponent(*Add(Multiply(*b, *b), Multiply(Real(-4), Multiply(*a, *c))).Simplify(), Divide(Real(1), Real(2))).Copy();
-        auto twoA = Multiply(Real(2), *a).Simplify();
-        results.push_back(Divide(Add(*negB, *sqrt), *twoA).Copy());
-        results.push_back(Divide(Subtract(*negB, *sqrt), *twoA).Copy());
     }
     return results;
 }
