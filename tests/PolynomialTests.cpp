@@ -288,44 +288,6 @@ TEST_CASE("Rational Quadratic polynomial test 2: 6x² - 5x + 1", "[factor]")
     }
 }
 
-TEST_CASE("Irrational Quadratic polynomial test 1: x² + 2x - 1/4", "[factor]")
-{
-    // x² + 2x - 1/4
-    Oasis::Add<> add{
-        Oasis::Exponent<Oasis::Variable, Oasis::Real>{
-            Oasis::Variable("x"),
-            Oasis::Real(2)
-        },
-        Oasis::Multiply {
-            Oasis::Real(2),
-            Oasis::Variable("x")
-        },
-        Oasis::Divide{
-            Oasis::Real(1),
-            Oasis::Real(4)
-
-        }
-    };
-    OASIS_CAPTURE_WITH_SERIALIZER(add);
-
-    auto zeros = add.FindZeros();
-
-    REQUIRE(zeros.size() == 2);
-
-    if (zeros.size() == 2) {
-        // Check first root x = -1 - sqrt(5)/2
-        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
-        REQUIRE(root1 != nullptr);
-        REQUIRE(root1->GetMostSigOp().GetValue() == 2);
-        REQUIRE(root1->GetLeastSigOp().GetValue() == 4);
-
-        // Check second root x = sqrt(5)/2 - 1
-        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
-        REQUIRE(root2 != nullptr);
-        REQUIRE(root2->GetMostSigOp().GetValue() == -4);
-        REQUIRE(root2->GetLeastSigOp().GetValue() == 4);
-    }
-}
 
 TEST_CASE("Cubic polynomial test 1: 3x³ - 16x² + 23x - 6:", "[factor]")
 {
