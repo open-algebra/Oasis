@@ -8,7 +8,6 @@
 #include <Oasis/RecursiveCast.hpp>
 #include <Oasis/Subtract.hpp>
 #include <Oasis/Variable.hpp>
-#include <iostream>
 #include <numeric>
 #include <set>
 
@@ -279,6 +278,83 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
                     if (val == 0) { // If this is a root
                         results.push_back(Divide(Real(static_cast<double>(num)), Real(static_cast<double>(den))).Copy());
                         found_roots.insert({ num, den });
+                    }
+                }
+            }
+        } else if (coefficents.size() == 5) {  // Quartic equation ax⁴ + bx³ + cx² + dx + e = 0
+            // coefficients
+            long long a = 0, b = 0, c = 0, d = 0, e = 0;
+
+            // Convert coefficients to numbers if possible
+            if (auto aReal = RecursiveCast<Real>(*coefficents[4]); aReal != nullptr) a = static_cast<long long>(aReal->GetValue());
+            if (auto bReal = RecursiveCast<Real>(*coefficents[3]); bReal != nullptr) b = static_cast<long long>(bReal->GetValue());
+            if (auto cReal = RecursiveCast<Real>(*coefficents[2]); cReal != nullptr) c = static_cast<long long>(cReal->GetValue());
+            if (auto dReal = RecursiveCast<Real>(*coefficents[1]); dReal != nullptr) d = static_cast<long long>(dReal->GetValue());
+            if (auto eReal = RecursiveCast<Real>(*coefficents[0]); eReal != nullptr) e = static_cast<long long>(eReal->GetValue());
+
+            // Find potential rational roots using the rational root theorem
+            // Possible rational roots are p/q where:
+            // - p is a factor of the constant term (e)
+            // - q is a factor of the leading coefficient (a)
+
+            // Get factors of constant term for possible p values
+            std::vector<long long> p_factors;
+            for (long long i = 1; i <= std::abs(e); i++) {
+                if (e % i == 0) {
+                    p_factors.push_back(i);
+                    p_factors.push_back(-i);
+                }
+            }
+
+            // Get factors of leading coefficient for possible q values
+            std::vector<long long> q_factors;
+            for (long long i = 1; i <= std::abs(a); i++) {
+                if (a % i == 0) {
+                    q_factors.push_back(i);
+                }
+            }
+
+            // To track found roots and avoid duplicates
+            std::set<std::pair<long long, long long>> found_roots;
+
+            for (long long p : p_factors) {
+                for (long long q : q_factors) {
+                    // Skip if q is 0
+                    if (q == 0) continue;
+
+                    // Simplify the fraction p/q
+                    long long g = std::gcd(std::abs(p), q);
+                    long long num = p / g;
+                    long long den = q / g;
+
+                    // Ensure denominator is positive
+                    if (den < 0) {
+                        num = -num;
+                        den = -den;
+                    }
+
+                    // Check if we've already found this root
+                    if (found_roots.find({num, den}) != found_roots.end()) {
+                        continue;
+                    }
+
+                    // Evaluate the polynomial at p/q using synthetic division
+                    // For a quartic: a(p/q)⁴ + b(p/q)³ + c(p/q)² + d(p/q) + e
+
+                    // Multiply by q⁴ to clear denominators:
+                    // a*p⁴ + b*p³*q + c*p²*q² + d*p*q³ + e*q⁴
+                    long long p2 = p * p;
+                    long long p3 = p2 * p;
+                    long long p4 = p3 * p;
+                    long long q2 = q * q;
+                    long long q3 = q2 * q;
+                    long long q4 = q3 * q;
+
+                    long long val = a * p4 + b * p3 * q + c * p2 * q2 + d * p * q3 + e * q4;
+
+                    if (val == 0) {  // If this is a root
+                        results.push_back(Divide(Real(static_cast<double>(num)), Real(static_cast<double>(den))).Copy());
+                        found_roots.insert({num, den});
                     }
                 }
             }

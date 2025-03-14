@@ -3,6 +3,7 @@
 //
 #include "catch2/catch_test_macros.hpp"
 
+#include "Common.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/Exponent.hpp"
@@ -11,16 +12,11 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/RecursiveCast.hpp"
-#include "Oasis/InFixSerializer.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
-#include "Common.hpp"
 
-#include <cmath>
 #include <set>
-#include <tuple>
 #include <vector>
-#include <iostream>
 
 TEST_CASE("linear polynomial test 1: x + 30", "[factor]")
 {
@@ -39,10 +35,9 @@ TEST_CASE("linear polynomial test 1: x + 30", "[factor]")
 TEST_CASE("linear polynomial test 2: 3x - 6", "[factor]")
 {
     Oasis::Subtract minus {
-        Oasis::Multiply{
+        Oasis::Multiply {
             Oasis::Real(3),
-            Oasis::Variable("x")
-        },
+            Oasis::Variable("x") },
         Oasis::Real(6)
     };
     OASIS_CAPTURE_WITH_SERIALIZER(minus);
@@ -58,10 +53,9 @@ TEST_CASE("linear polynomial test 3: 2x + 30", "[factor]")
 {
     Oasis::Add add {
         Oasis::Real(30),
-        Oasis::Multiply<Oasis::Expression>{
+        Oasis::Multiply<Oasis::Expression> {
             Oasis::Real(2),
-            Oasis::Variable("x")
-        }
+            Oasis::Variable("x") }
     };
     auto zeros = add.FindZeros();
     REQUIRE(zeros.size() == 1);
@@ -76,14 +70,12 @@ TEST_CASE("Quadratic polynomial test 1: x^2 + 5x + 6", "[factor]")
     // x^2 + 5x + 6
     Oasis::Add<> add {
         Oasis::Real(6),
-        Oasis::Multiply<Oasis::Expression>{
+        Oasis::Multiply<Oasis::Expression> {
             Oasis::Real(5),
-            Oasis::Variable("x")
-        },
-        Oasis::Exponent<Oasis::Variable, Oasis::Real>{
+            Oasis::Variable("x") },
+        Oasis::Exponent<Oasis::Variable, Oasis::Real> {
             Oasis::Variable("x"),
-            Oasis::Real(2)
-        }
+            Oasis::Real(2) }
     };
     OASIS_CAPTURE_WITH_SERIALIZER(add);
 
@@ -109,15 +101,13 @@ TEST_CASE("Quadratic polynomial test 1: x^2 + 5x + 6", "[factor]")
 TEST_CASE("Quadratic polynomial test 2: x^2 - 2x -3", "[factor]")
 {
     // x^2 - 2x -3
-    Oasis::Add<> add{
-        Oasis::Exponent<Oasis::Variable, Oasis::Real>{
+    Oasis::Add<> add {
+        Oasis::Exponent<Oasis::Variable, Oasis::Real> {
             Oasis::Variable("x"),
-            Oasis::Real(2)
-        },
+            Oasis::Real(2) },
         Oasis::Multiply {
             Oasis::Real(-2),
-            Oasis::Variable("x")
-        },
+            Oasis::Variable("x") },
         Oasis::Real(-3)
     };
     OASIS_CAPTURE_WITH_SERIALIZER(add);
@@ -213,14 +203,12 @@ TEST_CASE("Quadratic polynomial test 5: x^2 - 25", "[factor]")
 TEST_CASE("Rational Quadratic polynomial test 1: 2x^2 + x - 1", "[factor]")
 {
     // 2x^2 + x - 1
-    Oasis::Add<> add{
-        Oasis::Multiply{
+    Oasis::Add<> add {
+        Oasis::Multiply {
             Oasis::Real(2),
-            Oasis::Exponent<Oasis::Variable, Oasis::Real>{
-                        Oasis::Variable("x"),
-                        Oasis::Real(2)
-            }
-        },
+            Oasis::Exponent<Oasis::Variable, Oasis::Real> {
+                Oasis::Variable("x"),
+                Oasis::Real(2) } },
         Oasis::Variable("x"),
         Oasis::Real(-1)
     };
@@ -236,34 +224,29 @@ TEST_CASE("Rational Quadratic polynomial test 1: 2x^2 + x - 1", "[factor]")
         auto denominator1 = root1->GetLeastSigOp().GetValue();
         auto numerator1 = root1->GetMostSigOp().GetValue();
         REQUIRE(root1 != nullptr);
-        REQUIRE(numerator1/denominator1 == 1.0/2.0);
-
+        REQUIRE(numerator1 / denominator1 == 1.0 / 2.0);
 
         // Check second root (-1)
         auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
         auto denominator2 = root2->GetLeastSigOp().GetValue();
         auto numerator2 = root2->GetMostSigOp().GetValue();
         REQUIRE(root2 != nullptr);
-        REQUIRE(numerator2/denominator2 == -1);
-
+        REQUIRE(numerator2 / denominator2 == -1);
     }
 }
 
 TEST_CASE("Rational Quadratic polynomial test 2: 6x^2 - 5x + 1", "[factor]")
 {
     // 6x^2 - 5x + 1
-    Oasis::Add<> add{
-        Oasis::Multiply{
+    Oasis::Add<> add {
+        Oasis::Multiply {
             Oasis::Real(6),
-            Oasis::Exponent<Oasis::Variable, Oasis::Real>{
+            Oasis::Exponent<Oasis::Variable, Oasis::Real> {
                 Oasis::Variable("x"),
-                Oasis::Real(2)
-            }
-        },
-        Oasis::Multiply{
-                Oasis::Real(-5),
-                Oasis::Variable("x")
-        },
+                Oasis::Real(2) } },
+        Oasis::Multiply {
+            Oasis::Real(-5),
+            Oasis::Variable("x") },
         Oasis::Real(1)
     };
     OASIS_CAPTURE_WITH_SERIALIZER(add);
@@ -278,40 +261,34 @@ TEST_CASE("Rational Quadratic polynomial test 2: 6x^2 - 5x + 1", "[factor]")
         auto denominator = root1->GetLeastSigOp().GetValue();
         auto numerator = root1->GetMostSigOp().GetValue();
         REQUIRE(root1 != nullptr);
-        REQUIRE(numerator/denominator == 1.0/2.0);
+        REQUIRE(numerator / denominator == 1.0 / 2.0);
 
         auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
         auto denominator2 = root2->GetLeastSigOp().GetValue();
         auto numerator2 = root2->GetMostSigOp().GetValue();
         REQUIRE(root2 != nullptr);
-        REQUIRE(numerator2/denominator2 == 1.0/3.0);
+        REQUIRE(numerator2 / denominator2 == 1.0 / 3.0);
     }
 }
-
 
 TEST_CASE("Cubic polynomial test 1: 3x^3 - 16x^2 + 23x - 6:", "[factor]")
 {
     // 3x^3 - 16x^2 + 23x - 6:
-    Oasis::Add<> cubic{
-        Oasis::Multiply{          // 3x^3 term
+    Oasis::Add<> cubic {
+        Oasis::Multiply { // 3x^3 term
             Oasis::Real(3),
-            Oasis::Exponent<Oasis::Variable, Oasis::Real>{
+            Oasis::Exponent<Oasis::Variable, Oasis::Real> {
                 Oasis::Variable("x"),
-                Oasis::Real(3)
-            }
-        },
-        Oasis::Multiply{          // -16x^2 term
+                Oasis::Real(3) } },
+        Oasis::Multiply { // -16x^2 term
             Oasis::Real(-16),
-            Oasis::Exponent<Oasis::Variable, Oasis::Real>{
+            Oasis::Exponent<Oasis::Variable, Oasis::Real> {
                 Oasis::Variable("x"),
-                Oasis::Real(2)
-            }
-        },
-        Oasis::Multiply{          // 23x term
+                Oasis::Real(2) } },
+        Oasis::Multiply { // 23x term
             Oasis::Real(23),
-            Oasis::Variable("x")
-        },
-        Oasis::Real(-6)          // -6 term
+            Oasis::Variable("x") },
+        Oasis::Real(-6) // -6 term
     };
     OASIS_CAPTURE_WITH_SERIALIZER(cubic);
 
@@ -324,18 +301,33 @@ TEST_CASE("Cubic polynomial test 1: 3x^3 - 16x^2 + 23x - 6:", "[factor]")
         auto denominator = root1->GetLeastSigOp().GetValue();
         auto numerator = root1->GetMostSigOp().GetValue();
         REQUIRE(root1 != nullptr);
-        REQUIRE(numerator/denominator == 1.0/2.0);
+        REQUIRE(numerator / denominator == 1.0 / 2.0);
 
         auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
         auto denominator2 = root2->GetLeastSigOp().GetValue();
         auto numerator2 = root2->GetMostSigOp().GetValue();
         REQUIRE(root2 != nullptr);
-        REQUIRE(numerator2/denominator2 == 1.0/3.0);
+        REQUIRE(numerator2 / denominator2 == 1.0 / 3.0);
 
         auto root3 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[2]);
         auto denominator3 = root3->GetLeastSigOp().GetValue();
         auto numerator3 = root3->GetMostSigOp().GetValue();
         REQUIRE(root2 != nullptr);
-        REQUIRE(numerator3/denominator3 == 3.0/1.0);
+        REQUIRE(numerator3 / denominator3 == 3.0 / 1.0);
     }
+}
+
+TEST_CASE("Quartic test 1: x^4 - 1", "[factor]")
+{
+    Oasis::Add<> quartic {
+        Oasis::Exponent<Oasis::Variable, Oasis::Real> {
+            Oasis::Variable("x"),
+            Oasis::Real(4) },
+        Oasis::Real(-1)
+    };
+
+    OASIS_CAPTURE_WITH_SERIALIZER(quartic);
+    auto zeros = quartic.FindZeros();
+
+    REQUIRE(zeros.size() == 2);
 }
