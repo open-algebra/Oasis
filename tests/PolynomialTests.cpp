@@ -71,9 +71,9 @@ TEST_CASE("linear polynomial test 3: 2x + 30", "[factor]")
     REQUIRE(simplifiedReal.GetValue() == -15);
 }
 
-TEST_CASE("Quadratic polynomial test 1: x² + 5x + 6", "[factor]")
+TEST_CASE("Quadratic polynomial test 1: x^2 + 5x + 6", "[factor]")
 {
-    // x² + 5x + 6
+    // x^2 + 5x + 6
     Oasis::Add<> add {
         Oasis::Real(6),
         Oasis::Multiply<Oasis::Expression>{
@@ -106,9 +106,9 @@ TEST_CASE("Quadratic polynomial test 1: x² + 5x + 6", "[factor]")
     }
 }
 
-TEST_CASE("Quadratic polynomial test 2: x² - 2x -3", "[factor]")
+TEST_CASE("Quadratic polynomial test 2: x^2 - 2x -3", "[factor]")
 {
-    // x² - 2x -3
+    // x^2 - 2x -3
     Oasis::Add<> add{
         Oasis::Exponent<Oasis::Variable, Oasis::Real>{
             Oasis::Variable("x"),
@@ -141,10 +141,10 @@ TEST_CASE("Quadratic polynomial test 2: x² - 2x -3", "[factor]")
     }
 }
 
-TEST_CASE("Quadratic polynomial test 3: x² - 9", "[factor]")
+TEST_CASE("Quadratic polynomial test 3: x^2 - 9", "[factor]")
 {
     Oasis::Subtract minus {
-        Oasis::Exponent<Oasis::Variable, Oasis::Real> { // x²
+        Oasis::Exponent<Oasis::Variable, Oasis::Real> { // x^2
             Oasis::Variable("x"),
             Oasis::Real(2) },
         Oasis::Real(9),
@@ -164,7 +164,7 @@ TEST_CASE("Quadratic polynomial test 3: x² - 9", "[factor]")
     }
 }
 
-TEST_CASE("Quadratic polynomial test 4: x² - 16", "[factor]")
+TEST_CASE("Quadratic polynomial test 4: x^2 - 16", "[factor]")
 {
     Oasis::Subtract minus {
         Oasis::Exponent<Oasis::Variable, Oasis::Real> {
@@ -187,10 +187,10 @@ TEST_CASE("Quadratic polynomial test 4: x² - 16", "[factor]")
     }
 }
 
-TEST_CASE("Quadratic polynomial test 5: x² - 25", "[factor]")
+TEST_CASE("Quadratic polynomial test 5: x^2 - 25", "[factor]")
 {
     Oasis::Subtract minus {
-        Oasis::Exponent<Oasis::Variable, Oasis::Real> { // x²
+        Oasis::Exponent<Oasis::Variable, Oasis::Real> { // x^2
             Oasis::Variable("x"),
             Oasis::Real(2) },
         Oasis::Real(25),
@@ -210,9 +210,9 @@ TEST_CASE("Quadratic polynomial test 5: x² - 25", "[factor]")
     }
 }
 
-TEST_CASE("Rational Quadratic polynomial test 1: 2x² + x - 1", "[factor]")
+TEST_CASE("Rational Quadratic polynomial test 1: 2x^2 + x - 1", "[factor]")
 {
-    // 2x² + x - 1
+    // 2x^2 + x - 1
     Oasis::Add<> add{
         Oasis::Multiply{
             Oasis::Real(2),
@@ -249,9 +249,9 @@ TEST_CASE("Rational Quadratic polynomial test 1: 2x² + x - 1", "[factor]")
     }
 }
 
-TEST_CASE("Rational Quadratic polynomial test 2: 6x² - 5x + 1", "[factor]")
+TEST_CASE("Rational Quadratic polynomial test 2: 6x^2 - 5x + 1", "[factor]")
 {
-    // 6x² - 5x + 1
+    // 6x^2 - 5x + 1
     Oasis::Add<> add{
         Oasis::Multiply{
             Oasis::Real(6),
@@ -289,18 +289,18 @@ TEST_CASE("Rational Quadratic polynomial test 2: 6x² - 5x + 1", "[factor]")
 }
 
 
-TEST_CASE("Cubic polynomial test 1: 3x³ - 16x² + 23x - 6:", "[factor]")
+TEST_CASE("Cubic polynomial test 1: 3x^3 - 16x^2 + 23x - 6:", "[factor]")
 {
-    // 3x³ - 16x² + 23x - 6:
+    // 3x^3 - 16x^2 + 23x - 6:
     Oasis::Add<> cubic{
-        Oasis::Multiply{          // 3x³ term
+        Oasis::Multiply{          // 3x^3 term
             Oasis::Real(3),
             Oasis::Exponent<Oasis::Variable, Oasis::Real>{
                 Oasis::Variable("x"),
                 Oasis::Real(3)
             }
         },
-        Oasis::Multiply{          // -16x² term
+        Oasis::Multiply{          // -16x^2 term
             Oasis::Real(-16),
             Oasis::Exponent<Oasis::Variable, Oasis::Real>{
                 Oasis::Variable("x"),
