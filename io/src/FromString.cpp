@@ -302,13 +302,13 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
                 st.emplace(std::move(processOpResult.value()));
             }
 
-            if (auto topOp = ops.top(); ops.empty() || !std::holds_alternative<OpenParens>(topOp)) {
+            if (ops.empty() || !std::holds_alternative<OpenParens>(ops.top())) {
                 return std::unexpected { "Mismatched parenthesis" };
             }
 
             ops.pop(); // pop '('
-            if (auto topOp = ops.top(); !ops.empty() && std::holds_alternative<Function>(topOp)) {
-                auto func = std::get<Function>(topOp);
+            if (!ops.empty() && std::holds_alternative<Function>(ops.top())) {
+                auto func = std::get<Function>(ops.top());
                 ops.pop();
                 auto processFunctionResult = processFunction(st, func);
                 if (!processFunctionResult)
