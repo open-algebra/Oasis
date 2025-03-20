@@ -33,6 +33,9 @@ auto trim_whitespace(const std::string& str) -> std::string
         | std::ranges::to<std::string>();
 }
 
+// Calling Oasis::FromInFix passed as template fails because defaulted parameters aren't represented in the type, so a wrapper is needed
+auto Parse(const std::string& in) -> Oasis::FromInFixResult { return Oasis::FromInFix(in); };
+
 int main(int argc, char** argv)
 {
     Oasis::InFixSerializer serializer;
@@ -40,7 +43,7 @@ int main(int argc, char** argv)
     constexpr auto success_style = fg(fmt::color::green);
 
     const char* line;
-    while ((line = ic_readline("")) != nullptr) {
+    while ((line = ic_readline(nullptr)) != nullptr) {
         std::string input { line };
         delete[] line;
 
@@ -50,7 +53,6 @@ int main(int argc, char** argv)
         if (input == "exit") break;
 
         // Calling Oasis::FromInFix passed as template fails because defaulted parameters aren't represented in the type, so a wrapper is needed
-        auto Parse = [](const std::string& in) { return Oasis::FromInFix(in); };
         auto result = (input | Oasis::PreProcessInFix | Parse)
             .transform([](const std::unique_ptr<Oasis::Expression>& expr) -> std::unique_ptr<Oasis::Expression> {
                 return expr->Simplify();
