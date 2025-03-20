@@ -2,15 +2,17 @@
 // Created by Matthew McCall on 2/19/25.
 //
 
+#include <cctype>
 #include <cstdlib>
 #include <cstdio>
+#include <ranges>
 
 #include "Oasis/FromString.hpp"
 #include "Oasis/InFixSerializer.hpp"
 
 #include <boost/callable_traits/return_type.hpp>
 #include <fmt/color.h>
-#include <linenoise.h>
+#include <isocline.h>
 
 template <typename FnT>
 auto operator|(const std::string& str, FnT fn) -> boost::callable_traits::return_type_t<FnT>
@@ -18,21 +20,34 @@ auto operator|(const std::string& str, FnT fn) -> boost::callable_traits::return
     return fn(str);
 }
 
+//https://en.cppreference.com/w/cpp/string/byte/isspace#Notes
+bool safe_isspace(const unsigned char ch) { return std::isspace(ch); }
+
+auto trim_whitespace(const std::string& str) -> std::string
+{
+    return str
+        | std::views::drop_while(safe_isspace)
+        | std::views::reverse
+        | std::views::drop_while(safe_isspace)
+        | std::views::reverse
+        | std::ranges::to<std::string>();
+}
+
 int main(int argc, char** argv)
 {
-    linenoiseHistorySetMaxLen(16);
-
     Oasis::InFixSerializer serializer;
     constexpr auto err_style = fg(fmt::color::indian_red);
     constexpr auto success_style = fg(fmt::color::green);
 
     const char* line;
-    while ((line = linenoise("> ")) != nullptr) {
-        std::string input{ line };
+    while ((line = ic_readline("")) != nullptr) {
+        std::string input { line };
         delete[] line;
-        if (input.empty())  continue;
 
-        linenoiseHistoryAdd(input.c_str());
+        input = input | trim_whitespace;
+
+        if (input.empty())  continue;
+        if (input == "exit") break;
 
         // Calling Oasis::FromInFix passed as template fails because defaulted parameters aren't represented in the type, so a wrapper is needed
         auto Parse = [](const std::string& in) { return Oasis::FromInFix(in); };
