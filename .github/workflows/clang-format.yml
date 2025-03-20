@@ -36,4 +36,4 @@ jobs:
           - name: Reject if not formatted
             if: |
                 github.event_name == 'pull_request'
-            run: clang-format -n -Werror src/**.cpp include/Oasis/**.hpp io/src/**.cpp io/include/Oasis/**.hpp;
+            run: clang-format -n -Werror src/**.cpp include/Oasis/**.hpp io/src/**.cpp io/include/Oasis/**.hpp cli/**.cpp;
