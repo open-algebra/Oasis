@@ -87,11 +87,18 @@ public:
     [[nodiscard]] virtual auto Equals(const Expression& other) const -> bool = 0;
 
     /**
+     * The FindExpressionRoots function; a helper function used in Findzeros; finds the root in terms of expression like a +- x/b
+     *
+     * @tparam origonalExpresion The expression for which all the factors will be found.
+     */
+    auto FindExpressionRoots(const std::vector<std::unique_ptr<Expression>>& coefficients)
+        -> std::vector<std::unique_ptr<Expression>>;
+    /**
      * The FindZeros function finds all rational real zeros, and up to 2 irrational/complex zeros of a polynomial. Currently assumes an expression of the form a+bx+cx^2+dx^3+... where a, b, c, d are a integers.
      *
      * @tparam origonalExpresion The expression for which all the factors will be found.
      */
-    auto FindZeros() const -> std::vector<std::unique_ptr<Expression>>;
+    auto FindZeros() const -> std::expected< std::vector<std::unique_ptr<Expression>>, std::string>;
 
     /**
      * Gets the category of this expression.

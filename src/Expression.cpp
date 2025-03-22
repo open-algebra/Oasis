@@ -8,6 +8,7 @@
 #include <Oasis/RecursiveCast.hpp>
 #include <Oasis/Subtract.hpp>
 #include <Oasis/Variable.hpp>
+#include <iostream>
 #include <numeric>
 #include <set>
 
@@ -44,16 +45,83 @@ long long gcf(long long a, long long b)
 
 namespace Oasis {
 
+// Helper function to find expression roots for polynomials
+auto FindExpressionRoots(const std::vector<std::unique_ptr<Expression>>& coefficients)
+    -> std::vector<std::unique_ptr<Expression>>
+{
+
+    std::vector<std::unique_ptr<Expression>> results;
+
+    // Check degree of polynomial based on coefficients.size()
+    if (coefficients.size() == 3) { // Quadratic: ax² + bx + c
+        auto& a = coefficients[2];
+        auto& b = coefficients[1];
+        auto& c = coefficients[0];
+
+        // Calculate discriminant
+        auto bSquared = Multiply(*b, *b).Simplify();
+        auto fourAC = Multiply(Real(4), Multiply(*a, *c)).Simplify();
+        auto discriminant = Subtract(*bSquared, *fourAC).Simplify();
+
+        if (RecursiveCast<Real>(*discriminant) == nullptr) {
+            // Special cases
+        }
+    } else if (coefficients.size() == 4) { // Cubic: ax³ + bx² + cx + d
+        // cubic
+    } else if (coefficients.size() == 5) { // Quartic: ax⁴ + bx³ + cx² + dx + e
+        // quartic
+    }
+
+    return results;
+}
+
 // currently only supports polynomials of one variable.
 /**
  * The FindZeros function finds all rational zeros of a polynomial. Currently assumes an expression of the form a+bx+cx^2+dx^3+... where a, b, c, d are a integers.
  *
  * @tparam origonalExpresion The expression for which all the factors will be found.
  */
-auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
+auto Expression::FindZeros() const -> std::expected<std::vector<std::unique_ptr<Expression>>, std::string>
 {
     std::vector<std::unique_ptr<Expression>> results;
     std::vector<std::unique_ptr<Expression>> termsE;
+    std::vector<std::unique_ptr<Expression>> termsVariableCheck;
+    std::string variName = "";
+
+    // Process terms to collect variables
+    if (auto addCase = RecursiveCast<Add<Expression>>(*this); addCase != nullptr) {
+        addCase->Flatten(termsVariableCheck);
+    } else {
+        termsVariableCheck.push_back(Copy());
+    }
+
+    // Check variables in the terms
+    for (const auto& i : termsVariableCheck) {
+        std::string variableName = "";
+
+        if (auto variableCase = RecursiveCast<Variable>(*i); variableCase != nullptr) {
+            variableName = variableCase->GetName();
+        } else if (auto expCase = RecursiveCast<Exponent<Variable, Real>>(*i); expCase != nullptr) {
+            variableName = expCase->GetMostSigOp().GetName();
+        } else if (auto prodCase = RecursiveCast<Multiply<Expression, Variable>>(*i); prodCase != nullptr) {
+            variableName = prodCase->GetLeastSigOp().GetName();
+        } else if (auto prodExpCase = RecursiveCast<Multiply<Expression, Exponent<Variable, Real>>>(*i); prodExpCase != nullptr) {
+            variableName = prodExpCase->GetLeastSigOp().GetMostSigOp().GetName();
+        } else if (auto divCase = RecursiveCast<Divide<Expression, Variable>>(*i); divCase != nullptr) {
+            variableName = divCase->GetLeastSigOp().GetName();
+        } else if (auto divExpCase = RecursiveCast<Divide<Expression, Exponent<Variable, Real>>>(*i); divExpCase != nullptr) {
+            variableName = divExpCase->GetLeastSigOp().GetMostSigOp().GetName();
+        }
+
+        if (!variableName.empty()) {
+            if (variName.empty()) {
+                variName = variableName;
+            } else if (variName != variableName) {
+                return std::unexpected("Error: Polynomial only supports expressions with a single variable.");
+            }
+        }
+    }
+
     if (auto subCase = RecursiveCast<Subtract<Expression>>(*this); subCase != nullptr) {
         // Check for x² - n pattern
         if (auto leftTerm = RecursiveCast<Exponent<Variable, Real>>(subCase->GetMostSigOp());
@@ -191,7 +259,32 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
                     results.push_back(Divide(Multiply(Real(-1), *coefficents[0]), *coefficents[1]).Simplify());
                 }
             }
-        } else if (coefficents.size() == 3) { // Quadratic equation ax + b + c = 0
+            //        } else if (coefficents.size() == 3) { // Quadratic equation ax + b + c = 0
+            //            auto& a = coefficents[2];
+            //            auto& b = coefficents[1];
+            //            auto& c = coefficents[0];
+            //
+            //            // Calculate discriminant
+            //            auto bSquared = Multiply(*b, *b).Simplify();
+            //            auto fourAC = Multiply(Real(4), Multiply(*a, *c)).Simplify();
+            //            auto discriminant = Subtract(*bSquared, *fourAC).Simplify();
+            //
+            //            if (auto realDisc = RecursiveCast<Real>(*discriminant);
+            //                realDisc != nullptr && realDisc->GetValue() >= 0) {
+            //
+            //                auto negB = Multiply(Real(-1), *b).Simplify();
+            //                auto sqrtDisc = Exponent(*discriminant, Divide(Real(1), Real(2))).Copy();
+            //                auto twoA = Multiply(Real(2), *a).Simplify();
+            //
+            //                // First, create the numerators for both roots
+            //                auto numerator1 = Add(*negB, *sqrtDisc).Simplify();
+            //                auto numerator2 = Subtract(*negB, *sqrtDisc).Simplify();
+            //
+            //                // Now create the Divide expressions properly
+            //                results.push_back(Divide(*numerator1, *twoA).Copy());
+            //                results.push_back(Divide(*numerator2, *twoA).Copy());
+            //            }
+        } else if (coefficents.size() == 3) { // Quadratic equation ax² + bx + c = 0
             auto& a = coefficents[2];
             auto& b = coefficents[1];
             auto& c = coefficents[0];
@@ -204,19 +297,46 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             if (auto realDisc = RecursiveCast<Real>(*discriminant);
                 realDisc != nullptr && realDisc->GetValue() >= 0) {
 
-                auto negB = Multiply(Real(-1), *b).Simplify();
-                auto sqrtDisc = Exponent(*discriminant, Divide(Real(1), Real(2))).Copy();
-                auto twoA = Multiply(Real(2), *a).Simplify();
+                double discValue = realDisc->GetValue();
+                double sqrtDiscValue = std::sqrt(discValue);
 
-                // First, create the numerators for both roots
-                auto numerator1 = Add(*negB, *sqrtDisc).Simplify();
-                auto numerator2 = Subtract(*negB, *sqrtDisc).Simplify();
+                // Get coefficient values
+                double aVal = 0, bVal = 0;
+                if (auto aReal = RecursiveCast<Real>(*a); aReal != nullptr) {
+                    aVal = aReal->GetValue();
+                }
+                if (auto bReal = RecursiveCast<Real>(*b); bReal != nullptr) {
+                    bVal = bReal->GetValue();
+                }
 
-                // Now create the Divide expressions properly
-                results.push_back(Divide(*numerator1, *twoA).Copy());
-                results.push_back(Divide(*numerator2, *twoA).Copy());
-                //                results.push_back(Divide(Add(*negB, *sqrtDisc), *twoA).Copy());
-                //                results.push_back(Divide(Subtract(*negB, *sqrtDisc), *twoA).Copy());
+                if (std::floor(sqrtDiscValue) == sqrtDiscValue) {
+                    // Perfect square - roots will be rational
+                    double root1 = (-bVal + sqrtDiscValue) / (2 * aVal);
+                    double root2 = (-bVal - sqrtDiscValue) / (2 * aVal);
+
+                    // Check if roots are integers
+                    if (std::floor(root1) == root1 && std::floor(root2) == root2) {
+                        results.push_back(Divide(Real(root1), Real(1)).Copy());
+                        results.push_back(Divide(Real(root2), Real(1)).Copy());
+                    } else {
+                        // Roots are fractions
+                        results.push_back(Divide(Real(root1), Real(1)).Copy());
+                        results.push_back(Divide(Real(root2), Real(1)).Copy());
+                    }
+                } else {
+
+                    auto negB = Multiply(Real(-1), *b).Simplify();
+                    auto sqrtDisc = Exponent(*discriminant, Divide(Real(1), Real(2))).Copy();
+                    auto twoA = Multiply(Real(2), *a).Simplify();
+
+                    //  (-b + √discriminant)/(2a)
+                    auto numerator1 = Add(*negB, *sqrtDisc).Simplify();
+                    results.push_back(Divide(*numerator1, *twoA).Copy());
+
+                    // (-b - √discriminant)/(2a)
+                    auto numerator2 = Subtract(*negB, *sqrtDisc).Simplify();
+                    results.push_back(Divide(*numerator2, *twoA).Copy());
+                }
             }
         } else if (coefficents.size() == 4) { // Cubic equation: ax³ + bx² + cx + d = 0
             long long a = termsC[0]; // coefficient of x³
