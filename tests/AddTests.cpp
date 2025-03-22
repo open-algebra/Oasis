@@ -12,6 +12,7 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/InFixSerializer.hpp"
 
 TEST_CASE("Addition", "[Add]")
 {
