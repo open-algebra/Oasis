@@ -125,14 +125,18 @@ auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVari
         Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(differentiationVariable) };
         return result.Simplify();
     } else {
-        Divide derivative { Oasis::Real { 1.0 }, Multiply<Expression> { *leastSigOp, Log { EulerNumber {}, *mostSigOp } } };
-        Derivative chain { *leastSigOp, differentiationVariable };
-
-        Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(differentiationVariable) };
-        // idk will evaluate correctly for non-constant base except gets simplified back before derivative is taken
-        // Divide rewrite { Log { EulerNumber{}, *leastSigOp}, Log { EulerNumber{}, *mostSigOp} };
-        // Derivative result { rewrite , differentiationVariable };
-        return result.Simplify();
+        if (auto RealCase = RecursiveCast<Real>(*mostSigOp); RealCase != nullptr) {
+            Divide derivative { Oasis::Real { 1.0 }, Multiply<Expression> { *leastSigOp, Log { EulerNumber {}, *mostSigOp } } };
+            Derivative chain { *leastSigOp, differentiationVariable };
+            Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(differentiationVariable) };
+            return result.Simplify();
+        }
+        else {//Use log identity and Quotient rule
+            Divide result{Subtract{Multiply{Log{EulerNumber{}, *mostSigOp}, Derivative{Log { EulerNumber{}, *leastSigOp},differentiationVariable} },
+                    Multiply {Log { EulerNumber{}, *leastSigOp}, Derivative{Log { EulerNumber{}, *mostSigOp},differentiationVariable} }},
+                Exponent {Log{EulerNumber{}, *mostSigOp}, Real{2}} };
+            return result.Simplify();
+        }
     }
 }
 
