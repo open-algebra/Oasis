@@ -34,6 +34,19 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return std::make_unique<Real>(dividend.GetValue() / divisor.GetValue());
     }
 
+    //Complex Fractions
+    if (auto compCase = RecursiveCast<Divide<Divide,Expression>>(simplifiedDivide)) {
+        const Expression& dividend = compCase->GetMostSigOp().GetMostSigOp();
+        const Expression& divisor = Multiply {compCase->GetMostSigOp().GetLeastSigOp(), compCase->GetLeastSigOp()};
+        return std::make_unique<Divide<Expression,Expression>>(dividend, divisor)->Simplify();
+    }
+
+    if (auto compCase2 = RecursiveCast<Divide<Expression,Divide>>(simplifiedDivide)) {
+        const Expression& dividend = Multiply {compCase2->GetLeastSigOp().GetLeastSigOp(), compCase2->GetMostSigOp()};
+        const Expression& divisor = compCase2->GetLeastSigOp().GetMostSigOp();
+        return std::make_unique<Divide<Expression,Expression>>(dividend, divisor)->Simplify();
+    }
+
     // log(a)/log(b)=log[b](a)
     if (auto logCase = RecursiveCast<Divide<Log<Expression, Expression>, Log<Expression, Expression>>>(simplifiedDivide); logCase != nullptr) {
         if (logCase->GetMostSigOp().GetMostSigOp().Equals(logCase->GetLeastSigOp().GetMostSigOp())) {
@@ -120,8 +133,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                         break;
                     }
                 } else if (auto resI = RecursiveCast<Variable>(*result[i]); resI != nullptr) {
-                    if (resI->Equals(*var)) {
+                    if (resI->Equals(var->GetMostSigOp())) {
                         result[i] = Exponent<Expression> { var->GetMostSigOp(), *(Subtract<Expression> { Real { 1.0 }, var->GetLeastSigOp() }.Simplify()) }.Generalize();
+                        break;
                     }
                 }
             }
@@ -138,7 +152,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                         break;
                     }
                 } else if (result[i]->Equals(expExpr->GetMostSigOp())) {
-                    result[i] = Exponent { expExpr->GetMostSigOp(), *(Subtract { Real { 1.0 }, resExpr->GetLeastSigOp() }.Simplify()) }.Simplify();
+                    result[i] = Exponent { expExpr->GetMostSigOp(), *(Subtract { Real { 1.0 }, expExpr->GetLeastSigOp() }.Simplify()) }.Simplify();
                     break;
                 }
             }
