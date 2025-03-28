@@ -323,8 +323,8 @@ TEST_CASE("Variable Base Exponential Derivative", "[Derivative][Exponent]")
 {
     Oasis::Exponent exp{Oasis::Variable{"x"}, Oasis::Multiply{Oasis::Real{2.0},Oasis::Variable{"x"}}};
     Oasis::Derivative diffExp{exp, Oasis::Variable{"x"}};
-    Oasis::Multiply expected{Oasis::Multiply{Oasis::Real{2.0}, exp},
-                                            Oasis::Add{ Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"x"}},Oasis::Real{1.0}}};
+    Oasis::Multiply expected{exp , Oasis::Add{ Oasis::Multiply {Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"x"}},
+                                    Oasis::Real{2.0}},Oasis::Real{2.0}},};
     auto simplified = diffExp.Simplify();
     REQUIRE(simplified->Equals(expected));
 }
@@ -349,8 +349,7 @@ TEST_CASE("Expresion Base Exponential Derivative", "[Derivative][Exponent]")
 {
     Oasis::Exponent exp{ Oasis::Add { Oasis::Variable{"x"}, Oasis::Real{3.0} } , Oasis::Real{2.0}};
     Oasis::Derivative diffExp{exp, Oasis::Variable{"x"}};
-    Oasis::Multiply expected{ exp, Oasis::Divide { Oasis::Real{2.0} ,
-                                        Oasis::Add {Oasis::Variable{"x"} , Oasis::Real {3.0}} }  };
+    Oasis::Multiply expected{ Oasis::Real{2.0} , Oasis::Add {Oasis::Variable{"x"} , Oasis::Real {3.0}} };
     auto simplified = diffExp.Simplify();
     REQUIRE(simplified->Equals(expected));
 }
