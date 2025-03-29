@@ -106,20 +106,9 @@ TEST_CASE("Quadratic polynomial test 1: x^2 + 5x + 6", "[factor]")
     auto zeros = std::move(result_wrapped.value());
 
     REQUIRE(zeros.size() == 2);
+    REQUIRE(print_expr(*zeros[0]) == "(-2/1)");
+    REQUIRE(print_expr(*zeros[1]) == "(-3/1)");
 
-    if (zeros.size() == 2) {
-        // Check first root (-2)
-        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
-        REQUIRE(root1 != nullptr);
-        REQUIRE(root1->GetMostSigOp().GetValue() == -4);
-        REQUIRE(root1->GetLeastSigOp().GetValue() == 2);
-
-        // Check second root (-3)
-        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
-        REQUIRE(root2 != nullptr);
-        REQUIRE(root2->GetMostSigOp().GetValue() == -6);
-        REQUIRE(root2->GetLeastSigOp().GetValue() == 2);
-    }
 }
 
 TEST_CASE("Quadratic polynomial test 2: x^2 - 2x -3", "[factor]")
@@ -142,20 +131,8 @@ TEST_CASE("Quadratic polynomial test 2: x^2 - 2x -3", "[factor]")
     auto zeros = std::move(result_wrapped.value());
 
     REQUIRE(zeros.size() == 2);
-
-    if (zeros.size() == 2) {
-        // Check first root (3)
-        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
-        REQUIRE(root1 != nullptr);
-        REQUIRE(root1->GetMostSigOp().GetValue() == 6);
-        REQUIRE(root1->GetLeastSigOp().GetValue() == 2);
-
-        // Check second root (-1)
-        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
-        REQUIRE(root2 != nullptr);
-        REQUIRE(root2->GetMostSigOp().GetValue() == -2);
-        REQUIRE(root2->GetLeastSigOp().GetValue() == 2);
-    }
+    REQUIRE(print_expr(*zeros[0]) == "(3/1)");
+    REQUIRE(print_expr(*zeros[1]) == "(-1/1)");
 }
 
 TEST_CASE("Quadratic polynomial test 3: x^2 - 9", "[factor]")
@@ -313,7 +290,7 @@ TEST_CASE("Rational Quadratic polynomial test 2: 6x^2 - 5x + 1", "[factor]")
     }
 }
 
-TEST_CASE("Quadratic test 3: x^2 - 15x + 4", "[factor]") // with 4 roots
+TEST_CASE("Irrational Quadratic test 3: x^2 - 15x + 4", "[factor]") // roots of 15/2 +- sqrt(209) / 2);
 {
     Oasis::Add<> add {
         Oasis::Exponent<Oasis::Variable, Oasis::Real> {
@@ -330,22 +307,9 @@ TEST_CASE("Quadratic test 3: x^2 - 15x + 4", "[factor]") // with 4 roots
     REQUIRE(result_wrapped.has_value());
 
     auto zeros = std::move(result_wrapped.value());
-
     REQUIRE(zeros.size() == 2);
-    if (zeros.size() == 2) {
-
-        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
-        auto denominator = root1->GetLeastSigOp().GetValue();
-        auto numerator = root1->GetMostSigOp().GetValue();
-        REQUIRE(root1 != nullptr);
-        REQUIRE(numerator / denominator == 7.5 + sqrt(209) / 2);
-
-        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
-        auto denominator2 = root2->GetLeastSigOp().GetValue();
-        auto numerator2 = root2->GetMostSigOp().GetValue();
-        REQUIRE(root2 != nullptr);
-        REQUIRE(numerator2 / denominator2 == 7.5 - sqrt(209) / 2);
-    }
+    REQUIRE(print_expr(*zeros[0]) == "(((-1*-15)/(2*1))+((209^(1/2))/(2*1)))");
+    REQUIRE(print_expr(*zeros[1]) == "(((-1*-15)/(2*1))-((209^(1/2))/(2*1)))");
 }
 
 TEST_CASE("Cubic polynomial test 1: 3x^3 - 16x^2 + 23x - 6:", "[factor]")
@@ -375,26 +339,9 @@ TEST_CASE("Cubic polynomial test 1: 3x^3 - 16x^2 + 23x - 6:", "[factor]")
     auto zeros = std::move(result_wrapped.value());
 
     REQUIRE(zeros.size() == 3);
-
-    if (zeros.size() == 3) {
-        auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
-        auto denominator = root1->GetLeastSigOp().GetValue();
-        auto numerator = root1->GetMostSigOp().GetValue();
-        REQUIRE(root1 != nullptr);
-        REQUIRE(numerator / denominator == 1.0 / 2.0);
-
-        auto root2 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[1]);
-        auto denominator2 = root2->GetLeastSigOp().GetValue();
-        auto numerator2 = root2->GetMostSigOp().GetValue();
-        REQUIRE(root2 != nullptr);
-        REQUIRE(numerator2 / denominator2 == 1.0 / 3.0);
-
-        auto root3 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[2]);
-        auto denominator3 = root3->GetLeastSigOp().GetValue();
-        auto numerator3 = root3->GetMostSigOp().GetValue();
-        REQUIRE(root2 != nullptr);
-        REQUIRE(numerator3 / denominator3 == 3.0 / 1.0);
-    }
+    REQUIRE(print_expr(*zeros[0]) == "(1/3)");
+    REQUIRE(print_expr(*zeros[1]) == "(2/1)");
+    REQUIRE(print_expr(*zeros[2]) == "(3/1)");
 }
 
 TEST_CASE("Quartic test 1: x^4 - 1", "[factor]")
@@ -462,4 +409,33 @@ TEST_CASE("Quartic test 2: x^4 - 5x^2 + 4", "[factor]") // with 4 roots
         REQUIRE(root4 != nullptr);
         REQUIRE(numerator4 / denominator4 == -2.0 / 1.0);
     }
+}
+
+TEST_CASE("Irrational Cubic polynomial test 1: 4x^3 - 11x^2 + 2x + 3:", "[factor]")
+{
+    // 4x^3 - 11x^2 + 2x + 3:
+    Oasis::Add<> cubic {
+        Oasis::Multiply {
+            Oasis::Real(4),
+            Oasis::Exponent<Oasis::Variable, Oasis::Real> {
+                Oasis::Variable("x"),
+                Oasis::Real(3) } },
+        Oasis::Multiply {
+            Oasis::Real(-11),
+            Oasis::Exponent<Oasis::Variable, Oasis::Real> {
+                Oasis::Variable("x"),
+                Oasis::Real(2) } },
+        Oasis::Multiply {
+            Oasis::Real(2),
+            Oasis::Variable("x") },
+        Oasis::Real(3)
+    };
+    OASIS_CAPTURE_WITH_SERIALIZER(cubic);
+
+    auto result_wrapped = cubic.FindZeros();
+    REQUIRE(result_wrapped.has_value());
+
+    auto zeros = std::move(result_wrapped.value());
+
+    REQUIRE(zeros.size() == 3);
 }

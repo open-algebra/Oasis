@@ -259,31 +259,6 @@ auto Expression::FindZeros() const -> std::expected<std::vector<std::unique_ptr<
                     results.push_back(Divide(Multiply(Real(-1), *coefficents[0]), *coefficents[1]).Simplify());
                 }
             }
-            //        } else if (coefficents.size() == 3) { // Quadratic equation ax + b + c = 0
-            //            auto& a = coefficents[2];
-            //            auto& b = coefficents[1];
-            //            auto& c = coefficents[0];
-            //
-            //            // Calculate discriminant
-            //            auto bSquared = Multiply(*b, *b).Simplify();
-            //            auto fourAC = Multiply(Real(4), Multiply(*a, *c)).Simplify();
-            //            auto discriminant = Subtract(*bSquared, *fourAC).Simplify();
-            //
-            //            if (auto realDisc = RecursiveCast<Real>(*discriminant);
-            //                realDisc != nullptr && realDisc->GetValue() >= 0) {
-            //
-            //                auto negB = Multiply(Real(-1), *b).Simplify();
-            //                auto sqrtDisc = Exponent(*discriminant, Divide(Real(1), Real(2))).Copy();
-            //                auto twoA = Multiply(Real(2), *a).Simplify();
-            //
-            //                // First, create the numerators for both roots
-            //                auto numerator1 = Add(*negB, *sqrtDisc).Simplify();
-            //                auto numerator2 = Subtract(*negB, *sqrtDisc).Simplify();
-            //
-            //                // Now create the Divide expressions properly
-            //                results.push_back(Divide(*numerator1, *twoA).Copy());
-            //                results.push_back(Divide(*numerator2, *twoA).Copy());
-            //            }
         } else if (coefficents.size() == 3) { // Quadratic equation ax² + bx + c = 0
             auto& a = coefficents[2];
             auto& b = coefficents[1];
@@ -300,57 +275,76 @@ auto Expression::FindZeros() const -> std::expected<std::vector<std::unique_ptr<
                 double discValue = realDisc->GetValue();
                 double sqrtDiscValue = std::sqrt(discValue);
 
-                // Get coefficient values
-                double aVal = 0, bVal = 0;
-                if (auto aReal = RecursiveCast<Real>(*a); aReal != nullptr) {
-                    aVal = aReal->GetValue();
-                }
-                if (auto bReal = RecursiveCast<Real>(*b); bReal != nullptr) {
-                    bVal = bReal->GetValue();
-                }
-
+                // Check if discriminant is a perfect square
                 if (std::floor(sqrtDiscValue) == sqrtDiscValue) {
-                    // Perfect square - roots will be rational
+                    // Rational roots
+                    double aVal = 0, bVal = 0;
+                    if (auto aReal = RecursiveCast<Real>(*a); aReal != nullptr)
+                        aVal = aReal->GetValue();
+                    if (auto bReal = RecursiveCast<Real>(*b); bReal != nullptr)
+                        bVal = bReal->GetValue();
+
                     double root1 = (-bVal + sqrtDiscValue) / (2 * aVal);
                     double root2 = (-bVal - sqrtDiscValue) / (2 * aVal);
 
-                    // Check if roots are integers
-                    if (std::floor(root1) == root1 && std::floor(root2) == root2) {
-                        results.push_back(Divide(Real(root1), Real(1)).Copy());
-                        results.push_back(Divide(Real(root2), Real(1)).Copy());
-                    } else {
-                        // Roots are fractions
-                        results.push_back(Divide(Real(root1), Real(1)).Copy());
-                        results.push_back(Divide(Real(root2), Real(1)).Copy());
-                    }
+                    results.push_back(Divide(Real(root1), Real(1)).Copy());
+                    results.push_back(Divide(Real(root2), Real(1)).Copy());
                 } else {
+                    // Irrational roots, build the expression trees
 
-                    auto negB = Multiply(Real(-1), *b).Simplify();
-                    auto sqrtDisc = Exponent(*discriminant, Divide(Real(1), Real(2))).Copy();
-                    auto twoA = Multiply(Real(2), *a).Simplify();
+                    auto negB = Multiply(Real(-1), *b).Copy();
+                    auto twoA = Multiply(Real(2), *a).Copy();
+                    auto firstTerm = Divide(*negB, *twoA).Copy();
 
-                    //  (-b + √discriminant)/(2a)
-                    auto numerator1 = Add(*negB, *sqrtDisc).Simplify();
-                    results.push_back(Divide(*numerator1, *twoA).Copy());
+                    // √discriminant/(2a) term
+                    auto sqrtDisc = std::make_unique<Exponent<Expression, Expression>>(
+                        *discriminant,
+                        Divide(Real(1), Real(2)));
+                    auto secondTerm = Divide(*sqrtDisc, *twoA).Copy();
 
-                    // (-b - √discriminant)/(2a)
-                    auto numerator2 = Subtract(*negB, *sqrtDisc).Simplify();
-                    results.push_back(Divide(*numerator2, *twoA).Copy());
+                    // Build the first root as an Add expression
+                    auto root1 = std::make_unique<Add<Expression>>(
+                        *firstTerm,
+                        *secondTerm);
+
+                    // Build the second root as a Subtract expression
+                    auto root2 = std::make_unique<Subtract<Expression>>(
+                        *firstTerm,
+                        *secondTerm);
+
+                    results.push_back(std::move(root1));
+                    results.push_back(std::move(root2));
                 }
             }
         } else if (coefficents.size() == 4) { // Cubic equation: ax³ + bx² + cx + d = 0
-            long long a = termsC[0]; // coefficient of x³
-            long long b = termsC[1]; // coefficient of x²
-            long long c = termsC[2]; // coefficient of x
-            long long d = termsC[3]; // constant term
+            // First try to find rational roots using the rational root theorem
+            long long a_ll = 0, b_ll = 0, c_ll = 0, d_ll = 0;
+            double a_d = 0, b_d = 0, c_d = 0;
+
+            // Convert coefficients to numbers if possible
+            if (auto aReal = RecursiveCast<Real>(*coefficents[3]); aReal != nullptr) {
+                a_ll = static_cast<long long>(aReal->GetValue());
+                a_d = aReal->GetValue();
+            }
+            if (auto bReal = RecursiveCast<Real>(*coefficents[2]); bReal != nullptr) {
+                b_ll = static_cast<long long>(bReal->GetValue());
+                b_d = bReal->GetValue();
+            }
+            if (auto cReal = RecursiveCast<Real>(*coefficents[1]); cReal != nullptr) {
+                c_ll = static_cast<long long>(cReal->GetValue());
+                c_d = cReal->GetValue();
+            }
+            if (auto dReal = RecursiveCast<Real>(*coefficents[0]); dReal != nullptr) {
+                d_ll = static_cast<long long>(dReal->GetValue());
+            }
 
             // To track found roots and avoid duplicates
             std::set<std::pair<long long, long long>> found_roots;
 
             // Get factors of constant term for possible p values
             std::vector<long long> p_factors;
-            for (long long i = 1; i <= std::abs(d); i++) {
-                if (d % i == 0) {
+            for (long long i = 1; i <= std::abs(d_ll); i++) {
+                if (d_ll % i == 0) {
                     p_factors.push_back(i);
                     p_factors.push_back(-i);
                 }
@@ -358,12 +352,13 @@ auto Expression::FindZeros() const -> std::expected<std::vector<std::unique_ptr<
 
             // Get factors of leading coefficient for possible q values
             std::vector<long long> q_factors;
-            for (long long i = 1; i <= std::abs(a); i++) {
-                if (a % i == 0) {
+            for (long long i = 1; i <= std::abs(a_ll); i++) {
+                if (a_ll % i == 0) {
                     q_factors.push_back(i);
                 }
             }
 
+            // Check potential rational roots
             for (long long p : p_factors) {
                 for (long long q : q_factors) {
                     // Skip if q is 0
@@ -392,13 +387,178 @@ auto Expression::FindZeros() const -> std::expected<std::vector<std::unique_ptr<
                     long long x_q3 = q * q * q;
 
                     // Evaluate ax³ + bx² + cx + d = 0 at x = p/q
-                    // Multiply all terms by q³ to eliminate denominators
-                    long long val = a * x_p3 + b * x_p2 * q + c * p * q * q + d * x_q3;
+                    long long val = a_ll * x_p3 + b_ll * x_p2 * q + c_ll * p * q * q + d_ll * x_q3;
 
-                    if (val == 0) { // If this is a root
+                    if (val == 0) {
                         results.push_back(Divide(Real(static_cast<double>(num)), Real(static_cast<double>(den))).Copy());
                         found_roots.insert({ num, den });
                     }
+                }
+            }
+
+            if (results.size() == 3) {
+                return results;
+            }
+
+            else if (!results.empty()) {
+                if (results.size() == 1) {
+                    double root = 0;
+                    if (auto divExpr = RecursiveCast<Divide<Expression>>(*results[0]); divExpr != nullptr) {
+                        if (auto numReal = RecursiveCast<Real>(divExpr->GetMostSigOp()); numReal != nullptr) {
+                            if (auto denReal = RecursiveCast<Real>(divExpr->GetLeastSigOp()); denReal != nullptr) {
+                                root = numReal->GetValue() / denReal->GetValue();
+                            }
+                        }
+                    }
+
+                    // Synthetic division to get a quadratic polynomial
+                    double a2 = a_d;
+                    double b2 = b_d + a2 * root;
+                    double c2 = c_d + b2 * root;
+
+                    // Solve the quadratic equation a2x² + b2x + c2 = 0
+                    double discriminant = b2 * b2 - 4 * a2 * c2;
+
+                    if (discriminant >= 0) {
+                        double sqrtDisc = std::sqrt(discriminant);
+
+                        // Check if we get integer or simple fraction roots
+                        double root1 = (-b2 + sqrtDisc) / (2 * a2);
+                        double root2 = (-b2 - sqrtDisc) / (2 * a2);
+
+                        // Check if roots are integers
+                        if (std::floor(root1) == root1 && std::floor(root2) == root2) {
+                            results.push_back(Divide(Real(root1), Real(1)).Copy());
+                            results.push_back(Divide(Real(root2), Real(1)).Copy());
+                        } else {
+                            // Create symbolic expressions for the roots
+                            auto negB = std::make_unique<Real>(-b2);
+                            auto twoA = std::make_unique<Real>(2 * a2);
+                            auto discExpr = std::make_unique<Real>(discriminant);
+
+                            // Create √discriminant expression
+                            auto sqrtExpr = std::make_unique<Exponent<Expression, Expression>>(
+                                *discExpr,
+                                Divide(Real(1), Real(2)));
+
+                            // Create the first root expression: (-b + √discriminant)/(2a)
+                            auto rootPlus = std::make_unique<Divide<Expression>>(
+                                Add(*negB, *sqrtExpr),
+                                *twoA);
+
+                            // Create the second root expression: (-b - √discriminant)/(2a)
+                            auto rootMinus = std::make_unique<Divide<Expression>>(
+                                Subtract(*negB, *sqrtExpr),
+                                *twoA);
+
+                            results.push_back(std::move(rootPlus));
+                            results.push_back(std::move(rootMinus));
+                        }
+                    }
+                }
+                return results;
+            }
+
+            // First normalize the equation to the form x³ + px² + qx + r = 0
+            auto& a_expr = coefficents[3];
+            auto& b_expr = coefficents[2];
+            auto& c_expr = coefficents[1];
+            auto& d_expr = coefficents[0];
+
+            // Normalize by dividing by a
+            auto a_inv = Divide(Real(1), *a_expr).Copy();
+            auto p_expr = Multiply(*b_expr, *a_inv).Copy();
+            auto q_expr = Multiply(*c_expr, *a_inv).Copy();
+            auto r_expr = Multiply(*d_expr, *a_inv).Copy();
+
+            // Convert to depressed cubic t³ + pt + q = 0
+            // via substitution x = t - p/3
+
+            // Calculate p' = -p²/3 + q
+            auto p_squared = Multiply(*p_expr, *p_expr).Copy();
+            auto term1 = Multiply(Real(-1.0 / 3.0), *p_squared).Copy();
+            auto p_prime = Add(*term1, *q_expr).Copy();
+
+            // Calculate q' = 2p³/27 - pq/3 + r
+            auto p_cubed = Multiply(*p_expr, *p_squared).Copy();
+            auto term2 = Multiply(Real(2.0 / 27.0), *p_cubed).Copy();
+            auto pq = Multiply(*p_expr, *q_expr).Copy();
+            auto term3 = Multiply(Real(-1.0 / 3.0), *pq).Copy();
+            auto q_prime = Add(Add(*term2, *term3), *r_expr).Copy();
+
+            // Calculate the discriminant Δ = (q'/2)² + (p'/3)³
+            auto q_prime_half = Multiply(Real(0.5), *q_prime).Copy();
+            auto q_prime_half_squared = Multiply(*q_prime_half, *q_prime_half).Copy();
+
+            auto p_prime_third = Multiply(Real(1.0 / 3.0), *p_prime).Copy();
+            auto p_prime_third_cubed = Exponent(*p_prime_third, Real(3)).Copy();
+
+            auto discriminant = Add(*q_prime_half_squared, *p_prime_third_cubed).Copy();
+
+            if (auto discReal = RecursiveCast<Real>(*discriminant); discReal != nullptr) {
+                double disc_val = discReal->GetValue();
+
+                // Create the cubic root expressions for u and v
+                // u = ∛(-q'/2 + √Δ) and v = ∛(-q'/2 - √Δ)
+
+                auto neg_q_prime_half = Multiply(Real(-1), *q_prime_half).Copy();
+
+                if (disc_val > 0) {
+                    // Create the square root of discriminant expression
+                    auto sqrt_disc = Exponent(*discriminant, Divide(Real(1), Real(2))).Copy();
+
+                    // Create expressions for u and v
+                    auto u_arg = Add(*neg_q_prime_half, *sqrt_disc).Copy();
+                    auto v_arg = Subtract(*neg_q_prime_half, *sqrt_disc).Copy();
+
+                    auto u = Exponent(*u_arg, Divide(Real(1), Real(3))).Copy();
+                    auto v = Exponent(*v_arg, Divide(Real(1), Real(3))).Copy();
+
+                    // The real root is u + v - p/3
+                    auto uv = Add(*u, *v).Copy();
+                    auto p_third = Multiply(Real(1.0 / 3.0), *p_expr).Copy();
+                    auto root = Subtract(*uv, *p_third).Copy();
+
+                    results.push_back(std::move(root));
+                } else if (disc_val == 0) {
+
+                    // First root is 3(q'/p')
+                    auto three_q_p = Multiply(Real(3), Divide(*q_prime, *p_prime)).Copy();
+
+                    // Second/third root is -3(q'/2p')
+                    auto neg_three_q_2p = Multiply(Real(-3), Divide(*q_prime, Multiply(Real(2), *p_prime))).Copy();
+
+                    results.push_back(std::move(three_q_p));
+                    results.push_back(std::move(neg_three_q_2p));
+                    results.push_back(Divide(*neg_three_q_2p, Real(1)).Copy()); // Duplicate the repeated root
+                } else {
+                    // Trigonometric form
+                    // Let p'/3 = -a² (a real)
+                    // Let q'/2 = -a³cos(3θ)
+                    // Now the roots are: 2a·cos(θ), 2a·cos(θ+2π/3), 2a·cos(θ+4π/3)
+
+                    auto cubic_root1 = std::make_unique<Add<Expression>>(
+                        Multiply(Real(-1.0 / 3.0), *p_expr), // -p/3
+                        Exponent(*discriminant, Divide(Real(1), Real(3))) // ∛Δ
+                    );
+
+                    auto cubic_root2 = std::make_unique<Add<Expression>>(
+                        Multiply(Real(-1.0 / 3.0), *p_expr), // -p/3
+                        Multiply(
+                            Real(-0.5), // -1/2
+                            Exponent(*discriminant, Divide(Real(1), Real(3))) // ∛Δ
+                            ));
+
+                    auto cubic_root3 = std::make_unique<Add<Expression>>(
+                        Multiply(Real(-1.0 / 3.0), *p_expr), // -p/3
+                        Multiply(
+                            Real(-0.5), // -1/2
+                            Exponent(*discriminant, Divide(Real(1), Real(3))) // ∛Δ
+                            ));
+
+                    results.push_back(std::move(cubic_root1));
+                    results.push_back(std::move(cubic_root2));
+                    results.push_back(std::move(cubic_root3));
                 }
             }
         } else if (coefficents.size() == 5) { // Quartic equation ax⁴ + bx³ + cx² + dx + e = 0
