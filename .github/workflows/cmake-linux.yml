@@ -64,6 +64,7 @@ jobs:
                 -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
                 -DOASIS_BUILD_IO=ON
+                -DOASIS_BUILD_CLI=ON              
                 -DOASIS_BUILD_WITH_COVERAGE=${{ matrix.build_profiling == true && 'ON' || 'OFF'}}
                 -DOASIS_BUILD_PARANOID=ON
                 .

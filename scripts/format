@@ -16,7 +16,7 @@ minor=$(echo $version | cut -d'.' -f2)
 # Check if the version is 19.1 or newer
 if [[ "$major" -gt 19 ]] || ([[ "$major" -eq 19 ]] && [[ "$minor" -ge 1 ]]); then
   echo "✅ [INFO]: clang-format version is $major.$minor, running format..."
-  clang-format -i src/*.cpp include/Oasis/*.hpp io/src/**.cpp io/include/Oasis/*.hpp
+  clang-format -i src/*.cpp include/Oasis/*.hpp io/src/**.cpp io/include/Oasis/*.hpp cli/**.cpp
 else
   echo "❌ [ERROR]: clang-format version is $major.$minor. Version 19.1 or newer is required."
   exit 1

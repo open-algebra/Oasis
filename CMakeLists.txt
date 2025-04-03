@@ -69,14 +69,17 @@ if(OASIS_BUILD_TESTS)
 endif()
 
 if(OASIS_BUILD_CLI)
-    include(cmake/FetchLinenoise.cmake)
-
     FetchContent_Declare(
         fmt
         GIT_REPOSITORY https://github.com/fmtlib/fmt
         GIT_TAG 11.1.3)
 
-    FetchContent_MakeAvailable(fmt)
+    FetchContent_Declare(
+        Isocline
+        GIT_REPOSITORY https://github.com/daanx/isocline.git
+        GIT_TAG v1.0.9)
+
+    FetchContent_MakeAvailable(fmt Isocline)
 
     add_subdirectory(cli)
 endif()
