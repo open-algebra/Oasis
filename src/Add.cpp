@@ -17,6 +17,7 @@
 
 namespace Oasis {
 
+//Simplifies addition expression
 auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedAugend = mostSigOp ? mostSigOp->Simplify() : nullptr;
@@ -235,6 +236,7 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return simplifiedAdd.Copy();
 }
 
+//Perfroms integration on addition expression
 auto Add<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable
@@ -273,6 +275,7 @@ auto Add<Expression>::Integrate(const Expression& integrationVariable) const -> 
     return integral.Copy();
 }
 
+//Performs differentiation on addition expression
 auto Add<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
