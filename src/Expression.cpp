@@ -9,6 +9,8 @@
 #include <Oasis/Subtract.hpp>
 #include <Oasis/Variable.hpp>
 
+
+//Gets all factors for a given number n
 std::vector<long long> getAllFactors(long long n)
 {
     std::vector<long long> answer;
@@ -23,6 +25,7 @@ std::vector<long long> getAllFactors(long long n)
     return answer;
 }
 
+//returns the greatest common factor between 2 numbers a and b
 long long gcf(long long a, long long b)
 {
     if (b > a) {
@@ -60,10 +63,14 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
     std::string varName = "";
     std::vector<std::unique_ptr<Expression>> posCoefficents;
     std::vector<std::unique_ptr<Expression>> negCoefficents;
+    //loops through each term in the expression
     for (const auto& i : termsE) {
         std::unique_ptr<Expression> coefficent;
         std::string variableName;
         double exponent;
+
+
+        //tries to determine what type of expression the term i is
         if (auto variableCase = RecursiveCast<Variable>(*i); variableCase != nullptr) {
             coefficent = Real(1).Copy();
             variableName = variableCase->GetName();
