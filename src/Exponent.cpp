@@ -23,7 +23,7 @@ Exponent<Expression>::Exponent(const Expression& base, const Expression& power)
     : BinaryExpression(base, power)
 {
 }
-
+//Simplifies Expression with exponent
 auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     static constexpr auto match_cast = MatchCast<Expression>()
@@ -118,7 +118,7 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
     auto matchResult = match_cast.Execute(simplifiedExponent, nullptr).value();
     return matchResult ? std::move(matchResult) : std::move(simplifiedExponent.Copy());
 }
-
+//Integrates an expression with an exponent
 auto Exponent<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // variable integration
@@ -149,7 +149,7 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) cons
 
     return integral.Copy();
 }
-
+//Differentiates an expression with an exponent
 auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // variable diff
