@@ -23,7 +23,9 @@ Exponent<Expression>::Exponent(const Expression& base, const Expression& power)
     : BinaryExpression(base, power)
 {
 }
-//Simplifies Expression with exponent
+/**
+ *Simplifies Expression with exponent
+ */
 auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     static constexpr auto match_cast = MatchCast<Expression>()
@@ -118,15 +120,21 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
     auto matchResult = match_cast.Execute(simplifiedExponent, nullptr).value();
     return matchResult ? std::move(matchResult) : std::move(simplifiedExponent.Copy());
 }
-//Integrates an expression with an exponent
+/**
+ *Integrates an expression with an exponent
+ */
 auto Exponent<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
-    // variable integration
+    /**
+     *variable integration
+     */
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
         auto simplifiedExponent = this->Simplify();
 
         std::unique_ptr<Expression> integral;
-        // Variable with a constant power
+        /**
+         *Variable with a constant power
+         */
         if (auto realExponent = RecursiveCast<Exponent<Variable, Real>>(*simplifiedExponent); realExponent != nullptr) {
             const Variable& expBase = realExponent->GetMostSigOp();
             const Real& expPow = realExponent->GetLeastSigOp();
@@ -149,15 +157,21 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) cons
 
     return integral.Copy();
 }
-//Differentiates an expression with an exponent
+/**
+ *Differentiates an expression with an exponent
+ */
 auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
-    // variable diff
+    /**
+     *variable diff
+     */
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
         auto simplifiedExponent = this->Simplify();
 
         std::unique_ptr<Expression> diff;
-        // Variable with a constant power
+        /**
+         *Variable with a constant power
+         */
         if (auto realExponent = RecursiveCast<Exponent<Variable, Real>>(*simplifiedExponent); realExponent != nullptr) {
             const Variable& expBase = realExponent->GetMostSigOp();
             const Real& expPow = realExponent->GetLeastSigOp();

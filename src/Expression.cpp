@@ -63,14 +63,18 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
     std::string varName = "";
     std::vector<std::unique_ptr<Expression>> posCoefficents;
     std::vector<std::unique_ptr<Expression>> negCoefficents;
-    //loops through each term in the expression
+    /**
+     *loops through each term in the expression
+     */
     for (const auto& i : termsE) {
         std::unique_ptr<Expression> coefficent;
         std::string variableName;
         double exponent;
 
 
-        //tries to determine what type of expression the term i is
+        /**
+         *tries to determine what type of expression the term i is
+         */
         if (auto variableCase = RecursiveCast<Variable>(*i); variableCase != nullptr) {
             coefficent = Real(1).Copy();
             variableName = variableCase->GetName();
