@@ -48,6 +48,8 @@ latex
 # *.iml
 # *.ipr
 
+
+build
 # CMake
 cmake-build-*/
 
@@ -100,7 +102,8 @@ fabric.properties
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*

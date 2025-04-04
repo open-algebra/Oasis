@@ -28,6 +28,9 @@ auto Variable::GetName() const -> std::string
     return name;
 }
 
+/**
+ *Performs integration on variable
+ */
 auto Variable::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
@@ -42,8 +45,9 @@ auto Variable::Integrate(const Expression& integrationVariable) const -> std::un
             };
             return adder.Simplify();
         }
-
-        // Different variable, treat as constant
+        /**
+         *Different variable, treat as constant
+         */
         Add adder {
             Multiply { Variable { name }, Variable { (*variable).GetName() } },
             Variable { "C" }
@@ -55,7 +59,9 @@ auto Variable::Integrate(const Expression& integrationVariable) const -> std::un
 
     return integral.Copy();
 }
-
+/**
+ *Performs substitution on variable
+ */
 auto Variable::Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression>
 {
     auto varclone = RecursiveCast<Variable>(var);
@@ -67,18 +73,22 @@ auto Variable::Substitute(const Expression& var, const Expression& val) -> std::
     }
     return Copy();
 }
-
+/**
+ *Performs differentiation on variable
+ */
 auto Variable::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
-
-        // Power rule
+        /**
+         *Power rule
+         */
         if (name == (*variable).GetName()) {
             return std::make_unique<Real>(Real { 1.0f })
                 ->Simplify();
         }
-
-        // Different variable, treat as constant
+        /**
+         *Different variable, treat as constant
+         */
         return std::make_unique<Real>(Real { 0 })
             ->Simplify();
     }

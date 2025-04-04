@@ -18,7 +18,7 @@ Subtract<Expression>::Subtract(const Expression& minuend, const Expression& subt
     : BinaryExpression(minuend, subtrahend)
 {
 }
-
+//Simplifies subtraction expression
 auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     const auto simplifiedMinuend = mostSigOp ? mostSigOp->Simplify() : nullptr;
@@ -100,6 +100,7 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return Add { *simplifiedMinuend, negated }.Simplify();
 }
 
+//Perfroms Differentiation on subtraction expression
 auto Subtract<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // Single diff variable
@@ -132,6 +133,7 @@ auto Subtract<Expression>::Differentiate(const Expression& differentiationVariab
     return Copy();
 }
 
+//Perfroms integration on subtraction epxression
 auto Subtract<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable

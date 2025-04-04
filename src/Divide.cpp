@@ -22,6 +22,7 @@ Divide<Expression>::Divide(const Expression& dividend, const Expression& divisor
 {
 }
 
+//Simplifies a division expression
 auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedDividend = mostSigOp->Simplify(); // numerator
@@ -223,6 +224,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return Divide { *dividend, *divisor }.Copy();
 }
 
+//Performs integration on division expression
 auto Divide<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable
@@ -239,7 +241,7 @@ auto Divide<Expression>::Integrate(const Expression& integrationVariable) const 
 
     return integral.Copy();
 }
-
+//Performs Differentiation on division expression
 auto Divide<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // Single differentiation variable
