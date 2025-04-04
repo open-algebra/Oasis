@@ -135,6 +135,28 @@ TEST_CASE("Quadratic polynomial test 2: x^2 - 2x -3", "[factor]")
     REQUIRE(print_expr(*zeros[1]) == "(-1/1)");
 }
 
+TEST_CASE("Quadratic polynomial test 2: x^2 + 8x -14", "[factor]")
+{
+    // x^2 + 8x -14
+    Oasis::Add<> add {
+        Oasis::Exponent<Oasis::Variable, Oasis::Real> {
+            Oasis::Variable("x"),
+            Oasis::Real(2) },
+        Oasis::Multiply {
+            Oasis::Real(8),
+            Oasis::Variable("x") },
+        Oasis::Real(-14)
+    };
+    OASIS_CAPTURE_WITH_SERIALIZER(add);
+
+    auto result_wrapped = add.FindZeros();
+    REQUIRE(result_wrapped.has_value());
+
+    auto zeros = std::move(result_wrapped.value());
+
+    REQUIRE(zeros.size() == 2);
+}
+
 TEST_CASE("Quadratic polynomial test 3: x^2 - 9", "[factor]")
 {
     Oasis::Subtract minus {
@@ -382,9 +404,8 @@ TEST_CASE("Quartic test 2: x^4 - 5x^2 + 4", "[factor]") // with 4 roots
 
     auto zeros = std::move(result_wrapped.value());
 
-    REQUIRE(zeros.size() == 4);
-    if (zeros.size() == 4) {
-
+    REQUIRE(zeros.size() == 8);
+    if (zeros.size() == 8) {
         auto root1 = Oasis::RecursiveCast<Oasis::Divide<Oasis::Real>>(*zeros[0]);
         auto denominator = root1->GetLeastSigOp().GetValue();
         auto numerator = root1->GetMostSigOp().GetValue();

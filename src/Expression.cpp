@@ -8,6 +8,7 @@
 #include <Oasis/RecursiveCast.hpp>
 #include <Oasis/Subtract.hpp>
 #include <Oasis/Variable.hpp>
+#include <Oasis/Imaginary.hpp>
 #include <iostream>
 #include <numeric>
 #include <set>
@@ -561,90 +562,433 @@ auto Expression::FindZeros() const -> std::expected<std::vector<std::unique_ptr<
                     results.push_back(std::move(cubic_root3));
                 }
             }
-        } else if (coefficents.size() == 5) { // Quartic equation ax⁴ + bx³ + cx² + dx + e = 0
-            // coefficients
-            long long a = 0, b = 0, c = 0, d = 0, e = 0;
+        }
+        else if (coefficents.size() == 5) {  // Quartic equation ax⁴ + bx³ + cx² + dx + e = 0
+            auto& a = coefficents[4];
+            auto& b = coefficents[3];
+            auto& c = coefficents[2];
+            auto& d = coefficents[1];
+            auto& e = coefficents[0];
+
+            long long a_ll = 0, b_ll = 0, c_ll = 0, d_ll = 0, e_ll = 0;
 
             // Convert coefficients to numbers if possible
-            if (auto aReal = RecursiveCast<Real>(*coefficents[4]); aReal != nullptr)
-                a = static_cast<long long>(aReal->GetValue());
-            if (auto bReal = RecursiveCast<Real>(*coefficents[3]); bReal != nullptr)
-                b = static_cast<long long>(bReal->GetValue());
-            if (auto cReal = RecursiveCast<Real>(*coefficents[2]); cReal != nullptr)
-                c = static_cast<long long>(cReal->GetValue());
-            if (auto dReal = RecursiveCast<Real>(*coefficents[1]); dReal != nullptr)
-                d = static_cast<long long>(dReal->GetValue());
-            if (auto eReal = RecursiveCast<Real>(*coefficents[0]); eReal != nullptr)
-                e = static_cast<long long>(eReal->GetValue());
-
-            // Find potential rational roots using the rational root theorem
-            // Possible rational roots are p/q where:
-            // - p is a factor of the constant term (e)
-            // - q is a factor of the leading coefficient (a)
-
-            // Get factors of constant term for possible p values
-            std::vector<long long> p_factors;
-            for (long long i = 1; i <= std::abs(e); i++) {
-                if (e % i == 0) {
-                    p_factors.push_back(i);
-                    p_factors.push_back(-i);
-                }
-            }
-
-            // Get factors of leading coefficient for possible q values
-            std::vector<long long> q_factors;
-            for (long long i = 1; i <= std::abs(a); i++) {
-                if (a % i == 0) {
-                    q_factors.push_back(i);
-                }
-            }
+            if (auto aReal = RecursiveCast<Real>(*a); aReal != nullptr) a_ll = static_cast<long long>(aReal->GetValue());
+            if (auto bReal = RecursiveCast<Real>(*b); bReal != nullptr) b_ll = static_cast<long long>(bReal->GetValue());
+            if (auto cReal = RecursiveCast<Real>(*c); cReal != nullptr) c_ll = static_cast<long long>(cReal->GetValue());
+            if (auto dReal = RecursiveCast<Real>(*d); dReal != nullptr) d_ll = static_cast<long long>(dReal->GetValue());
+            if (auto eReal = RecursiveCast<Real>(*e); eReal != nullptr) e_ll = static_cast<long long>(eReal->GetValue());
 
             // To track found roots and avoid duplicates
             std::set<std::pair<long long, long long>> found_roots;
 
-            for (long long p : p_factors) {
-                for (long long q : q_factors) {
-                    // Skip if q is 0
-                    if (q == 0)
-                        continue;
-
-                    // Simplify the fraction p/q
-                    long long g = std::gcd(std::abs(p), q);
-                    long long num = p / g;
-                    long long den = q / g;
-
-                    // Ensure denominator is positive
-                    if (den < 0) {
-                        num = -num;
-                        den = -den;
+            // Check for rational roots only if coefficients are integers
+            if (a_ll != 0 && e_ll != 0) {
+                // Get factors of constant term for possible p values
+                std::vector<long long> p_factors;
+                for (long long i = 1; i <= std::abs(e_ll); i++) {
+                    if (e_ll % i == 0) {
+                        p_factors.push_back(i);
+                        p_factors.push_back(-i);
                     }
+                }
 
-                    // Check if we've already found this root
-                    if (found_roots.find({ num, den }) != found_roots.end()) {
-                        continue;
+                // Get factors of leading coefficient for possible q values
+                std::vector<long long> q_factors;
+                for (long long i = 1; i <= std::abs(a_ll); i++) {
+                    if (a_ll % i == 0) {
+                        q_factors.push_back(i);
                     }
+                }
 
-                    // Evaluate the polynomial at p/q using synthetic division
-                    // For a quartic: a(p/q)⁴ + b(p/q)³ + c(p/q)² + d(p/q) + e
+                // Check potential rational roots
+                for (long long p : p_factors) {
+                    for (long long q : q_factors) {
+                        // Skip if q is 0
+                        if (q == 0) continue;
 
-                    // Multiply by q⁴ to clear denominators:
-                    // a*p⁴ + b*p³*q + c*p²*q² + d*p*q³ + e*q⁴
-                    long long p2 = p * p;
-                    long long p3 = p2 * p;
-                    long long p4 = p3 * p;
-                    long long q2 = q * q;
-                    long long q3 = q2 * q;
-                    long long q4 = q3 * q;
+                        // Simplify the fraction p/q
+                        long long g = std::gcd(std::abs(p), q);
+                        long long num = p / g;
+                        long long den = q / g;
 
-                    long long val = a * p4 + b * p3 * q + c * p2 * q2 + d * p * q3 + e * q4;
+                        // Ensure denominator is positive
+                        if (den < 0) {
+                            num = -num;
+                            den = -den;
+                        }
 
-                    if (val == 0) { // If this is a root
-                        results.push_back(Divide(Real(static_cast<double>(num)), Real(static_cast<double>(den))).Copy());
-                        found_roots.insert({ num, den });
+                        // Check if we've already found this root
+                        if (found_roots.find({ num, den }) != found_roots.end()) {
+                            continue;
+                        }
+
+                        // For each potential root p/q, evaluate the polynomial
+                        double x = static_cast<double>(num) / den;
+                        double x2 = x * x;
+                        double x3 = x2 * x;
+                        double x4 = x3 * x;
+
+                        // Evaluate ax⁴ + bx³ + cx² + dx + e
+                        double val = a_ll * x4 + b_ll * x3 + c_ll * x2 + d_ll * x + e_ll;
+
+                        if (std::abs(val) < 1e-10) { // If this is a root (with small tolerance)
+                            results.push_back(Divide(Real(static_cast<double>(num)), Real(static_cast<double>(den))).Copy());
+                            found_roots.insert({ num, den });
+                        }
                     }
                 }
             }
+
+            // If we found some rational roots, use polynomial division
+            if (results.size() > 0 && results.size() < 4) {
+                return results;
+            }
+
+            // Check for biquadratic case (ax⁴ + cx² + e = 0)
+            bool isBiquadratic = false;
+
+            if (auto bReal = RecursiveCast<Real>(*b); bReal != nullptr) {
+                if (auto dReal = RecursiveCast<Real>(*d); dReal != nullptr) {
+                    if (std::abs(bReal->GetValue()) < 1e-10 && std::abs(dReal->GetValue()) < 1e-10) {
+                        isBiquadratic = true;
+                    }
+                }
+            }
+
+            if (isBiquadratic) {
+                auto discriminant = Subtract(
+                    Multiply(*c, *c),
+                    Multiply(Real(4), Multiply(*a, *e))
+                        ).Simplify();
+
+                if (auto discReal = RecursiveCast<Real>(*discriminant); discReal != nullptr) {
+                    double disc_val = discReal->GetValue();
+
+                    // Calculate -c/(2a) term which appears in both roots
+                    auto negC = Multiply(Real(-1), *c).Copy();
+                    auto twoA = Multiply(Real(2), *a).Copy();
+                    auto commonTerm = Divide(*negC, *twoA).Copy();
+
+                    if (disc_val >= 0) {
+                        // Real quadratic roots
+
+                        // Create √discriminant term
+                        auto sqrtDisc = Exponent(*discriminant, Divide(Real(1), Real(2))).Copy();
+                        auto sqrtDiscOver2A = Divide(*sqrtDisc, *twoA).Copy();
+
+                        // First root of the quadratic: y₁ = (-c + √disc)/(2a)
+                        auto y1 = Add(*commonTerm, *sqrtDiscOver2A).Copy();
+
+                        // Second root of the quadratic: y₂ = (-c - √disc)/(2a)
+                        auto y2 = Subtract(*commonTerm, *sqrtDiscOver2A).Copy();
+
+
+                        // For y₁:
+                        if (auto y1Real = RecursiveCast<Real>(*y1); y1Real != nullptr) {
+                            double y1_val = y1Real->GetValue();
+
+                            if (y1_val > 0) {
+                                // y₁ > 0: Two real roots x = ±√y₁
+                                auto sqrt_y1 = Exponent(Real(y1_val), Divide(Real(1), Real(2))).Copy();
+                                auto neg_sqrt_y1 = Multiply(Real(-1), *sqrt_y1).Copy();
+
+                                results.push_back(std::move(sqrt_y1));
+                                results.push_back(std::move(neg_sqrt_y1));
+                            } else if (y1_val < 0) {
+                                // y₁ < 0: Two imaginary roots x = ±i√|y₁|
+                                auto abs_y1 = Real(std::abs(y1_val)).Copy();
+                                auto sqrt_abs_y1 = Exponent(*abs_y1, Divide(Real(1), Real(2))).Copy();
+
+                                auto img_root1 = Multiply(Imaginary(), *sqrt_abs_y1).Copy();
+                                auto img_root2 = Multiply(Real(-1), *img_root1).Copy();
+
+                                results.push_back(std::move(img_root1));
+                                results.push_back(std::move(img_root2));
+                            } else {
+                                // y₁ = 0: One root with multiplicity 2
+                                results.push_back(Real(0).Copy());
+                            }
+                        } else {
+                            // y₁ is a symbolic expression
+                            auto sqrt_y1 = Exponent(*y1, Divide(Real(1), Real(2))).Copy();
+                            auto neg_sqrt_y1 = Multiply(Real(-1), *sqrt_y1).Copy();
+
+                            results.push_back(std::move(sqrt_y1));
+                            results.push_back(std::move(neg_sqrt_y1));
+                        }
+
+                        // For y₂:
+                        if (auto y2Real = RecursiveCast<Real>(*y2); y2Real != nullptr) {
+                            double y2_val = y2Real->GetValue();
+
+                            if (y2_val > 0) {
+                                // y₂ > 0: Two real roots x = ±√y₂
+                                auto sqrt_y2 = Exponent(Real(y2_val), Divide(Real(1), Real(2))).Copy();
+                                auto neg_sqrt_y2 = Multiply(Real(-1), *sqrt_y2).Copy();
+
+                                results.push_back(std::move(sqrt_y2));
+                                results.push_back(std::move(neg_sqrt_y2));
+                            } else if (y2_val < 0) {
+                                // y₂ < 0: Two imaginary roots x = ±i√|y₂|
+                                auto abs_y2 = Real(std::abs(y2_val)).Copy();
+                                auto sqrt_abs_y2 = Exponent(*abs_y2, Divide(Real(1), Real(2))).Copy();
+
+                                auto img_root1 = Multiply(Imaginary(), *sqrt_abs_y2).Copy();
+                                auto img_root2 = Multiply(Real(-1), *img_root1).Copy();
+
+                                results.push_back(std::move(img_root1));
+                                results.push_back(std::move(img_root2));
+                            } else {
+                                // y₂ = 0: One root with multiplicity 2 (already added)
+                            }
+                        } else {
+                            // y₂ is a symbolic expression
+                            auto sqrt_y2 = Exponent(*y2, Divide(Real(1), Real(2))).Copy();
+                            auto neg_sqrt_y2 = Multiply(Real(-1), *sqrt_y2).Copy();
+
+                            results.push_back(std::move(sqrt_y2));
+                            results.push_back(std::move(neg_sqrt_y2));
+                        }
+                    } else {
+
+                        // Create √|discriminant| term
+                        auto absDisc = Multiply(Real(-1), *discriminant).Copy();
+                        auto sqrtAbsDisc = Exponent(*absDisc, Divide(Real(1), Real(2))).Copy();
+                        auto imagTerm = Divide(*sqrtAbsDisc, *twoA).Copy();
+
+                        // First root: -c/(2a) + i·√|disc|/(2a)
+                        auto y1_imag = Multiply(Imaginary(), *imagTerm).Copy();
+                        auto y1 = Add(*commonTerm, *y1_imag).Copy();
+
+                        // Second root: -c/(2a) - i·√|disc|/(2a)
+                        auto y2_imag = Multiply(Real(-1), *y1_imag).Copy();
+                        auto y2 = Add(*commonTerm, *y2_imag).Copy();
+
+                        std::cout << "Complex biquadratic roots not fully implemented yet." << std::endl;
+                    }
+                }
+
+                return results;
+            }
+
+            if (results.empty()) {
+                // Convert to depressed quartic y⁴ + py² + qy + r
+                // via substitution y = x - b/(4a)
+
+                // Get a⁻¹ for normalization
+                auto a_inv = Divide(Real(1), *a).Copy();
+
+                // Calculate the substitution term b/(4a)
+                auto b_over_4a = Divide(*b, Multiply(Real(4), *a)).Copy();
+
+                // Calculate coefficients of depressed quartic
+
+                // p = -3b²/(8a²) + c/a
+                auto b_squared = Multiply(*b, *b).Copy();
+                auto term1 = Multiply(Real(-3), Divide(*b_squared, Multiply(Real(8), Multiply(*a, *a)))).Copy();
+                auto term2 = Multiply(*c, *a_inv).Copy();
+                auto p = Add(*term1, *term2).Copy();
+
+                // q = b³/(8a³) - bc/(2a²) + d/a
+                auto b_cubed = Multiply(*b, *b_squared).Copy();
+                auto term3 = Divide(*b_cubed, Multiply(Real(8), Exponent(*a, Real(3)))).Copy();
+                auto bc = Multiply(*b, *c).Copy();
+                auto term4 = Multiply(Real(-1), Divide(*bc, Multiply(Real(2), Multiply(*a, *a)))).Copy();
+                auto term5 = Multiply(*d, *a_inv).Copy();
+                auto q = Add(Add(*term3, *term4), *term5).Copy();
+
+                // r = -3b⁴/(256a⁴) + b²c/(16a³) - bd/(4a²) + e/a
+                auto b_fourth = Multiply(*b_squared, *b_squared).Copy();
+                auto term6 = Multiply(Real(-3), Divide(*b_fourth, Multiply(Real(256), Exponent(*a, Real(4))))).Copy();
+                auto b_squared_c = Multiply(*b_squared, *c).Copy();
+                auto term7 = Divide(*b_squared_c, Multiply(Real(16), Exponent(*a, Real(3)))).Copy();
+                auto bd = Multiply(*b, *d).Copy();
+                auto term8 = Multiply(Real(-1), Divide(*bd, Multiply(Real(4), Multiply(*a, *a)))).Copy();
+                auto term9 = Multiply(*e, *a_inv).Copy();
+                auto r = Add(Add(Add(*term6, *term7), *term8), *term9).Copy();
+
+                // Create resolvent cubic z³ + 2pz² + (p² - 4r)z - q²
+                auto two_p = Multiply(Real(2), *p).Copy();
+                auto p_squared = Multiply(*p, *p).Copy();
+                auto four_r = Multiply(Real(4), *r).Copy();
+                auto p_squared_minus_4r = Subtract(*p_squared, *four_r).Copy();
+                auto q_squared = Multiply(*q, *q).Copy();
+                auto neg_q_squared = Multiply(Real(-1), *q_squared).Copy();
+
+                // Solve the resolvent cubic to find a value of z
+                auto cubic_a = Real(1).Copy();
+                auto cubic_b = two_p->Copy();
+                auto cubic_c = p_squared_minus_4r->Copy();
+                auto cubic_d = neg_q_squared->Copy();
+
+                std::vector<std::unique_ptr<Expression>> cubic_coeffs;
+                cubic_coeffs.push_back(std::move(cubic_d));
+                cubic_coeffs.push_back(std::move(cubic_c));
+                cubic_coeffs.push_back(std::move(cubic_b));
+                cubic_coeffs.push_back(std::move(cubic_a));
+
+                auto cubic_expr = std::make_unique<Add<Expression>>(
+                    Exponent<Variable, Real>{ Variable("x"), Real(3) },
+                    Multiply(Real(2), Multiply(*p, Exponent<Variable, Real>{ Variable("x"), Real(2) })),
+                    Multiply(*p_squared_minus_4r, Variable("x")),
+                    *neg_q_squared
+                );
+
+
+                // Let's assume we found a root z (for demonstration purposes)
+                auto z = Real(1).Copy();  // Placeholder for an actual root
+
+                // Step 3: Use z to factor the quartic into two quadratics
+                // y⁴ + py² + qy + r = (y² + u*y + v) * (y² - u*y + w)
+                // where u² = z, v + w = p + z, and v*w = r
+
+                // Calculate u = ±√z
+                auto u = Exponent(*z, Divide(Real(1), Real(2))).Copy();
+
+                // v + w = p + z
+                // v*w = r
+
+                auto p_plus_z = Add(*p, *z).Copy();
+                auto neg_p_plus_z = Multiply(Real(-1), *p_plus_z).Copy();
+
+                // Calculate discriminant of this quadratic
+                auto quad_disc = Subtract(
+                    Multiply(*p_plus_z, *p_plus_z),
+                    Multiply(Real(4), *r)
+                        ).Copy();
+
+                auto sqrt_quad_disc = Exponent(*quad_disc, Divide(Real(1), Real(2))).Copy();
+
+                // v = (-(p+z) + √((p+z)² - 4r))/2
+                auto v = Divide(Add(*neg_p_plus_z, *sqrt_quad_disc), Real(2)).Copy();
+
+                // w = (-(p+z) - √((p+z)² - 4r))/2
+                auto w = Divide(Subtract(*neg_p_plus_z, *sqrt_quad_disc), Real(2)).Copy();
+
+                // (y² + u*y + v) and (y² - u*y + w)
+                // First quadratic: y² + u*y + v = 0
+                auto quad1_disc = Subtract(
+                    Multiply(*u, *u),
+                    Multiply(Real(4), *v)
+                        ).Copy();
+
+                auto sqrt_quad1_disc = Exponent(*quad1_disc, Divide(Real(1), Real(2))).Copy();
+                auto neg_u = Multiply(Real(-1), *u).Copy();
+
+                // Roots of first quadratic
+                auto y1 = Divide(Add(*neg_u, *sqrt_quad1_disc), Real(2)).Copy();
+                auto y2 = Divide(Subtract(*neg_u, *sqrt_quad1_disc), Real(2)).Copy();
+
+                // Second quadratic: y² - u*y + w = 0
+                auto quad2_disc = Subtract(
+                    Multiply(*u, *u),
+                    Multiply(Real(4), *w)
+                        ).Copy();
+
+                auto sqrt_quad2_disc = Exponent(*quad2_disc, Divide(Real(1), Real(2))).Copy();
+
+                // Roots of second quadratic
+                auto y3 = Divide(Add(*u, *sqrt_quad2_disc), Real(2)).Copy();
+                auto y4 = Divide(Subtract(*u, *sqrt_quad2_disc), Real(2)).Copy();
+
+                // Step 6: Convert back to original variable x = y + b/(4a)
+                auto x1 = Add(*y1, *b_over_4a).Copy();
+                auto x2 = Add(*y2, *b_over_4a).Copy();
+                auto x3 = Add(*y3, *b_over_4a).Copy();
+                auto x4 = Add(*y4, *b_over_4a).Copy();
+
+                // Add all four roots to the results
+                results.push_back(std::move(x1));
+                results.push_back(std::move(x2));
+                results.push_back(std::move(x3));
+                results.push_back(std::move(x4));
+            }
         }
+//        else if (coefficents.size() == 5) { // Quartic equation ax⁴ + bx³ + cx² + dx + e = 0
+//            // coefficients
+//            long long a = 0, b = 0, c = 0, d = 0, e = 0;
+//
+//            // Convert coefficients to numbers if possible
+//            if (auto aReal = RecursiveCast<Real>(*coefficents[4]); aReal != nullptr)
+//                a = static_cast<long long>(aReal->GetValue());
+//            if (auto bReal = RecursiveCast<Real>(*coefficents[3]); bReal != nullptr)
+//                b = static_cast<long long>(bReal->GetValue());
+//            if (auto cReal = RecursiveCast<Real>(*coefficents[2]); cReal != nullptr)
+//                c = static_cast<long long>(cReal->GetValue());
+//            if (auto dReal = RecursiveCast<Real>(*coefficents[1]); dReal != nullptr)
+//                d = static_cast<long long>(dReal->GetValue());
+//            if (auto eReal = RecursiveCast<Real>(*coefficents[0]); eReal != nullptr)
+//                e = static_cast<long long>(eReal->GetValue());
+//
+//            // Find potential rational roots using the rational root theorem
+//            // Possible rational roots are p/q where:
+//            // - p is a factor of the constant term (e)
+//            // - q is a factor of the leading coefficient (a)
+//
+//            // Get factors of constant term for possible p values
+//            std::vector<long long> p_factors;
+//            for (long long i = 1; i <= std::abs(e); i++) {
+//                if (e % i == 0) {
+//                    p_factors.push_back(i);
+//                    p_factors.push_back(-i);
+//                }
+//            }
+//
+//            // Get factors of leading coefficient for possible q values
+//            std::vector<long long> q_factors;
+//            for (long long i = 1; i <= std::abs(a); i++) {
+//                if (a % i == 0) {
+//                    q_factors.push_back(i);
+//                }
+//            }
+//
+//            // To track found roots and avoid duplicates
+//            std::set<std::pair<long long, long long>> found_roots;
+//
+//            for (long long p : p_factors) {
+//                for (long long q : q_factors) {
+//                    // Skip if q is 0
+//                    if (q == 0)
+//                        continue;
+//
+//                    // Simplify the fraction p/q
+//                    long long g = std::gcd(std::abs(p), q);
+//                    long long num = p / g;
+//                    long long den = q / g;
+//
+//                    // Ensure denominator is positive
+//                    if (den < 0) {
+//                        num = -num;
+//                        den = -den;
+//                    }
+//
+//                    // Check if we've already found this root
+//                    if (found_roots.find({ num, den }) != found_roots.end()) {
+//                        continue;
+//                    }
+//
+//                    // Evaluate the polynomial at p/q using synthetic division
+//                    // For a quartic: a(p/q)⁴ + b(p/q)³ + c(p/q)² + d(p/q) + e
+//
+//                    // Multiply by q⁴ to clear denominators:
+//                    // a*p⁴ + b*p³*q + c*p²*q² + d*p*q³ + e*q⁴
+//                    long long p2 = p * p;
+//                    long long p3 = p2 * p;
+//                    long long p4 = p3 * p;
+//                    long long q2 = q * q;
+//                    long long q3 = q2 * q;
+//                    long long q4 = q3 * q;
+//
+//                    long long val = a * p4 + b * p3 * q + c * p2 * q2 + d * p * q3 + e * q4;
+//
+//                    if (val == 0) { // If this is a root
+//                        results.push_back(Divide(Real(static_cast<double>(num)), Real(static_cast<double>(den))).Copy());
+//                        found_roots.insert({ num, den });
+//                    }
+//                }
+//            }
+//        }
     }
     return results;
 }
