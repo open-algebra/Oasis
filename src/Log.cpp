@@ -71,8 +71,8 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     // log[a](a) = 1
     if (const auto sameCase = RecursiveCast<Log<Expression, Expression>>(simplifiedLog); sameCase != nullptr) {
-        if(sameCase->leastSigOp->Equals(*sameCase->mostSigOp)) {
-            return Real {1}.Generalize();
+        if (sameCase->leastSigOp->Equals(*sameCase->mostSigOp)) {
+            return Real { 1 }.Generalize();
         }
     }
 
@@ -93,23 +93,40 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
     if (this->mostSigOp->Equals(EulerNumber {})) {
         // ln(x)
         if (leastSigOp->Is<Variable>() && RecursiveCast<Variable>(*leastSigOp)->Equals(integrationVariable)) {
-            return Subtract<Expression> { Multiply<Expression> { integrationVariable, *this }, integrationVariable }.Simplify();
+            return Multiply { integrationVariable, Subtract { *this, Real { 1 } } }.Simplify();
+            //alternate form
+            //return Subtract<Expression> { Multiply<Expression> { integrationVariable, *this }, integrationVariable }.Simplify();
+        }
+        auto derivative = Derivative<Expression> { *leastSigOp, integrationVariable }.Simplify();
+
+        if (derivative->Equals(Real { 0 }))
+            return Add { Multiply { integrationVariable, *this }, Variable { "C" } }.Simplify();
+        // ln(ax + b)
+        if (derivative->Is<Real>()) {
+            return Divide<Expression> { Multiply { *leastSigOp, Subtract { *this, Real { 1 } } }, *derivative }.Simplify();
         }
         if (auto multiplyCase = RecursiveCast<Multiply<Expression>>(*leastSigOp); multiplyCase != nullptr) {
-            if (multiplyCase->GetLeastSigOp().Equals(integrationVariable)) {
-                return Subtract<Expression> { Multiply<Expression> { integrationVariable, *this }, integrationVariable }.Simplify();
-            } else {
-                //Only works if the argument is constant
-                return Add {Multiply<Expression> { integrationVariable, *this }, Variable {"C"} }.Simplify();
-            }
+            // Use Log identity log(a*b) = log(a) + log(b)
+            return Add { Integral { Log { EulerNumber {}, multiplyCase->GetMostSigOp() }, integrationVariable },
+                Integral { Log { EulerNumber {}, multiplyCase->GetLeastSigOp() }, integrationVariable } }
+                .Simplify();
         }
+
+        if (auto divideCase = RecursiveCast<Divide<Expression>>(*leastSigOp); divideCase != nullptr) {
+            return Subtract { Integral { Log { EulerNumber {}, divideCase->GetMostSigOp() }, integrationVariable },
+                Integral { Log { EulerNumber {}, divideCase->GetLeastSigOp() }, integrationVariable } }
+                .Simplify();
+        }
+
     } else {
         auto numer = Log<Expression> { EulerNumber {}, *(this->leastSigOp->Generalize()) };
         auto denom = Log<Expression> { EulerNumber {}, *(this->mostSigOp->Generalize()) };
         if (numer.Equals(denom))
-            return Add {integrationVariable, Variable {"C"} }.Generalize();
-        //Only works if logaritm base is a constant
-        return Add {Divide { Integral { numer, integrationVariable }, denom }, Variable {"C"} }.Simplify();
+            return Add { integrationVariable, Variable { "C" } }.Generalize();
+
+        // Only works if logaritm base is a constant
+        if (Derivative { denom, integrationVariable }.Simplify()->Equals(Real { 0 }))
+            return Divide { Integral { numer, integrationVariable }, denom }.Simplify();
     }
 
     return Integral<Expression> { *this, integrationVariable }.Generalize();
@@ -130,11 +147,10 @@ auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVari
             Derivative chain { *leastSigOp, differentiationVariable };
             Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(differentiationVariable) };
             return result.Simplify();
-        }
-        else {//Use log identity and Quotient rule
-            Divide result{Subtract{Multiply{Log{EulerNumber{}, *mostSigOp}, Derivative{Log { EulerNumber{}, *leastSigOp},differentiationVariable} },
-                    Multiply {Log { EulerNumber{}, *leastSigOp}, Derivative{Log { EulerNumber{}, *mostSigOp},differentiationVariable} }},
-                Exponent {Log{EulerNumber{}, *mostSigOp}, Real{2}} };
+        } else { // Use log identity and Quotient rule
+            Divide result { Subtract { Multiply { Log { EulerNumber {}, *mostSigOp }, Derivative { Log { EulerNumber {}, *leastSigOp }, differentiationVariable } },
+                                Multiply { Log { EulerNumber {}, *leastSigOp }, Derivative { Log { EulerNumber {}, *mostSigOp }, differentiationVariable } } },
+                Exponent { Log { EulerNumber {}, *mostSigOp }, Real { 2 } } };
             return result.Simplify();
         }
     }
