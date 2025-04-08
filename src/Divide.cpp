@@ -34,17 +34,17 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return std::make_unique<Real>(dividend.GetValue() / divisor.GetValue());
     }
 
-    //Complex Fractions
-    if (auto compCase = RecursiveCast<Divide<Divide,Expression>>(simplifiedDivide)) {
+    // Complex Fractions
+    if (auto compCase = RecursiveCast<Divide<Divide, Expression>>(simplifiedDivide)) {
         const Expression& dividend = compCase->GetMostSigOp().GetMostSigOp();
-        const Expression& divisor = Multiply {compCase->GetMostSigOp().GetLeastSigOp(), compCase->GetLeastSigOp()};
-        return std::make_unique<Divide<Expression,Expression>>(dividend, divisor)->Simplify();
+        const Expression& divisor = Multiply { compCase->GetMostSigOp().GetLeastSigOp(), compCase->GetLeastSigOp() };
+        return std::make_unique<Divide<Expression, Expression>>(dividend, divisor)->Simplify();
     }
 
-    if (auto compCase2 = RecursiveCast<Divide<Expression,Divide>>(simplifiedDivide)) {
-        const Expression& dividend = Multiply {compCase2->GetLeastSigOp().GetLeastSigOp(), compCase2->GetMostSigOp()};
+    if (auto compCase2 = RecursiveCast<Divide<Expression, Divide>>(simplifiedDivide)) {
+        const Expression& dividend = Multiply { compCase2->GetLeastSigOp().GetLeastSigOp(), compCase2->GetMostSigOp() };
         const Expression& divisor = compCase2->GetLeastSigOp().GetMostSigOp();
-        return std::make_unique<Divide<Expression,Expression>>(dividend, divisor)->Simplify();
+        return std::make_unique<Divide<Expression, Expression>>(dividend, divisor)->Simplify();
     }
 
     // log(a)/log(b)=log[b](a)
