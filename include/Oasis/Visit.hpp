@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 4/28/24.
-//
+/**
+ * Created by Matthew McCall on 4/28/24.
+ */
 
 #ifndef OASIS_SERIALIZATION_HPP
 #define OASIS_SERIALIZATION_HPP

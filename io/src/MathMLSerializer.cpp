@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 4/28/24.
-//
+/**
+ * Created by Matthew McCall on 4/28/24.
+ */
 
 #include <format>
 
@@ -114,13 +114,17 @@ auto MathMLSerializer::TypedVisit(const Add<>& add) -> RetT
         const auto opElement = op->Accept(*this).value();
 
         mrow->InsertEndChild(opElement);
-        // add + mo
+        /**
+         * add + mo
+         */
         tinyxml2::XMLElement* mo = doc.NewElement("mo");
         mo->SetText("+");
         mrow->InsertEndChild(mo);
     }
 
-    // remove last mo
+    /**
+     * remove last mo
+     */
     mrow->DeleteChild(mrow->LastChild());
     return mrow;
 }
@@ -128,7 +132,9 @@ auto MathMLSerializer::TypedVisit(const Add<>& add) -> RetT
 auto MathMLSerializer::TypedVisit(const Subtract<>& subtract) -> RetT
 {
     return GetOpsAsMathMLPair(subtract).transform([this, subtract](const auto& ops) {
-        // mrow
+        /**
+         * mrow
+         */
         tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
         auto [minuendElement, subtrahendElement] = ops;
 
@@ -144,7 +150,9 @@ auto MathMLSerializer::TypedVisit(const Subtract<>& subtract) -> RetT
             }
         }
 
-        // mo
+        /**
+         * mo
+         */
         tinyxml2::XMLElement* const mo = doc.NewElement("mo");
         mo->SetText("-");
         mrow->InsertEndChild(mo);
@@ -312,15 +320,21 @@ auto MathMLSerializer::TypedVisit(const Log<>& log) -> RetT
 
 auto MathMLSerializer::TypedVisit(const Negate<Expression>& negate) -> RetT
 {
-    // mrow
+    /**
+     * mrow
+     */
     tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
 
-    // mo
+    /**
+     * mo
+     */
     tinyxml2::XMLElement* const mo = doc.NewElement("mo");
     mo->SetText("-");
     mrow->InsertEndChild(mo);
 
-    // (
+    /** 
+     * (
+     */
     tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
     leftParen->SetText("(");
     mrow->InsertEndChild(leftParen);
@@ -328,7 +342,9 @@ auto MathMLSerializer::TypedVisit(const Negate<Expression>& negate) -> RetT
     const auto operandElement = negate.GetOperand().Accept(*this).value();
     mrow->InsertEndChild(operandElement);
 
-    // )
+    /**
+     * )
+     */
     tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
     rightParen->SetText(")");
     mrow->InsertEndChild(rightParen);
@@ -360,11 +376,15 @@ auto MathMLSerializer::TypedVisit(const Derivative<>& derivative) -> RetT
 
         mrow->InsertEndChild(mfrac);
 
-        // (
+        /**
+         *  (
+         */
         tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
         leftParen->SetText("(");
 
-        // )
+        /**
+         * )
+         */
         tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
         rightParen->SetText(")");
 
@@ -381,7 +401,9 @@ auto MathMLSerializer::TypedVisit(const Integral<>& integral) -> RetT
     return GetOpsAsMathMLPair(integral).transform([this, integral](const auto& ops) {
         tinyxml2::XMLElement* mrow = doc.NewElement("mrow");
 
-        // Integral symbol
+        /**
+         * Integral symbol
+         */
         tinyxml2::XMLElement* inte = doc.NewElement("mo");
         inte->SetText(u8"\u222B");
 
@@ -390,7 +412,9 @@ auto MathMLSerializer::TypedVisit(const Integral<>& integral) -> RetT
 
         auto [expElement, varElement] = ops;
 
-        // d variable
+        /**
+         * d variable
+         */
         tinyxml2::XMLElement* dVar = doc.NewElement("mrow");
         dVar->InsertEndChild(dNode);
         dVar->InsertEndChild(varElement);
@@ -410,10 +434,14 @@ tinyxml2::XMLDocument& MathMLSerializer::GetDocument() const
 
 auto MathMLSerializer::TypedVisit(const Magnitude<Expression>& magnitude) -> RetT
 {
-    // mrow
+    /** 
+     * mrow
+     */
     tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
 
-    // (
+    /**
+     * (
+     */
     tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
     leftParen->SetText("|");
     mrow->InsertEndChild(leftParen);
@@ -421,7 +449,9 @@ auto MathMLSerializer::TypedVisit(const Magnitude<Expression>& magnitude) -> Ret
     const auto operandElement = magnitude.GetOperand().Accept(*this).value();
     mrow->InsertEndChild(operandElement);
 
-    // )
+    /**
+     * )
+     */
     tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
     rightParen->SetText("|");
     mrow->InsertEndChild(rightParen);
