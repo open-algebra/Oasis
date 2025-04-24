@@ -1,6 +1,6 @@
-//
-// Created by Andrew Nazareth on 5/24/24.
-//
+/**
+ *Created by Andrew Nazareth on 5/24/24.
+ */
 #include "Oasis/Matrix.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Real.hpp"
@@ -31,7 +31,9 @@ Matrix::Matrix(size_t numRows, size_t numCols, std::vector<double>& vals)
     }
 }
 
-// TO DO: Fix?
+/**
+ * TO DO: Fix?
+ */
 auto Matrix::Differentiate(const Expression&) const -> std::unique_ptr<Expression>
 {
     return std::make_unique<Real>(0);
@@ -69,7 +71,9 @@ auto Matrix::Inverse() const -> std::unique_ptr<Matrix>
     return std::make_unique<Matrix>(matrix.inverse());
 }
 
-// TO DO: Fix?
+/**
+ * TO DO: Fix?
+ */
 auto Matrix::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };

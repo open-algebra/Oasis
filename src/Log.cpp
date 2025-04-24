@@ -1,7 +1,7 @@
-//
-// Created by Matthew McCall on 10/6/23.
-// Modified by Blake Kessler on 10/10/23
-//
+/**
+ * Created by Matthew McCall on 10/6/23.
+ * Modified by Blake Kessler on 10/10/23
+ */
 
 #include <cmath>
 
@@ -62,14 +62,18 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
         return std::make_unique<Real>(log2(argument.GetValue()) * (1 / log2(base.GetValue())));
     }
 
-    // log(a) with a < 0 log(-a)
+    /** 
+     * log(a) with a < 0 log(-a)
+     */
     if (auto negCase = RecursiveCast<Log<Expression, Real>>(simplifiedLog); negCase != nullptr) {
         if (negCase->GetLeastSigOp().GetValue() < 0) {
             return Add<Expression> { Log { negCase->GetMostSigOp(), Real { -1 * negCase->GetLeastSigOp().GetValue() } }, Multiply<Expression> { Imaginary {}, Pi {} } }.Generalize();
         }
     }
 
-    // log[a](b^x) = x * log[a](b)
+    /**
+     * log[a](b^x) = x * log[a](b)
+     */
     if (const auto expCase = RecursiveCast<Log<Expression, Exponent<>>>(simplifiedLog); expCase != nullptr) {
         const auto exponent = expCase->GetLeastSigOp();
         const IExpression auto& log = Log<Expression>(expCase->GetMostSigOp(), exponent.GetMostSigOp()); // might need to check that it isnt nullptr
@@ -82,9 +86,13 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
 auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
-    // TODO: Implement
+    /**
+     * TODO: Implement
+     */
     if (this->mostSigOp->Equals(EulerNumber {})) {
-        // ln(x)
+        /**
+         * ln(x)
+         */
         if (leastSigOp->Is<Variable>() && RecursiveCast<Variable>(*leastSigOp)->Equals(integrationVariable)) {
             return Subtract<Expression> { Multiply<Expression> { integrationVariable, *this }, integrationVariable }.Simplify();
         }
@@ -108,7 +116,9 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
 
 auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
-    // d(log_e(6x))/dx = 1/6x * 6
+    /**
+     * d(log_e(6x))/dx = 1/6x * 6
+     */
     if (auto lnCase = RecursiveCast<EulerNumber>(*mostSigOp); lnCase != nullptr) {
         Divide derivative { Oasis::Real { 1.0 }, *leastSigOp };
         Derivative chain { *leastSigOp, differentiationVariable };

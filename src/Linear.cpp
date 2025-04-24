@@ -1,6 +1,6 @@
-//
-// Created by Andrew Nazareth on 2/16/24.
-//
+/**
+ * Created by Andrew Nazareth on 2/16/24.
+ */
 
 #include "Oasis/Linear.hpp"
 #include "Oasis/Add.hpp"
@@ -90,7 +90,9 @@ auto SolveLinearSystems(MatrixXXD& matrix) -> Matrix1D
     if (rows != cols)
         return Matrix1D {}; // unsolvable
 
-    // create matrices A and b
+    /**
+     * create matrices A and b
+     */
     MatrixXXD A(rows, cols);
     Matrix1D b(rows);
 
