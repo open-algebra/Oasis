@@ -21,8 +21,9 @@ Divide<Expression>::Divide(const Expression& dividend, const Expression& divisor
     : BinaryExpression(dividend, divisor)
 {
 }
-
-//Simplifies a division expression
+/**
+ *Simplifies a division expression
+ */
 auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedDividend = mostSigOp->Simplify(); // numerator
@@ -34,8 +35,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         const Real& divisor = realCase->GetLeastSigOp();
         return std::make_unique<Real>(dividend.GetValue() / divisor.GetValue());
     }
-
-    // log(a)/log(b)=log[b](a)
+    /**
+     *log(a)/log(b)=log[b](a)
+     */
     if (auto logCase = RecursiveCast<Divide<Log<Expression, Expression>, Log<Expression, Expression>>>(simplifiedDivide); logCase != nullptr) {
         if (logCase->GetMostSigOp().GetMostSigOp().Equals(logCase->GetLeastSigOp().GetMostSigOp())) {
             const IExpression auto& base = logCase->GetLeastSigOp().GetLeastSigOp();
@@ -43,7 +45,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return std::make_unique<Log<Expression>>(base, argument);
         }
     }
-    // convert the terms in numerator and denominator into a vector to make manipulations easier
+    /**
+     * convert the terms in numerator and denominator into a vector to make manipulations easier
+     */
     std::vector<std::unique_ptr<Expression>> numerator;
     std::vector<std::unique_ptr<Expression>> denominator;
     std::vector<std::unique_ptr<Expression>> result;
@@ -62,7 +66,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         denominator.push_back(simplifiedDivider->Copy());
     }
 
-    // now that we have the terms in a vector, we have to cancel like terms and simplify them
+    /**
+     * now that we have the terms in a vector, we have to cancel like terms and simplify them
+     */
     result.reserve(numerator.size());
     for (const auto& num : numerator) {
         result.push_back(num->Copy());
@@ -164,7 +170,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    // rebuild into tree
+    /**
+     * rebuild into tree
+     */
     for (const auto& val : result) {
         if (auto valI = RecursiveCast<Real>(*val); valI != nullptr) {
             if (valI->GetValue() != 1.0) {
@@ -191,7 +199,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    // makes expr^1 into expr
+    /**
+     * makes expr^1 into expr
+     */
     for (auto& val : numeratorVals) {
         if (auto exp = RecursiveCast<Exponent<Expression, Real>>(*val); exp != nullptr) {
             if (exp->GetLeastSigOp().GetValue() == 1.0) {
@@ -211,7 +221,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     auto dividend = numeratorVals.size() == 1 ? std::move(numeratorVals.front()) : BuildFromVector<Multiply>(numeratorVals);
     auto divisor = denominatorVals.size() == 1 ? std::move(denominatorVals.front()) : BuildFromVector<Multiply>(denominatorVals);
 
-    // rebuild subtrees
+    /**
+     *rebuild subtrees
+     */
     if (!dividend && divisor)
         return Divide { Real { 1.0 }, *divisor }.Copy();
 
@@ -224,7 +236,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return Divide { *dividend, *divisor }.Copy();
 }
 
-//Performs integration on division expression
+/**
+ * Performs integration on division expression
+ */
 auto Divide<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable
@@ -241,14 +255,20 @@ auto Divide<Expression>::Integrate(const Expression& integrationVariable) const 
 
     return integral.Copy();
 }
-//Performs Differentiation on division expression
+/**
+ * Performs Differentiation on division expression
+ */
 auto Divide<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
-    // Single differentiation variable
+    /**
+     * Single differentiation variable
+     */
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
         auto simplifiedDiv = this->Simplify();
 
-        // Constant case - differentiation over a divisor
+        /**
+         * Constant case - differentiation over a divisor
+         */
         if (auto constant = RecursiveCast<Divide<Expression, Real>>(*simplifiedDiv); constant != nullptr) {
             auto exp = constant->GetMostSigOp().Copy();
             auto num = constant->GetLeastSigOp();
@@ -257,7 +277,9 @@ auto Divide<Expression>::Differentiate(const Oasis::Expression& differentiationV
                 return std::make_unique<Divide<Expression, Real>>(Divide<Expression, Real> { *(add->Simplify()), Real { num.GetValue() } })->Simplify();
             }
         }
-        // In case of simplify turning divide into mult
+        /**
+         * In case of simplify turning divide into mult
+         */
         if (auto constant = RecursiveCast<Multiply<Expression, Real>>(*simplifiedDiv); constant != nullptr) {
             auto exp = constant->GetMostSigOp().Copy();
             auto num = constant->GetLeastSigOp();
@@ -266,7 +288,9 @@ auto Divide<Expression>::Differentiate(const Oasis::Expression& differentiationV
                 return std::make_unique<Multiply<Expression, Real>>(Multiply<Expression, Real> { *(add->Simplify()), Real { num.GetValue() } })->Simplify();
             }
         }
-        // Quotient Rule: d/dx (f(x)/g(x)) = (g(x)f'(x)-f(x)g'(x))/(g(x)^2)
+        /**
+         * Quotient Rule: d/dx (f(x)/g(x)) = (g(x)f'(x)-f(x)g'(x))/(g(x)^2)
+         */
         if (auto quotient = RecursiveCast<Divide<Expression, Expression>>(*simplifiedDiv); quotient != nullptr) {
             auto leftexp = quotient->GetMostSigOp().Copy();
             auto rightexp = quotient->GetLeastSigOp().Copy();

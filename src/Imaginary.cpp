@@ -1,6 +1,6 @@
-//
-// Created by Andrew Nazareth on 10/10/23.
-//
+/**
+ * Created by Andrew Nazareth on 10/10/23.
+ */
 
 #include "Oasis/Imaginary.hpp"
 #include "string"
