@@ -1,18 +1,19 @@
-//
-// Created by Matthew McCall on 10/22/24.
-//
+/**
+ * Created by Matthew McCall on 10/22/24.
+ */
 
-// Hear ye, valiant coder! Within this hallowed script of Oasis' MatchCast,
-// lies an unfathomable confluence of templated magic, scarcely understood only by even the
-// most exalted compilers and the divine overseers. This arcane construct,
-// when tampered with, may envelop thee in utter confusion, leaving thee solitary in thy pursuits.
-// Of course, this sagely advice surely does not emanate from a mere language model. Rather,
-// it is the timeless counsel of battle-hardened developers who have faced such arcane complexity.
-// Should regret cloud thy mind and thou desires to undo thine alterations, perform the following
-// sacred rite to restore the code to its pristine state:
-//
-// git checkout -- <path_to_this_file>
-//
+/**
+ * Hear ye, valiant coder! Within this hallowed script of Oasis' MatchCast,
+ * lies an unfathomable confluence of templated magic, scarcely understood only by even the
+ * most exalted compilers and the divine overseers. This arcane construct,
+ * when tampered with, may envelop thee in utter confusion, leaving thee solitary in thy pursuits.
+ * Of course, this sagely advice surely does not emanate from a mere language model. Rather,
+ * it is the timeless counsel of battle-hardened developers who have faced such arcane complexity.
+ * Should regret cloud thy mind and thou desires to undo thine alterations, perform the following
+ * sacred rite to restore the code to its pristine state:
+ * 
+ * git checkout -- <path_to_this_file>
+ */
 
 #ifndef OASIS_MATCHCAST_HPP
 #define OASIS_MATCHCAST_HPP

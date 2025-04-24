@@ -14,10 +14,11 @@ Integral<Expression>::Integral(const Expression& integrand, const Expression& di
     : BinaryExpression(integrand, differential)
 {
 }
-
+/**
+ * Returns a simplified integral
+ */
 auto Integral<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
-    // Returns simplified Integral
 
     auto simplifiedIntegrand = mostSigOp ? mostSigOp->Simplify() : nullptr;
     auto simplifiedDifferential = leastSigOp ? leastSigOp->Simplify() : nullptr;
@@ -25,6 +26,9 @@ auto Integral<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return simplifiedIntegrand->Integrate(*simplifiedDifferential);
 }
 
+/**
+ * Returns a simplified integral
+ */
 auto Integral<Expression>::Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression>
 {
     // Returns simplified Integral

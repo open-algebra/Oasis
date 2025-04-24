@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 10/6/23.
-//
+/**
+ * Created by Matthew McCall on 10/6/23.
+ */
 
 #ifndef OASIS_LOG_HPP
 #define OASIS_LOG_HPP

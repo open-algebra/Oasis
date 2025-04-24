@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 8/7/23.
-//
+/**
+ * Created by Matthew McCall on 8/7/23.
+ */
 #include "Common.hpp"
 
 #include "catch2/catch_test_macros.hpp"

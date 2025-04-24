@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 4/21/24.
-//
+/**
+ * Created by Matthew McCall on 4/21/24.
+ */
 #include <format>
 #include <memory>
 #include <regex>
@@ -256,7 +256,9 @@ auto PreProcessInFix(const std::string& str) -> std::string
 
 auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expected<std::unique_ptr<Expression>, std::string>
 {
-    // Based off Dijkstra's Shunting Yard
+    /**
+     * Based off Dijkstra's Shunting Yard
+     */
 
     std::stack<std::unique_ptr<Expression>> st;
     std::stack<std::variant<Operator, Function, OpenParens>> ops;
@@ -265,13 +267,17 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
     std::stringstream ss { str };
 
     while (ss >> token) {
-        // Operand
+        /** 
+         * Operand
+         */
         if (auto newNumber = is_number(token); newNumber) {
             st.push(std::make_unique<Real>(newNumber.value()));
         } else if (auto newFunc = is_function(token); newFunc) {
             ops.emplace(newFunc.value());
         }
-        // Operator
+        /**
+         * Operator
+         */
         else if (auto newOp = is_operator(token); newOp) {
             while (!ops.empty() && prec(ops.top()) >= prec(newOp.value())) {
                 auto processOpResult = processOp(ops, st);
@@ -283,9 +289,13 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
         } else if (token == "(") {
             ops.emplace(OpenParens());
         }
-        // ','
+        /**
+         * ','
+         */
         else if (token == ",") {
-            // function_active = true;
+            /**
+             * function_active = true;
+             */
             while (!ops.empty() && !std::holds_alternative<OpenParens>(ops.top())) {
                 auto processOpResult = processOp(ops, st);
                 if (!processOpResult)
@@ -293,7 +303,9 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
                 st.emplace(std::move(processOpResult.value()));
             }
         }
-        // ')'
+        /** 
+         * ')'
+         */
         else if (token == ")") {
             while (!ops.empty() && !std::holds_alternative<OpenParens>(ops.top())) {
                 auto processOpResult = processOp(ops, st);
@@ -320,7 +332,9 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
         }
     }
 
-    // Process remaining ops
+    /**
+     * Process remaining ops
+     */
     while (!ops.empty()) {
         auto processOpResult = processOp(ops, st);
         if (!processOpResult)

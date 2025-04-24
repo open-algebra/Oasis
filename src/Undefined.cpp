@@ -1,6 +1,6 @@
-//
-// Created by Blake Kessler on 10/13/23.
-//
+/**
+ * Created by Blake Kessler on 10/13/23.
+ */
 
 #include "Oasis/Undefined.hpp"
 

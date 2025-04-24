@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 2/19/25.
-//
+/**
+ * Created by Matthew McCall on 2/19/25.
+ */
 
 #include <cctype>
 #include <cstdio>
@@ -20,7 +20,9 @@ auto operator|(const std::string& str, FnT fn) -> boost::callable_traits::return
     return fn(str);
 }
 
-// https://en.cppreference.com/w/cpp/string/byte/isspace#Notes
+/**
+ * https://en.cppreference.com/w/cpp/string/byte/isspace#Notes
+ */
 bool safe_isspace(const unsigned char ch) { return std::isspace(ch); }
 
 auto trim_whitespace(const std::string& str) -> std::string
@@ -33,7 +35,9 @@ auto trim_whitespace(const std::string& str) -> std::string
         | std::ranges::to<std::string>();
 }
 
-// Calling Oasis::FromInFix passed as template fails because defaulted parameters aren't represented in the type, so a wrapper is needed
+/**
+ * Calling Oasis::FromInFix passed as template fails because defaulted parameters aren't represented in the type, so a wrapper is needed
+ */
 auto Parse(const std::string& in) -> Oasis::FromInFixResult { return Oasis::FromInFix(in); };
 
 int main(int argc, char** argv)
@@ -54,7 +58,9 @@ int main(int argc, char** argv)
         if (input == "exit")
             break;
 
-        // Calling Oasis::FromInFix passed as template fails because defaulted parameters aren't represented in the type, so a wrapper is needed
+        /**
+         * Calling Oasis::FromInFix passed as template fails because defaulted parameters aren't represented in the type, so a wrapper is needed
+         */
         auto result = (input | Oasis::PreProcessInFix | Parse)
                           .transform([](const std::unique_ptr<Oasis::Expression>& expr) -> std::unique_ptr<Oasis::Expression> {
                               return expr->Simplify();

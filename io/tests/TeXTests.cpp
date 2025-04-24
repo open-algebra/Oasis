@@ -1,6 +1,6 @@
-//
-// Created by Andrew Nazareth on 9/30/24.
-//
+/**
+ * Created by Andrew Nazareth on 9/30/24.
+ */
 
 #include "catch2/catch_test_macros.hpp"
 
