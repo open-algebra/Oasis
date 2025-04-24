@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 1/31/25.
-//
+/**
+ * Created by Matthew McCall on 1/31/25.
+ */
 
 #ifndef COMMON_HPP
 #define COMMON_HPP
