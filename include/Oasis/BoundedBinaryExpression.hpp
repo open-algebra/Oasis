@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 5/2/24.
-//
+/**
+ * Created by Matthew McCall on 5/2/24.
+ */
 
 #ifndef OASIS_BOUNDEDBINARYEXPRESSION_HPP
 #define OASIS_BOUNDEDBINARYEXPRESSION_HPP

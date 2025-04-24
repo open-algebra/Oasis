@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 3/10/25.
-//
+/**
+ * Created by Matthew McCall on 3/10/25.
+ */
 #include <emscripten/bind.h>
 
 #include "Oasis/Expression.hpp"
