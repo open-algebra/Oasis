@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 7/2/23.
-//
+/**
+ * Created by Matthew McCall on 7/2/23.
+ */
 #include <unordered_map>
 
 #include "Oasis/Add.hpp"
@@ -17,7 +17,9 @@
 
 namespace Oasis {
 
-//Simplifies addition expression
+/**
+ * Simplifies addition expression
+ */
 auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
     auto simplifiedAugend = mostSigOp ? mostSigOp->Simplify() : nullptr;
@@ -50,7 +52,9 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    // matrix + matrix
+    /**
+     * matrix + matrix
+     */
     if (auto matrixCase = RecursiveCast<Add<Matrix, Matrix>>(simplifiedAdd); matrixCase != nullptr) {
         const Oasis::IExpression auto& leftTerm = matrixCase->GetMostSigOp();
         const Oasis::IExpression auto& rightTerm = matrixCase->GetLeastSigOp();
@@ -62,7 +66,9 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    // log(a) + log(b) = log(ab)
+    /** 
+     * log(a) + log(b) = log(ab)
+     */
     if (auto logCase = RecursiveCast<Add<Log<Expression, Expression>, Log<Expression, Expression>>>(simplifiedAdd); logCase != nullptr) {
         if (logCase->GetMostSigOp().GetMostSigOp().Equals(logCase->GetLeastSigOp().GetMostSigOp())) {
             const IExpression auto& base = logCase->GetMostSigOp().GetMostSigOp();
@@ -71,21 +77,26 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    // x + x = 2x
+    /**
+     * x + x = 2x
+     */
     if (simplifiedAugend->Equals(*simplifiedAddend)) {
         return Multiply<Real, Expression> { Real { 2.0 }, *simplifiedAugend }.Simplify();
     }
 
-    // 2x + x = 3x
+    /**
+     * 2x + x = 3x
+     */
     if (const auto likeTermsCase2 = RecursiveCast<Add<Multiply<Real, Expression>, Expression>>(simplifiedAdd); likeTermsCase2 != nullptr) {
         if (likeTermsCase2->GetMostSigOp().GetLeastSigOp().Equals(likeTermsCase2->GetLeastSigOp())) {
             const Real& coeffiecent = likeTermsCase2->GetMostSigOp().GetMostSigOp();
             return std::make_unique<Multiply<Real, Expression>>(Real { coeffiecent.GetValue() + 1 }, likeTermsCase2->GetMostSigOp().GetLeastSigOp());
         }
     }
-
-    // simplifies expressions and combines like terms
-    // ex: 1 + 2x + 3 + 5x = 4 + 7x (or 7x + 4)
+    /**
+     * simplifies expressions and combines like terms
+     * ex: 1 + 2x + 3 + 5x = 4 + 7x (or 7x + 4)
+     */
     std::vector<std::unique_ptr<Expression>> adds;
     std::vector<std::unique_ptr<Expression>> vals;
     simplifiedAdd.Flatten(adds);
@@ -100,12 +111,16 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 }
             }
             if (i >= vals.size()) {
-                // check to make sure it is one thing only
+                /** 
+                 * check to make sure it is one thing only
+                 */
                 vals.push_back(addend->Generalize());
             }
             continue;
         }
-        // single i
+        /**
+         * single i
+         */
         if (auto img = RecursiveCast<Imaginary>(*addend); img != nullptr) {
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Multiply<Expression, Imaginary>>(*vals[i]); valI != nullptr) {
@@ -114,12 +129,16 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 }
             }
             if (i >= vals.size()) {
-                // check to make sure it is one thing only
+                /**
+                 * check to make sure it is one thing only
+                 */
                 vals.push_back(Multiply<Expression> { Real { 1.0 }, Imaginary {} }.Generalize());
             }
             continue;
         }
-        // n*i
+        /**
+         * n*i
+         */
         if (auto img = RecursiveCast<Multiply<Expression, Imaginary>>(*addend); img != nullptr) {
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Multiply<Expression, Imaginary>>(*vals[i]); valI != nullptr) {
@@ -128,12 +147,16 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 }
             }
             if (i >= vals.size()) {
-                // check to make sure it is one thing only
+                /**
+                 *  check to make sure it is one thing only
+                 */
                 vals.push_back(img->Generalize());
             }
             continue;
         }
-        // single variable
+        /** 
+         * single variable
+         */
         if (auto var = RecursiveCast<Variable>(*addend); var != nullptr) {
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Multiply<Expression, Variable>>(*vals[i]); valI != nullptr) {
@@ -145,16 +168,22 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 }
             }
             if (i >= vals.size()) {
-                // check to make sure it is one thing only
+                /**
+                 * check to make sure it is one thing only
+                 */
                 vals.push_back(Multiply<Expression> { Real { 1.0 }, *var }.Generalize());
             }
             continue;
         }
-        // n*variable
+        /** 
+         * n*variable
+         */
         if (auto var = RecursiveCast<Multiply<Expression, Variable>>(*addend); var != nullptr) {
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Multiply<Expression, Variable>>(*vals[i]); valI != nullptr) {
-                    // if (auto zeroCase = RecursiveCast<Multiply<Real, Expression>>(*valI); zeroCase != nullptr) {}
+                    /**
+                     * if (auto zeroCase = RecursiveCast<Multiply<Real, Expression>>(*valI); zeroCase != nullptr) {}
+                     */
                     if (valI->GetLeastSigOp().GetName() == var->GetLeastSigOp().GetName()) {
                         vals[i] = Multiply<Expression> { *(Add<Expression> { valI->GetMostSigOp(), var->GetMostSigOp() }.Simplify()), valI->GetLeastSigOp() }.Generalize();
                         break;
@@ -163,12 +192,16 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 }
             }
             if (i >= vals.size()) {
-                // check to make sure it is one thing only
+                /**
+                 * check to make sure it is one thing only
+                 */
                 vals.push_back(var->Generalize());
             }
             continue;
         }
-        // single exponent
+        /**
+         * single exponent
+         */
         if (auto exp = RecursiveCast<Exponent<Expression>>(*addend); exp != nullptr) {
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Multiply<Expression, Exponent<Expression>>>(*vals[i]); valI != nullptr) {
@@ -180,12 +213,16 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 }
             }
             if (i >= vals.size()) {
-                // check to make sure it is one thing only
+                /**
+                 * check to make sure it is one thing only
+                 */
                 vals.push_back(Multiply<Expression> { Real { 1.0 }, *exp }.Generalize());
             }
             continue;
         }
-        // n*exponent
+        /**
+         * n*exponent
+         */
         if (auto exp = RecursiveCast<Multiply<Expression, Exponent<Expression>>>(*addend); exp != nullptr) {
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Multiply<Expression, Exponent<Expression>>>(*vals[i]); valI != nullptr) {
@@ -197,14 +234,17 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 }
             }
             if (i >= vals.size()) {
-                // check to make sure it is one thing only
+                /**
+                 * check to make sure it is one thing only
+                 */
                 vals.push_back(exp->Generalize());
             }
             continue;
         }
     }
-    // rebuild equation after simplification.
-
+    /**
+     * rebuild equation after simplification.
+     */
     for (auto& val : vals) {
         if (auto mul = RecursiveCast<Multiply<Real, Expression>>(*val); mul != nullptr) {
             if (mul->GetMostSigOp().GetValue() == 1.0) {
@@ -213,7 +253,9 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    // filter out zero-equivalent expressions
+    /**
+     * filter out zero-equivalent expressions
+     */
     std::vector<std::unique_ptr<Expression>> avals;
     for (auto& val : vals) {
         if (auto real = RecursiveCast<Real>(*val); real != nullptr) {
@@ -236,14 +278,20 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return simplifiedAdd.Copy();
 }
 
-//Perfroms integration on addition expression
+/**
+ * Performs integration on addition expression
+ */
 auto Add<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
-    // Single integration variable
+    /**
+     * Single integration variable
+     */
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
         auto simplifiedAdd = this->Simplify();
 
-        // Make sure we're still adder
+        /**
+         * Make sure we're still adder
+         */
         if (auto adder = RecursiveCast<Add<Expression>>(*simplifiedAdd); adder != nullptr) {
             auto leftRef = adder->GetLeastSigOp().Copy();
             auto leftIntegral = leftRef->Integrate(integrationVariable);
@@ -265,7 +313,9 @@ auto Add<Expression>::Integrate(const Expression& integrationVariable) const -> 
 
             return add.Simplify();
         }
-        // If not, use other integration technique
+        /**
+         * If not, use other integration technique
+         */
         else {
             return simplifiedAdd->Integrate(integrationVariable)->Simplify();
         }
@@ -275,7 +325,9 @@ auto Add<Expression>::Integrate(const Expression& integrationVariable) const -> 
     return integral.Copy();
 }
 
-//Performs differentiation on addition expression
+/**
+ * Performs differentiation on addition expression
+ */
 auto Add<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
