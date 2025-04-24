@@ -1,6 +1,6 @@
-//
-// Created by Andrew Nazareth on 2/16/24.
-//
+/**
+ * Created by Andrew Nazareth on 2/16/24.
+ */
 
 #ifndef OASIS_LINEAR_HPP
 #define OASIS_LINEAR_HPP

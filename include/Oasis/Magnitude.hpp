@@ -1,6 +1,6 @@
-//
-// Created by Andrew Nazareth on 6/28/24.
-//
+/**
+ * Created by Andrew Nazareth on 6/28/24.
+ */
 
 #ifndef OASIS_MAGNITUDE_HPP
 #define OASIS_MAGNITUDE_HPP
@@ -78,8 +78,9 @@ public:
 
     [[nodiscard]] auto Differentiate(const Expression& var) const -> std::unique_ptr<Expression> override
     {
-        // TODO: Implement
-
+        /**
+         * TODO: Implement
+         */
         const std::unique_ptr<Expression> operandDerivative = this->GetOperand().Differentiate(var);
         return Magnitude<Expression> {
             *operandDerivative
@@ -89,7 +90,9 @@ public:
 
     [[nodiscard]] auto Integrate(const Expression& integrationVar) const -> std::unique_ptr<Expression> override
     {
-        // TODO: Implement
+        /**
+         * TODO: Implement
+         */
         const std::unique_ptr<Expression> operandDerivative = this->GetOperand().Integrate(integrationVar);
         return Magnitude<Expression> {
             *operandDerivative
