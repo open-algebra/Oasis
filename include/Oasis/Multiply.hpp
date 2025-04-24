@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 8/10/23.
-//
+/**
+ * Created by Matthew McCall on 8/10/23.
+ */
 
 #ifndef OASIS_MULTIPLY_HPP
 #define OASIS_MULTIPLY_HPP

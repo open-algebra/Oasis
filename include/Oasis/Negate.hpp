@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 3/29/24.
-//
+/**
+ * Created by Matthew McCall on 3/29/24.
+ */
 
 #ifndef OASIS_NEGATE_HPP
 #define OASIS_NEGATE_HPP

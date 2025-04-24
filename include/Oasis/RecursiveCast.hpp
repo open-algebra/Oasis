@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 10/14/24.
-//
+/**
+ * Created by Matthew McCall on 10/14/24.
+ */
 
 #ifndef OASIS_RECURSIVECAST_HPP
 #define OASIS_RECURSIVECAST_HPP
