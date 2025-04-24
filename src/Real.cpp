@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 7/2/23.
-//
+/**
+ * Created by Matthew McCall on 7/2/23.
+ */
 
 #include <string>
 
@@ -33,11 +33,15 @@ auto Real::GetValue() const -> double
     return value;
 }
 
-//Performs integration on Real Number
+/**
+ * Performs integration on Real Number
+ */
 auto Real::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
-        // Constant rule
+        /** 
+         * Constant rule
+         */
         if (value != 0) {
 
             Add adder {
@@ -47,7 +51,9 @@ auto Real::Integrate(const Expression& integrationVariable) const -> std::unique
             return adder.Simplify();
         }
 
-        // Zero rule
+        /**
+         * Zero rule
+         */
         return std::make_unique<Variable>(Variable { "C" })->Simplify();
     }
 
