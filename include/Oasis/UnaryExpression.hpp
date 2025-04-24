@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 3/29/24.
-//
+/**
+ * Created by Matthew McCall on 3/29/24.
+ */
 
 #ifndef UNARYEXPRESSION_HPP
 #define UNARYEXPRESSION_HPP
@@ -43,7 +43,9 @@ public:
             return false;
         }
 
-        // generalize
+        /**
+         * generalize
+         */
         const auto otherGeneralized = other.Generalize();
         const auto& otherUnaryGeneralized = dynamic_cast<const DerivedGeneralized&>(*otherGeneralized);
 

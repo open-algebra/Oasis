@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 8/15/23.
-//
+/**
+ * Created by Matthew McCall on 8/15/23.
+ */
 
 #ifndef OASIS_VARIABLE_HPP
 #define OASIS_VARIABLE_HPP
