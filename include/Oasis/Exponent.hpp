@@ -1,6 +1,6 @@
-//
-// Created by Andrew Nazareth on 9/19/23.
-//
+/**
+ * Created by Andrew Nazareth on 9/19/23.
+ */
 
 #ifndef OASIS_EXPONENT_HPP
 #define OASIS_EXPONENT_HPP
