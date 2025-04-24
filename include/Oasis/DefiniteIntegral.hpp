@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 4/30/24.
-//
+/** 
+ * Created by Matthew McCall on 4/30/24.
+ */
 
 #ifndef DEFINITEINTEGRAL_HPP
 #define DEFINITEINTEGRAL_HPP

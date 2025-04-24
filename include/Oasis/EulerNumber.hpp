@@ -1,6 +1,6 @@
-//
-// Created by Andrew Nazareth on 6/25/24.
-//
+/**
+ * Created by Andrew Nazareth on 6/25/24.
+ */
 
 #ifndef OASIS_EULERNUMBER_HPP
 #define OASIS_EULERNUMBER_HPP

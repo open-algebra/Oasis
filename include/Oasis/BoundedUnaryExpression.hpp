@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 4/30/24.
-//
+/**
+ * Created by Matthew McCall on 4/30/24.
+ */
 
 #ifndef OASIS_BOUNDEDUNARYEXPRESSION_HPP
 #define OASIS_BOUNDEDUNARYEXPRESSION_HPP
@@ -46,7 +46,9 @@ public:
 
     auto Copy(tf::Subflow&) const -> std::unique_ptr<Expression> final
     {
-        // TODO: Actually implement
+        /**
+         * TODO: Actually implement
+         */
         return std::make_unique<DerivedSpecialized>(*static_cast<const DerivedSpecialized*>(this));
     }
 
@@ -58,13 +60,14 @@ public:
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final
     {
 
-        // TODO: Reimplement now that Specialize is gone
-        //        if (const auto otherExpression = DerivedSpecialized::Specialize(other); otherExpression != nullptr) {
-        //            return HasOperand() == otherExpression->HasOperand()
-        //                && this->HasLowerBound() == otherExpression->HasLowerBound()
-        //                && this->HasUpperBound() == otherExpression->HasUpperBound();
-        //        }
-
+        /**
+         * TODO: Reimplement now that Specialize is gone
+         *       if (const auto otherExpression = DerivedSpecialized::Specialize(other); otherExpression != nullptr) {
+         *            return HasOperand() == otherExpression->HasOperand()
+         *                && this->HasLowerBound() == otherExpression->HasLowerBound()
+         *                && this->HasUpperBound() == otherExpression->HasUpperBound();
+         *        }
+         */
         return false;
     }
 
