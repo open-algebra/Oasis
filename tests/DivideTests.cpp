@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 8/10/23.
-//
+/**
+ * Created by Matthew McCall on 8/10/23.
+ */ 
 
 #include "catch2/catch_test_macros.hpp"
 
@@ -180,8 +180,9 @@ TEST_CASE("Symbolic Division, equal exponents", "[Division][Symbolic]")
 
 TEST_CASE("Division of equal variables", "[Division][Symbolic]")
 {
-    // x/x = 1
-
+    /**
+     * x/x = 1
+     */
     Oasis::Divide div { Oasis::Variable { "x" }, Oasis::Variable { "x" } };
     auto simplified = div.Simplify();
     REQUIRE(Oasis::Real { 1 }.Equals(*simplified));

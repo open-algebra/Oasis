@@ -1,6 +1,6 @@
-//
-// Created by Blake Kessler on 10/31/23
-//
+/**
+ * Created by Blake Kessler on 10/31/23
+ */
 
 #include "catch2/catch_test_macros.hpp"
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
@@ -106,7 +106,9 @@ TEST_CASE("Log of Exponentiation", "[Log][Exponent]")
     REQUIRE_THAT(simplifiedSpecialized->GetMostSigOp().GetValue(), Catch::Matchers::WithinAbs(1.0, EPSILON));
     REQUIRE(simplifiedSpecialized->GetLeastSigOp().Equals(Oasis::Variable { "x" }));
 
-    //log[5](x^x) = xlog[5](x)
+    /**
+     * log[5](x^x) = xlog[5](x)
+     */
     Oasis::Log logOfExp {
         Oasis::Real { 5.0 },
         Oasis::Exponent {
