@@ -184,8 +184,11 @@ auto Exponent<Expression>::Differentiate(const Expression& differentiationVariab
         }
 
         if (auto varBase = RecursiveCast<Exponent<Variable, Expression>>(*simplifiedExponent); varBase != nullptr) {
-            Multiply derivative { Multiply { Derivative { varBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent }, Log { EulerNumber {}, varBase->GetMostSigOp() } };
-            return derivative.Simplify();
+            const Variable& expBase = varBase->GetMostSigOp();
+            if (expBase.GetName() != variable->GetName()) {
+                Multiply derivative { Multiply { Derivative { varBase->GetLeastSigOp(), differentiationVariable }, *simplifiedExponent }, Log { EulerNumber {}, varBase->GetMostSigOp() } };
+                return derivative.Simplify();
+            }
         }
 
         if (auto generalCase = RecursiveCast<Exponent<Expression, Expression>>(*simplifiedExponent); generalCase != nullptr) {
