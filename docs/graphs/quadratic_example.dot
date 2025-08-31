@@ -1,4 +1,6 @@
 digraph {
+    node [shape=circle]
+
     Variable1 [label="x"];
     Variable2 [label="x"];
     Real1 [label="2"];
@@ -15,4 +17,9 @@ digraph {
 
     Exponent -> Variable2
     Exponent -> Real2
+    
+    Subtract [shape=box];
+    Add [shape=box];
+    Multiply [shape=box];
+    Exponent [shape=box];
 }
