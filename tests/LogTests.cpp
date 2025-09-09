@@ -228,6 +228,13 @@ TEST_CASE("Change of Base", "[Log][Divide]")
     REQUIRE_THAT(logBase3Simplified.GetValue(), Catch::Matchers::WithinAbs(dynamic_cast<Oasis::Real&>(*(logBase3.Simplify())).GetValue(), EPSILON)); //PROBLEM
 }
 
+TEST_CASE("Log of Equal Base and Argument", "[Log][Expression]") {
+    Oasis::Log log {Oasis::Variable{"x"},Oasis::Variable {"x"}};
+    auto simplifiedLog = log.Simplify();
+    Oasis::Real expected {1};
+    REQUIRE(simplifiedLog->Equals(expected));
+}
+
 TEST_CASE("Undefined", "[UNDEFINED][UNDEFINED]") {
     REQUIRE(!Oasis::Undefined().Equals(Oasis::Undefined()));
     REQUIRE(Oasis::Log<Oasis::Real, Oasis::Real>(Oasis::Real(-1.0), Oasis::Real(5.0)).Simplify()->Is<Oasis::Undefined>());
@@ -243,9 +250,9 @@ TEST_CASE("Integral of Natural Log", "[Integral][Log][Euler]")
     auto simp1 = int1.Simplify();
     auto simp2 = int2.Simplify();
 
-    REQUIRE(simp1->Equals(*Oasis::Subtract{Oasis::Multiply{Oasis::Variable{"x"}, Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"x"}}}, Oasis::Variable{"x"}}.Simplify()));
-    REQUIRE(simp2->Equals(*Oasis::Subtract{Oasis::Multiply{Oasis::Variable{"x"}, Oasis::Log{Oasis::EulerNumber{}, Oasis::Multiply{Oasis::Real{5}, Oasis::Variable{"x"}}}}, Oasis::Variable{"x"}}.Simplify()));
-}
+    REQUIRE(simp1->Equals(*Oasis::Add {Oasis::Multiply{Oasis::Subtract{Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"x"}}, Oasis::Real{1}} , Oasis::Variable{"x"} }, Oasis::Variable{"C"} }.Simplify()));
+    REQUIRE(simp2->Equals(*Oasis::Add {Oasis::Multiply{Oasis::Subtract{Oasis::Log{Oasis::EulerNumber{}, Oasis::Multiply {Oasis::Real{5} ,Oasis::Variable{"x"}}}, Oasis::Real{1}} , Oasis::Variable{"x"} }, Oasis::Variable{"C"} }.Simplify()));
+    }
 
 TEST_CASE("Integral of Non-Natural variable base Log", "[Integral][Log][Variable]")
 {
@@ -253,10 +260,10 @@ TEST_CASE("Integral of Non-Natural variable base Log", "[Integral][Log][Variable
     Oasis::Integral int2{Oasis::Log{Oasis::Variable{"y"}, Oasis::Multiply{Oasis::Real{5}, Oasis::Variable{"x"}}}, Oasis::Variable{"x"}};
     Oasis::Integral intEq{Oasis::Log{Oasis::Variable{"x"}, Oasis::Variable{"x"}}, Oasis::Variable{"x"}};
 
-    Oasis::Divide eq1{Oasis::Subtract{Oasis::Multiply{Oasis::Variable{"x"}, Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"x"}}}, Oasis::Variable{"x"}},
-                        Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"y"}}};
-    Oasis::Divide eq2{Oasis::Subtract{Oasis::Multiply{Oasis::Variable{"x"}, Oasis::Log{Oasis::EulerNumber{}, Oasis::Multiply{Oasis::Real{5}, Oasis::Variable{"x"}}}}, Oasis::Variable{"x"}},
-                        Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"y"}}};
+    Oasis::Add eq1{Oasis::Divide{ Oasis::Multiply{Oasis::Variable{"x"}, Oasis::Subtract{Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"x"}}, Oasis::Real{1}}},
+                        Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"y"}}},Oasis::Variable{"C"}};
+    Oasis::Add eq2{Oasis::Divide{ Oasis::Multiply{Oasis::Variable{"x"}, Oasis::Subtract{Oasis::Log{Oasis::EulerNumber{}, Oasis::Multiply{Oasis::Real{5}, Oasis::Variable{"x"}}},Oasis::Real{1}}},
+                        Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"y"}}},Oasis::Variable{"C"}};
 
     auto simp1 = int1.Simplify();
     auto simp2 = int2.Simplify();
@@ -264,7 +271,7 @@ TEST_CASE("Integral of Non-Natural variable base Log", "[Integral][Log][Variable
 
     REQUIRE(simp1->Equals(*eq1.Simplify()));
     REQUIRE(simp2->Equals(*eq2.Simplify()));
-    REQUIRE(simpEq->Equals(Oasis::Variable{"x"}));
+    REQUIRE(simpEq->Equals(Oasis::Add {Oasis::Variable{"x"}, Oasis::Variable{"C"} }));
 }
 
 TEST_CASE("Integral of Non-natural real base log", "[Integral][Log][Variable]")
@@ -272,10 +279,10 @@ TEST_CASE("Integral of Non-natural real base log", "[Integral][Log][Variable]")
     Oasis::Integral int1{Oasis::Log{Oasis::Real{10}, Oasis::Variable{"x"}}, Oasis::Variable{"x"}};
     Oasis::Integral int2{Oasis::Log{Oasis::Real{10}, Oasis::Multiply{Oasis::Real{5}, Oasis::Variable{"x"}}}, Oasis::Variable{"x"}};
 
-    Oasis::Divide eq1{Oasis::Subtract{Oasis::Multiply{Oasis::Variable{"x"}, Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"x"}}}, Oasis::Variable{"x"}},
-        Oasis::Log{Oasis::EulerNumber{}, Oasis::Real{10}}};
-    Oasis::Divide eq2{Oasis::Subtract{Oasis::Multiply{Oasis::Variable{"x"}, Oasis::Log{Oasis::EulerNumber{}, Oasis::Multiply{Oasis::Real{5}, Oasis::Variable{"x"}}}}, Oasis::Variable{"x"}},
-        Oasis::Log{Oasis::EulerNumber{}, Oasis::Real{10}}};
+    Oasis::Add eq1{Oasis::Divide{ Oasis::Multiply{Oasis::Variable{"x"}, Oasis::Subtract{Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"x"}}, Oasis::Real{1}}},
+        Oasis::Log{Oasis::EulerNumber{}, Oasis::Real{10}}},Oasis::Variable{"C"}};
+    Oasis::Add eq2{Oasis::Divide{ Oasis::Multiply{Oasis::Variable{"x"}, Oasis::Subtract{Oasis::Log{Oasis::EulerNumber{}, Oasis::Multiply{Oasis::Real{5}, Oasis::Variable{"x"}}}, Oasis::Real{1}}},
+        Oasis::Log{Oasis::EulerNumber{}, Oasis::Real{10}}},Oasis::Variable{"C"}};
 
     auto simp1 = int1.Simplify();
     auto simp2 = int2.Simplify();
