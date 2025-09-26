@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 4/21/24.
-//
+/**
+ * Created by Matthew McCall on 4/21/24.
+ */
 
 #include <boost/callable_traits/return_type.hpp>
 

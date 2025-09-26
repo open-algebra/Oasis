@@ -1,6 +1,6 @@
-//
-// Created by Matthew McCall on 10/6/23.
-//
+/**
+ * Created by Matthew McCall on 10/6/23.
+ */
 #include "catch2/catch_test_macros.hpp"
 
 #include "Oasis/Add.hpp"
@@ -57,7 +57,9 @@ TEST_CASE("Specialize Recursively Considers Commutative Property", "[Symbolic]")
 
     auto generalizedMultiply = multiply.Generalize();
 
-    // intentionally out of order
+    /**
+     * intentionally out of order
+     */
     auto result2 = Oasis::RecursiveCast<Oasis::Multiply<Oasis::Variable, Oasis::Multiply<Oasis::Real, Oasis::Variable>>>(*generalizedMultiply);
     REQUIRE(result2 != nullptr);
 }
@@ -180,7 +182,9 @@ TEST_CASE("Equals follows associativity and commutativity")
         real3
     };
 
-    // (1 + 2) + 3 == 1 + (2 + 3)
+    /**
+     * (1 + 2) + 3 == 1 + (2 + 3)
+     */
     SECTION("Associativity")
     {
         Oasis::Add add2 {
@@ -193,7 +197,9 @@ TEST_CASE("Equals follows associativity and commutativity")
         REQUIRE(add1.Equals(add2));
     }
 
-    // (1 + 2) + 3 == 3 + (1 + 2)
+    /**
+     * (1 + 2) + 3 == 3 + (1 + 2)
+     */
     SECTION("Commutativity")
     {
         Oasis::Add add2 {
@@ -206,7 +212,9 @@ TEST_CASE("Equals follows associativity and commutativity")
         REQUIRE(add1.Equals(add2));
     }
 
-    // (1 + 2) + 3 == (3 + 2) + 1
+    /**
+     * (1 + 2) + 3 == (3 + 2) + 1
+     */
     SECTION("Associativity and Commutativity")
     {
         Oasis::Add add2 {

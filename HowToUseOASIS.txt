@@ -1,0 +1,38 @@
+Calculate Derivative:
+
+To calculate the derivative of an expression using OASIS, use the following input
+
+dd(EXPRESSION_YOU_WANT_TO_DIFFERENTIATE, VARIABLE_WITH_RESPECT_TO_DIFFERENTIATE)
+
+examples:
+
+dd(2x, x) -> 2
+dd(4a^2, a) -> 8a
+dd(2x^y, x) -> 0
+
+Calculate Integral:
+
+To calculate the Integral of an expression using OASIS, use the following input
+
+in(EXPRESSION_YOU_WANT_TO_INTEGRATE, VARIABLE_WITH_RESPECT_TO_INTEGRATE)
+
+examples:
+in(2x, x) -> x^2 + C
+in(4a^2, a) -> (4/3)a^3 + C
+in(2x^y, x) -> SHOULD BE (2x^(y+1))/(y+1), as of right now returns incorrect result
+
+Build Logarithm:
+
+To build a logarithmic expression, use the following input
+
+log(EXPRESSION_TO_USE_AS_BASE, EXPRESSION_TO_USE_AS_ARGUMENT)
+
+examples:
+
+log(2, 3) -> 1.585
+log(10, x) -> log10(x)
+log(x, y) -> logx(y)
+
+
+
+
