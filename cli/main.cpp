@@ -63,7 +63,11 @@ int main(int argc, char** argv)
                               return expr->Accept(serializer);
                           });
 
-        fmt::println("  {}", fmt::styled(result.value_or(result.error()), result.has_value() ? success_style : err_style));
+        if (result.has_value())
+            fmt::println("  {}", fmt::styled(result.value(), success_style));
+        else
+            fmt::println("  {}", fmt::styled(result.error(), err_style));
+
         std::fflush(stdout);
     }
 
