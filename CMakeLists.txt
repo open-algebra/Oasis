@@ -30,8 +30,15 @@ endif()
 # Adds compiler flags for code coverage. Note that only the Clang compiler is
 # currently supported for code coverage.
 if(OASIS_BUILD_WITH_COVERAGE)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
     add_link_options(-fprofile-instr-generate)
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    add_compile_options(--coverage)
+    add_link_options(--coverage)
+    else()
+    message(WARNING "OASIS_BUILD_WITH_COVERAGE is ON but compiler is not Clang or GCC; coverage flags were not added")
+    endif()
 endif()
 
 # Fetches dependencies and integrates them into the project.
