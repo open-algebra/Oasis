@@ -6,25 +6,21 @@
 #include <string>
 #include <vector>
 
-#include "Oasis/FromPALM.hpp"
-
-#include "Oasis/Real.hpp"
-#include "Oasis/Imaginary.hpp"
 #include "Oasis/Add.hpp"
-#include "Oasis/Subtract.hpp"
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/EulerNumber.hpp"
 #include "Oasis/Exponent.hpp"
-
+#include "Oasis/FromPALM.hpp"
+#include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
-#include "Oasis/Negate.hpp"
-#include "Oasis/Derivative.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Matrix.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Negate.hpp"
 #include "Oasis/Pi.hpp"
-
+#include "Oasis/Real.hpp"
+#include "Oasis/Subtract.hpp"
 
 #include "Oasis/Variable.hpp"
 
@@ -424,7 +420,7 @@ auto ParseOperation(TokenStream& tokens) -> std::expected<std::unique_ptr<Expres
     }
 
     // Unable to parse operation
-    return std::unexpected { ParseError:: UnknownOperator };
+    return std::unexpected { ParseError::UnknownOperator };
 }
 
 auto ParseReal(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
@@ -545,7 +541,7 @@ auto ParsePi(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, 
 
     // Consume 'pi' | 'π'
     tokens.pop();
-        return std::make_unique<Pi>();
+    return std::make_unique<Pi>();
 }
 
 auto ParseEulerNumber(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
