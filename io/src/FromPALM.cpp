@@ -40,7 +40,7 @@ constexpr std::string_view PALM_LOG = "log";
 constexpr std::string_view PALM_INTEGRAL = "int";
 constexpr std::string_view PALM_NEGATE = "neg";
 constexpr std::string_view PALM_DERIVATIVE = "d";
-constexpr std::string_view PALM_MATRIX = "matrix";
+// constexpr std::string_view PALM_MATRIX = "matrix";
 constexpr std::array<std::string_view, 2> PALM_PI = { "pi", "π" };
 constexpr std::string_view PALM_EULER = "e";
 
