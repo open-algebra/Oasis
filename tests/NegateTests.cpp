@@ -9,6 +9,9 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Variable.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
+
+inline Oasis::SimplifyVisitor simplifyVisitor{};
 
 TEST_CASE("Negate", "[Negate]")
 {
@@ -16,7 +19,7 @@ TEST_CASE("Negate", "[Negate]")
         Oasis::Real { 1.0 }
     };
 
-    const auto simplified = negativeOne.Simplify();
+    const auto simplified = negativeOne.Accept(simplifyVisitor).value();
 
     const Oasis::Real expected { -1.0 };
     REQUIRE(simplified->Equals(expected));

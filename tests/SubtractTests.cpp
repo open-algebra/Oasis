@@ -11,6 +11,9 @@
 #include "Oasis/Variable.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/RecursiveCast.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
+
+inline Oasis::SimplifyVisitor simplifyVisitor{};
 
 TEST_CASE("Subtraction", "[Subtract]")
 {
@@ -21,7 +24,7 @@ TEST_CASE("Subtraction", "[Subtract]")
         Oasis::Real { 3.0 }
     };
 
-    auto simplified = subtract.Simplify();
+    auto simplified = subtract.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Is<Oasis::Real>());
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
@@ -37,7 +40,7 @@ TEST_CASE("Generalized Subtraction", "[Subtract][Generalized]")
         Oasis::Real { 3.0 }
     };
 
-    auto simplified = subtract.Simplify();
+    auto simplified = subtract.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Is<Oasis::Real>());
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
@@ -53,7 +56,7 @@ TEST_CASE("Imaginary Subtration", "[Subtract][Imaginary]")
         Oasis::Imaginary {}
     };
 
-    auto spec1 = s1.Simplify();
+    auto spec1 = s1.Accept(simplifyVisitor).value();
 
     REQUIRE(Oasis::Multiply { Oasis::Real { 2.0 }, Oasis::Imaginary {} }.Equals(*spec1));
 }
@@ -83,5 +86,5 @@ TEST_CASE("Simplify Equation with subtraction", "[Subtract]") {
             Oasis::Real{-5.0}
     };
 
-    auto simplified = add1.Simplify();
+    auto simplified = add1.Accept(simplifyVisitor).value();
 }

@@ -9,6 +9,9 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
+
+inline Oasis::SimplifyVisitor simplifyVisitor{};
 
 TEST_CASE("Recursive Cast Considers Commutative Property", "[Symbolic]")
 {
@@ -231,5 +234,5 @@ TEST_CASE("Substitute Binary", "[Substitute]")
 
                     auto after = before.Substitute(Oasis::Variable { "x" }, Oasis::Real { 4.0 }); // after should some std::unique_ptr<Expression> such that it equals 2(4) + 3(4)
                     Oasis::Real twenty {20};
-    REQUIRE(after->Equals(*(twenty.Simplify())));
+    REQUIRE(after->Equals(*(twenty.Accept(simplifyVisitor).value())));
 }

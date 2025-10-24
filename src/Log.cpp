@@ -19,6 +19,7 @@
 #include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Undefined.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
 
 namespace Oasis {
 Log<Expression>::Log(const Expression& base, const Expression& argument)
@@ -82,7 +83,7 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
 auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
-    // TODO: Implement
+    // TODO: Implement with integrate visitor?
     if (this->mostSigOp->Equals(EulerNumber {})) {
         // ln(x)
         if (leastSigOp->Is<Variable>() && RecursiveCast<Variable>(*leastSigOp)->Equals(integrationVariable)) {
@@ -96,11 +97,16 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
             }
         }
     } else {
+        SimplifyVisitor simplifyVisitor{};
         auto numer = Log<Expression> { EulerNumber {}, *(this->leastSigOp->Generalize()) };
         auto denom = Log<Expression> { EulerNumber {}, *(this->mostSigOp->Generalize()) };
         if (numer.Equals(denom))
             return integrationVariable.Generalize();
-        return Divide { Integral { numer, integrationVariable }, denom }.Simplify();
+        auto simplifiedDivide = Divide { Integral { numer, integrationVariable }, denom }.Accept(simplifyVisitor);
+        if (simplifiedDivide)
+        {
+            return std::move(simplifiedDivide.value());
+        }
     }
 
     return Integral<Expression> { *this, integrationVariable }.Generalize();
