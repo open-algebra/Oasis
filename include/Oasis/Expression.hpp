@@ -38,7 +38,8 @@ enum class ExpressionType {
     Matrix,
     Pi,
     EulerNumber,
-    Magnitude
+    Magnitude,
+    Sine
 };
 
 /**
@@ -210,7 +211,7 @@ template <IVisitor T>
 auto Expression::Accept(T& visitor) const -> typename T::RetT
 {
     try {
-        return boost::any_cast<typename T::RetT>(this->AcceptInternal(visitor));
+        return boost::any_cast<typename T::RetT>(this->AcceptInternal(static_cast<Visitor&>(visitor)));
     } catch (boost::bad_any_cast& e) {
         return std::unexpected { e.what() };
     }

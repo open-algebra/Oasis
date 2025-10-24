@@ -20,6 +20,8 @@ set(Oasis_HEADERS
     Oasis/Pi.hpp
     Oasis/Real.hpp
     Oasis/RecursiveCast.hpp
+    Oasis/SimplifyVisitor.hpp
+    Oasis/Sine.hpp
     Oasis/Subtract.hpp
     Oasis/UnaryExpression.hpp
     Oasis/Undefined.hpp

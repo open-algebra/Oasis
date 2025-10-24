@@ -13,6 +13,7 @@
 #include "Expression.hpp"
 #include "RecursiveCast.hpp"
 #include "Visit.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
 
 namespace Oasis {
 /**
@@ -361,11 +362,18 @@ public:
 
     auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> override
     {
+        // TODO: FIX WITH VISITOR?
         std::unique_ptr<Expression> left = ((GetMostSigOp()).Copy())->Substitute(var, val);
         std::unique_ptr<Expression> right = ((GetLeastSigOp().Copy())->Substitute(var, val));
         DerivedT<Expression, Expression> comb = DerivedT<Expression, Expression> { *left, *right };
-        auto ret = comb.Simplify();
-        return ret;
+
+        Oasis::SimplifyVisitor simplifyVisitor{};
+        auto simplified = comb.Accept(simplifyVisitor);
+        if (!simplified)
+        {
+            return comb.Generalize();
+        }
+        return std::move(simplified.value());
     }
     /**
      * Swaps the operands of this expression.
