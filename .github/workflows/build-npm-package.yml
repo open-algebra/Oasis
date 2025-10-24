@@ -19,6 +19,7 @@ concurrency:
 jobs:
     build_npm_package:
         runs-on: ubuntu-latest
+        container: ghcr.io/open-algebra/emscripten:main
 
         steps:
             # Checks out the repository.
@@ -30,8 +31,6 @@ jobs:
             shell: bash
             run: |
               echo "build-dir=$(pwd)/build" >> "$GITHUB_OUTPUT"
-
-          - uses: mymindstorm/setup-emsdk@v14
 
             # Configures CMake in a subdirectory.
           - name: Configure CMake
