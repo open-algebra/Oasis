@@ -7,13 +7,17 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
+
 
 namespace Oasis {
 
 auto SolveLinearSystems(std::vector<std::unique_ptr<Expression>>& exprs) -> std::map<std::string, double>
 {
+    Oasis::SimplifyVisitor simplifyVisitor{};
     for (auto& expr : exprs) {
-        expr = expr->Simplify();
+        auto simplified = expr->Accept(simplifyVisitor);
+        expr = simplified.value()->Generalize();
     }
     auto matrices = ConstructMatrices(exprs);
     auto A = matrices.first.first;

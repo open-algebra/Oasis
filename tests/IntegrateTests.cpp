@@ -7,6 +7,9 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
+
+inline Oasis::SimplifyVisitor simplifyVisitor{};
 
 TEST_CASE("Integrate Nonzero number", "[Integrate][Real][Nonzero]")
 {
@@ -44,7 +47,7 @@ TEST_CASE("Integrate Same Variable", "[Integrate][Variable][Same]")
         Oasis::Variable { "C" }
     };
 
-    auto ptr = integral.Simplify();
+    auto ptr = integral.Accept(simplifyVisitor).value();
     auto integrated = var.Integrate(var);
     REQUIRE(ptr->Equals(*integrated));
 }
@@ -73,7 +76,7 @@ TEST_CASE("Integrate Power Rule", "[Integrate][Exponent][Power]")
             Oasis::Exponent { Oasis::Variable { var.GetName() }, Oasis::Real { 3.0f } },
             Oasis::Real { 3.0f } },
         Oasis::Variable { "C" } } };
-    auto ptr = integral.Simplify();
+    auto ptr = integral.Accept(simplifyVisitor).value();
 
     auto integrated = integrand.Integrate(var);
     REQUIRE((*integrated).Equals(*ptr));
@@ -95,7 +98,7 @@ TEST_CASE("Integrate Constant Rule Multiply", "[Integrate][Multiply][Constant]")
                 "C" } }
     };
 
-    auto ptr = integral.Simplify();
+    auto ptr = integral.Accept(simplifyVisitor).value();
     auto integrated = integrand.Integrate(var);
     REQUIRE((integrated->Equals(*ptr)));
 }
@@ -115,9 +118,9 @@ TEST_CASE("Integrate Constant Rule Divide", "[Integrate][Divide][Constant]")
             Oasis::Variable { "C" } }
     };
     auto integrated = integrand.Integrate(var);
-    auto simplified = integrated->Simplify();
+    auto simplified = integrated->Accept(simplifyVisitor).value();
 
-    REQUIRE((simplified->Equals(*(integral.Simplify()))));
+    REQUIRE((simplified->Equals(*(integral.Accept(simplifyVisitor).value()))));
 }
 
 TEST_CASE("Integrate Add Rule Different Terms", "[Integrate][Add][Different]")
@@ -137,9 +140,9 @@ TEST_CASE("Integrate Add Rule Different Terms", "[Integrate][Add][Different]")
             Oasis::Variable { "C" } }
     };
     auto integrated = integrand.Integrate(var);
-    auto simplified = integrated->Simplify();
+    auto simplified = integrated->Accept(simplifyVisitor).value();
 
-    REQUIRE(simplified->Equals(*(integral.Simplify())));
+    REQUIRE(simplified->Equals(*(integral.Accept(simplifyVisitor).value())));
 }
 
 TEST_CASE("Integrate Subtract Rule Different Terms", "[Integrate][Subtract][Different]")
@@ -160,7 +163,7 @@ TEST_CASE("Integrate Subtract Rule Different Terms", "[Integrate][Subtract][Diff
     };
     auto integrated = integrand.Integrate(var);
 
-    REQUIRE(integrated->Equals(*(integral.Simplify())));
+    REQUIRE(integrated->Equals(*(integral.Accept(simplifyVisitor).value())));
 }
 
 TEST_CASE("Integrate Add Rule Like Terms", "[Integrate][Add][Like]")
@@ -175,7 +178,7 @@ TEST_CASE("Integrate Add Rule Like Terms", "[Integrate][Add][Like]")
     };
 
     auto integrated = integrand.Integrate(var);
-    auto simplified = integrated->Simplify();
+    auto simplified = integrated->Accept(simplifyVisitor).value();
 
-    REQUIRE(simplified->Equals(*(integral.Simplify())));
+    REQUIRE(simplified->Equals(*(integral.Accept(simplifyVisitor).value())));
 }

@@ -10,7 +10,7 @@
 
 namespace Oasis {
 
-template <typename OperandT = Expression>
+template <IExpression OperandT = Expression>
 class Negate final : public UnaryExpression<Negate, OperandT> {
 public:
     Negate() = default;
@@ -24,6 +24,7 @@ public:
     {
     }
 
+    [[deprecated]]
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
     {
         return Multiply {
@@ -39,7 +40,7 @@ public:
         return Negate<Expression> {
             *operandDerivative
         }
-            .Simplify();
+            .Generalize(); // TODO: FIX WITH VISITOR
     }
 
     EXPRESSION_TYPE(Negate)

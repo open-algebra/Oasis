@@ -19,6 +19,7 @@
 #include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Undefined.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
 
 namespace Oasis {
 Log<Expression>::Log(const Expression& base, const Expression& argument)
@@ -69,6 +70,7 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
+    // TODO: ADD TO SIMPLIFY VISITOR
     // log[a](a) = 1
     if (const auto sameCase = RecursiveCast<Log<Expression, Expression>>(simplifiedLog); sameCase != nullptr) {
         if (sameCase->leastSigOp->Equals(*sameCase->mostSigOp)) {
@@ -89,7 +91,7 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
 auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
-    // TODO: Implement
+    // TODO: Implement with integrate visitor?
     if (this->mostSigOp->Equals(EulerNumber {})) {
         // ln(x)
         if (leastSigOp->Is<Variable>() && RecursiveCast<Variable>(*leastSigOp)->Equals(integrationVariable)) {
@@ -138,8 +140,11 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
 
     } else {
         // Use log identity Log[b](a) = Log(a)/Log(b)
+        SimplifyVisitor simplifyVisitor{};
         auto numer = Log<Expression> { EulerNumber {}, *(this->leastSigOp->Generalize()) };
         auto denom = Log<Expression> { EulerNumber {}, *(this->mostSigOp->Generalize()) };
+
+        // TODO: FIX
         if (numer.Equals(denom))
             return Add { integrationVariable, Variable { "C" } }.Generalize();
 
@@ -166,6 +171,7 @@ auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVari
         Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(differentiationVariable) };
         return result.Simplify();
     } else {
+        // TODO: FIX
         if (auto RealCase = RecursiveCast<Real>(*mostSigOp); RealCase != nullptr) {
             Divide derivative { Oasis::Real { 1.0 }, Multiply<Expression> { *leastSigOp, Log { EulerNumber {}, *mostSigOp } } };
             Derivative chain { *leastSigOp, differentiationVariable };

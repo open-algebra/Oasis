@@ -21,6 +21,7 @@ public:
 
     Derivative(const Expression& Exp, const Expression& Var);
 
+    [[deprecated]]
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> override;

@@ -16,6 +16,7 @@
 #include "Real.hpp"
 #include "RecursiveCast.hpp"
 #include "UnaryExpression.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
 
 namespace Oasis {
 
@@ -24,7 +25,7 @@ namespace Oasis {
  * @tparam OperandT Type of child operand
  * This represents magnitude/absolute value
  */
-template <typename OperandT>
+template <IExpression OperandT>
 class Magnitude final : public UnaryExpression<Magnitude, OperandT> {
 public:
     Magnitude() = default;
@@ -38,6 +39,7 @@ public:
     {
     }
 
+    [[deprecated]]
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
     {
         auto simpOp = this->GetOperand().Simplify();
@@ -79,12 +81,12 @@ public:
     [[nodiscard]] auto Differentiate(const Expression& var) const -> std::unique_ptr<Expression> override
     {
         // TODO: Implement
+        Oasis::SimplifyVisitor simplifyVisitor {};
 
         const std::unique_ptr<Expression> operandDerivative = this->GetOperand().Differentiate(var);
         return Magnitude<Expression> {
             *operandDerivative
-        }
-            .Simplify();
+        }.Generalize();
     }
 
     [[nodiscard]] auto Integrate(const Expression& integrationVar) const -> std::unique_ptr<Expression> override
@@ -93,8 +95,7 @@ public:
         const std::unique_ptr<Expression> operandDerivative = this->GetOperand().Integrate(integrationVar);
         return Magnitude<Expression> {
             *operandDerivative
-        }
-            .Simplify();
+        }.Generalize();
     }
 
     EXPRESSION_TYPE(Magnitude)
