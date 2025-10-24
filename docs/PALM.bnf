@@ -1,0 +1,40 @@
+/* Start of the grammar */
+Expression ::= '(' Operation ')'
+
+/* Operations */
+Operation ::= Real | Imaginary | Variable | Add | Subtract | Multiply | Divide | Exponent | Log | Integral | Limit | Derivative | Negate | Sqrt | Matrix | Pi | EulerNumber | Magnitude
+
+Real ::= 'real' 'std::stod' | 'r' 'std::stod'
+
+Imaginary ::= 'i' | 'j'
+
+Variable ::= 'var' 'std::string' | 'v' 'std::string'
+
+Add ::= '+' BinaryOperationElements
+
+Subtract ::= '-' BinaryOperationElements
+
+Multiply ::= '*' BinaryOperationElements | '×' BinaryOperationElements
+
+Divide ::= '/' BinaryOperationElements | '÷' BinaryOperationElements
+
+Exponent ::= '^' BinaryOperationElements
+
+Log ::= 'log' BinaryOperationElements | 'l' BinaryOperationElements | 'ln' UnaryOperationElements | 'log' UnaryOperationElements
+
+Integral ::= 'int' BinaryOperationElements | '∫' BinaryOperationElements
+
+Negate ::= 'neg' Expression
+
+Derivative ::= 'd' BinaryOperationElements
+
+Matrix ::= 'matrix' UnaryOperationElements
+
+Pi ::= 'pi' | 'π'
+
+EulerNumber ::= 'e'
+
+/* Expression Types */
+BinaryOperationElements ::= Expression Expression+
+UnaryOperationElements ::= Expression+
+NullaryOperationElements ::= Expression*
