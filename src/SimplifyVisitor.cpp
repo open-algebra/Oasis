@@ -1316,6 +1316,13 @@ auto SimplifyVisitor::TypedVisit(const Log<>& logIn) -> RetT
         }
     }
 
+    // log[a](a) = 1
+    if (const auto sameCase = RecursiveCast<Log<Expression, Expression>>(simplifiedLog); sameCase != nullptr) {
+        if (sameCase->leastSigOp->Equals(*sameCase->mostSigOp)) {
+            return gsl::not_null{Real { 1 }.Generalize()};
+        }
+    }
+
     // log[a](b^x) = x * log[a](b)
     if (const auto expCase = RecursiveCast<Log<Expression, Exponent<>>>(simplifiedLog); expCase != nullptr) {
         const auto exponent = expCase->GetLeastSigOp();

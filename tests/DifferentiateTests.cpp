@@ -330,7 +330,7 @@ TEST_CASE("Variable Base Exponential Derivative", "[Derivative][Exponent]")
     Oasis::Derivative diffExp{exp, Oasis::Variable{"x"}};
     Oasis::Multiply expected{exp , Oasis::Add{ Oasis::Multiply {Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"x"}},
                                     Oasis::Real{2.0}},Oasis::Real{2.0}},};
-    auto simplified = diffExp.Simplify();
+    auto simplified = diffExp.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Equals(expected));
 }
 

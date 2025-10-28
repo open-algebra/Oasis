@@ -70,7 +70,6 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
         }
     }
 
-    // TODO: ADD TO SIMPLIFY VISITOR
     // log[a](a) = 1
     if (const auto sameCase = RecursiveCast<Log<Expression, Expression>>(simplifiedLog); sameCase != nullptr) {
         if (sameCase->leastSigOp->Equals(*sameCase->mostSigOp)) {
