@@ -198,7 +198,6 @@ public:
         return std::make_unique<DerivedGeneralized>(generalized);
     }
 
-    [[deprecated]]
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
     {
         return Generalize()->Simplify();
