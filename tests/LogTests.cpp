@@ -233,9 +233,9 @@ TEST_CASE("Change of Base", "[Log][Divide]")
 
 TEST_CASE("Log of Equal Base and Argument", "[Log][Expression]") {
     Oasis::Log log {Oasis::Variable{"x"},Oasis::Variable {"x"}};
-    auto simplifiedLog = log.Simplify();
+    auto simplifiedLog = log.Accept(simplifyVisitor);
     Oasis::Real expected {1};
-    REQUIRE(simplifiedLog->Equals(expected));
+    REQUIRE(simplifiedLog.value()->Equals(expected));
 }
 
 TEST_CASE("Undefined", "[UNDEFINED][UNDEFINED]") {
@@ -254,8 +254,10 @@ TEST_CASE("Integral of Natural Log", "[Integral][Log][Euler]")
     auto simp2 = int2.Accept(simplifyVisitor).value();
 
     // TODO: FIX
-    REQUIRE(simp1->Equals(*Oasis::Add {Oasis::Multiply{Oasis::Subtract{Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"x"}}, Oasis::Real{1}} , Oasis::Variable{"x"} }, Oasis::Variable{"C"} }.Simplify()));
-    REQUIRE(simp2->Equals(*Oasis::Add {Oasis::Multiply{Oasis::Subtract{Oasis::Log{Oasis::EulerNumber{}, Oasis::Multiply {Oasis::Real{5} ,Oasis::Variable{"x"}}}, Oasis::Real{1}} , Oasis::Variable{"x"} }, Oasis::Variable{"C"} }.Simplify()));
+    auto expected1 = Oasis::Add {Oasis::Multiply{Oasis::Subtract{Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"x"}}, Oasis::Real{1}} , Oasis::Variable{"x"} }, Oasis::Variable{"C"} }.Accept(simplifyVisitor).value();
+    auto expected2 = Oasis::Add {Oasis::Multiply{Oasis::Subtract{Oasis::Log{Oasis::EulerNumber{}, Oasis::Multiply {Oasis::Real{5} ,Oasis::Variable{"x"}}}, Oasis::Real{1}} , Oasis::Variable{"x"} }, Oasis::Variable{"C"} }.Accept(simplifyVisitor).value();
+    REQUIRE(simp1->Equals(*expected1));
+    REQUIRE(simp2->Equals(*expected2));
     }
 
 TEST_CASE("Integral of Non-Natural variable base Log", "[Integral][Log][Variable]")
@@ -273,9 +275,8 @@ TEST_CASE("Integral of Non-Natural variable base Log", "[Integral][Log][Variable
     auto simp2 = int2.Accept(simplifyVisitor).value();
     auto simpEq = intEq.Accept(simplifyVisitor).value();
 
-    // TODO: FIX
-    REQUIRE(simp1->Equals(*eq1.Accept(simplifyVisitor)));
-    REQUIRE(simp2->Equals(*eq2.Accept(simplifyVisitor)));
+    REQUIRE(simp1->Equals(*eq1.Accept(simplifyVisitor).value()));
+    REQUIRE(simp2->Equals(*eq2.Accept(simplifyVisitor).value()));
     REQUIRE(simpEq->Equals(Oasis::Add {Oasis::Variable{"x"}, Oasis::Variable{"C"} }));
 }
 
