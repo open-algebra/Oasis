@@ -91,6 +91,7 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
 auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // TODO: Implement with integrate visitor?
+    SimplifyVisitor simplifyVisitor{};
     if (this->mostSigOp->Equals(EulerNumber {})) {
         // ln(x)
         if (leastSigOp->Is<Variable>() && RecursiveCast<Variable>(*leastSigOp)->Equals(integrationVariable)) {
@@ -98,7 +99,12 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
             // alternate form
             // return Subtract<Expression> { Multiply<Expression> { integrationVariable, *this }, integrationVariable }.Simplify();
         }
-        auto derivative = Derivative<Expression> { *leastSigOp, integrationVariable }.Simplify();
+        auto der_Simp = Derivative<Expression> { *leastSigOp, integrationVariable }.Accept(simplifyVisitor);
+        if (!der_Simp){
+            return this->Generalize();
+        }
+
+        auto derivative = std::move(der_Simp).value();
 
         if (derivative->Equals(Real { 0 }))
             return Add { Multiply { integrationVariable, *this }, Variable { "C" } }.Simplify();
@@ -162,25 +168,37 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
 
 auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
+    SimplifyVisitor simplifyVisitor{};
     // d(log_e(6x))/dx = 1/6x * 6
     if (auto lnCase = RecursiveCast<EulerNumber>(*mostSigOp); lnCase != nullptr) {
         Divide derivative { Oasis::Real { 1.0 }, *leastSigOp };
         Derivative chain { *leastSigOp, differentiationVariable };
 
         Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(differentiationVariable) };
-        return result.Simplify();
+        auto simp = result.Accept(simplifyVisitor);
+        if (!simp){
+            return result.Generalize();
+        }
+        return std::move(simp).value();
     } else {
-        // TODO: FIX
         if (auto RealCase = RecursiveCast<Real>(*mostSigOp); RealCase != nullptr) {
             Divide derivative { Oasis::Real { 1.0 }, Multiply<Expression> { *leastSigOp, Log { EulerNumber {}, *mostSigOp } } };
             Derivative chain { *leastSigOp, differentiationVariable };
             Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(differentiationVariable) };
-            return result.Simplify();
+            auto simp = result.Accept(simplifyVisitor);
+            if (!simp){
+                return result.Generalize();
+            }
+            return std::move(simp).value();
         } else { // Use log identity and Quotient rule
             Divide result { Subtract { Multiply { Log { EulerNumber {}, *mostSigOp }, Derivative { Log { EulerNumber {}, *leastSigOp }, differentiationVariable } },
                                 Multiply { Log { EulerNumber {}, *leastSigOp }, Derivative { Log { EulerNumber {}, *mostSigOp }, differentiationVariable } } },
                 Exponent { Log { EulerNumber {}, *mostSigOp }, Real { 2 } } };
-            return result.Simplify();
+            auto simp = result.Accept(simplifyVisitor);
+            if (!simp){
+                return result.Generalize();
+            }
+            return std::move(simp).value();
         }
     }
 }
