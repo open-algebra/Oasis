@@ -9,7 +9,6 @@ add_executable(OasisIOTests ${OASIS_IO_TESTS_SOURCES})
 if(MSVC)
     target_compile_options(OasisIOTests PRIVATE /W3 /WX)
     target_compile_options(OasisIOTests PRIVATE /bigobj)
-    target_compile_options(OasisIOTests PRIVATE /utf-8)
 else()
     target_compile_options(OasisIOTests PRIVATE -Wall -Wextra -Wpedantic
                                                 -Werror)
