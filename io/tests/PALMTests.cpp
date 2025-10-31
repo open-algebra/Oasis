@@ -836,13 +836,6 @@ TEST_CASE("Parse Constant Pi (pi)", "[FromPALM][Parsing]")
     REQUIRE((*expr)->Is<Oasis::Pi>());
 }
 
-TEST_CASE("Parse Constant Pi (π)", "[FromPALM][Parsing]")
-{
-    const auto expr = Oasis::FromPALM("( π )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Is<Oasis::Pi>());
-}
-
 TEST_CASE("Parse Constant Euler's Number", "[FromPALM][Parsing]")
 {
     const auto expr = Oasis::FromPALM("( e )");

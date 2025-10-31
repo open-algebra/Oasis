@@ -41,7 +41,7 @@ constexpr std::string_view PALM_INTEGRAL = "int";
 constexpr std::string_view PALM_NEGATE = "neg";
 constexpr std::string_view PALM_DERIVATIVE = "d";
 // constexpr std::string_view PALM_MATRIX = "matrix";
-constexpr std::array<std::string_view, 3> PALM_PI = { "pi", "π", "╧Ç" };
+constexpr std::array<std::string_view, 1> PALM_PI = { "pi" };
 constexpr std::string_view PALM_EULER = "e";
 
 namespace Oasis {
