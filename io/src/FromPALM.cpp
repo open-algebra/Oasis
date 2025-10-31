@@ -268,8 +268,8 @@ auto ParseBinaryOperationElements(TokenStream& tokens) -> std::expected<std::vec
  */
 auto ParseUnaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseError>;
 
-/** Parses binary elements from a stream of tokens.
- * BinaryElements -> Expression*
+/** Parses nullary elements from a stream of tokens.
+ * NullaryOperationElements -> Expression*
  * @param tokens The stream of tokens to parse.
  * @return The parsed expressions.
  */
