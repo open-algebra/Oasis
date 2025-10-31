@@ -261,7 +261,7 @@ auto ParseBinaryOperationNonAssociativeAndCommutative(std::string_view token, To
  */
 auto ParseBinaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseError>;
 
-/** Parses binary elements from a stream of tokens.
+/** Parses unary elements from a stream of tokens.
  * UnaryElements -> Expression Expression*
  * @param tokens The stream of tokens to parse.
  * @return The parsed expressions.
