@@ -102,9 +102,14 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
 auto Subtract<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
+    SimplifyVisitor simplifyVisitor{};
     // Single diff variable
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
-        auto simplifiedSub = this->Simplify();
+        auto s = this->Accept(simplifyVisitor);
+        if (!s) {
+            return this->Generalize();
+        }
+        auto simplifiedSub = std::move(s).value();
 
         // Make sure we're still subtracting
         if (auto adder = RecursiveCast<Subtract<Expression>>(*simplifiedSub); adder != nullptr) {
@@ -122,7 +127,13 @@ auto Subtract<Expression>::Differentiate(const Expression& differentiationVariab
                 return Copy();
             }
 
-            return std::make_unique<Subtract<Expression, Expression>>(Subtract<Expression, Expression> { *(specializedLeft->Copy()), *(specializedRight->Copy()) })->Simplify();
+            auto us = std::make_unique<Subtract<Expression, Expression>>(Subtract<Expression, Expression> { *(specializedLeft->Copy()), *(specializedRight->Copy()) });
+            auto s1 = us->Accept(simplifyVisitor);
+            if (!s1){
+                return us;
+            }
+            return std::move(s1).value();
+
         }
         // If not, use other differentiation technique
         else {
@@ -134,9 +145,14 @@ auto Subtract<Expression>::Differentiate(const Expression& differentiationVariab
 
 auto Subtract<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
+    SimplifyVisitor simplifyVisitor{};
     // Single integration variable
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
-        auto simplifiedSub = this->Simplify();
+        auto s = this->Accept(simplifyVisitor);
+        if (!s){
+            return this->Generalize();
+        }
+        auto simplifiedSub = std::move(s).value();
 
         // Make sure we're still subtracting
         if (auto adder = RecursiveCast<Subtract<Expression>>(*simplifiedSub); adder != nullptr) {

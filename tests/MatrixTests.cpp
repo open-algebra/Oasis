@@ -9,8 +9,11 @@
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/RecursiveCast.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
 
 #define EPSILON 10E-6
+
+inline Oasis::SimplifyVisitor simplifyVisitor{};
 
 TEST_CASE("Create Empty Matrix", "[Matrix][Create][Empty]")
 {
@@ -67,7 +70,7 @@ TEST_CASE("Add Matrices", "[Matrix][Add]")
     Oasis::Matrix mat2{Oasis::MatrixXXD{{8,7},
                                         {6,5}}};
 
-    auto result = Oasis::Add<Oasis::Expression>{mat1, mat2}.Simplify();
+    auto result = Oasis::Add<Oasis::Expression>{mat1, mat2}.Accept(simplifyVisitor).value();
     auto spec = Oasis::RecursiveCast<Oasis::Matrix>(*result);
 
     REQUIRE(spec != nullptr);
@@ -82,7 +85,7 @@ TEST_CASE("Subtract Matrices", "[Matrix][Subtract]")
     Oasis::Matrix mat2{Oasis::MatrixXXD{{5,6},
                                         {7,8}}};
 
-    auto result = Oasis::Subtract<Oasis::Expression, Oasis::Expression>{mat2, mat1}.Simplify();
+    auto result = Oasis::Subtract<Oasis::Expression, Oasis::Expression>{mat2, mat1}.Accept(simplifyVisitor).value();
     auto spec = Oasis::RecursiveCast<Oasis::Matrix>(*result);
 
     REQUIRE(spec != nullptr);
@@ -95,8 +98,8 @@ TEST_CASE("Multiply Matrix and Real", "[Matrix][Real][Multiply]")
     Oasis::Matrix mat1{Oasis::MatrixXXD{{1,2},
                                         {3,4}}};
 
-    auto result1 = Oasis::Multiply{a, mat1}.Simplify();
-    auto result2 = Oasis::Multiply{mat1, a}.Simplify();
+    auto result1 = Oasis::Multiply{a, mat1}.Accept(simplifyVisitor).value();
+    auto result2 = Oasis::Multiply{mat1, a}.Accept(simplifyVisitor).value();
     auto spec1 = Oasis::RecursiveCast<Oasis::Matrix>(*result1);
     auto spec2 = Oasis::RecursiveCast<Oasis::Matrix>(*result2);
 
@@ -125,7 +128,7 @@ TEST_CASE("Multiply Matrices, same dimensions", "[Matrix][Multiply]")
     Oasis::Matrix mat1{Oasis::MatrixXXD{{5,6},{7,8}}};
     Oasis::Matrix mat2{Oasis::MatrixXXD{{1,2},{3,4}}};
     Oasis::Matrix expected{Oasis::MatrixXXD{{23,34},{31,46}}};
-    auto result = Oasis::Multiply{mat1, mat2}.Simplify();
+    auto result = Oasis::Multiply{mat1, mat2}.Accept(simplifyVisitor).value();
     REQUIRE(result->Equals(expected));
 }
 
@@ -142,12 +145,12 @@ TEST_CASE("Multiply Matrices, different dimensions", "[Matrix][Multiply]")
     Oasis::Matrix expected23{Oasis::MatrixXXD{{9,12,15},{19,26,33},{29,40,51}}};
     Oasis::Matrix expected32{Oasis::MatrixXXD{{22,28},{49,64}}};
 
-    auto res12 = Oasis::Multiply{mat1, mat2}.Simplify();
-    auto res21 = Oasis::Multiply{mat2, mat1}.Simplify();
-    auto res13 = Oasis::Multiply{mat1, mat3}.Simplify();
-    auto res31 = Oasis::Multiply{mat3, mat1}.Simplify();
-    auto res23 = Oasis::Multiply{mat2, mat3}.Simplify();
-    auto res32 = Oasis::Multiply{mat3, mat2}.Simplify();
+    auto res12 = Oasis::Multiply{mat1, mat2}.Accept(simplifyVisitor).value();
+    auto res21 = Oasis::Multiply{mat2, mat1}.Accept(simplifyVisitor).value();
+    auto res13 = Oasis::Multiply{mat1, mat3}.Accept(simplifyVisitor).value();
+    auto res31 = Oasis::Multiply{mat3, mat1}.Accept(simplifyVisitor).value();
+    auto res23 = Oasis::Multiply{mat2, mat3}.Accept(simplifyVisitor).value();
+    auto res32 = Oasis::Multiply{mat3, mat2}.Accept(simplifyVisitor).value();
 
     REQUIRE(res12->Equals(expected12));
     REQUIRE(res21->Equals(expected21));

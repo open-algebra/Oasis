@@ -121,9 +121,14 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
 auto Exponent<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
+    SimplifyVisitor simplifyVisitor{};
     // variable integration
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
-        auto simplifiedExponent = this->Simplify();
+        auto simplified = this->Accept(simplifyVisitor);
+        if (!simplified){
+            return this->Generalize();
+        }
+        auto simplifiedExponent = std::move(simplified).value();
 
         std::unique_ptr<Expression> integral;
         // Variable with a constant power
@@ -153,8 +158,13 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) cons
 auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // variable diff
+    SimplifyVisitor simplifyVisitor{};
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
-        auto simplifiedExponent = this->Simplify();
+        auto simplified = this->Accept(simplifyVisitor);
+        if (!simplified){
+            return this->Generalize();
+        }
+        auto simplifiedExponent = std::move(simplified).value();
 
         std::unique_ptr<Expression> diff;
         // Variable with a constant power

@@ -239,9 +239,10 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
 auto Divide<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
+    SimplifyVisitor simplifyVisitor{};
     // Single integration variable
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
-        auto simplifiedDiv = this->Simplify();
+        auto simplifiedDiv = this->Accept(simplifyVisitor).value();
 
         // Constant case - Integrand over a divisor
         if (auto constant = RecursiveCast<Multiply<Expression, Real>>(*simplifiedDiv); constant != nullptr) {
@@ -256,9 +257,10 @@ auto Divide<Expression>::Integrate(const Expression& integrationVariable) const 
 
 auto Divide<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
+    SimplifyVisitor simplifyVisitor{};
     // Single differentiation variable
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
-        auto simplifiedDiv = this->Simplify();
+        auto simplifiedDiv = this->Accept(simplifyVisitor).value();
 
         // Constant case - differentiation over a divisor
         if (auto constant = RecursiveCast<Divide<Expression, Real>>(*simplifiedDiv); constant != nullptr) {
@@ -284,11 +286,11 @@ auto Divide<Expression>::Differentiate(const Oasis::Expression& differentiationV
             auto rightexp = quotient->GetLeastSigOp().Copy();
             auto leftDiff = leftexp->Differentiate(differentiationVariable);
             auto rightDiff = rightexp->Differentiate(differentiationVariable);
-            auto mult1 = Multiply<Expression, Expression>(Multiply<Expression, Expression> { *(rightexp->Simplify()), *(leftDiff->Simplify()) }).Simplify()->Simplify();
-            auto mult2 = Multiply<Expression, Expression>(Multiply<Expression, Expression> { *(leftexp->Simplify()), *(rightDiff->Simplify()) }).Simplify()->Simplify();
-            auto numerator = Subtract<Expression, Expression>(Subtract<Expression, Expression> { *mult1, *mult2 }).Simplify();
-            auto denominator = Multiply<Expression, Expression>(Multiply<Expression, Expression> { *(rightexp->Simplify()), *(rightexp->Simplify()) }).Simplify();
-            return Divide<Expression, Expression>({ *(numerator->Simplify()), *(denominator->Simplify()) }).Simplify();
+            auto mult1 = Multiply<Expression, Expression>(Multiply<Expression, Expression> { *(rightexp->Simplify()), *(leftDiff->Simplify()) }).Accept(simplifyVisitor).value()->Simplify();
+            auto mult2 = Multiply<Expression, Expression>(Multiply<Expression, Expression> { *(leftexp->Simplify()), *(rightDiff->Simplify()) }).Accept(simplifyVisitor).value()->Simplify();
+            auto numerator = Subtract<Expression, Expression>(Subtract<Expression, Expression> { *mult1, *mult2 }).Accept(simplifyVisitor).value();
+            auto denominator = Multiply<Expression, Expression>(Multiply<Expression, Expression> { *(rightexp->Simplify()), *(rightexp->Simplify()) }).Accept(simplifyVisitor).value();
+            return Divide<Expression, Expression>({ *(numerator->Simplify()), *(denominator->Simplify()) }).Accept(simplifyVisitor).value();
         }
     }
 

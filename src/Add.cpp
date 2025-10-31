@@ -238,8 +238,15 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
 auto Add<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable
+    SimplifyVisitor simplifyVisitor;
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
-        auto simplifiedAdd = this->Simplify();
+        auto simplified = this->Accept(simplifyVisitor);
+
+        if (!simplified){
+            return this->Generalize();
+        }
+
+        auto simplifiedAdd = std::move(simplified).value();
 
         // Make sure we're still adder
         if (auto adder = RecursiveCast<Add<Expression>>(*simplifiedAdd); adder != nullptr) {
@@ -260,8 +267,11 @@ auto Add<Expression>::Integrate(const Expression& integrationVariable) const -> 
                     *(specializedLeft->GetMostSigOp().Copy()), *(specializedRight->GetMostSigOp().Copy()) },
                 Variable { "C" }
             };
-
-            return add.Simplify();
+            auto postSimplify = add.Accept(simplifyVisitor);
+            if (!postSimplify){
+                return add.Generalize();
+            }
+            return std::move(postSimplify).value();
         }
         // If not, use other integration technique
         else {
@@ -278,7 +288,12 @@ auto Add<Expression>::Differentiate(const Expression& differentiationVariable) c
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
         auto left = mostSigOp->Differentiate(differentiationVariable);
         auto right = leastSigOp->Differentiate(differentiationVariable);
-        return Add<Expression> { *left, *right }.Simplify();
+        SimplifyVisitor simplifyVisitor;
+        auto simplified = Add<Expression> { *left, *right }.Accept(simplifyVisitor);
+        if (!simplified){
+            Add<Expression> { *left, *right };
+        }
+        return std::move(simplified).value();
     }
     return Copy();
 }

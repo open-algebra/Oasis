@@ -327,9 +327,14 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
 auto Multiply<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
+    SimplifyVisitor simplifyVisitor{};
     // Single integration variable
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
-        auto simplifiedMult = this->Simplify();
+        auto s = this->Accept(simplifyVisitor);
+        if (!s){
+            return this->Generalize();
+        }
+        auto simplifiedMult = std::move(s).value();
 
         // Constant case - Constant number multiplied by integrand
         if (auto constant = RecursiveCast<Multiply<Real, Expression>>(*simplifiedMult); constant != nullptr) {
@@ -357,9 +362,14 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) cons
 
 auto Multiply<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
+    SimplifyVisitor simplifyVisitor{};
     // Single integration variable
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
-        auto simplifiedMult = this->Simplify();
+        auto s = this->Accept(simplifyVisitor);
+        if (!s){
+            return this->Generalize();
+        }
+        auto simplifiedMult = std::move(s).value();
 
         // Constant case - Constant number multiplied by differentiate
         if (auto constant = RecursiveCast<Multiply<Real, Expression>>(*simplifiedMult); constant != nullptr) {
