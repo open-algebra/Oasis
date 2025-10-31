@@ -20,17 +20,15 @@ Divide ::= '/' BinaryOperationElements | '÷' BinaryOperationElements
 
 Exponent ::= '^' BinaryOperationElements
 
-Log ::= 'log' BinaryOperationElements | 'l' BinaryOperationElements | 'ln' UnaryOperationElements | 'log' UnaryOperationElements
+Log ::= 'log' BinaryOperationElements
 
-Integral ::= 'int' BinaryOperationElements | '∫' BinaryOperationElements
+Integral ::= 'int' BinaryOperationElements | BinaryOperationElements
 
 Negate ::= 'neg' Expression
 
 Derivative ::= 'd' BinaryOperationElements
 
-Matrix ::= 'matrix' UnaryOperationElements
-
-Pi ::= 'pi' | 'π'
+Pi ::= 'pi'
 
 EulerNumber ::= 'e'
 
