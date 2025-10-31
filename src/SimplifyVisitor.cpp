@@ -1399,7 +1399,7 @@ auto SimplifyVisitor::TypedVisit(const Derivative<>& derivative) -> RetT
     if (!simplifiedDiff){
         return simplifiedDiff;
     }
-    return gsl::not_null{std::move(simplifiedDiff.value())};
+    return gsl::not_null{std::move(simplifiedDiff.value())->Accept(*this).value()};
 }
 
 auto SimplifyVisitor::TypedVisit(const Integral<>& integral) -> RetT

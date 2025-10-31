@@ -108,8 +108,17 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (auto img = RecursiveCast<Imaginary>(*addend); img != nullptr) {
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Multiply<Expression, Imaginary>>(*vals[i]); valI != nullptr) {
-                    vals[i] = Multiply<Expression> { *(Add<Expression> { valI->GetMostSigOp(), Real { 1.0 } }.Simplify()), Imaginary {} }.Generalize();
-                    break;
+                    auto e = Add<Expression> { valI->GetMostSigOp(), Real { 1.0 } };
+                    SimplifyVisitor sv{};
+                    auto s = e.Accept(sv);
+                    if (!s){
+                        vals[i] = Multiply<Expression> { e, Imaginary {} }.Generalize();
+                        break;
+                    } else {
+                        vals[i] = Multiply<Expression> { *(std::move(s).value()), Imaginary {} }.Generalize();
+                        break;
+                    }
+
                 }
             }
             if (i >= vals.size()) {
@@ -122,8 +131,17 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (auto img = RecursiveCast<Multiply<Expression, Imaginary>>(*addend); img != nullptr) {
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Multiply<Expression, Imaginary>>(*vals[i]); valI != nullptr) {
-                    vals[i] = Multiply<Expression> { *(Add<Expression> { valI->GetMostSigOp(), img->GetMostSigOp() }.Simplify()), Imaginary {} }.Generalize();
-                    break;
+                    auto e = Add<Expression> { valI->GetMostSigOp(), img->GetMostSigOp() };
+                    SimplifyVisitor sv{};
+                    auto s = e.Accept(sv);
+                    if (!s){
+                        vals[i] = Multiply<Expression> { e, Imaginary {} }.Generalize();
+                        break;
+                    } else {
+                        vals[i] = Multiply<Expression> { *(std::move(s).value()), Imaginary {} }.Generalize();
+                        break;
+                    }
+
                 }
             }
             if (i >= vals.size()) {
@@ -137,8 +155,17 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Multiply<Expression, Variable>>(*vals[i]); valI != nullptr) {
                     if (valI->GetLeastSigOp().GetName() == var->GetName()) {
-                        vals[i] = Multiply<Expression> { *(Add<Expression> { valI->GetMostSigOp(), Real { 1.0 } }.Simplify()), *var }.Generalize();
-                        break;
+                        auto e = Add<Expression> { valI->GetMostSigOp(), Real { 1.0 } };
+                        SimplifyVisitor sv{};
+                        auto s = e.Accept(sv);
+                        if (!s){
+                            vals[i] = Multiply<Expression> { e, *var }.Generalize();
+                            break;
+                        }
+                        else{
+                            vals[i] = Multiply<Expression> { *(std::move(s).value()), *var }.Generalize();
+                            break;
+                        }
                     } else
                         continue;
                 }
@@ -155,8 +182,17 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 if (auto valI = RecursiveCast<Multiply<Expression, Variable>>(*vals[i]); valI != nullptr) {
                     // if (auto zeroCase = RecursiveCast<Multiply<Real, Expression>>(*valI); zeroCase != nullptr) {}
                     if (valI->GetLeastSigOp().GetName() == var->GetLeastSigOp().GetName()) {
-                        vals[i] = Multiply<Expression> { *(Add<Expression> { valI->GetMostSigOp(), var->GetMostSigOp() }.Simplify()), valI->GetLeastSigOp() }.Generalize();
-                        break;
+                        auto e = Add<Expression> { valI->GetMostSigOp(), var->GetMostSigOp() };
+                        SimplifyVisitor sv{};
+                        auto s = e.Accept(sv);
+                        if (!s){
+                            vals[i] = Multiply<Expression> { e, valI->GetLeastSigOp() }.Generalize();
+                            break;
+                        }
+                        else{
+                            vals[i] = Multiply<Expression> { *(std::move(s).value()), valI->GetLeastSigOp() }.Generalize();
+                            break;
+                        }
                     } else
                         continue;
                 }
@@ -172,8 +208,17 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Multiply<Expression, Exponent<Expression>>>(*vals[i]); valI != nullptr) {
                     if (valI->GetLeastSigOp().Equals(*exp)) {
-                        vals[i] = Multiply<Expression> { *(Add<Expression> { valI->GetMostSigOp(), Real { 1.0 } }.Simplify()), *exp }.Generalize();
-                        break;
+                        auto e = Add<Expression> { valI->GetMostSigOp(), Real { 1.0 } };
+                        SimplifyVisitor sv{};
+                        auto s = e.Accept(sv);
+                        if (!s){
+                            vals[i] = Multiply<Expression> { e, *exp }.Generalize();
+                            break;
+                        }
+                        else{
+                            vals[i] = Multiply<Expression> { *(std::move(s).value()), *exp }.Generalize();
+                            break;
+                        }
                     } else
                         continue;
                 }
@@ -189,8 +234,17 @@ auto Add<Expression>::Simplify() const -> std::unique_ptr<Expression>
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Multiply<Expression, Exponent<Expression>>>(*vals[i]); valI != nullptr) {
                     if (valI->GetLeastSigOp().Equals(exp->GetLeastSigOp())) {
-                        vals[i] = Multiply<Expression> { *(Add<Expression> { valI->GetMostSigOp(), exp->GetMostSigOp() }.Simplify()), valI->GetLeastSigOp() }.Generalize();
-                        break;
+                        auto e = Add<Expression> { valI->GetMostSigOp(), exp->GetMostSigOp() };
+                        SimplifyVisitor sv{};
+                        auto s = e.Accept(sv);
+                        if (!s){
+                            vals[i] = Multiply<Expression> { e, valI->GetLeastSigOp() }.Generalize();
+                            break;
+                        }
+                        else{
+                            vals[i] = Multiply<Expression> { *(std::move(s).value()), valI->GetLeastSigOp() }.Generalize();
+                            break;
+                        }
                     } else
                         continue;
                 }
