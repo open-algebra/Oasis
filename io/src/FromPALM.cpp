@@ -287,7 +287,7 @@ auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Ex
         return std::unexpected { expr.error() };
     }
 
-    if (expr && tokens.eof()) { // $$
+    if (tokens.eof()) { // $$
         return expr;
     }
 
