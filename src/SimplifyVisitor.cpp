@@ -936,7 +936,31 @@ auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
     // now that we have the terms in a vector, we have to cancel like terms and simplify them
     result.reserve(numerator.size());
     for (const auto& num : numerator) {
-        result.push_back(num->Copy());
+        if (auto div = RecursiveCast<Divide<Expression>>(*num); div != nullptr){
+            std::vector<std::unique_ptr<Expression>> flat_n;
+            std::vector<std::unique_ptr<Expression>> flat_d;
+            if (auto mN = RecursiveCast<Multiply<Expression>>(*div); mN != nullptr) {
+                mN->Flatten(flat_n);
+            } else {
+                result.push_back(div->GetMostSigOp().Copy());
+            }
+
+            if (auto mD = RecursiveCast<Multiply<Expression>>(*div); mD != nullptr) {
+                mD->Flatten(flat_d);
+            } else {
+                denominator.push_back(div->GetLeastSigOp().Copy());
+            }
+
+            for (const auto& v : flat_n) {
+                result.push_back(v->Copy());
+            }
+            for (const auto& v : flat_d) {
+                denominator.push_back(v->Copy());
+            }
+        }
+        else {
+            result.push_back(num->Copy());
+        }
     }
 
     for (const auto& denom : denominator) {
@@ -1030,7 +1054,7 @@ auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
                         break;
                     }
                 } else if (result[i]->Equals(expExpr->GetMostSigOp())) {
-                    auto lsOp = Subtract { Real { 1.0 }, resExpr->GetLeastSigOp() }.Accept(*this);
+                    auto lsOp = Subtract { Real { 1.0 }, expExpr->GetLeastSigOp() }.Accept(*this);
                     if (!lsOp) {
                         return lsOp;
                     }
@@ -1395,11 +1419,12 @@ auto SimplifyVisitor::TypedVisit(const Derivative<>& derivative) -> RetT
 
     auto simplifiedExpression = std::move(simplifiedMostSigOpResult).value();
     auto simplifiedVar = std::move(simplifiedLeastSigOpResult).value();
-    auto simplifiedDiff = simplifiedExpression->Differentiate(*simplifiedVar)->Accept(*this);
-    if (!simplifiedDiff){
-        return simplifiedDiff;
+    auto simplifiedDiff = simplifiedExpression->Differentiate(*simplifiedVar);
+    auto s = simplifiedDiff->Accept(*this);
+    if (!s){
+        return s;
     }
-    return gsl::not_null{std::move(simplifiedDiff.value())->Accept(*this).value()};
+    return gsl::not_null{std::move(s.value())->Accept(*this).value()};
 }
 
 auto SimplifyVisitor::TypedVisit(const Integral<>& integral) -> RetT
