@@ -102,8 +102,8 @@ static auto PALMDelimiterToToken(const PALMDelimiterType type, const PALMOpts& o
 }
 
 struct PALMDelimiters {
-    constexpr static inline std::string_view START_EXPRESSION = "(";
-    constexpr static inline std::string_view END_EXPRESSION = ")";
+    constexpr static  std::string_view START_EXPRESSION = "(";
+    constexpr static  std::string_view END_EXPRESSION = ")";
 };
 
 // Define PALM tokens
