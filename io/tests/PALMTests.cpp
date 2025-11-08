@@ -153,6 +153,33 @@ TEST_CASE("PALM Serialization for Nested Addition", "[PALM][Serializer][Addition
     REQUIRE(expected == result);
 }
 
+TEST_CASE("PALM Serialization for Malformed Addition", "[PALM][Serializer][Addition]")
+{
+    { // Missing least significant operand
+        Oasis::Add<Oasis::Real, Oasis::Expression> addition;
+        addition.SetMostSigOp(Oasis::Real { 5.0 });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = addition.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing least significant operand");
+    }
+
+    { // Missing most significant operand
+        Oasis::Add<Oasis::Expression, Oasis::Real> addition;
+        addition.SetLeastSigOp(Oasis::Real { 3.0 });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = addition.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing most significant operand");
+    }
+}
+
 TEST_CASE("PALM Serialization for Subtraction", "[PALM][Serializer][Subtraction]")
 {
     const Oasis::Subtract<> subtraction {
@@ -183,6 +210,33 @@ TEST_CASE("PALM Serialization for Nested Subtraction", "[PALM][Serializer][Subtr
     std::string expected = "( - ( real 5 ) ( - ( real 3 ) ( real 2 ) ) )";
 
     REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Malformed Subtraction", "[PALM][Serializer][Subtraction]")
+{
+    { // Missing least significant operand
+        Oasis::Subtract<Oasis::Real, Oasis::Expression> subtraction;
+        subtraction.SetMostSigOp(Oasis::Real { 5.0 });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = subtraction.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing least significant operand");
+    }
+
+    { // Missing most significant operand
+        Oasis::Subtract<Oasis::Expression, Oasis::Real> subtraction;
+        subtraction.SetLeastSigOp(Oasis::Real { 3.0 });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = subtraction.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing most significant operand");
+    }
 }
 
 TEST_CASE("PALM Serialization for Multiplication", "[PALM][Serializer][Multiplication]")
@@ -217,6 +271,33 @@ TEST_CASE("PALM Serialization for Nested Multiplication", "[PALM][Serializer][Mu
     REQUIRE(expected == result);
 }
 
+TEST_CASE("PALM Serialization for Malformed Multiplication", "[PALM][Serializer][Multiplication]")
+{
+    { // Missing least significant operand
+        Oasis::Multiply<Oasis::Real, Oasis::Expression> multiplication;
+        multiplication.SetMostSigOp(Oasis::Real { 5.0 });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = multiplication.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing least significant operand");
+    }
+
+    { // Missing most significant operand
+        Oasis::Multiply<Oasis::Expression, Oasis::Real> multiplication;
+        multiplication.SetLeastSigOp(Oasis::Real { 3.0 });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = multiplication.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing most significant operand");
+    }
+}
+
 TEST_CASE("PALM Serialization for Division", "[PALM][Serializer][Division]")
 {
     const Oasis::Divide<> division {
@@ -247,6 +328,33 @@ TEST_CASE("PALM Serialization for Nested Division", "[PALM][Serializer][Division
     std::string expected = "( / ( real 6 ) ( / ( real 3 ) ( real 2 ) ) )";
 
     REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Malformed Division", "[PALM][Serializer][Division]")
+{
+    { // Missing least significant operand
+        Oasis::Divide<Oasis::Real, Oasis::Expression> division;
+        division.SetMostSigOp(Oasis::Real { 6.0 });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = division.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing least significant operand");
+    }
+
+    { // Missing most significant operand
+        Oasis::Divide<Oasis::Expression, Oasis::Real> division;
+        division.SetLeastSigOp(Oasis::Real { 3.0 });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = division.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing most significant operand");
+    }
 }
 
 TEST_CASE("PALM Serialization for Exponentiation", "[PALM][Serializer][Exponentiation]")
@@ -281,6 +389,33 @@ TEST_CASE("PALM Serialization for Nested Exponentiation", "[PALM][Serializer][Ex
     REQUIRE(expected == result);
 }
 
+TEST_CASE("PALM Serialization for Malformed Exponentiation", "[PALM][Serializer][Exponentiation]")
+{
+    { // Missing least significant operand
+        Oasis::Exponent<Oasis::Real, Oasis::Expression> exponent;
+        exponent.SetMostSigOp(Oasis::Real { 2.0 });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = exponent.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing least significant operand");
+    }
+
+    { // Missing most significant operand
+        Oasis::Exponent<Oasis::Expression, Oasis::Real> exponent;
+        exponent.SetLeastSigOp(Oasis::Real { 3.0 });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = exponent.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing most significant operand");
+    }
+}
+
 TEST_CASE("PALM Serialization for Logarithm", "[PALM][Serializer][Logarithm]")
 {
     const Oasis::Log<> log {
@@ -313,6 +448,33 @@ TEST_CASE("PALM Serialization for Nested Logarithm", "[PALM][Serializer][Logarit
     REQUIRE(expected == result);
 }
 
+TEST_CASE("PALM Serialization for Malformed Logarithm", "[PALM][Serializer][Logarithm]")
+{
+    { // Missing least significant operand
+        Oasis::Log<Oasis::Real, Oasis::Expression> log;
+        log.SetMostSigOp(Oasis::Real { 10.0 });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = log.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing least significant operand");
+    }
+
+    { // Missing most significant operand
+        Oasis::Log<Oasis::Expression, Oasis::Real> log;
+        log.SetLeastSigOp(Oasis::Real { 1000.0 });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = log.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing most significant operand");
+    }
+}
+
 TEST_CASE("PALM Serialization for Negation", "[PALM][Serializer][Negation]")
 {
     const Oasis::Negate<> negate {
@@ -340,6 +502,20 @@ TEST_CASE("PALM Serialization for Nested Negation", "[PALM][Serializer][Negation
     std::string expected = "( neg ( neg ( real 5 ) ) )";
 
     REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Malformed Negation", "[PALM][Serializer][Negation]")
+{
+    { // Missing operand
+        Oasis::Negate<Oasis::Expression> negate;
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = negate.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing most significant operand");
+    }
 }
 
 TEST_CASE("PALM Serialization for Derivative", "[PALM][Serializer][Derivative]")
@@ -374,6 +550,33 @@ TEST_CASE("PALM Serialization for Nested Derivative", "[PALM][Serializer][Deriva
     REQUIRE(expected == result);
 }
 
+TEST_CASE("PALM Serialization for Malformed Derivative", "[PALM][Serializer][Derivative]")
+{
+    { // Missing least significant operand
+        Oasis::Derivative<Oasis::Variable, Oasis::Expression> derivative;
+        derivative.SetMostSigOp(Oasis::Variable { "x" });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = derivative.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing least significant operand");
+    }
+
+    { // Missing most significant operand
+        Oasis::Derivative<Oasis::Expression, Oasis::Real> derivative;
+        derivative.SetLeastSigOp(Oasis::Real { 5.0 });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = derivative.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing most significant operand");
+    }
+}
+
 TEST_CASE("PALM Serialization for Integral", "[PALM][Serializer][Integral]")
 {
     const Oasis::Integral<> integral {
@@ -404,6 +607,33 @@ TEST_CASE("PALM Serialization for Nested Integral", "[PALM][Serializer][Integral
     std::string expected = "( int ( var x ) ( int ( var y ) ( real 5 ) ) )";
 
     REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Malformed Integral", "[PALM][Serializer][Integral]")
+{
+    { // Missing least significant operand
+        Oasis::Integral<Oasis::Variable, Oasis::Expression> integral;
+        integral.SetMostSigOp(Oasis::Variable { "x" });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = integral.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing least significant operand");
+    }
+
+    { // Missing most significant operand
+        Oasis::Integral<Oasis::Expression, Oasis::Real> integral;
+        integral.SetLeastSigOp(Oasis::Real { 5.0 });
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = integral.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing most significant operand");
+    }
 }
 
 // TODO: Add tests for Matrix
@@ -444,6 +674,35 @@ TEST_CASE("PALM Serialization for Magnitude", "[PALM][Serializer][Magnitude]")
     std::string expected = "( magnitude ( real -5 ) )";
 
     REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Nested Magnitude", "[PALM][Serializer][Magnitude]")
+{
+    const Oasis::Magnitude<Oasis::Magnitude<Oasis::Real>> magnitude {
+        Oasis::Magnitude {
+            Oasis::Real { -5.0 } }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = magnitude.Accept(serializer).value();
+    std::string expected = "( magnitude ( magnitude ( real -5 ) ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Malformed Magnitude", "[PALM][Serializer][Magnitude]")
+{
+    { // Missing operand
+        Oasis::Magnitude<Oasis::Expression> magnitude;
+
+        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+        auto result = magnitude.Accept(serializer);
+
+        REQUIRE(!result.has_value());
+        REQUIRE(result.error() == "Expression missing most significant operand");
+    }
 }
 
 TEST_CASE("PALM Serialization for Complex Expressions", "[PALM][Serializer][ComplexExpression]")
@@ -1325,82 +1584,4 @@ TEST_CASE("Parse Empty Expression", "[FromPALM][Parsing]")
     const auto expr = Oasis::FromPALM("");
     REQUIRE(!expr);
     REQUIRE(expr.error() == Oasis::ParseError::UnexpectedEndOfInput);
-}
-
-/*
- * Start of Serializer Tests
- */
-TEST_CASE("Serialize Real", "[FromPALM][Serialization]")
-{
-    Oasis::Real real { 5.0 };
-
-    Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
-
-    auto result = real.Accept(serializer);
-
-    REQUIRE(result.has_value());
-    REQUIRE(result.value() == "( real 5 )");
-}
-
-TEST_CASE("Serialize Negative Real", "[FromPALM][Serialization]")
-{
-    Oasis::Real real { -5.0 };
-
-    Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
-
-    auto result = real.Accept(serializer);
-
-    REQUIRE(result.has_value());
-    REQUIRE(result.value() == "( real -5 )");
-}
-
-TEST_CASE("Serialize Imaginary", "[FromPALM][Serialization]")
-{
-    Oasis::Imaginary imaginary;
-
-    Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
-
-    auto result = imaginary.Accept(serializer);
-
-    REQUIRE(result.has_value());
-    REQUIRE(result.value() == "( i )");
-}
-
-TEST_CASE("Serialize Variable", "[FromPALM][Serialization]")
-{
-    Oasis::Variable variable { "x" };
-
-    Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
-
-    auto result = variable.Accept(serializer);
-
-    REQUIRE(result.has_value());
-    REQUIRE(result.value() == "( var x )");
-}
-
-TEST_CASE("Serialize Addition", "[FromPALM][Serialization]")
-{
-    Oasis::Add<> addition {
-        Oasis::Real { 5.0 },
-        Oasis::Real { 3.0 }
-    };
-
-    Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
-
-    auto result = addition.Accept(serializer);
-
-    REQUIRE(result.has_value());
-    REQUIRE(result.value() == "( + ( real 5 ) ( real 3 ) )");
-}
-
-TEST_CASE("Serialize Malformed Addition", "[FromPALM][Serialization]")
-{
-    Oasis::Add<Oasis::Real, Oasis::Expression> addition;
-    addition.SetMostSigOp(Oasis::Real { 5.0 });
-
-    Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
-
-    auto result = addition.Accept(serializer);
-
-    REQUIRE(!result.has_value());
 }
