@@ -13,11 +13,11 @@
 
 namespace Oasis {
 struct PALMOpts {
-    enum class ImaginarySymbol {
+    enum class ImgSym {
         I,
         J
     } imaginarySymbol
-        = ImaginarySymbol::I;
+        = ImgSym::I;
 
     uint8_t numPlaces = 5;
 
@@ -34,9 +34,9 @@ static auto PALMExpressionToToken(const ExpressionType type, const PALMOpts& opt
         return "real";
     case Oasis::ExpressionType::Imaginary:
         switch (options.imaginarySymbol) {
-        case PALMOpts::ImaginarySymbol::J:
+        case PALMOpts::ImgSym::J:
             return "j";
-        case PALMOpts::ImaginarySymbol::I:
+        case PALMOpts::ImgSym::I:
         default:
             return "i";
         }

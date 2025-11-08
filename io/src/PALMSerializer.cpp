@@ -54,12 +54,12 @@ auto PALMSerializer::TypedVisit(const Multiply<Expression, Expression>& multiply
 
 auto PALMSerializer::TypedVisit(const Divide<Expression, Expression>& divide) -> RetT
 {
-    return std::unexpected<std::string> { "Not implemented yet" };
+    return SerializeBinaryExpression(divide);
 }
 
 auto PALMSerializer::TypedVisit(const Exponent<Expression, Expression>& exponent) -> RetT
 {
-    return std::unexpected<std::string> { "Not implemented yet" };
+    return SerializeBinaryExpression(exponent);
 }
 
 auto PALMSerializer::TypedVisit(const Log<Expression, Expression>& log) -> RetT

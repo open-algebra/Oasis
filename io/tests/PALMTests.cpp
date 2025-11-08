@@ -22,6 +22,457 @@
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 
+// Serializer
+TEST_CASE("PALM Serialization for Real with various precisions", "[PALM][Serializer][Real]")
+{
+    const Oasis::Real real { 3.1415926535 };
+
+    { // Test with 5 decimal places
+        Oasis::PALMSerializer serializer { { .numPlaces = 5 } };
+
+        auto result = real.Accept(serializer).value();
+        std::string expected = "( real 3.14159 )";
+
+        REQUIRE(expected == result);
+    }
+
+    { // Test with 2 decimal places
+        Oasis::PALMSerializer serializer { { .numPlaces = 2 } };
+
+        auto result = real.Accept(serializer).value();
+        std::string expected = "( real 3.14 )";
+
+        REQUIRE(expected == result);
+    }
+
+    { // Test with 0 decimal places
+        Oasis::PALMSerializer serializer { { .numPlaces = 0 } };
+
+        auto result = real.Accept(serializer).value();
+        std::string expected = "( real 3 )";
+
+        REQUIRE(expected == result);
+    }
+
+    { // Test Default (5 decimal places)}
+        Oasis::PALMSerializer serializer {};
+
+        auto result = real.Accept(serializer).value();
+        std::string expected = "( real 3.14159 )";
+
+        REQUIRE(expected == result);
+    }
+}
+
+TEST_CASE("PALM Serialization for Real with negative value", "[PALM][Serializer][Real]")
+{
+    const Oasis::Real real { -2.71828 };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = real.Accept(serializer).value();
+    std::string expected = "( real -2.71828 )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Imaginary with different characters", "[PALM][Serializer][Imaginary]")
+{
+    const Oasis::Imaginary imaginary {};
+
+    { // Test with default character 'i'
+        Oasis::PALMSerializer serializer { { .imaginarySymbol = Oasis::PALMOpts::ImgSym::I } };
+
+        auto result = imaginary.Accept(serializer).value();
+        std::string expected = "( i )";
+
+        REQUIRE(expected == result);
+    }
+
+    { // Test with character 'j'
+        Oasis::PALMSerializer serializer { { .imaginarySymbol = Oasis::PALMOpts::ImgSym::J } };
+
+        auto result = imaginary.Accept(serializer).value();
+        std::string expected = "( j )";
+
+        REQUIRE(expected == result);
+    }
+
+    { // Test Default
+        Oasis::PALMSerializer serializer {};
+
+        auto result = imaginary.Accept(serializer).value();
+        std::string expected = "( i )";
+
+        REQUIRE(expected == result);
+    }
+}
+
+TEST_CASE("PALM Serialization for Variable", "[PALM][Serializer][Variable]")
+{
+    const Oasis::Variable variable { "x_variable" };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = variable.Accept(serializer).value();
+    std::string expected = "( var x_variable )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Addition", "[PALM][Serializer][Addition]")
+{
+    const Oasis::Add<> addition {
+        Oasis::Real { 5.0 },
+        Oasis::Real { 3.0 }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = addition.Accept(serializer).value();
+    std::string expected = "( + ( real 5 ) ( real 3 ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Nested Addition", "[PALM][Serializer][Addition]")
+{
+    const Oasis::Add<> addition {
+        Oasis::Real { 5.0 },
+        Oasis::Add {
+            Oasis::Real { 3.0 },
+            Oasis::Real { 2.0 } }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = addition.Accept(serializer).value();
+    std::string expected = "( + ( real 5 ) ( + ( real 3 ) ( real 2 ) ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Subtraction", "[PALM][Serializer][Subtraction]")
+{
+    const Oasis::Subtract<> subtraction {
+        Oasis::Real { 5.0 },
+        Oasis::Real { 3.0 }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = subtraction.Accept(serializer).value();
+    std::string expected = "( - ( real 5 ) ( real 3 ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Nested Subtraction", "[PALM][Serializer][Subtraction]")
+{
+    const Oasis::Subtract<> subtraction {
+        Oasis::Real { 5.0 },
+        Oasis::Subtract {
+            Oasis::Real { 3.0 },
+            Oasis::Real { 2.0 } }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = subtraction.Accept(serializer).value();
+    std::string expected = "( - ( real 5 ) ( - ( real 3 ) ( real 2 ) ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Multiplication", "[PALM][Serializer][Multiplication]")
+{
+    const Oasis::Multiply<> multiplication {
+        Oasis::Real { 5.0 },
+        Oasis::Real { 3.0 }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = multiplication.Accept(serializer).value();
+    std::string expected = "( * ( real 5 ) ( real 3 ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Nested Multiplication", "[PALM][Serializer][Multiplication]")
+{
+    const Oasis::Multiply<> multiplication {
+        Oasis::Real { 5.0 },
+        Oasis::Multiply {
+            Oasis::Real { 3.0 },
+            Oasis::Real { 2.0 } }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = multiplication.Accept(serializer).value();
+    std::string expected = "( * ( real 5 ) ( * ( real 3 ) ( real 2 ) ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Division", "[PALM][Serializer][Division]")
+{
+    const Oasis::Divide<> division {
+        Oasis::Real { 6.0 },
+        Oasis::Real { 3.0 }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = division.Accept(serializer);
+    std::string expected = "( / ( real 6 ) ( real 3 ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Nested Division", "[PALM][Serializer][Division]")
+{
+    const Oasis::Divide<> division {
+        Oasis::Real { 6.0 },
+        Oasis::Divide {
+            Oasis::Real { 3.0 },
+            Oasis::Real { 2.0 } }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = division.Accept(serializer);
+    std::string expected = "( / ( real 6 ) ( / ( real 3 ) ( real 2 ) ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Exponentiation", "[PALM][Serializer][Exponentiation]")
+{
+    const Oasis::Exponent<> exponent {
+        Oasis::Real { 2.0 },
+        Oasis::Real { 3.0 }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = exponent.Accept(serializer);
+    std::string expected = "( ^ ( real 2 ) ( real 3 ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Nested Exponentiation", "[PALM][Serializer][Exponentiation]")
+{
+    const Oasis::Exponent<> exponent {
+        Oasis::Real { 2.0 },
+        Oasis::Exponent {
+            Oasis::Real { 3.0 },
+            Oasis::Real { 2.0 } }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = exponent.Accept(serializer);
+    std::string expected = "( ^ ( real 2 ) ( ^ ( real 3 ) ( real 2 ) ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Logarithm", "[PALM][Serializer][Logarithm]")
+{
+    const Oasis::Log<> log {
+        Oasis::Real { 10.0 },
+        Oasis::Real { 1000.0 }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = log.Accept(serializer);
+    std::string expected = "( log ( real 10 ) ( real 1000 ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Nested Logarithm", "[PALM][Serializer][Logarithm]")
+{
+    const Oasis::Log<> log {
+        Oasis::Real { 10.0 },
+        Oasis::Log {
+            Oasis::Real { 10.0 },
+            Oasis::Real { 1000.0 } }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = log.Accept(serializer);
+    std::string expected = "( log ( real 10 ) ( log ( real 10 ) ( real 1000 ) ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Negation", "[PALM][Serializer][Negation]")
+{
+    const Oasis::Negate<> negate {
+        Oasis::Real { 5.0 }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = negate.Accept(serializer).value();
+    std::string expected = "( neg ( real 5 ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Nested Negation", "[PALM][Serializer][Negation]")
+{
+    const Oasis::Negate<> negate {
+        Oasis::Negate {
+            Oasis::Real { 5.0 } }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = negate.Accept(serializer).value();
+    std::string expected = "( neg ( neg ( real 5 ) ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Derivative", "[PALM][Serializer][Derivative]")
+{
+    const Oasis::Derivative<> derivative {
+        Oasis::Variable { "x" },
+        Oasis::Real { 5.0 }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = derivative.Accept(serializer);
+    std::string expected = "( d ( var x ) ( real 5 ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Nested Derivative", "[PALM][Serializer][Derivative]")
+{
+    const Oasis::Derivative<> derivative {
+        Oasis::Variable { "x" },
+        Oasis::Derivative {
+            Oasis::Variable { "y" },
+            Oasis::Real { 5.0 } }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = derivative.Accept(serializer);
+    std::string expected = "( d ( var x ) ( d ( var y ) ( real 5 ) ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Integral", "[PALM][Serializer][Integral]")
+{
+    const Oasis::Integral<> integral {
+        Oasis::Variable { "x" },
+        Oasis::Real { 5.0 }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = integral.Accept(serializer);
+    std::string expected = "( int ( var x ) ( real 5 ) )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Nested Integral", "[PALM][Serializer][Integral]")
+{
+    const Oasis::Integral<> integral {
+        Oasis::Variable { "x" },
+        Oasis::Integral {
+            Oasis::Variable { "y" },
+            Oasis::Real { 5.0 } }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = integral.Accept(serializer);
+    std::string expected = "( int ( var x ) ( int ( var y ) ( real 5 ) ) )";
+
+    REQUIRE(expected == result);
+}
+
+// TODO: Add tests for Matrix
+
+TEST_CASE("PALM Serialization for Euler Number", "[PALM][Serializer][EulerNumber]")
+{
+    const Oasis::EulerNumber euler {};
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = euler.Accept(serializer).value();
+    std::string expected = "( e )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Pi", "[PALM][Serializer][Pi]")
+{
+    const Oasis::Pi pi {};
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = pi.Accept(serializer).value();
+    std::string expected = "( pi )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Complex Expressions", "[PALM][Serializer][ComplexExpression]")
+{
+    Oasis::PALMSerializer serializer {};
+
+    { // Test 1
+        const Oasis::Add<> expression {
+            Oasis::Real { 5.0 },
+            Oasis::Multiply {
+                Oasis::Variable { "x" },
+                Oasis::Exponent {
+                    Oasis::Real { 2.0 },
+                    Oasis::Real { 3.0 }
+                }
+            }
+        };
+
+        auto result = expression.Accept(serializer).value();
+        std::string expected = "( + ( real 5 ) ( * ( var x ) ( ^ ( real 2 ) ( real 3 ) ) ) )";
+
+        REQUIRE(expected == result);
+    }
+
+    { // Test 2
+        const Oasis::Subtract<> expression {
+            Oasis::Divide {
+                Oasis::Real { 10.0 },
+                Oasis::Real { 2.0 }
+            },
+            Oasis::Log {
+                Oasis::Real { 10.0 },
+                Oasis::Real { 100.0 }
+            }
+        };
+
+        auto result = expression.Accept(serializer).value();
+        std::string expected = "( - ( / ( real 10 ) ( real 2 ) ) ( log ( real 10 ) ( real 100 ) ) )";
+
+        REQUIRE(expected == result);
+    }
+}
+
+
 /*
  * Real Operation
  */
@@ -860,7 +1311,6 @@ TEST_CASE("Parse Empty Expression", "[FromPALM][Parsing]")
     REQUIRE(!expr);
     REQUIRE(expr.error() == Oasis::ParseError::UnexpectedEndOfInput);
 }
-
 
 /*
  * Start of Serializer Tests
