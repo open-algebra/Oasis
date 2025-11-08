@@ -7,12 +7,21 @@
 
 #include <string_view>
 #include <array>
+#include <unordered_map>
+
+#include <boost/bimap/bimap.hpp>
+#include <boost/bimap/unordered_set_of.hpp>
+#include <boost/bimap/unordered_multiset_of.hpp>
 
 #include "Oasis/Expression.hpp"
 
-#include <unordered_map>
 
 namespace Oasis {
+
+using TokenBimap = boost::bimaps::bimap<
+    boost::bimaps::unordered_multiset_of<std::string_view>,
+    boost::bimaps::unordered_set_of<ExpressionType>
+>;
 
 /** Options for PALM serialization. */
 struct PALMOpts {
