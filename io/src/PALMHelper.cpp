@@ -8,70 +8,45 @@ namespace Oasis {
 
 auto PALMExpressionToToken(const ExpressionType type, const PALMOpts& options) -> std::string_view
 {
-    switch (type) {
-    case Oasis::ExpressionType::Real:
-        return "real";
-    case Oasis::ExpressionType::Imaginary:
-        switch (options.imaginarySymbol) {
-        case PALMOpts::ImgSym::J:
-            return "j";
-        case PALMOpts::ImgSym::I:
-        default:
-            return "i";
-        }
-    case Oasis::ExpressionType::Variable:
-        return "var";
-    case Oasis::ExpressionType::Add:
-        return "+";
-    case Oasis::ExpressionType::Subtract:
-        return "-";
-    case Oasis::ExpressionType::Multiply:
-        return "*";
-    case Oasis::ExpressionType::Divide:
-        return "/";
-    case Oasis::ExpressionType::Exponent:
-        return "^";
-    case Oasis::ExpressionType::Log:
-        return "log";
-    case Oasis::ExpressionType::Integral:
-        return "int";
-    case Oasis::ExpressionType::Limit:
-        return "limit";
-    case Oasis::ExpressionType::Derivative:
-        return "d";
-    case Oasis::ExpressionType::Negate:
-        return "neg";
-    case Oasis::ExpressionType::Sqrt:
-        return "sqrt";
-    case Oasis::ExpressionType::Matrix:
-        return "matrix";
-    case Oasis::ExpressionType::Pi:
-        return "pi";
-    case Oasis::ExpressionType::EulerNumber:
-        return "e";
-    case Oasis::ExpressionType::Magnitude:
-        return "magnitude";
-    default:
+    // Find the type in the map
+    auto it = expressionTypeToPALMTokenMap.find(type);
+    if (it == expressionTypeToPALMTokenMap.end()) { // Not found
         return "";
     }
+
+    // If the value is a string_view (one option), return it directly
+    if (std::holds_alternative<std::string_view>(it->second)) {
+        return std::get<std::string_view>(it->second);
+    }
+
+    // Check for variants
+    if (std::holds_alternative<std::unordered_map<PALMOpts::ImgSym, std::string_view>>(it->second)) { // Imaginary symbol
+        const auto& symMap = std::get<std::unordered_map<PALMOpts::ImgSym, std::string_view>>(it->second);
+        auto symIt = symMap.find(options.imaginarySymbol);
+
+        // Return the corresponding symbol if found
+        if (symIt != symMap.end()) {
+            return symIt->second;
+        }
+
+        // Default to 'i' if not found
+        return symMap.at(PALMOpts::ImgSym::I);
+    }
+
+    // Fallback
+    return "";
 }
 
 auto PALMDelimiterToToken(const PALMDelimiterType type, const PALMOpts& options) -> std::string_view
 {
-    switch (type) {
-    case START_EXPRESSION:
-        return "(";
-    case END_EXPRESSION:
-        return ")";
-    case SEPARATOR:
-        switch (options.separator) {
-        case PALMOpts::Separator::SPACE:
-        default:
-            return " ";
-        }
-    default:
+    // Find the type in the map
+    auto it = palmDelimiterToTokenMap.find(type);
+    if (it == palmDelimiterToTokenMap.end()) { // Not found
         return "";
     }
+
+    // Return the corresponding token
+    return std::get<std::string_view>(it->second);
 }
 
 }

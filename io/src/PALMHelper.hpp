@@ -10,6 +10,8 @@
 
 #include "Oasis/Expression.hpp"
 
+#include <unordered_map>
+
 namespace Oasis {
 
 /** Options for PALM serialization. */
@@ -33,6 +35,47 @@ enum PALMDelimiterType {
     START_EXPRESSION,
     END_EXPRESSION,
     SEPARATOR
+};
+
+/** Mapping from PalmDelimiterType to PALM token strings. */
+static const std::unordered_map<PALMDelimiterType, std::variant<
+    std::string_view
+>> palmDelimiterToTokenMap = {
+    { START_EXPRESSION, "(" },
+    { END_EXPRESSION, ")" },
+    { SEPARATOR, " " }
+};
+
+/** Operators are taken from ExpressionType enum in Expression.hpp
+ * @see ExpressionType
+ */
+
+/** Mapping from ExpressionType to PALM token strings. */
+static const std::unordered_map<ExpressionType, std::variant<
+    std::string_view,
+    std::unordered_map<PALMOpts::ImgSym, std::string_view>
+>> expressionTypeToPALMTokenMap = {
+    { ExpressionType::Real, "real" },
+    { ExpressionType::Imaginary, std::unordered_map<PALMOpts::ImgSym, std::string_view>{
+        {
+            { PALMOpts::ImgSym::I, "i" },
+            { PALMOpts::ImgSym::J, "j" }
+        }
+    } },
+    { ExpressionType::Variable, "var" },
+    { ExpressionType::Add, "+" },
+    { ExpressionType::Subtract, "-" },
+    { ExpressionType::Multiply, "*" },
+    { ExpressionType::Divide, "/" },
+    { ExpressionType::Exponent, "^" },
+    { ExpressionType::Log, "log" },
+    { ExpressionType::Integral, "int" },
+    { ExpressionType::Derivative, "d" },
+    { ExpressionType::Negate, "neg" },
+    { ExpressionType::Matrix, "matrix" },
+    { ExpressionType::Pi, "pi" },
+    { ExpressionType::EulerNumber, "e" },
+    { ExpressionType::Magnitude, "magnitude" }
 };
 
 /** Convert an ExpressionType to its corresponding PALM token.

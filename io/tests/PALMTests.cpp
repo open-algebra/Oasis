@@ -746,6 +746,39 @@ TEST_CASE("PALM Serialization for Complex Expressions", "[PALM][Serializer][Comp
     }
 }
 
+// Parser
+TEST_CASE("PALM Parsing for Real with various formats", "[PALM][Parser][Real]")
+{
+    { // Test with integer
+        const auto expr = Oasis::FromPALM("( real 42 )");
+
+        REQUIRE(expr.has_value());
+        REQUIRE((*expr)->Is<Oasis::Real>());
+
+        const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
+        REQUIRE(real->GetValue() == 42.0);
+    }
+
+    { // Test with float
+        const auto expr = Oasis::FromPALM("( real 3.14 )");
+
+        REQUIRE(expr.has_value());
+        REQUIRE((*expr)->Is<Oasis::Real>());
+
+        const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
+        REQUIRE(real->GetValue() == 3.14);
+    }
+
+    { // Test with negative float
+        const auto expr = Oasis::FromPALM("( real -0.001 )");
+
+        REQUIRE(expr.has_value());
+        REQUIRE((*expr)->Is<Oasis::Real>());
+
+        const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
+        REQUIRE(real->GetValue() == -0.001);
+    }
+}
 
 /*
  * Real Operation
