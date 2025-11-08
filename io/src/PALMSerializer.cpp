@@ -5,20 +5,19 @@
 #include <utility>
 
 #include "Oasis/PALMSerializer.hpp"
-#include "PALMConst.hpp"
 
 #include "Oasis/Add.hpp"
+#include "Oasis/Derivative.hpp"
+#include "Oasis/Divide.hpp"
+#include "Oasis/Exponent.hpp"
+#include "Oasis/Integral.hpp"
+#include "Oasis/Log.hpp"
+#include "Oasis/Magnitude.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Negate.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
-#include "Oasis/Divide.hpp"
-#include "Oasis/Exponent.hpp"
-#include "Oasis/Log.hpp"
-#include "Oasis/Negate.hpp"
-#include "Oasis/Derivative.hpp"
-#include "Oasis/Integral.hpp"
-#include "Oasis/Magnitude.hpp"
 
 namespace Oasis {
 

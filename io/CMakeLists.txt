@@ -1,7 +1,7 @@
 set(OASIS_IO_SOURCES
     # cmake-format: sortable
     src/FromPALM.cpp src/FromString.cpp src/InFixSerializer.cpp
-    src/MathMLSerializer.cpp src/PALMSerializer.cpp src/TeXSerializer.cpp)
+    src/MathMLSerializer.cpp src/PALMSerializer.cpp src/PALMHelper.cpp src/TeXSerializer.cpp)
 
 set(OASIS_IO_HEADERS
     # cmake-format: sortable
@@ -10,7 +10,8 @@ set(OASIS_IO_HEADERS
     include/Oasis/InFixSerializer.hpp
     include/Oasis/MathMLSerializer.hpp
     include/Oasis/PALMSerializer.hpp
-    include/Oasis/TeXSerializer.hpp)
+    include/Oasis/TeXSerializer.hpp
+        src/PALMHelper.hpp)
 
 add_library(OasisIO ${OASIS_IO_SOURCES} ${OASIS_IO_HEADERS})
 add_library(Oasis::IO ALIAS OasisIO)

@@ -24,7 +24,7 @@
 
 #include "Oasis/Variable.hpp"
 
-#include "PALMConst.hpp"
+#include "PALMHelper.hpp"
 
 namespace Oasis {
 /** A simple token stream for parsing PALM strings.
