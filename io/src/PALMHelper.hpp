@@ -5,13 +5,15 @@
 #ifndef OASIS_PALMCONST_HPP
 #define OASIS_PALMCONST_HPP
 
-#include <string_view>
 #include <array>
+#include <string_view>
 #include <unordered_map>
 
+#include <boost/assign/list_of.hpp>
 #include <boost/bimap/bimap.hpp>
-#include <boost/bimap/unordered_set_of.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
+#include <boost/bimap/unordered_set_of.hpp>
+#include <boost/assign/list_of.hpp>
 
 #include "Oasis/Expression.hpp"
 
@@ -22,6 +24,30 @@ using TokenBimap = boost::bimaps::bimap<
     boost::bimaps::unordered_multiset_of<std::string_view>,
     boost::bimaps::unordered_set_of<ExpressionType>
 >;
+
+#include <boost/bimap.hpp>
+
+#include <string>
+
+const TokenBimap kTokenBimap = ::boost::assign::list_of<TokenBimap::relation>
+    ("real", ExpressionType::Real)
+    ("i", ExpressionType::Imaginary)
+    ("j", ExpressionType::Imaginary)
+    ("var", ExpressionType::Variable)
+    ("+", ExpressionType::Add)
+    ("-", ExpressionType::Subtract)
+    ("*", ExpressionType::Multiply)
+    ("/", ExpressionType::Divide)
+    ("^", ExpressionType::Exponent)
+    ("log", ExpressionType::Log)
+    ("int", ExpressionType::Integral)
+    ("d", ExpressionType::Derivative)
+    ("neg", ExpressionType::Negate)
+    ("matrix", ExpressionType::Matrix)
+    ("pi",  ExpressionType::Pi)
+    ("e", ExpressionType::EulerNumber)
+    ("magnitude", ExpressionType::Magnitude)
+    ;
 
 /** Options for PALM serialization. */
 struct PALMOpts {

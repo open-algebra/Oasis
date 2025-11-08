@@ -23,7 +23,9 @@ add_library(Oasis::IO ALIAS OasisIO)
 
 target_include_directories(OasisIO PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(OasisIO PUBLIC Boost::bimap)
+target_link_libraries(OasisIO PUBLIC Boost::assign)
 target_include_directories(OasisIO PUBLIC ${Boost_INCLUDE_DIRS})
+target_include_directories(OasisIO PRIVATE ${Boost_SOURCE_DIR}/libs/assign/include)
 target_link_libraries(OasisIO PUBLIC Oasis::Oasis tinyxml2::tinyxml2)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
