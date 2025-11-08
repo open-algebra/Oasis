@@ -88,9 +88,10 @@ auto PALMSerializer::TypedVisit(const Integral<>& integral) -> RetT
     return SerializeBinaryExpression(integral);
 }
 
-auto PALMSerializer::TypedVisit(const Matrix& matrix) -> RetT
+auto PALMSerializer::TypedVisit(const Matrix& /*matrix*/) -> RetT
 {
-    return std::unexpected<std::string> { "Not implemented yet" };
+    // TODO: Implement Matrix serialization
+    return std::unexpected<std::string> { "Matrix is not implemented yet" };
 }
 
 auto PALMSerializer::TypedVisit(const EulerNumber&) -> RetT
