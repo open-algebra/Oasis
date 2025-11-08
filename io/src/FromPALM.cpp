@@ -24,25 +24,7 @@
 
 #include "Oasis/Variable.hpp"
 
-// Define PALM tokens
-constexpr std::string_view PALM_OPEN_PARENS = "(";
-constexpr std::string_view PALM_CLOSE_PARENS = ")";
-
-constexpr std::string_view PALM_REAL = "real";
-constexpr std::array<std::string_view, 2> PALM_IMAGINARY = { "i", "j" };
-constexpr std::string_view PALM_VARIABLE = "var";
-constexpr std::string_view PALM_ADD = "+";
-constexpr std::string_view PALM_SUBTRACT = "-";
-constexpr std::string_view PALM_MULTIPLY = "*";
-constexpr std::string_view PALM_DIVIDE = "/";
-constexpr std::string_view PALM_EXPONENT = "^";
-constexpr std::string_view PALM_LOG = "log";
-constexpr std::string_view PALM_INTEGRAL = "int";
-constexpr std::string_view PALM_NEGATE = "neg";
-constexpr std::string_view PALM_DERIVATIVE = "d";
-// constexpr std::string_view PALM_MATRIX = "matrix";
-constexpr std::array<std::string_view, 1> PALM_PI = { "pi" };
-constexpr std::string_view PALM_EULER = "e";
+#include "PALMConst.hpp"
 
 namespace Oasis {
 /** A simple token stream for parsing PALM strings.

@@ -4,6 +4,7 @@
 #include "catch2/catch_test_macros.hpp"
 
 #include "Oasis/FromPALM.hpp"
+#include "Oasis/PALMSerializer.hpp"
 
 #include "Oasis/Add.hpp"
 #include "Oasis/Derivative.hpp"
@@ -858,4 +859,83 @@ TEST_CASE("Parse Empty Expression", "[FromPALM][Parsing]")
     const auto expr = Oasis::FromPALM("");
     REQUIRE(!expr);
     REQUIRE(expr.error() == Oasis::ParseError::UnexpectedEndOfInput);
+}
+
+
+/*
+ * Start of Serializer Tests
+ */
+TEST_CASE("Serialize Real", "[FromPALM][Serialization]")
+{
+    Oasis::Real real { 5.0 };
+
+    Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+    auto result = real.Accept(serializer);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result.value() == "( real 5 )");
+}
+
+TEST_CASE("Serialize Negative Real", "[FromPALM][Serialization]")
+{
+    Oasis::Real real { -5.0 };
+
+    Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+    auto result = real.Accept(serializer);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result.value() == "( real -5 )");
+}
+
+TEST_CASE("Serialize Imaginary", "[FromPALM][Serialization]")
+{
+    Oasis::Imaginary imaginary;
+
+    Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+    auto result = imaginary.Accept(serializer);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result.value() == "( i )");
+}
+
+TEST_CASE("Serialize Variable", "[FromPALM][Serialization]")
+{
+    Oasis::Variable variable { "x" };
+
+    Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+    auto result = variable.Accept(serializer);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result.value() == "( var x )");
+}
+
+TEST_CASE("Serialize Addition", "[FromPALM][Serialization]")
+{
+    Oasis::Add<> addition {
+        Oasis::Real { 5.0 },
+        Oasis::Real { 3.0 }
+    };
+
+    Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+    auto result = addition.Accept(serializer);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result.value() == "( + ( real 5 ) ( real 3 ) )");
+}
+
+TEST_CASE("Serialize Malformed Addition", "[FromPALM][Serialization]")
+{
+    Oasis::Add<Oasis::Real, Oasis::Expression> addition;
+    addition.SetMostSigOp(Oasis::Real { 5.0 });
+
+    Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+    auto result = addition.Accept(serializer);
+
+    REQUIRE(!result.has_value());
 }
