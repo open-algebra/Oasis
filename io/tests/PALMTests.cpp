@@ -14,6 +14,7 @@
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
+#include "Oasis/Magnitude.hpp"
 #include "Oasis/Matrix.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
@@ -427,6 +428,20 @@ TEST_CASE("PALM Serialization for Pi", "[PALM][Serializer][Pi]")
 
     auto result = pi.Accept(serializer).value();
     std::string expected = "( pi )";
+
+    REQUIRE(expected == result);
+}
+
+TEST_CASE("PALM Serialization for Magnitude", "[PALM][Serializer][Magnitude]")
+{
+    const Oasis::Magnitude<Oasis::Real> magnitude {
+        Oasis::Real { -5.0 }
+    };
+
+    Oasis::PALMSerializer serializer {};
+
+    auto result = magnitude.Accept(serializer).value();
+    std::string expected = "( magnitude ( real -5 ) )";
 
     REQUIRE(expected == result);
 }

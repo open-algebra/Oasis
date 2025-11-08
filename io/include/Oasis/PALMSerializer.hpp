@@ -142,7 +142,6 @@ private:
         }
 
         // Serialize the expression
-
         return SerializeExpression(expr.GetType(), { mostSigOpResult, leastSigOpResult });
     }
 };

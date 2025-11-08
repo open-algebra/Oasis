@@ -12,6 +12,13 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/Divide.hpp"
+#include "Oasis/Exponent.hpp"
+#include "Oasis/Log.hpp"
+#include "Oasis/Negate.hpp"
+#include "Oasis/Derivative.hpp"
+#include "Oasis/Integral.hpp"
+#include "Oasis/Magnitude.hpp"
 
 namespace Oasis {
 
@@ -36,50 +43,50 @@ auto PALMSerializer::TypedVisit(const Undefined&) -> RetT
    return SerializeExpression(ExpressionType::None);
 }
 
-auto PALMSerializer::TypedVisit(const Add<Expression, Expression>& add) -> RetT
+auto PALMSerializer::TypedVisit(const Add<>& add) -> RetT
 {
     return SerializeBinaryExpression(add);
 }
 
 
-auto PALMSerializer::TypedVisit(const Subtract<Expression, Expression>& subtract) -> RetT
+auto PALMSerializer::TypedVisit(const Subtract<>& subtract) -> RetT
 {
     return SerializeBinaryExpression(subtract);
 }
 
-auto PALMSerializer::TypedVisit(const Multiply<Expression, Expression>& multiply) -> RetT
+auto PALMSerializer::TypedVisit(const Multiply<>& multiply) -> RetT
 {
     return SerializeBinaryExpression(multiply);
 }
 
-auto PALMSerializer::TypedVisit(const Divide<Expression, Expression>& divide) -> RetT
+auto PALMSerializer::TypedVisit(const Divide<>& divide) -> RetT
 {
     return SerializeBinaryExpression(divide);
 }
 
-auto PALMSerializer::TypedVisit(const Exponent<Expression, Expression>& exponent) -> RetT
+auto PALMSerializer::TypedVisit(const Exponent<>& exponent) -> RetT
 {
     return SerializeBinaryExpression(exponent);
 }
 
-auto PALMSerializer::TypedVisit(const Log<Expression, Expression>& log) -> RetT
+auto PALMSerializer::TypedVisit(const Log<>& log) -> RetT
 {
-    return std::unexpected<std::string> { "Not implemented yet" };
+    return SerializeBinaryExpression(log);
 }
 
-auto PALMSerializer::TypedVisit(const Negate<Expression>& negate) -> RetT
+auto PALMSerializer::TypedVisit(const Negate<>& negate) -> RetT
 {
-    return std::unexpected<std::string> { "Not implemented yet" };
+    return SerializeUnaryExpression(negate);
 }
 
-auto PALMSerializer::TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT
+auto PALMSerializer::TypedVisit(const Derivative<>& derivative) -> RetT
 {
-    return std::unexpected<std::string> { "Not implemented yet" };
+    return SerializeBinaryExpression(derivative);
 }
 
-auto PALMSerializer::TypedVisit(const Integral<Expression, Expression>& integral) -> RetT
+auto PALMSerializer::TypedVisit(const Integral<>& integral) -> RetT
 {
-    return std::unexpected<std::string> { "Not implemented yet" };
+    return SerializeBinaryExpression(integral);
 }
 
 auto PALMSerializer::TypedVisit(const Matrix& matrix) -> RetT
@@ -99,7 +106,7 @@ auto PALMSerializer::TypedVisit(const Pi&) -> RetT
 
 auto PALMSerializer::TypedVisit(const Magnitude<Expression>& magnitude) -> RetT
 {
-    return std::unexpected<std::string> { "Not implemented yet" };
+    return SerializeUnaryExpression(magnitude);
 }
 
 }
