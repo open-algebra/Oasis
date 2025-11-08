@@ -34,19 +34,18 @@ auto PALMSerializer::TypedVisit(const Imaginary&) -> RetT
 
 auto PALMSerializer::TypedVisit(const Variable& variable) -> RetT
 {
-   return SerializeExpression(ExpressionType::Variable, { variable.GetName() });
+    return SerializeExpression(ExpressionType::Variable, { variable.GetName() });
 }
 
 auto PALMSerializer::TypedVisit(const Undefined&) -> RetT
 {
-   return SerializeExpression(ExpressionType::None);
+    return SerializeExpression(ExpressionType::None);
 }
 
 auto PALMSerializer::TypedVisit(const Add<>& add) -> RetT
 {
     return SerializeBinaryExpression(add);
 }
-
 
 auto PALMSerializer::TypedVisit(const Subtract<>& subtract) -> RetT
 {
