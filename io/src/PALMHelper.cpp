@@ -37,7 +37,7 @@ auto PALMExpressionToToken(const ExpressionType type, const PALMOpts& options) -
     return "";
 }
 
-auto PALMDelimiterToToken(const PALMDelimiterType type, const PALMOpts& options) -> std::string_view
+auto PALMDelimiterToToken(const PALMDelimiterType type, const PALMOpts& /*options*/) -> std::string_view
 {
     // Find the type in the map
     auto it = palmDelimiterToTokenMap.find(type);
