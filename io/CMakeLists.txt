@@ -26,7 +26,8 @@ if(NOT OASIS_BUILD_JS)
     target_link_libraries(OasisIO PUBLIC Boost::bimap)
     target_link_libraries(OasisIO PUBLIC Boost::assign)
     target_include_directories(OasisIO PUBLIC ${Boost_INCLUDE_DIRS})
-    target_include_directories(OasisIO PRIVATE ${Boost_SOURCE_DIR}/libs/assign/include)
+    target_include_directories(OasisIO
+                               PRIVATE ${Boost_SOURCE_DIR}/libs/assign/include)
 endif()
 target_link_libraries(OasisIO PUBLIC Oasis::Oasis tinyxml2::tinyxml2)
 
