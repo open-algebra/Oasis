@@ -13,26 +13,57 @@
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
-#include <boost/assign/list_of.hpp>
 
 #include "Oasis/Expression.hpp"
 
 
 namespace Oasis {
 
-using TokenBimap = boost::bimaps::bimap<
+/** Options for PALM serialization. */
+struct PALMOpts {
+    enum class ImgSymType {
+        I,
+        J
+    } imaginarySymbol
+        = ImgSymType::I;
+
+    uint8_t numPlaces = 5;
+
+    enum class Separator {
+        SPACE
+    } separator
+        = Separator::SPACE;
+};
+
+/** Operators are taken from ExpressionType enum in Expression.hpp
+ * @see ExpressionType
+ */
+
+/** Types of delimiters used in PALM serialization. */
+enum PALMDelimiterType {
+    START_EXPRESSION,
+    END_EXPRESSION,
+    TOKEN_SEPARATOR,
+    EXPRESSION_PADDING
+};
+
+/** Bi-directional mapping between PALM operator tokens and their corresponding ExpressionType, PALMDelimiterType, or variant type. */
+using PALMTokenBimap = boost::bimaps::bimap<
     boost::bimaps::unordered_multiset_of<std::string_view>,
-    boost::bimaps::unordered_set_of<ExpressionType>
->;
+    boost::bimaps::unordered_set_of<std::variant<
+        ExpressionType,
+        PALMDelimiterType,
+        PALMOpts::ImgSymType
+>>>;
 
-#include <boost/bimap.hpp>
-
-#include <string>
-
-const TokenBimap kTokenBimap = ::boost::assign::list_of<TokenBimap::relation>
+/** A mapping from PALM tokens to con */
+const PALMTokenBimap tokenBimap = ::boost::assign::list_of<PALMTokenBimap::relation>
+    // Operators
     ("real", ExpressionType::Real)
     ("i", ExpressionType::Imaginary)
+    ("i", PALMOpts::ImgSymType::I)
     ("j", ExpressionType::Imaginary)
+    ("j", PALMOpts::ImgSymType::J)
     ("var", ExpressionType::Variable)
     ("+", ExpressionType::Add)
     ("-", ExpressionType::Subtract)
@@ -47,71 +78,12 @@ const TokenBimap kTokenBimap = ::boost::assign::list_of<TokenBimap::relation>
     ("pi",  ExpressionType::Pi)
     ("e", ExpressionType::EulerNumber)
     ("magnitude", ExpressionType::Magnitude)
-    ;
+    // Delimiters
+    ("(", START_EXPRESSION)
+    (")", END_EXPRESSION)
+    (" ", TOKEN_SEPARATOR)
+    (" ", EXPRESSION_PADDING);
 
-/** Options for PALM serialization. */
-struct PALMOpts {
-    enum class ImgSym {
-        I,
-        J
-    } imaginarySymbol
-        = ImgSym::I;
-
-    uint8_t numPlaces = 5;
-
-    enum class Separator {
-        SPACE
-    } separator
-        = Separator::SPACE;
-};
-
-/** Types of delimiters used in PALM serialization. */
-enum PALMDelimiterType {
-    START_EXPRESSION,
-    END_EXPRESSION,
-    SEPARATOR
-};
-
-/** Mapping from PalmDelimiterType to PALM token strings. */
-static const std::unordered_map<PALMDelimiterType, std::variant<
-    std::string_view
->> palmDelimiterToTokenMap = {
-    { START_EXPRESSION, "(" },
-    { END_EXPRESSION, ")" },
-    { SEPARATOR, " " }
-};
-
-/** Operators are taken from ExpressionType enum in Expression.hpp
- * @see ExpressionType
- */
-
-/** Mapping from ExpressionType to PALM token strings. */
-static const std::unordered_map<ExpressionType, std::variant<
-    std::string_view,
-    std::unordered_map<PALMOpts::ImgSym, std::string_view>
->> expressionTypeToPALMTokenMap = {
-    { ExpressionType::Real, "real" },
-    { ExpressionType::Imaginary, std::unordered_map<PALMOpts::ImgSym, std::string_view>{
-        {
-            { PALMOpts::ImgSym::I, "i" },
-            { PALMOpts::ImgSym::J, "j" }
-        }
-    } },
-    { ExpressionType::Variable, "var" },
-    { ExpressionType::Add, "+" },
-    { ExpressionType::Subtract, "-" },
-    { ExpressionType::Multiply, "*" },
-    { ExpressionType::Divide, "/" },
-    { ExpressionType::Exponent, "^" },
-    { ExpressionType::Log, "log" },
-    { ExpressionType::Integral, "int" },
-    { ExpressionType::Derivative, "d" },
-    { ExpressionType::Negate, "neg" },
-    { ExpressionType::Matrix, "matrix" },
-    { ExpressionType::Pi, "pi" },
-    { ExpressionType::EulerNumber, "e" },
-    { ExpressionType::Magnitude, "magnitude" }
-};
 
 /** Convert an ExpressionType to its corresponding PALM token.
  *
@@ -121,12 +93,13 @@ static const std::unordered_map<ExpressionType, std::variant<
  */
 auto PALMExpressionToToken(ExpressionType type, const PALMOpts& options) -> std::string_view;
 
+/** Convert a PALMDelimiterType to its corresponding PALM token.
+ *
+ * @param type The PALMDelimiterType to convert.
+ * @param options The PALM options to consider during conversion.
+ * @return The corresponding PALM token as a string view.
+ */
 auto PALMDelimiterToToken(PALMDelimiterType type, const PALMOpts& options) -> std::string_view;
-
-struct PALMDelimiters {
-    constexpr static  std::string_view START_EXPRESSION = "(";
-    constexpr static  std::string_view END_EXPRESSION = ")";
-};
 
 // Define PALM tokens
 constexpr inline std::string_view PALM_OPEN_PARENS = "(";

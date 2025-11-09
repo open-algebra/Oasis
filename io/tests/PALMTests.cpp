@@ -82,7 +82,7 @@ TEST_CASE("PALM Serialization for Imaginary with different characters", "[PALM][
     const Oasis::Imaginary imaginary {};
 
     { // Test with default character 'i'
-        Oasis::PALMSerializer serializer { { .imaginarySymbol = Oasis::PALMOpts::ImgSym::I } };
+        Oasis::PALMSerializer serializer { { .imaginarySymbol = Oasis::PALMOpts::ImgSymType::I } };
 
         auto result = imaginary.Accept(serializer).value();
         std::string expected = "( i )";
@@ -91,7 +91,7 @@ TEST_CASE("PALM Serialization for Imaginary with different characters", "[PALM][
     }
 
     { // Test with character 'j'
-        Oasis::PALMSerializer serializer { { .imaginarySymbol = Oasis::PALMOpts::ImgSym::J } };
+        Oasis::PALMSerializer serializer { { .imaginarySymbol = Oasis::PALMOpts::ImgSymType::J } };
 
         auto result = imaginary.Accept(serializer).value();
         std::string expected = "( j )";

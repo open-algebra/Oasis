@@ -66,7 +66,7 @@ private:
         std::ostringstream serialized;
 
         // Start Expression
-        serialized << PALMDelimiterToToken(START_EXPRESSION, palmOptions) << PALMDelimiterToToken(SEPARATOR, palmOptions);
+        serialized << PALMDelimiterToToken(START_EXPRESSION, palmOptions) << PALMDelimiterToToken(EXPRESSION_PADDING, palmOptions);
 
         // Add Operator
         serialized << PALMExpressionToToken(expressionType, palmOptions);
@@ -81,11 +81,11 @@ private:
             }
 
             // Add Separator and Operand Value
-            serialized << PALMDelimiterToToken(SEPARATOR, palmOptions) << value.value();
+            serialized << PALMDelimiterToToken(TOKEN_SEPARATOR, palmOptions) << value.value();
         }
 
         // End Expression
-        serialized << PALMDelimiterToToken(SEPARATOR, palmOptions) << PALMDelimiterToToken(END_EXPRESSION, palmOptions);
+        serialized << PALMDelimiterToToken(EXPRESSION_PADDING, palmOptions) << PALMDelimiterToToken(END_EXPRESSION, palmOptions);
 
         // Return the serialized string
         return serialized.str();
