@@ -19,7 +19,7 @@ auto PALMExpressionToToken(const ExpressionType type, const PALMOpts& options) -
 
 auto PALMDelimiterToToken(const PALMDelimiterType type, const PALMOpts& /*options*/) -> std::string_view
 {
-   return tokenBimap.right.at(type);
+    return tokenBimap.right.at(type);
 }
 
 }
