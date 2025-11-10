@@ -5,9 +5,11 @@
 #ifndef OASIS_PALMTOKENIZER_HPP
 #define OASIS_PALMTOKENIZER_HPP
 
+#include "PALMConsts.hpp"
 #include "PALMTypes.hpp"
 
 #include <unordered_set>
+#include <regex>
 
 namespace Oasis {
 
@@ -37,6 +39,11 @@ private:
     static const std::unordered_set<std::string_view>& punctuatorPrefixes();
 
     auto nextToken() const -> PALMToken;
+
+    static auto isTokenPALMOperator(const std::string& token) -> bool;
+    static auto isTokenPALMIdentifier(const std::string& token) -> bool;
+    static auto isTokenPALMNumber(const std::string& token) -> bool;
+    static auto isTokenPALMPunctuator(const std::string& token) -> bool;
 
     static auto tryMatchPunctuator(std::istream& in) -> std::string;
 };

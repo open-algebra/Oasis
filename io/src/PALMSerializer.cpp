@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "Oasis/PALMSerializer.hpp"
-#include "PALMSpec.hpp"
+#include "PALMConsts.hpp"
 
 #include "Oasis/Add.hpp"
 #include "Oasis/Derivative.hpp"

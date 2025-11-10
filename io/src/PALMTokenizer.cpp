@@ -3,7 +3,6 @@
 //
 
 #include "PALMTokenizer.hpp"
-#include "PALMSpec.hpp"
 
 /** Builds a set of all prefixes of PALM punctuators.
  *
@@ -128,6 +127,48 @@ auto Oasis::PALMTokenizer::nextToken() const -> PALMToken
     // Unknown Token
     token.type = PALMTokenType::Unknown;
     return token;
+}
+
+/** Checks if a token is a PALM operator.
+ *
+ * @param token The token to check.
+ * @return True if the token is a PALM operator, false otherwise.
+ */
+auto Oasis::PALMTokenizer::isTokenPALMOperator(const std::string& token) -> bool
+{
+    return kPALMOperatorBimap.left.count(token) != 0;
+}
+
+/** Checks if a token is a PALM identifier.
+ *
+ * @param token The token to check.
+ * @return True if the token is a PALM identifier, false otherwise.
+ */
+auto Oasis::PALMTokenizer::isTokenPALMIdentifier(const std::string& token) -> bool
+{
+    static const std::regex identifierRegex { std::string(kPALMIdentifierRegex) };
+    return std::regex_match(token, identifierRegex);
+}
+
+/** Checks if a token is a PALM number.
+ *
+ * @param token The token to check.
+ * @return True if the token is a PALM number, false otherwise.
+ */
+auto Oasis::PALMTokenizer::isTokenPALMNumber(const std::string& token) -> bool
+{
+    static const std::regex numberRegex { std::string(kPALMNumberRegex) };
+    return std::regex_match(token, numberRegex);
+}
+
+/** Checks if a token is a PALM punctuator.
+ *
+ * @param token The token to check.
+ * @return True if the token is a PALM punctuator, false otherwise.
+ */
+auto Oasis::PALMTokenizer::isTokenPALMPunctuator(const std::string& token) -> bool
+{
+    return kPALMPunctuatorBimap.left.count(token) != 0;
 }
 
 /** Tries to match a PALM punctuator from the input stream.
