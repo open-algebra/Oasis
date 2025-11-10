@@ -101,6 +101,7 @@ auto PALMExpressionToToken(ExpressionType type, const PALMOpts& options) -> std:
  */
 auto PALMDelimiterToToken(PALMDelimiterType type, const PALMOpts& options) -> std::string_view;
 
+
 // Define PALM tokens
 constexpr inline std::string_view PALM_OPEN_PARENS = "(";
 constexpr inline std::string_view PALM_CLOSE_PARENS = ")";

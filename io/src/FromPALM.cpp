@@ -25,6 +25,7 @@
 #include "Oasis/Variable.hpp"
 
 #include "PALMHelper.hpp"
+#include "PALMTokenizer.hpp"
 
 namespace Oasis {
 /** A simple token stream for parsing PALM strings.
@@ -257,6 +258,20 @@ auto ParseUnaryOperationElements(TokenStream& tokens) -> std::expected<std::vect
  */
 auto ParseNullaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseError>;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // PALM Grammar Start -> Expression $$
 auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, ParseError>
 {
@@ -275,6 +290,22 @@ auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Ex
 
     // Parsing failed
     return std::unexpected { ParseError::UnexpectedToken };
+}
+auto FromPALMNew(const std::string& palmString) -> std::expected<std::unique_ptr<Oasis::Expression>, Oasis::ParseError>
+{
+    // String to input stream
+    auto inputStream = std::istringstream(palmString);
+    auto tokenizer = PALMTokenizer(inputStream);
+
+    auto token = tokenizer.lookahead();
+
+    while (!tokenizer.eof()) {
+        // Process token
+        tokenizer.match(token);
+        token = tokenizer.lookahead();
+    }
+
+    return std::unexpected { Oasis::ParseError::Other };
 }
 
 auto TokenizePALM(const std::string& palmString) -> TokenStream
@@ -633,4 +664,5 @@ auto ParseNullaryOperationElements(TokenStream& tokens) -> std::expected<std::ve
 
     return elements;
 }
+
 }

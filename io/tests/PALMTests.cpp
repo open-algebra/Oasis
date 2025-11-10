@@ -778,21 +778,65 @@ TEST_CASE("PALM Parsing for Real with various formats", "[PALM][Parser][Real]")
         const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
         REQUIRE(real->GetValue() == -0.001);
     }
+
+    { // Test with scientific notation
+        const auto expr = Oasis::FromPALM("( real 1.5e3 )");
+
+        REQUIRE(expr.has_value());
+        REQUIRE((*expr)->Is<Oasis::Real>());
+
+        const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
+        REQUIRE(real->GetValue() == 1500.0);
+    }
 }
+
+TEST_CASE("PALM Parsing for Malformed Real", "[PALM][Parser][Real]")
+{
+    { // Missing value
+        // const auto expr = Oasis::FromPALM("( real )");
+        // const auto expectedError = Oasis::ParseError {
+        //     .type = Oasis::ParseErrorType::TooFewOperands,
+        //     .token_index = 4,
+        //     .char_offset = 7,
+        //     .got = "",
+        //     .expected = "real number",
+        //     .message = "Expected a real number after 'real' token."
+        // };
+        //
+        // REQUIRE(!expr);
+        // REQUIRE(expr.error() == expectedError);
+    }
+
+    { // Invalid format
+        const auto expr = Oasis::FromPALM("( real three.point.onefour )");
+
+        REQUIRE(!expr);
+        REQUIRE(expr.error() == Oasis::ParseError::InvalidNumberFormat);
+    }
+
+    { // Extra tokens
+        const auto expr = Oasis::FromPALM("( real 3.14 extra )");
+
+        REQUIRE(!expr);
+        REQUIRE(expr.error() == Oasis::ParseError::UnexpectedToken);
+    }
+
+
+}
+
+//TODO: Remove
+TEST_CASE("TEMP RUN PALM")
+{
+    const std::string palmString = "(+(rea%l 5) (* (var x ) \n ( ^ ( real 2 ) ( real 3 ) ) ) )";
+
+    const auto expr = Oasis::FromPALMNew(palmString);
+}
+
 
 /*
  * Real Operation
  */
-TEST_CASE("Parse Real", "[FromPALM][Parsing]")
-{
-    const auto expr = Oasis::FromPALM("( real 5 )");
 
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Is<Oasis::Real>());
-
-    const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
-    REQUIRE(real->GetValue() == 5.0);
-}
 
 TEST_CASE("Parse Multiple Real", "[FromPALM][Parsing]")
 {

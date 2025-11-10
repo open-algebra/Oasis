@@ -6,6 +6,7 @@ set(OASIS_IO_SOURCES
     src/MathMLSerializer.cpp
     src/PALMHelper.cpp
     src/PALMSerializer.cpp
+    src/PALMTokenizer.cpp
     src/TeXSerializer.cpp)
 
 set(OASIS_IO_HEADERS
