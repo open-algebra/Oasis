@@ -4,7 +4,6 @@ set(OASIS_IO_SOURCES
     src/FromString.cpp
     src/InFixSerializer.cpp
     src/MathMLSerializer.cpp
-    src/PALMHelper.cpp
     src/PALMSerializer.cpp
     src/PALMTokenizer.cpp
     src/TeXSerializer.cpp)

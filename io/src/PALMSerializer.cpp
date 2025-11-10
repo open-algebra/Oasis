@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "PALMSpec.hpp"
 #include "Oasis/PALMSerializer.hpp"
 
 #include "Oasis/Add.hpp"
@@ -106,6 +107,140 @@ auto PALMSerializer::TypedVisit(const Pi&) -> RetT
 auto PALMSerializer::TypedVisit(const Magnitude<Expression>& magnitude) -> RetT
 {
     return SerializeUnaryExpression(magnitude);
+}
+
+/** Convert an ExpressionType (Operator) to its corresponding PALM token.
+ *
+ * @param op The ExpressionType (Operator) to convert.
+ * @param options The PALM options to consider during conversion.
+ * @return The corresponding PALM token as a string view.
+ */
+auto PALMSerializer::OperatorToToken(const ExpressionType op, const PALMSerializationOpts& options) -> std::string_view
+{
+    switch (op) {
+    case ExpressionType::Imaginary:
+        switch (options.imaginarySymbol) {
+        case PALMSerializationOpts::ImgSymType::J:
+            return "j";
+        case PALMSerializationOpts::ImgSymType::I:
+        default:
+            return "i";
+        }
+
+    default:
+        return kPALMOperatorBimap.right.at(op);
+    }
+}
+
+/** Convert a PALMPunctuatorType to its corresponding PALM token.
+ *
+ * @param punctuator The PALMDelimiterType to convert.
+
+ * @return The corresponding PALM token as a string view.
+ */
+auto PALMSerializer::PunctuatorToToken(const PALMPunctuatorType punctuator, const PALMSerializationOpts& /*options*/) -> std::string_view
+{
+    return kPALMPunctuatorBimap.right.at(punctuator);
+}
+
+/** Serialize a generic expression.
+ *
+ * @tparam RetT The return type of the serialization (usually std::expected<std::string, std::string>)
+ * @param expressionType The type of the expression.
+ * @param operands The serialized operands of the expression.
+ * @return The serialized expression as a string, or an error if serialization fails.
+ */
+auto PALMSerializer::SerializeExpression(ExpressionType expressionType, const std::vector<RetT>& operands) const -> RetT
+{
+    // Build the serialized string
+    std::ostringstream serialized;
+
+    // Start Expression
+    serialized
+    << PunctuatorToToken(PALMPunctuatorType::StartExpression, palmOptions)
+    << palmOptions.expressionPadding
+
+
+    // Add Operator
+    << OperatorToToken(expressionType, palmOptions);
+
+    // Add Operands
+    for (const auto& operand : operands) {
+        // Check for errors in operand serialization
+        auto value = operand;
+
+        if (!value) {
+            return std::unexpected<std::string> { value.error() };
+        }
+
+        // Add Separator and Operand Value
+        serialized
+        << palmOptions.tokenSeparator
+        << value.value();
+    }
+
+    // End Expression
+    serialized
+    << palmOptions.expressionPadding
+    << PunctuatorToToken(PALMPunctuatorType::EndExpression, palmOptions);
+
+    // Return the serialized string
+    return serialized.str();
+}
+
+
+/** Serialize a unary expression.
+ *
+ * @tparam RetT The return type of the serialization (usually std::expected<std::string, std::string>)
+ * @param expr The unary expression to serialize.
+ * @return The serialized expression as a string, or an error if serialization fails.
+ */
+auto PALMSerializer::SerializeUnaryExpression(const DerivedFromUnaryExpression auto& expr) -> RetT
+{
+    // Ensure the operand exists
+    if (!expr.HasOperand()) {
+        return std::unexpected<std::string> { std::string(PALM_UNEXPECTED_NO_MOST_SIG_OP) };
+    }
+
+    // Serialize the operand
+    auto operandResult = expr.GetOperand().Accept(*this);
+    if (!operandResult) {
+        return std::unexpected<std::string> { operandResult.error() };
+    }
+
+    // Serialize the expression
+    return SerializeExpression(expr.GetType(), { operandResult });
+}
+
+/** Serialize a binary expression.
+ *
+ * @tparam RetT The return type of the serialization (usually std::expected<std::string, std::string>)
+ * @param expr The binary expression to serialize.
+ * @return The serialized expression as a string, or an error if serialization fails.
+ */
+auto PALMSerializer::SerializeBinaryExpression(const DerivedFromBinaryExpression auto& expr) -> RetT
+{
+    // Ensure both operands exist
+    if (!expr.HasMostSigOp()) {
+        return std::unexpected<std::string> { std::string(PALM_UNEXPECTED_NO_MOST_SIG_OP) };
+    }
+    if (!expr.HasLeastSigOp()) {
+        return std::unexpected<std::string> { std::string(PALM_UNEXPECTED_NO_LEAST_SIG_OP) };
+    }
+
+    // Serialize both operands
+    auto mostSigOpResult = expr.GetMostSigOp().Accept(*this);
+    if (!mostSigOpResult) {
+        return std::unexpected<std::string> { mostSigOpResult.error() };
+    }
+
+    auto leastSigOpResult = expr.GetLeastSigOp().Accept(*this);
+    if (!leastSigOpResult) {
+        return std::unexpected<std::string> { leastSigOpResult.error() };
+    }
+
+    // Serialize the expression
+    return SerializeExpression(expr.GetType(), { mostSigOpResult, leastSigOpResult });
 }
 
 }

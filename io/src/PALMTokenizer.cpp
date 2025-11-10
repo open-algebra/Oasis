@@ -3,6 +3,7 @@
 //
 
 #include "PALMTokenizer.hpp"
+#include "PALMSpec.hpp"
 
 /** Builds a set of all prefixes of PALM punctuators.
  *

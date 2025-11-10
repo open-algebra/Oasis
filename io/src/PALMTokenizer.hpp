@@ -5,7 +5,7 @@
 #ifndef OASIS_PALMTOKENIZER_HPP
 #define OASIS_PALMTOKENIZER_HPP
 
-#include "PALMSpec.hpp"
+#include "PALMTypes.hpp"
 
 #include <unordered_set>
 

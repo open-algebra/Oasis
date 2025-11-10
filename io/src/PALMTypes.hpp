@@ -55,16 +55,6 @@ using PALMPunctuatorBimap = boost::bimaps::bimap<std::string_view, PALMPunctuato
 
 
 
-
-
-
-
-/** Checks if a character is a PALM operator.
- *
- * @param ch The character to check.
- * @return True if the character is a PALM operator, false otherwise.
- */
-auto isPALMOperator(char ch) -> bool;
 }
 
 #endif // OASIS_PALMTYPES_HPP
