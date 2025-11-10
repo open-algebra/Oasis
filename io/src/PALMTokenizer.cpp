@@ -164,8 +164,6 @@ auto Oasis::PALMTokenizer::tryMatchPunctuator(std::istream& in) -> std::string
     return ""; // No match found
 }
 
-
-
 auto Oasis::PALMTokenizer::lookahead() -> PALMToken
 {
     if (!currentToken) {
@@ -192,5 +190,3 @@ auto Oasis::PALMTokenizer::eof() const -> bool
 {
     return inputStream.eof();
 }
-
-

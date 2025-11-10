@@ -21,7 +21,6 @@
 #include "Oasis/Pi.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
-
 #include "Oasis/Variable.hpp"
 
 #include "PALMHelper.hpp"
@@ -257,20 +256,6 @@ auto ParseUnaryOperationElements(TokenStream& tokens) -> std::expected<std::vect
  * @return The parsed expressions.
  */
 auto ParseNullaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseError>;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // PALM Grammar Start -> Expression $$
 auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, ParseError>

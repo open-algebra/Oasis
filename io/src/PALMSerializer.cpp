@@ -4,25 +4,25 @@
 
 #include <utility>
 
-#include "PALMSpec.hpp"
 #include "Oasis/PALMSerializer.hpp"
+#include "PALMSpec.hpp"
 
 #include "Oasis/Add.hpp"
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
+#include "Oasis/EulerNumber.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Magnitude.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
+#include "Oasis/Pi.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
-#include "Oasis/Variable.hpp"
-#include "Oasis/EulerNumber.hpp"
-#include "Oasis/Imaginary.hpp"
 #include "Oasis/Undefined.hpp"
-#include "Oasis/Pi.hpp"
+#include "Oasis/Variable.hpp"
 
 namespace Oasis {
 
@@ -161,12 +161,11 @@ auto PALMSerializer::WrapExpression(const ExpressionType expressionType, const s
 
     // Start Expression
     serialized
-    << PunctuatorToToken(PALMPunctuatorType::StartExpression, palmOptions)
-    << palmOptions.expressionPadding
+        << PunctuatorToToken(PALMPunctuatorType::StartExpression, palmOptions)
+        << palmOptions.expressionPadding
 
-
-    // Add Operator
-    << OperatorToToken(expressionType, palmOptions);
+        // Add Operator
+        << OperatorToToken(expressionType, palmOptions);
 
     // Add Operands
     for (const auto& operand : operands) {
@@ -179,14 +178,14 @@ auto PALMSerializer::WrapExpression(const ExpressionType expressionType, const s
 
         // Add Separator and Operand Value
         serialized
-        << palmOptions.tokenSeparator
-        << value.value();
+            << palmOptions.tokenSeparator
+            << value.value();
     }
 
     // End Expression
     serialized
-    << palmOptions.expressionPadding
-    << PunctuatorToToken(PALMPunctuatorType::EndExpression, palmOptions);
+        << palmOptions.expressionPadding
+        << PunctuatorToToken(PALMPunctuatorType::EndExpression, palmOptions);
 
     // Return the serialized string
     return serialized.str();
