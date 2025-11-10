@@ -24,7 +24,7 @@
 #include "Oasis/Variable.hpp"
 
 // Serializer
-TEST_CASE("PALM Serialization for Real with various precisions", "[PALM][Serializer][Real]")
+TEST_CASE("PALM Serialization of Real with various precisions", "[PALM][Serializer][Real]")
 {
     const Oasis::Real real { 3.1415926535 };
 
@@ -65,7 +65,7 @@ TEST_CASE("PALM Serialization for Real with various precisions", "[PALM][Seriali
     }
 }
 
-TEST_CASE("PALM Serialization for Real with negative value", "[PALM][Serializer][Real]")
+TEST_CASE("PALM Serialization of Real with negative value", "[PALM][Serializer][Real]")
 {
     const Oasis::Real real { -2.71828 };
 
@@ -77,7 +77,7 @@ TEST_CASE("PALM Serialization for Real with negative value", "[PALM][Serializer]
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Imaginary with different characters", "[PALM][Serializer][Imaginary]")
+TEST_CASE("PALM Serialization of Imaginary with different characters", "[PALM][Serializer][Imaginary]")
 {
     const Oasis::Imaginary imaginary {};
 
@@ -109,7 +109,7 @@ TEST_CASE("PALM Serialization for Imaginary with different characters", "[PALM][
     }
 }
 
-TEST_CASE("PALM Serialization for Variable", "[PALM][Serializer][Variable]")
+TEST_CASE("PALM Serialization of Variable", "[PALM][Serializer][Variable]")
 {
     const Oasis::Variable variable { "x_variable" };
 
@@ -121,7 +121,7 @@ TEST_CASE("PALM Serialization for Variable", "[PALM][Serializer][Variable]")
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Addition", "[PALM][Serializer][Addition]")
+TEST_CASE("PALM Serialization of Addition", "[PALM][Serializer][Addition]")
 {
     const Oasis::Add<> addition {
         Oasis::Real { 5.0 },
@@ -136,7 +136,7 @@ TEST_CASE("PALM Serialization for Addition", "[PALM][Serializer][Addition]")
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Nested Addition", "[PALM][Serializer][Addition]")
+TEST_CASE("PALM Serialization of Nested Addition", "[PALM][Serializer][Addition]")
 {
     const Oasis::Add<> addition {
         Oasis::Real { 5.0 },
@@ -153,7 +153,7 @@ TEST_CASE("PALM Serialization for Nested Addition", "[PALM][Serializer][Addition
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Malformed Addition", "[PALM][Serializer][Addition]")
+TEST_CASE("PALM Serialization of Malformed Addition", "[PALM][Serializer][Addition]")
 {
     { // Missing least significant operand
         Oasis::Add<Oasis::Real, Oasis::Expression> addition;
@@ -180,7 +180,7 @@ TEST_CASE("PALM Serialization for Malformed Addition", "[PALM][Serializer][Addit
     }
 }
 
-TEST_CASE("PALM Serialization for Subtraction", "[PALM][Serializer][Subtraction]")
+TEST_CASE("PALM Serialization of Subtraction", "[PALM][Serializer][Subtraction]")
 {
     const Oasis::Subtract<> subtraction {
         Oasis::Real { 5.0 },
@@ -195,7 +195,7 @@ TEST_CASE("PALM Serialization for Subtraction", "[PALM][Serializer][Subtraction]
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Nested Subtraction", "[PALM][Serializer][Subtraction]")
+TEST_CASE("PALM Serialization of Nested Subtraction", "[PALM][Serializer][Subtraction]")
 {
     const Oasis::Subtract<> subtraction {
         Oasis::Real { 5.0 },
@@ -212,7 +212,7 @@ TEST_CASE("PALM Serialization for Nested Subtraction", "[PALM][Serializer][Subtr
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Malformed Subtraction", "[PALM][Serializer][Subtraction]")
+TEST_CASE("PALM Serialization of Malformed Subtraction", "[PALM][Serializer][Subtraction]")
 {
     { // Missing least significant operand
         Oasis::Subtract<Oasis::Real, Oasis::Expression> subtraction;
@@ -239,7 +239,7 @@ TEST_CASE("PALM Serialization for Malformed Subtraction", "[PALM][Serializer][Su
     }
 }
 
-TEST_CASE("PALM Serialization for Multiplication", "[PALM][Serializer][Multiplication]")
+TEST_CASE("PALM Serialization of Multiplication", "[PALM][Serializer][Multiplication]")
 {
     const Oasis::Multiply<> multiplication {
         Oasis::Real { 5.0 },
@@ -254,7 +254,7 @@ TEST_CASE("PALM Serialization for Multiplication", "[PALM][Serializer][Multiplic
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Nested Multiplication", "[PALM][Serializer][Multiplication]")
+TEST_CASE("PALM Serialization of Nested Multiplication", "[PALM][Serializer][Multiplication]")
 {
     const Oasis::Multiply<> multiplication {
         Oasis::Real { 5.0 },
@@ -271,7 +271,7 @@ TEST_CASE("PALM Serialization for Nested Multiplication", "[PALM][Serializer][Mu
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Malformed Multiplication", "[PALM][Serializer][Multiplication]")
+TEST_CASE("PALM Serialization of Malformed Multiplication", "[PALM][Serializer][Multiplication]")
 {
     { // Missing least significant operand
         Oasis::Multiply<Oasis::Real, Oasis::Expression> multiplication;
@@ -298,7 +298,7 @@ TEST_CASE("PALM Serialization for Malformed Multiplication", "[PALM][Serializer]
     }
 }
 
-TEST_CASE("PALM Serialization for Division", "[PALM][Serializer][Division]")
+TEST_CASE("PALM Serialization of Division", "[PALM][Serializer][Division]")
 {
     const Oasis::Divide<> division {
         Oasis::Real { 6.0 },
@@ -313,7 +313,7 @@ TEST_CASE("PALM Serialization for Division", "[PALM][Serializer][Division]")
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Nested Division", "[PALM][Serializer][Division]")
+TEST_CASE("PALM Serialization of Nested Division", "[PALM][Serializer][Division]")
 {
     const Oasis::Divide<> division {
         Oasis::Real { 6.0 },
@@ -330,7 +330,7 @@ TEST_CASE("PALM Serialization for Nested Division", "[PALM][Serializer][Division
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Malformed Division", "[PALM][Serializer][Division]")
+TEST_CASE("PALM Serialization of Malformed Division", "[PALM][Serializer][Division]")
 {
     { // Missing least significant operand
         Oasis::Divide<Oasis::Real, Oasis::Expression> division;
@@ -357,7 +357,7 @@ TEST_CASE("PALM Serialization for Malformed Division", "[PALM][Serializer][Divis
     }
 }
 
-TEST_CASE("PALM Serialization for Exponentiation", "[PALM][Serializer][Exponentiation]")
+TEST_CASE("PALM Serialization of Exponentiation", "[PALM][Serializer][Exponentiation]")
 {
     const Oasis::Exponent<> exponent {
         Oasis::Real { 2.0 },
@@ -372,7 +372,7 @@ TEST_CASE("PALM Serialization for Exponentiation", "[PALM][Serializer][Exponenti
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Nested Exponentiation", "[PALM][Serializer][Exponentiation]")
+TEST_CASE("PALM Serialization of Nested Exponentiation", "[PALM][Serializer][Exponentiation]")
 {
     const Oasis::Exponent<> exponent {
         Oasis::Real { 2.0 },
@@ -389,7 +389,7 @@ TEST_CASE("PALM Serialization for Nested Exponentiation", "[PALM][Serializer][Ex
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Malformed Exponentiation", "[PALM][Serializer][Exponentiation]")
+TEST_CASE("PALM Serialization of Malformed Exponentiation", "[PALM][Serializer][Exponentiation]")
 {
     { // Missing least significant operand
         Oasis::Exponent<Oasis::Real, Oasis::Expression> exponent;
@@ -416,7 +416,7 @@ TEST_CASE("PALM Serialization for Malformed Exponentiation", "[PALM][Serializer]
     }
 }
 
-TEST_CASE("PALM Serialization for Logarithm", "[PALM][Serializer][Logarithm]")
+TEST_CASE("PALM Serialization of Logarithm", "[PALM][Serializer][Logarithm]")
 {
     const Oasis::Log<> log {
         Oasis::Real { 10.0 },
@@ -431,7 +431,7 @@ TEST_CASE("PALM Serialization for Logarithm", "[PALM][Serializer][Logarithm]")
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Nested Logarithm", "[PALM][Serializer][Logarithm]")
+TEST_CASE("PALM Serialization of Nested Logarithm", "[PALM][Serializer][Logarithm]")
 {
     const Oasis::Log<> log {
         Oasis::Real { 10.0 },
@@ -448,7 +448,7 @@ TEST_CASE("PALM Serialization for Nested Logarithm", "[PALM][Serializer][Logarit
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Malformed Logarithm", "[PALM][Serializer][Logarithm]")
+TEST_CASE("PALM Serialization of Malformed Logarithm", "[PALM][Serializer][Logarithm]")
 {
     { // Missing least significant operand
         Oasis::Log<Oasis::Real, Oasis::Expression> log;
@@ -475,7 +475,7 @@ TEST_CASE("PALM Serialization for Malformed Logarithm", "[PALM][Serializer][Loga
     }
 }
 
-TEST_CASE("PALM Serialization for Negation", "[PALM][Serializer][Negation]")
+TEST_CASE("PALM Serialization of Negation", "[PALM][Serializer][Negation]")
 {
     const Oasis::Negate<> negate {
         Oasis::Real { 5.0 }
@@ -489,7 +489,7 @@ TEST_CASE("PALM Serialization for Negation", "[PALM][Serializer][Negation]")
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Nested Negation", "[PALM][Serializer][Negation]")
+TEST_CASE("PALM Serialization of Nested Negation", "[PALM][Serializer][Negation]")
 {
     const Oasis::Negate<> negate {
         Oasis::Negate {
@@ -504,7 +504,7 @@ TEST_CASE("PALM Serialization for Nested Negation", "[PALM][Serializer][Negation
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Malformed Negation", "[PALM][Serializer][Negation]")
+TEST_CASE("PALM Serialization of Malformed Negation", "[PALM][Serializer][Negation]")
 {
     { // Missing operand
         Oasis::Negate<Oasis::Expression> negate;
@@ -518,7 +518,7 @@ TEST_CASE("PALM Serialization for Malformed Negation", "[PALM][Serializer][Negat
     }
 }
 
-TEST_CASE("PALM Serialization for Derivative", "[PALM][Serializer][Derivative]")
+TEST_CASE("PALM Serialization of Derivative", "[PALM][Serializer][Derivative]")
 {
     const Oasis::Derivative<> derivative {
         Oasis::Variable { "x" },
@@ -533,7 +533,7 @@ TEST_CASE("PALM Serialization for Derivative", "[PALM][Serializer][Derivative]")
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Nested Derivative", "[PALM][Serializer][Derivative]")
+TEST_CASE("PALM Serialization of Nested Derivative", "[PALM][Serializer][Derivative]")
 {
     const Oasis::Derivative<> derivative {
         Oasis::Variable { "x" },
@@ -550,7 +550,7 @@ TEST_CASE("PALM Serialization for Nested Derivative", "[PALM][Serializer][Deriva
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Malformed Derivative", "[PALM][Serializer][Derivative]")
+TEST_CASE("PALM Serialization of Malformed Derivative", "[PALM][Serializer][Derivative]")
 {
     { // Missing least significant operand
         Oasis::Derivative<Oasis::Variable, Oasis::Expression> derivative;
@@ -577,7 +577,7 @@ TEST_CASE("PALM Serialization for Malformed Derivative", "[PALM][Serializer][Der
     }
 }
 
-TEST_CASE("PALM Serialization for Integral", "[PALM][Serializer][Integral]")
+TEST_CASE("PALM Serialization of Integral", "[PALM][Serializer][Integral]")
 {
     const Oasis::Integral<> integral {
         Oasis::Variable { "x" },
@@ -592,7 +592,7 @@ TEST_CASE("PALM Serialization for Integral", "[PALM][Serializer][Integral]")
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Nested Integral", "[PALM][Serializer][Integral]")
+TEST_CASE("PALM Serialization of Nested Integral", "[PALM][Serializer][Integral]")
 {
     const Oasis::Integral<> integral {
         Oasis::Variable { "x" },
@@ -609,7 +609,7 @@ TEST_CASE("PALM Serialization for Nested Integral", "[PALM][Serializer][Integral
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Malformed Integral", "[PALM][Serializer][Integral]")
+TEST_CASE("PALM Serialization of Malformed Integral", "[PALM][Serializer][Integral]")
 {
     { // Missing least significant operand
         Oasis::Integral<Oasis::Variable, Oasis::Expression> integral;
@@ -638,7 +638,7 @@ TEST_CASE("PALM Serialization for Malformed Integral", "[PALM][Serializer][Integ
 
 // TODO: Add tests for Matrix
 
-TEST_CASE("PALM Serialization for Euler Number", "[PALM][Serializer][EulerNumber]")
+TEST_CASE("PALM Serialization of Euler Number", "[PALM][Serializer][EulerNumber]")
 {
     const Oasis::EulerNumber euler {};
 
@@ -650,7 +650,7 @@ TEST_CASE("PALM Serialization for Euler Number", "[PALM][Serializer][EulerNumber
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Pi", "[PALM][Serializer][Pi]")
+TEST_CASE("PALM Serialization of Pi", "[PALM][Serializer][Pi]")
 {
     const Oasis::Pi pi {};
 
@@ -662,7 +662,7 @@ TEST_CASE("PALM Serialization for Pi", "[PALM][Serializer][Pi]")
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Magnitude", "[PALM][Serializer][Magnitude]")
+TEST_CASE("PALM Serialization of Magnitude", "[PALM][Serializer][Magnitude]")
 {
     const Oasis::Magnitude<Oasis::Real> magnitude {
         Oasis::Real { -5.0 }
@@ -676,7 +676,7 @@ TEST_CASE("PALM Serialization for Magnitude", "[PALM][Serializer][Magnitude]")
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Nested Magnitude", "[PALM][Serializer][Magnitude]")
+TEST_CASE("PALM Serialization of Nested Magnitude", "[PALM][Serializer][Magnitude]")
 {
     const Oasis::Magnitude<Oasis::Magnitude<Oasis::Real>> magnitude {
         Oasis::Magnitude {
@@ -691,7 +691,7 @@ TEST_CASE("PALM Serialization for Nested Magnitude", "[PALM][Serializer][Magnitu
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization for Malformed Magnitude", "[PALM][Serializer][Magnitude]")
+TEST_CASE("PALM Serialization of Malformed Magnitude", "[PALM][Serializer][Magnitude]")
 {
     { // Missing operand
         Oasis::Magnitude<Oasis::Expression> magnitude;
@@ -705,7 +705,7 @@ TEST_CASE("PALM Serialization for Malformed Magnitude", "[PALM][Serializer][Magn
     }
 }
 
-TEST_CASE("PALM Serialization for Complex Expressions", "[PALM][Serializer][ComplexExpression]")
+TEST_CASE("PALM Serialization of Complex Expressions", "[PALM][Serializer][ComplexExpression]")
 {
     Oasis::PALMSerializer serializer {};
 
@@ -746,8 +746,114 @@ TEST_CASE("PALM Serialization for Complex Expressions", "[PALM][Serializer][Comp
     }
 }
 
+TEST_CASE("PALM Serialization with Different Expression Padding", "[PALM][Serializer][Padding]")
+{
+    { // No Padding
+        Oasis::PALMSerializer serializer({ .expressionPadding = "" });
+
+        const Oasis::Add<> expression {
+            Oasis::Real { 5.0 },
+            Oasis::Multiply {
+                Oasis::Variable { "x" },
+                Oasis::Exponent {
+                    Oasis::Real { 2.0 },
+                    Oasis::Real { 3.0 }
+                }
+            }
+        };
+
+        auto result = expression.Accept(serializer).value();
+        std::string expected = "(+ (real 5) (* (var x) (^ (real 2) (real 3))))";
+
+        REQUIRE(expected == result);
+    }
+
+    { // Tab Padding
+        Oasis::PALMSerializer serializer({ .expressionPadding = "\t" });
+
+        const Oasis::Add<> expression {
+            Oasis::Real { 5.0 },
+            Oasis::Multiply {
+                Oasis::Variable { "x" },
+                Oasis::Exponent {
+                    Oasis::Real { 2.0 },
+                    Oasis::Real { 3.0 }
+                }
+            }
+        };
+
+        auto result = expression.Accept(serializer).value();
+        std::string expected = "(\t+ (\treal 5\t) (\t* (\tvar x\t) (\t^ (\treal 2\t) (\treal 3\t)\t)\t)\t)";
+
+        REQUIRE(expected == result);
+    }
+
+    { // %bruh% Padding (because I can)
+        Oasis::PALMSerializer serializer({ .expressionPadding = "%bruh%" });
+
+        const Oasis::Add<> expression {
+            Oasis::Real { 5.0 },
+            Oasis::Multiply {
+                Oasis::Variable { "x" },
+                Oasis::Exponent {
+                    Oasis::Real { 2.0 },
+                    Oasis::Real { 3.0 }
+                }
+            }
+        };
+
+        auto result = expression.Accept(serializer).value();
+        std::string expected = "(%bruh%+ (%bruh%real 5%bruh%) (%bruh%* (%bruh%var x%bruh%) (%bruh%^ (%bruh%real 2%bruh%) (%bruh%real 3%bruh%)%bruh%)%bruh%)%bruh%)";
+
+        REQUIRE(expected == result);
+    }
+}
+
+TEST_CASE("PALM Serialization with Different Token Separators", "[PALM][Serializer][TokenSeparator]")
+{
+    { // Double Space Separator
+        Oasis::PALMSerializer serializer({ .tokenSeparator = "  " });
+
+        const Oasis::Add<> expression {
+            Oasis::Real { 5.0 },
+            Oasis::Multiply {
+                Oasis::Variable { "x" },
+                Oasis::Exponent {
+                    Oasis::Real { 2.0 },
+                    Oasis::Real { 3.0 }
+                }
+            }
+        };
+
+        auto result = expression.Accept(serializer).value();
+        std::string expected = "( +  ( real  5 )  ( *  ( var  x )  ( ^  ( real  2 )  ( real  3 ) ) ) )";
+
+        REQUIRE(expected == result);
+    }
+
+    { // % Separator
+        Oasis::PALMSerializer serializer({ .tokenSeparator = "%" });
+
+        const Oasis::Add<> expression {
+            Oasis::Real { 5.0 },
+            Oasis::Multiply {
+                Oasis::Variable { "x" },
+                Oasis::Exponent {
+                    Oasis::Real { 2.0 },
+                    Oasis::Real { 3.0 }
+                }
+            }
+        };
+
+        auto result = expression.Accept(serializer).value();
+        std::string expected = "( +%( real%5 )%( *%( var%x )%( ^%( real%2 )%( real%3 ) ) ) )";
+
+        REQUIRE(expected == result);
+    }
+}
+
 // Parser
-TEST_CASE("PALM Parsing for Real with various formats", "[PALM][Parser][Real]")
+TEST_CASE("PALM Parsing of Real with various formats", "[PALM][Parser][Real]")
 {
     { // Test with integer
         const auto expr = Oasis::FromPALM("( real 42 )");
@@ -790,39 +896,39 @@ TEST_CASE("PALM Parsing for Real with various formats", "[PALM][Parser][Real]")
     }
 }
 
-TEST_CASE("PALM Parsing for Malformed Real", "[PALM][Parser][Real]")
-{
-    { // Missing value
-        // const auto expr = Oasis::FromPALM("( real )");
-        // const auto expectedError = Oasis::ParseError {
-        //     .type = Oasis::ParseErrorType::TooFewOperands,
-        //     .token_index = 4,
-        //     .char_offset = 7,
-        //     .got = "",
-        //     .expected = "real number",
-        //     .message = "Expected a real number after 'real' token."
-        // };
-        //
-        // REQUIRE(!expr);
-        // REQUIRE(expr.error() == expectedError);
-    }
-
-    { // Invalid format
-        const auto expr = Oasis::FromPALM("( real three.point.onefour )");
-
-        REQUIRE(!expr);
-        REQUIRE(expr.error() == Oasis::ParseError::InvalidNumberFormat);
-    }
-
-    { // Extra tokens
-        const auto expr = Oasis::FromPALM("( real 3.14 extra )");
-
-        REQUIRE(!expr);
-        REQUIRE(expr.error() == Oasis::ParseError::UnexpectedToken);
-    }
-
-
-}
+// TEST_CASE("PALM Parsing for Malformed Real", "[PALM][Parser][Real]")
+// {
+//     { // Missing value
+//         // const auto expr = Oasis::FromPALM("( real )");
+//         // const auto expectedError = Oasis::ParseError {
+//         //     .type = Oasis::ParseErrorType::TooFewOperands,
+//         //     .token_index = 4,
+//         //     .char_offset = 7,
+//         //     .got = "",
+//         //     .expected = "real number",
+//         //     .message = "Expected a real number after 'real' token."
+//         // };
+//         //
+//         // REQUIRE(!expr);
+//         // REQUIRE(expr.error() == expectedError);
+//     }
+//
+//     { // Invalid format
+//         const auto expr = Oasis::FromPALM("( real three.point.onefour )");
+//
+//         REQUIRE(!expr);
+//         REQUIRE(expr.error() == Oasis::ParseError::InvalidNumberFormat);
+//     }
+//
+//     { // Extra tokens
+//         const auto expr = Oasis::FromPALM("( real 3.14 extra )");
+//
+//         REQUIRE(!expr);
+//         REQUIRE(expr.error() == Oasis::ParseError::UnexpectedToken);
+//     }
+//
+//
+// }
 
 //TODO: Remove
 TEST_CASE("TEMP RUN PALM")

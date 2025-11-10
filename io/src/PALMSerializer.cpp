@@ -19,73 +19,77 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/EulerNumber.hpp"
+#include "Oasis/Imaginary.hpp"
+#include "Oasis/Undefined.hpp"
+#include "Oasis/Pi.hpp"
 
 namespace Oasis {
 
 auto PALMSerializer::TypedVisit(const Real& real) -> RetT
 {
     auto realString = std::format("{:.{}}", real.GetValue(), palmOptions.numPlaces + 1);
-    return SerializeExpression(ExpressionType::Real, { realString });
+    return WrapExpression(ExpressionType::Real, { realString });
 }
 
-auto PALMSerializer::TypedVisit(const Imaginary&) -> RetT
+auto PALMSerializer::TypedVisit(const Imaginary& imaginary) -> RetT
 {
-    return SerializeExpression(ExpressionType::Imaginary);
+    return SerializeExpression(imaginary);
 }
 
 auto PALMSerializer::TypedVisit(const Variable& variable) -> RetT
 {
-    return SerializeExpression(ExpressionType::Variable, { variable.GetName() });
+    return WrapExpression(ExpressionType::Variable, { variable.GetName() });
 }
 
-auto PALMSerializer::TypedVisit(const Undefined&) -> RetT
+auto PALMSerializer::TypedVisit(const Undefined& undefined) -> RetT
 {
-    return SerializeExpression(ExpressionType::None);
+    return SerializeExpression(undefined);
 }
 
 auto PALMSerializer::TypedVisit(const Add<>& add) -> RetT
 {
-    return SerializeBinaryExpression(add);
+    return SerializeExpression(add);
 }
 
 auto PALMSerializer::TypedVisit(const Subtract<>& subtract) -> RetT
 {
-    return SerializeBinaryExpression(subtract);
+    return SerializeExpression(subtract);
 }
 
 auto PALMSerializer::TypedVisit(const Multiply<>& multiply) -> RetT
 {
-    return SerializeBinaryExpression(multiply);
+    return SerializeExpression(multiply);
 }
 
 auto PALMSerializer::TypedVisit(const Divide<>& divide) -> RetT
 {
-    return SerializeBinaryExpression(divide);
+    return SerializeExpression(divide);
 }
 
 auto PALMSerializer::TypedVisit(const Exponent<>& exponent) -> RetT
 {
-    return SerializeBinaryExpression(exponent);
+    return SerializeExpression(exponent);
 }
 
 auto PALMSerializer::TypedVisit(const Log<>& log) -> RetT
 {
-    return SerializeBinaryExpression(log);
+    return SerializeExpression(log);
 }
 
 auto PALMSerializer::TypedVisit(const Negate<>& negate) -> RetT
 {
-    return SerializeUnaryExpression(negate);
+    return SerializeExpression(negate);
 }
 
 auto PALMSerializer::TypedVisit(const Derivative<>& derivative) -> RetT
 {
-    return SerializeBinaryExpression(derivative);
+    return SerializeExpression(derivative);
 }
 
 auto PALMSerializer::TypedVisit(const Integral<>& integral) -> RetT
 {
-    return SerializeBinaryExpression(integral);
+    return SerializeExpression(integral);
 }
 
 auto PALMSerializer::TypedVisit(const Matrix& /*matrix*/) -> RetT
@@ -94,19 +98,19 @@ auto PALMSerializer::TypedVisit(const Matrix& /*matrix*/) -> RetT
     return std::unexpected<std::string> { "Matrix is not implemented yet" };
 }
 
-auto PALMSerializer::TypedVisit(const EulerNumber&) -> RetT
+auto PALMSerializer::TypedVisit(const EulerNumber& euler_number) -> RetT
 {
-    return SerializeExpression(ExpressionType::EulerNumber);
+    return SerializeExpression(euler_number);
 }
 
-auto PALMSerializer::TypedVisit(const Pi&) -> RetT
+auto PALMSerializer::TypedVisit(const Pi& pi) -> RetT
 {
-    return SerializeExpression(ExpressionType::Pi);
+    return SerializeExpression(pi);
 }
 
 auto PALMSerializer::TypedVisit(const Magnitude<Expression>& magnitude) -> RetT
 {
-    return SerializeUnaryExpression(magnitude);
+    return SerializeExpression(magnitude);
 }
 
 /** Convert an ExpressionType (Operator) to its corresponding PALM token.
@@ -150,7 +154,7 @@ auto PALMSerializer::PunctuatorToToken(const PALMPunctuatorType punctuator, cons
  * @param operands The serialized operands of the expression.
  * @return The serialized expression as a string, or an error if serialization fails.
  */
-auto PALMSerializer::SerializeExpression(ExpressionType expressionType, const std::vector<RetT>& operands) const -> RetT
+auto PALMSerializer::WrapExpression(const ExpressionType expressionType, const std::vector<RetT>& operands) const -> RetT
 {
     // Build the serialized string
     std::ostringstream serialized;
@@ -188,6 +192,16 @@ auto PALMSerializer::SerializeExpression(ExpressionType expressionType, const st
     return serialized.str();
 }
 
+/** Serialize a leaf expression.
+ *
+ * @tparam RetT The return type of the serialization (usually std::expected<std::string, std::string>)
+ * @param expr The leaf expression to serialize.
+ * @return The serialized expression as a string, or an error if serialization fails.
+ */
+auto PALMSerializer::SerializeExpression(const DerivedFromLeafExpression auto& expr) -> RetT
+{
+    return WrapExpression(expr.GetType());
+}
 
 /** Serialize a unary expression.
  *
@@ -195,7 +209,7 @@ auto PALMSerializer::SerializeExpression(ExpressionType expressionType, const st
  * @param expr The unary expression to serialize.
  * @return The serialized expression as a string, or an error if serialization fails.
  */
-auto PALMSerializer::SerializeUnaryExpression(const DerivedFromUnaryExpression auto& expr) -> RetT
+auto PALMSerializer::SerializeExpression(const DerivedFromUnaryExpression auto& expr) -> RetT
 {
     // Ensure the operand exists
     if (!expr.HasOperand()) {
@@ -209,7 +223,7 @@ auto PALMSerializer::SerializeUnaryExpression(const DerivedFromUnaryExpression a
     }
 
     // Serialize the expression
-    return SerializeExpression(expr.GetType(), { operandResult });
+    return WrapExpression(expr.GetType(), { operandResult });
 }
 
 /** Serialize a binary expression.
@@ -218,7 +232,7 @@ auto PALMSerializer::SerializeUnaryExpression(const DerivedFromUnaryExpression a
  * @param expr The binary expression to serialize.
  * @return The serialized expression as a string, or an error if serialization fails.
  */
-auto PALMSerializer::SerializeBinaryExpression(const DerivedFromBinaryExpression auto& expr) -> RetT
+auto PALMSerializer::SerializeExpression(const DerivedFromBinaryExpression auto& expr) -> RetT
 {
     // Ensure both operands exist
     if (!expr.HasMostSigOp()) {
@@ -240,7 +254,7 @@ auto PALMSerializer::SerializeBinaryExpression(const DerivedFromBinaryExpression
     }
 
     // Serialize the expression
-    return SerializeExpression(expr.GetType(), { mostSigOpResult, leastSigOpResult });
+    return WrapExpression(expr.GetType(), { mostSigOpResult, leastSigOpResult });
 }
 
 }

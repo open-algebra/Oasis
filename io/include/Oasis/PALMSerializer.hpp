@@ -71,9 +71,11 @@ private:
     static inline auto PunctuatorToToken(PALMPunctuatorType punctuator, const PALMSerializationOpts& options) -> std::string_view;
 
 
-    auto SerializeExpression(ExpressionType expressionType, const std::vector<RetT>& operands = {}) const -> RetT;
-    auto SerializeUnaryExpression(const DerivedFromUnaryExpression auto& expr) -> RetT;
-    auto SerializeBinaryExpression(const DerivedFromBinaryExpression auto& expr) -> RetT;
+    auto WrapExpression(ExpressionType expressionType, const std::vector<RetT>& operands = {}) const -> RetT;
+
+    auto SerializeExpression(const DerivedFromLeafExpression auto& expr) -> RetT;
+    auto SerializeExpression(const DerivedFromUnaryExpression auto& expr) -> RetT;
+    auto SerializeExpression(const DerivedFromBinaryExpression auto& expr) -> RetT;
 };
 
 }
