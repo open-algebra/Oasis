@@ -66,7 +66,12 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
     if (auto compCase2 = RecursiveCast<Divide<Expression, Divide>>(simplifiedDivide)) {
         const Expression& dividend = Multiply { compCase2->GetLeastSigOp().GetLeastSigOp(), compCase2->GetMostSigOp() };
         const Expression& divisor = compCase2->GetLeastSigOp().GetMostSigOp();
-        return std::make_unique<Divide<Expression, Expression>>(dividend, divisor)->Simplify();
+        auto e = std::make_unique<Divide<Expression, Expression>>(dividend, divisor);
+        auto s = e->Accept(simplifyVisitor);
+        if (!e) {
+            return e;
+        }
+        return std::move(s.value());
     }
 
     // log(a)/log(b)=log[b](a)
