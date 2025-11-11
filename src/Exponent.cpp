@@ -99,9 +99,17 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
                                            .Case(
                                                [](const Exponent<Exponent<>, Expression>&) -> bool { return true; },
                                                [](const Exponent<Exponent<>, Expression>& expExpCase, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
-                                                   Exponent exp { expExpCase.GetMostSigOp().GetMostSigOp(),
-                                                       *(Multiply { expExpCase.GetMostSigOp().GetLeastSigOp(), expExpCase.GetLeastSigOp() }.Simplify()) };
-                                                   return gsl::make_not_null(exp.Copy());
+                                                   SimplifyVisitor simplifyVisitor;
+                                                   auto e = Multiply { expExpCase.GetMostSigOp().GetLeastSigOp(), expExpCase.GetLeastSigOp() };
+                                                   auto s = e.Accept(simplifyVisitor);
+                                                   if (!s) {
+                                                       Exponent exp { expExpCase.GetMostSigOp().GetMostSigOp(), e };
+                                                       return gsl::make_not_null(exp.Copy());
+                                                   } else {
+                                                       Exponent exp { expExpCase.GetMostSigOp().GetMostSigOp(), *(std::move(s.value())) };
+                                                       return gsl::make_not_null(exp.Copy());
+                                                   }
+
                                                })
                                            .Case(
                                                [](const Exponent<Expression, Log<>>& logCase) -> bool {

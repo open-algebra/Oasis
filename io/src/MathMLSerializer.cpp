@@ -336,7 +336,7 @@ auto MathMLSerializer::TypedVisit(const Negate<Expression>& negate) -> RetT
     return gsl::not_null(mrow);
 }
 
-auto MathMLSerializer::TypedVisit(const Sine<Expression>& sine) -> RetT
+auto MathMLSerializer::TypedVisit(const Sine<Expression>&) -> RetT
 {
     // mrow
     tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
