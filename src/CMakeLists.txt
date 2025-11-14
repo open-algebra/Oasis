@@ -24,12 +24,12 @@ set(Oasis_SOURCES
     Negate.cpp
     Pi.cpp
     Real.cpp
+    SimplifyVisitor.cpp
     Sine.cpp
     Subtract.cpp
     # Summation.cpp
     Undefined.cpp
-    Variable.cpp
-    SimplifyVisitor.cpp)
+    Variable.cpp)
 
 # Adds a library target called "Oasis" to be built from source files.
 add_library(Oasis ${Oasis_SOURCES})
