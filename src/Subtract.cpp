@@ -82,20 +82,36 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return std::make_unique<Log<>>(base, argument);
         }
     }
-
+    SimplifyVisitor simplifyVisitor{};
     // makes subtraction into addition because it is easier to deal with
     auto negated = Multiply<Expression> { Real { -1 }, *simplifiedSubtrahend };
     if (auto added = RecursiveCast<Add<Expression>>(negated.GetLeastSigOp()); added != nullptr) {
-        auto RHS = Add { *(Multiply<Expression> { Real { -1.0 }, added->GetMostSigOp() }.Simplify()),
-            *(Multiply<Expression> { Real { -1.0 }, added->GetLeastSigOp() }.Simplify()) }
-                       .Simplify();
-        return Add { *simplifiedMinuend, *RHS }.Simplify();
+        auto m = Multiply<Expression> { Real { -1.0 }, added->GetMostSigOp() };
+        auto n = Multiply<Expression> { Real { -1.0 }, added->GetLeastSigOp() };
+        auto ms = m.Accept(simplifyVisitor);
+        auto ns = n.Accept(simplifyVisitor);
+        if (!ms || !ns) {
+            return Add { *simplifiedMinuend, Add { m, n } }.Generalize();
+        }
+        auto RHS = Add { *(std::move(ms.value())), *(std::move(ns.value())) };
+        auto s = RHS.Accept(simplifyVisitor);
+        if (!s) {
+            return Add { *simplifiedMinuend, RHS }.Generalize();
+        }
+        return Add { *simplifiedMinuend, *(std::move(s.value())) }.Accept(simplifyVisitor).value();
     }
     if (auto subtracted = RecursiveCast<Subtract<Expression>>(negated.GetLeastSigOp()); subtracted != nullptr) {
-        auto RHS = Add { *(Multiply<Expression> { Real { -1.0 }, subtracted->GetMostSigOp() }.Simplify()),
-            *(subtracted->GetLeastSigOp().Simplify()) }
-                       .Simplify();
-        return Add { *simplifiedMinuend, *RHS }.Simplify();
+        auto m = Multiply<Expression> { Real { -1.0 }, subtracted->GetMostSigOp() };
+        auto ms = m.Accept(simplifyVisitor);
+        if (!ms) {
+            return Add { *simplifiedMinuend,  Add { m, *(subtracted->GetLeastSigOp().Simplify()) }}.Generalize();
+        }
+        auto RHS = Add { *(std::move(ms.value())),*(subtracted->GetLeastSigOp().Simplify()) };
+        auto s = RHS.Accept(simplifyVisitor);
+        if (!s) {
+            return Add { *simplifiedMinuend, RHS }.Generalize();
+        }
+        return Add { *simplifiedMinuend, *(std::move(s.value())) }.Accept(simplifyVisitor).value();
     }
     return Add { *simplifiedMinuend, negated }.Simplify();
 }

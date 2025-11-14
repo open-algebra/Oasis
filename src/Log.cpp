@@ -79,10 +79,17 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     // log[a](b^x) = x * log[a](b)
     if (const auto expCase = RecursiveCast<Log<Expression, Exponent<>>>(simplifiedLog); expCase != nullptr) {
+        SimplifyVisitor simplifyVisitor{};
         const auto exponent = expCase->GetLeastSigOp();
         const IExpression auto& log = Log<Expression>(expCase->GetMostSigOp(), exponent.GetMostSigOp()); // might need to check that it isnt nullptr
         const IExpression auto& factor = exponent.GetLeastSigOp();
-        return Oasis::Multiply<Oasis::Expression>(factor, log).Simplify();
+        auto e = Oasis::Multiply<Oasis::Expression>(factor, log);
+        auto s = e.Accept(simplifyVisitor);
+        if (!s) {
+            return e.Generalize();
+        } else {
+            return std::move(s.value());
+        }
     }
 
     return simplifiedLog.Copy();

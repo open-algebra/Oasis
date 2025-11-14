@@ -20,6 +20,8 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     auto simplifiedMultiplicand = mostSigOp->Simplify();
     auto simplifiedMultiplier = leastSigOp->Simplify();
 
+    SimplifyVisitor simplifyVisitor;
+
     Multiply simplifiedMultiply { *simplifiedMultiplicand, *simplifiedMultiplier };
     if (auto onezerocase = RecursiveCast<Multiply<Real, Expression>>(simplifiedMultiply); onezerocase != nullptr) {
         const Real& multiplicand = onezerocase->GetMostSigOp();
@@ -90,43 +92,70 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     //    }
 
     if (auto multCase = RecursiveCast<Multiply<Expression, Divide<Expression>>>(simplifiedMultiply); multCase != nullptr) {
-        auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() }.Simplify();
-        return Divide<Expression> { *m, (multCase->GetLeastSigOp().GetLeastSigOp()) }.Simplify();
+        auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() };
+        auto ms = m.Accept(simplifyVisitor);
+        if (!ms) {
+            return Divide{m, (multCase->GetLeastSigOp().GetLeastSigOp()) }.Generalize();
+        }
+        // This doesn't have to check errors because errors should have already been caught above
+        return Divide<Expression> { *std::move(ms.value()), (multCase->GetLeastSigOp().GetLeastSigOp()) }.Accept(simplifyVisitor).value();
     }
 
     if (auto multCase = RecursiveCast<Multiply<Divide<Expression>, Divide<Expression>>>(simplifiedMultiply); multCase != nullptr) {
-        auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() }.Simplify();
-        auto n = Multiply<Expression> { multCase->GetMostSigOp().GetLeastSigOp(), multCase->GetLeastSigOp().GetLeastSigOp() }.Simplify();
-        return Divide<Expression> { *m, *n }.Simplify();
+        auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() };
+        auto ms = m.Accept(simplifyVisitor);
+        auto n = Multiply<Expression> { multCase->GetMostSigOp().GetLeastSigOp(), multCase->GetLeastSigOp().GetLeastSigOp() };
+        auto ns = n.Accept(simplifyVisitor);
+        if (!ms || !ns) {
+            return this->Generalize();
+        }
+        return Divide<Expression> { *std::move(ms.value()), *std::move(ns.value()) }.Accept(simplifyVisitor).value();
     }
 
     if (auto exprCase = RecursiveCast<Multiply<Expression, Exponent<Expression, Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp())) {
+            auto e = Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } };
+            auto s = e.Accept(simplifyVisitor);
+            if (!s) {
+                return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(), e);
+            }
             return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(),
-                *(Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Simplify()));
+                *(std::move(s.value())));
         }
     }
 
     // x*x^n
     if (auto exprCase = RecursiveCast<Multiply<Expression, Exponent<Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp())) {
-            return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(),
-                *(Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Simplify()));
+            auto e = Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } };
+            auto s = e.Accept(simplifyVisitor);
+            if (!s) {
+                return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(), e);
+            }
+            return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(), *(std::move(s.value())));
         }
     }
 
     if (auto exprCase = RecursiveCast<Multiply<Exponent<Expression>, Expression>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetLeastSigOp().Equals(exprCase->GetMostSigOp().GetMostSigOp())) {
-            return std::make_unique<Exponent<Expression>>(exprCase->GetLeastSigOp(),
-                *(Add<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), Real { 1.0 } }.Simplify()));
+            auto e = Add<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), Real { 1.0 } };
+            auto s = e.Accept(simplifyVisitor);
+            if (!s) {
+                return std::make_unique<Exponent<Expression>>(exprCase->GetLeastSigOp(), e);
+            }
+            return std::make_unique<Exponent<Expression>>(exprCase->GetLeastSigOp(),*(std::move(s.value())));
         }
     }
 
     // x^n*x^m
     if (auto exprCase = RecursiveCast<Multiply<Exponent<Expression>, Exponent<Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp())) {
-            return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(),
-                *(Add<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), exprCase->GetLeastSigOp().GetLeastSigOp() }.Simplify()));
+            auto e = Add<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), exprCase->GetLeastSigOp().GetLeastSigOp() };
+            auto s = e.Accept(simplifyVisitor);
+            if (!s) {
+                std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(), e);
+            }
+            return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(), *(std::move(s.value())));
         }
     }
 
@@ -141,80 +170,150 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     // a*x*b*x
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression>, Multiply<Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().Equals(exprCase->GetLeastSigOp().GetLeastSigOp())) {
+            auto m = Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetMostSigOp() };
+            auto ms = m.Accept(simplifyVisitor);
+            auto n = Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), Real { 2.0 } };
+            auto ns = n.Accept(simplifyVisitor);
+            if (!ms || !ns) {
+                return this->Generalize();
+            }
             return std::make_unique<Multiply<Expression>>(
-                *(Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetMostSigOp() }.Simplify()),
-                *(Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), Real { 2.0 } }.Simplify()));
+                *(std::move(ms.value())),
+                *(std::move(ns.value())));
         }
     }
 
     // a*x^n*x
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression, Exponent<Expression>>, Expression>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(exprCase->GetLeastSigOp())) {
+            auto e = Add<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } };
+            auto s = e.Accept(simplifyVisitor);
+            if (!s) {
+                return std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(),
+                Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(), e});
+            }
             return std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(),
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
-                    *(Add<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Simplify()) });
+                    *(std::move(s.value())) });
         }
     }
 
     // a*x*x^n
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression>, Exponent<Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp())) {
+            auto e = Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } };
+            auto s = e.Accept(simplifyVisitor);
+            if (!s) {
+                return std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(),
+                Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), e});
+            }
             return std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(),
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(),
-                    *(Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Simplify()) });
+                    *(std::move(s.value())) });
         }
         if (exprCase->GetMostSigOp().GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp())) {
+            auto e = Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } };
+            auto s = e.Accept(simplifyVisitor);
+            if (!s) {
+                return std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetLeastSigOp(),
+                Exponent<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), e});
+            }
             return std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetLeastSigOp(),
                 Exponent<Expression> { exprCase->GetMostSigOp().GetMostSigOp(),
-                    *(Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Simplify()) });
+                    *(std::move(s.value())) });
         }
     }
 
     // a*x^n*b*x
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression>, Multiply<Expression, Exponent<Expression>>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().Equals(exprCase->GetLeastSigOp().GetLeastSigOp().GetMostSigOp())) {
+            auto m = Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetMostSigOp() };
+            auto ms = m.Accept(simplifyVisitor);
+            auto n = Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } };
+            auto ns = n.Accept(simplifyVisitor);
+            if (!ms || !ns) {
+                std::make_unique<Multiply<Expression>>(
+                m, Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(),n});
+            }
             return std::make_unique<Multiply<Expression>>(
-                *(Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetMostSigOp() }.Simplify()),
+                *(std::move(ms.value())),
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(),
-                    *(Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Simplify()) });
+                    *(std::move(ns.value())) });
         }
     }
 
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression>, Multiply<Exponent<Expression>, Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp().GetMostSigOp())) {
-            return std::make_unique<Multiply<Expression>>(
-                *(Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetLeastSigOp() }.Simplify()),
+            auto m = Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetLeastSigOp() };
+            auto ms = m.Accept(simplifyVisitor);
+            auto n = Add<Expression> { exprCase->GetLeastSigOp().GetMostSigOp().GetLeastSigOp(), Real { 1.0 } };
+            auto ns = n.Accept(simplifyVisitor);
+            if (!ms || !ns) {
+                std::make_unique<Multiply<Expression>>(m,
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(),
-                    *(Add<Expression> { exprCase->GetLeastSigOp().GetMostSigOp().GetLeastSigOp(), Real { 1.0 } }.Simplify()) });
+                    n });
+            }
+            return std::make_unique<Multiply<Expression>>(
+                *(std::move(ms.value())),
+                Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(),
+                    *(std::move(ns.value())) });
         }
     }
 
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression, Exponent<Expression>>, Multiply<Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetLeastSigOp())) {
-            return std::make_unique<Multiply<Expression>>(
-                *(Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetLeastSigOp() }.Simplify()),
+            auto m = Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetLeastSigOp() };
+            auto ms = m.Accept(simplifyVisitor);
+            auto n = Add<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } };
+            auto ns = n.Accept(simplifyVisitor);
+            if (!ms || !ns) {
+                std::make_unique<Multiply<Expression>>(m,
                 Exponent<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(),
-                    *(Add<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Simplify()) });
+                    n });
+            }
+
+            return std::make_unique<Multiply<Expression>>(
+                *(std::move(ms.value())),
+                Exponent<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(),
+                    *(std::move(ns.value())) });
         }
     }
 
     // a*x^n*x^m
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression, Exponent<Expression>>, Exponent<Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetLeastSigOp())) {
+            auto e = Add<Expression> { exprCase->GetLeastSigOp().GetMostSigOp(), exprCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp() };
+            auto s = e.Accept(simplifyVisitor);
+            if (!s) {
+                return std::make_unique<Multiply<Expression>>(
+                exprCase->GetMostSigOp().GetMostSigOp(),
+                Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
+                    e });
+            }
             return std::make_unique<Multiply<Expression>>(
                 exprCase->GetMostSigOp().GetMostSigOp(),
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
-                    *(Add<Expression> { exprCase->GetLeastSigOp().GetMostSigOp(), exprCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp() }.Simplify()) });
+                    *(std::move(s.value())) });
         }
     }
 
     // a*x^n*b*x^m
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression, Exponent<Expression>>, Multiply<Expression, Exponent<Expression>>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetLeastSigOp().GetMostSigOp())) {
-            return std::make_unique<Multiply<Expression>>(
-                *(Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetMostSigOp() }.Simplify()),
+            auto m = Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetMostSigOp() };
+            auto ms = m.Accept(simplifyVisitor);
+            auto n = Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp().GetLeastSigOp(), exprCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp() };
+            auto ns = n.Accept(simplifyVisitor);
+            if (!ms || !ns) {
+                std::make_unique<Multiply<Expression>>(
+                m,
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
-                    *(Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp().GetLeastSigOp(), exprCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp() }.Simplify()) });
+                    n });
+            }
+            return std::make_unique<Multiply<Expression>>(
+                *(std::move(ms.value())),
+                Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
+                    *(std::move(ns.value())) });
         }
     }
 
