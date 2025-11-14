@@ -42,6 +42,7 @@ public:
     [[deprecated]]
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
     {
+        SimplifyVisitor simplifyVisitor {};
         auto simpOp = this->GetOperand().Simplify();
         if (auto realCase = RecursiveCast<Real>(*simpOp); realCase != nullptr) {
             double val = realCase->GetValue();
@@ -51,7 +52,12 @@ public:
             return std::make_unique<Real>(1.0);
         }
         if (auto mulImgCase = RecursiveCast<Multiply<Expression, Imaginary>>(*simpOp); mulImgCase != nullptr) {
-            return Magnitude<Expression> { mulImgCase->GetMostSigOp() }.Simplify();
+            auto e = Magnitude<Expression> { mulImgCase->GetMostSigOp() };
+            auto s = e.Accept(simplifyVisitor);
+            if (!s) {
+                return e.Generalize();
+            }
+            return std::move(s).value();
         }
         if (auto addCase = RecursiveCast<Add<Expression, Imaginary>>(*simpOp); addCase != nullptr) {
             return Exponent { Add<Expression> { Exponent<Expression> { addCase->GetMostSigOp(), Real { 2 } },
