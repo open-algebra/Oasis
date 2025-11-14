@@ -44,8 +44,12 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     }
 
     if (auto multCase = RecursiveCast<Multiply<Real, Divide<Expression>>>(simplifiedMultiply); multCase != nullptr) {
-        auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() }.Simplify();
-        return Divide<Expression> { *m, (multCase->GetLeastSigOp().GetLeastSigOp()) }.Generalize();
+        auto e = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() };
+        auto m = e.Accept(simplifyVisitor);
+        if (!m) {
+            return Divide<Expression> { e, (multCase->GetLeastSigOp().GetLeastSigOp()) }.Generalize();
+        }
+        return Divide<Expression> { *std::move(m).value(), (multCase->GetLeastSigOp().GetLeastSigOp()) }.Generalize();
     }
 
     if (auto exprCase = RecursiveCast<Multiply<Expression>>(simplifiedMultiply); exprCase != nullptr) {
@@ -345,7 +349,15 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (auto img = RecursiveCast<Imaginary>(*multiplicand); img != nullptr) {
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Exponent<Imaginary, Expression>>(*vals[i]); valI != nullptr) {
-                    vals[i] = Exponent<Expression> { Imaginary {}, *(Add<Expression> { valI->GetLeastSigOp(), Real { 1.0 } }.Simplify()) }.Generalize();
+                    auto e = Add<Expression> { valI->GetLeastSigOp(), Real { 1.0 } };
+                    auto s = e.Accept(simplifyVisitor);
+                    if (!s) {
+                        vals[i] = Exponent<Expression> { Imaginary {}, e }.Generalize();
+                    }
+                    else {
+                        vals[i] = Exponent<Expression> { Imaginary {}, *(std::move(s).value()) }.Generalize();
+                    }
+
                     break;
                 }
             }
@@ -359,7 +371,13 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (auto img = RecursiveCast<Exponent<Imaginary, Expression>>(*multiplicand); img != nullptr) {
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Exponent<Imaginary, Expression>>(*vals[i]); valI != nullptr) {
-                    vals[i] = Exponent<Expression> { Imaginary {}, *(Add<Expression> { valI->GetLeastSigOp(), img->GetLeastSigOp() }.Simplify()) }.Generalize();
+                    auto e = Add<Expression> { valI->GetLeastSigOp(), img->GetLeastSigOp() };
+                    auto s = e.Accept(simplifyVisitor);
+                    if (!s) {
+                        vals[i] = Exponent<Expression> { Imaginary {}, e }.Generalize();
+                    } else {
+                        vals[i] = Exponent<Expression> { Imaginary {}, *(std::move(s).value()) }.Generalize();
+                    }
                     break;
                 }
             }
@@ -375,7 +393,14 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Exponent<Expression, Expression>>(*vals[i]); valI != nullptr) {
                     if (valI->GetMostSigOp().Equals(expr->GetMostSigOp())) {
-                        vals[i] = Exponent<Expression> { valI->GetMostSigOp(), *(Add<Expression> { valI->GetLeastSigOp(), expr->GetLeastSigOp() }.Simplify()) }.Generalize();
+                        auto e = Add<Expression> { valI->GetLeastSigOp(), expr->GetLeastSigOp() };
+                        auto s = e.Accept(simplifyVisitor);
+                        if (!s) {
+                            vals[i] = Exponent<Expression> { valI->GetMostSigOp(), e }.Generalize();
+                        }
+                        else {
+                            vals[i] = Exponent<Expression> { valI->GetMostSigOp(), *(std::move(s).value()) }.Generalize();
+                        }
                         break;
                     }
                 }
@@ -392,7 +417,13 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Exponent<Expression, Expression>>(*vals[i]); valI != nullptr) {
                     if (valI->GetMostSigOp().Equals(*expr)) {
-                        vals[i] = Exponent<Expression> { valI->GetMostSigOp(), *(Add<Expression> { valI->GetLeastSigOp(), Real { 1.0 } }.Simplify()) }.Generalize();
+                        auto e = Add<Expression> { valI->GetLeastSigOp(), Real { 1.0 } };
+                        auto s = e.Accept(simplifyVisitor);
+                        if (!s) {
+                            vals[i] = Exponent<Expression> { valI->GetMostSigOp(), e }.Generalize();
+                        } else {
+                            vals[i] = Exponent<Expression> { valI->GetMostSigOp(), *(std::move(s).value()) }.Generalize();
+                        }
                         break;
                     }
                 }
