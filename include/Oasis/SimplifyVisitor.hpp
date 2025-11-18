@@ -14,13 +14,13 @@
 
 namespace Oasis {
 
-struct SimplifyOpts{
+struct SimplifyOpts {
     enum class AngleUnits {
         RADIANS,
         DEGREES,
-    } angleUnits = AngleUnits::RADIANS;
+    } angleUnits
+        = AngleUnits::RADIANS;
 };
-
 
 class SimplifyVisitor final : public TypedVisitor<std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string>> {
 public:

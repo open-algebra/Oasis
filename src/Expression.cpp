@@ -249,40 +249,40 @@ auto Expression::Simplify() const -> std::unique_ptr<Expression>
 } // namespace Oasis
 std::unique_ptr<Oasis::Expression> operator+(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
 {
-    Oasis::SimplifyVisitor sV{};
+    Oasis::SimplifyVisitor sV {};
     auto e = Oasis::Add { *lhs, *rhs };
     auto s = e.Accept(sV);
-    if (!s){
+    if (!s) {
         return e.Generalize();
     }
     return std::move(s).value();
 }
 std::unique_ptr<Oasis::Expression> operator-(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
 {
-    Oasis::SimplifyVisitor sV{};
+    Oasis::SimplifyVisitor sV {};
     auto e = Oasis::Subtract { *lhs, *rhs };
     auto s = e.Accept(sV);
-    if (!s){
+    if (!s) {
         return e.Generalize();
     }
     return std::move(s).value();
 }
 std::unique_ptr<Oasis::Expression> operator*(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
 {
-    Oasis::SimplifyVisitor sV{};
+    Oasis::SimplifyVisitor sV {};
     auto e = Oasis::Multiply { *lhs, *rhs };
     auto s = e.Accept(sV);
-    if (!s){
+    if (!s) {
         return e.Generalize();
     }
     return std::move(s).value();
 }
 std::unique_ptr<Oasis::Expression> operator/(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
 {
-    Oasis::SimplifyVisitor sV{};
+    Oasis::SimplifyVisitor sV {};
     auto e = Oasis::Divide { *lhs, *rhs };
     auto s = e.Accept(sV);
-    if (!s){
+    if (!s) {
         return e.Generalize();
     }
     return std::move(s).value();

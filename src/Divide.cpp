@@ -24,26 +24,26 @@ Divide<Expression>::Divide(const Expression& dividend, const Expression& divisor
 
 auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 {
-    SimplifyVisitor simplifyVisitor{};
+    SimplifyVisitor simplifyVisitor {};
     auto ms = mostSigOp->Accept(simplifyVisitor); // numerator
     auto ls = leastSigOp->Accept(simplifyVisitor); // denominator
 
     std::unique_ptr<Expression> simplifiedDividend;
     std::unique_ptr<Expression> simplifiedDivider;
 
-    if (!ms){
+    if (!ms) {
         simplifiedDividend = mostSigOp->Copy();
     } else {
         simplifiedDividend = std::move(ms).value();
     }
 
-    if (!ls){
+    if (!ls) {
         simplifiedDivider = mostSigOp->Copy();
     } else {
         simplifiedDivider = std::move(ms).value();
     }
 
-    Divide simplifiedDivide = Divide{ *simplifiedDividend, *simplifiedDivider };
+    Divide simplifiedDivide = Divide { *simplifiedDividend, *simplifiedDivider };
 
     if (auto realCase = RecursiveCast<Divide<Real>>(simplifiedDivide); realCase != nullptr) {
         const Real& dividend = realCase->GetMostSigOp();
@@ -57,7 +57,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         const Expression& divisor = Multiply { compCase->GetMostSigOp().GetLeastSigOp(), compCase->GetLeastSigOp() };
         auto mid = std::make_unique<Divide<Expression, Expression>>(dividend, divisor);
         auto s = mid->Accept(simplifyVisitor);
-        if (!s){
+        if (!s) {
             return mid;
         }
         return std::move(s.value());
@@ -139,10 +139,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                     if (resIexp->GetMostSigOp().Equals(*var)) {
                         auto e = Subtract<Expression> { resIexp->GetLeastSigOp(), Real { 1.0 } };
                         auto s = e.Accept(simplifyVisitor);
-                        if (!s){
+                        if (!s) {
                             result[i] = Exponent<Expression> { *var, e }.Generalize();
-                        }
-                        else {
+                        } else {
                             result[i] = Exponent<Expression> { *var, *(s.value()) }.Generalize();
                         }
 
@@ -166,7 +165,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                     if (resIexp->GetMostSigOp().Equals(var->GetMostSigOp())) {
                         auto e = Subtract<Expression> { resIexp->GetLeastSigOp(), var->GetLeastSigOp() };
                         auto s = e.Accept(simplifyVisitor);
-                        if (!s){
+                        if (!s) {
                             result[i] = Exponent<Expression> { var->GetMostSigOp(), e }.Generalize();
                         } else {
                             result[i] = Exponent<Expression> { var->GetMostSigOp(), *(s.value()) }.Generalize();
@@ -229,9 +228,9 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
                     auto e = Subtract { resExpr->GetLeastSigOp(), Real { 1.0 } };
                     auto s = e.Accept(simplifyVisitor);
                     if (!s) {
-                        result[i] = Exponent { *denom, e}.Accept(simplifyVisitor).value();
+                        result[i] = Exponent { *denom, e }.Accept(simplifyVisitor).value();
                     } else {
-                        result[i] = Exponent { *denom, *(s.value())}.Accept(simplifyVisitor).value();
+                        result[i] = Exponent { *denom, *(s.value()) }.Accept(simplifyVisitor).value();
                     }
 
                     break;
@@ -308,7 +307,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
 auto Divide<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
-    SimplifyVisitor simplifyVisitor{};
+    SimplifyVisitor simplifyVisitor {};
     // Single integration variable
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
         auto simplifiedDiv = this->Accept(simplifyVisitor).value();
@@ -326,7 +325,7 @@ auto Divide<Expression>::Integrate(const Expression& integrationVariable) const 
 
 auto Divide<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
-    SimplifyVisitor simplifyVisitor{};
+    SimplifyVisitor simplifyVisitor {};
     // Single differentiation variable
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
         auto simplifiedDiv = this->Accept(simplifyVisitor).value();

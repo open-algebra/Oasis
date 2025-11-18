@@ -22,8 +22,7 @@ public:
 
     Exponent(const Expression& base, const Expression& power);
 
-    [[deprecated]]
-    [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
+    [[deprecated]] [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> final;
 

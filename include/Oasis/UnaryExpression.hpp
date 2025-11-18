@@ -87,7 +87,7 @@ public:
     {
         std::unique_ptr<Expression> right = ((GetOperand().Copy())->Substitute(var, val));
         DerivedT<Expression> comb = DerivedT<Expression> { *right };
-//        auto ret = comb.Accept();
+        //        auto ret = comb.Accept();
         return comb.Generalize();
     }
 

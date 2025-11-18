@@ -6,15 +6,14 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/RecursiveCast.hpp"
-#include "Oasis/Variable.hpp"
 #include "Oasis/SimplifyVisitor.hpp"
-
+#include "Oasis/Variable.hpp"
 
 namespace Oasis {
 
 auto SolveLinearSystems(std::vector<std::unique_ptr<Expression>>& exprs) -> std::map<std::string, double>
 {
-    Oasis::SimplifyVisitor simplifyVisitor{};
+    Oasis::SimplifyVisitor simplifyVisitor {};
     for (auto& expr : exprs) {
         auto simplified = expr->Accept(simplifyVisitor);
         expr = simplified.value()->Generalize();

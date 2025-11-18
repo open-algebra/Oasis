@@ -26,8 +26,7 @@ public:
     {
     }
 
-    [[deprecated]]
-    [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override;
+    [[deprecated]] [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override;
 
     [[nodiscard]] auto Differentiate(const Expression& var) const -> std::unique_ptr<Expression> override;
 

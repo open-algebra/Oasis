@@ -24,8 +24,7 @@ public:
     {
     }
 
-    [[deprecated]]
-    [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
+    [[deprecated]] [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
     {
         return Multiply {
             Real { -1.0 },

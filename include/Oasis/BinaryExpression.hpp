@@ -11,9 +11,9 @@
 #include <list>
 
 #include "Expression.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
 #include "RecursiveCast.hpp"
 #include "Visit.hpp"
-#include "Oasis/SimplifyVisitor.hpp"
 
 namespace Oasis {
 /**
@@ -200,7 +200,7 @@ public:
 
     [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
     {
-        SimplifyVisitor simplifyVisitor{};
+        SimplifyVisitor simplifyVisitor {};
         auto e = Generalize();
         auto s = e->Accept(simplifyVisitor);
         if (!s) {
@@ -373,10 +373,9 @@ public:
         std::unique_ptr<Expression> right = ((GetLeastSigOp().Copy())->Substitute(var, val));
         DerivedT<Expression, Expression> comb = DerivedT<Expression, Expression> { *left, *right };
 
-        Oasis::SimplifyVisitor simplifyVisitor{};
+        Oasis::SimplifyVisitor simplifyVisitor {};
         auto simplified = comb.Accept(simplifyVisitor);
-        if (!simplified)
-        {
+        if (!simplified) {
             return comb.Generalize();
         }
         return std::move(simplified.value());

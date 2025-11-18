@@ -9,20 +9,20 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
+#include "Oasis/EulerNumber.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/Magnitude.hpp"
+#include "Oasis/MatchCast.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
-#include "Oasis/Sine.hpp"
-#include "Oasis/Real.hpp"
-#include "Oasis/EulerNumber.hpp"
 #include "Oasis/Pi.hpp"
+#include "Oasis/Real.hpp"
+#include "Oasis/Sine.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Undefined.hpp"
 #include "Oasis/Variable.hpp"
-#include "Oasis/MatchCast.hpp"
 
 #define EPSILON 1E-6
 
@@ -30,10 +30,11 @@ namespace Oasis {
 
 SimplifyVisitor::SimplifyVisitor()
 {
-    options = SimplifyOpts{};
+    options = SimplifyOpts {};
 }
 
-SimplifyVisitor::SimplifyVisitor(SimplifyOpts& opts): options(opts)
+SimplifyVisitor::SimplifyVisitor(SimplifyOpts& opts)
+    : options(opts)
 {
 }
 
@@ -57,7 +58,7 @@ auto SimplifyVisitor::TypedVisit(const Variable& variable) -> RetT
     return gsl::not_null { std::make_unique<Variable>(variable) };
 }
 
-auto SimplifyVisitor::TypedVisit(const Undefined& ) -> RetT
+auto SimplifyVisitor::TypedVisit(const Undefined&) -> RetT
 {
     return gsl::not_null { std::make_unique<Undefined>() };
 }
@@ -66,23 +67,21 @@ auto SimplifyVisitor::TypedVisit(const Add<>& add) -> RetT
 {
     auto mostSigOp = add.GetMostSigOp().Copy();
     auto leastSigOp = add.GetLeastSigOp().Copy();
-    if (!mostSigOp)
-    {
-        return std::unexpected{"Missing most significant operand."};
+    if (!mostSigOp) {
+        return std::unexpected { "Missing most significant operand." };
     }
-    if (!leastSigOp)
-    {
-        return std::unexpected{"Missing least significant operand."};
+    if (!leastSigOp) {
+        return std::unexpected { "Missing least significant operand." };
     }
 
     auto simplifiedAugendResult = mostSigOp->Accept(*this);
     auto simplifiedAddendResult = leastSigOp->Accept(*this);
 
     if (!simplifiedAugendResult) {
-        return std::unexpected{simplifiedAugendResult.error()};
+        return std::unexpected { simplifiedAugendResult.error() };
     }
     if (!simplifiedAddendResult) {
-        return std::unexpected{simplifiedAddendResult.error()};
+        return std::unexpected { simplifiedAddendResult.error() };
     }
 
     auto simplifiedAugend = std::move(simplifiedAugendResult).value();
@@ -175,7 +174,7 @@ auto SimplifyVisitor::TypedVisit(const Add<>& add) -> RetT
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Multiply<Expression, Imaginary>>(*vals[i]); valI != nullptr) {
                     auto addResult = Add<Expression> { valI->GetMostSigOp(), Real { 1.0 } }.Accept(*this);
-                    if (!addResult){
+                    if (!addResult) {
                         return addResult;
                     }
                     vals[i] = Multiply<Expression> { *(addResult.value()), Imaginary {} }.Generalize();
@@ -193,7 +192,7 @@ auto SimplifyVisitor::TypedVisit(const Add<>& add) -> RetT
             for (; i < vals.size(); i++) {
                 if (auto valI = RecursiveCast<Multiply<Expression, Imaginary>>(*vals[i]); valI != nullptr) {
                     auto addResult = Add<Expression> { valI->GetMostSigOp(), img->GetMostSigOp() }.Accept(*this);
-                    if (!addResult){
+                    if (!addResult) {
                         return addResult;
                     }
                     vals[i] = Multiply<Expression> { *(addResult.value()), Imaginary {} }.Generalize();
@@ -212,7 +211,7 @@ auto SimplifyVisitor::TypedVisit(const Add<>& add) -> RetT
                 if (auto valI = RecursiveCast<Multiply<Expression, Variable>>(*vals[i]); valI != nullptr) {
                     if (valI->GetLeastSigOp().GetName() == var->GetName()) {
                         auto addResult = Add<Expression> { valI->GetMostSigOp(), Real { 1.0 } }.Accept(*this);
-                        if (!addResult){
+                        if (!addResult) {
                             return addResult;
                         }
                         vals[i] = Multiply<Expression> { *(addResult.value()), *var }.Generalize();
@@ -234,8 +233,7 @@ auto SimplifyVisitor::TypedVisit(const Add<>& add) -> RetT
                     // if (auto zeroCase = RecursiveCast<Multiply<Real, Expression>>(*valI); zeroCase != nullptr) {}
                     if (valI->GetLeastSigOp().GetName() == var->GetLeastSigOp().GetName()) {
                         auto addResult = Add<Expression> { valI->GetMostSigOp(), var->GetMostSigOp() }.Accept(*this);
-                        if (!addResult)
-                        {
+                        if (!addResult) {
                             return addResult;
                         }
                         vals[i] = Multiply<Expression> { *(addResult.value()), valI->GetLeastSigOp() }.Generalize();
@@ -256,8 +254,7 @@ auto SimplifyVisitor::TypedVisit(const Add<>& add) -> RetT
                 if (auto valI = RecursiveCast<Multiply<Expression, Exponent<Expression>>>(*vals[i]); valI != nullptr) {
                     if (valI->GetLeastSigOp().Equals(*exp)) {
                         auto addResult = Add<Expression> { valI->GetMostSigOp(), Real { 1.0 } }.Accept(*this);
-                        if (!addResult)
-                        {
+                        if (!addResult) {
                             return addResult;
                         }
                         vals[i] = Multiply<Expression> { *(addResult.value()), *exp }.Generalize();
@@ -278,8 +275,7 @@ auto SimplifyVisitor::TypedVisit(const Add<>& add) -> RetT
                 if (auto valI = RecursiveCast<Multiply<Expression, Exponent<Expression>>>(*vals[i]); valI != nullptr) {
                     if (valI->GetLeastSigOp().Equals(exp->GetLeastSigOp())) {
                         auto addResult = Add<Expression> { valI->GetMostSigOp(), exp->GetMostSigOp() }.Accept(*this);
-                        if (!addResult)
-                        {
+                        if (!addResult) {
                             return addResult;
                         }
                         vals[i] = Multiply<Expression> { *(addResult.value()), valI->GetLeastSigOp() }.Generalize();
@@ -332,23 +328,21 @@ auto SimplifyVisitor::TypedVisit(const Subtract<>& subtract) -> RetT
 {
     auto mostSigOp = subtract.GetMostSigOp().Copy();
     auto leastSigOp = subtract.GetLeastSigOp().Copy();
-    if (!mostSigOp)
-    {
-        return std::unexpected{"Missing most significant operand."};
+    if (!mostSigOp) {
+        return std::unexpected { "Missing most significant operand." };
     }
-    if (!leastSigOp)
-    {
-        return std::unexpected{"Missing least significant operand."};
+    if (!leastSigOp) {
+        return std::unexpected { "Missing least significant operand." };
     }
 
     auto simplifiedMostSigOpResult = mostSigOp->Accept(*this);
     auto simplifiedLeastSigOpResult = leastSigOp->Accept(*this);
 
     if (!simplifiedMostSigOpResult) {
-        return std::unexpected{simplifiedMostSigOpResult.error()};
+        return std::unexpected { simplifiedMostSigOpResult.error() };
     }
     if (!simplifiedLeastSigOpResult) {
-        return std::unexpected{simplifiedLeastSigOpResult.error()};
+        return std::unexpected { simplifiedLeastSigOpResult.error() };
     }
 
     auto simplifiedMinuend = std::move(simplifiedMostSigOpResult).value();
@@ -417,39 +411,32 @@ auto SimplifyVisitor::TypedVisit(const Subtract<>& subtract) -> RetT
     auto negated = Multiply<Expression> { Real { -1 }, *simplifiedSubtrahend };
     if (auto added = RecursiveCast<Add<Expression>>(negated.GetLeastSigOp()); added != nullptr) {
         auto msOp = Multiply<Expression> { Real { -1.0 }, added->GetMostSigOp() }.Accept(*this);
-        if (!msOp)
-        {
+        if (!msOp) {
             return msOp;
         }
         auto lsOp = Multiply<Expression> { Real { -1.0 }, added->GetLeastSigOp() }.Accept(*this);
-        if (!lsOp)
-        {
+        if (!lsOp) {
             return lsOp;
         }
 
         auto RHS = Add { *(msOp.value()), *(lsOp.value()) }.Accept(*this);
-        if (!RHS)
-        {
+        if (!RHS) {
             return RHS;
         }
         return Add { *simplifiedMinuend, *(RHS.value()) }.Accept(*this);
     }
     if (auto subtracted = RecursiveCast<Subtract<Expression>>(negated.GetLeastSigOp()); subtracted != nullptr) {
         auto msOp = Multiply<Expression> { Real { -1.0 }, subtracted->GetMostSigOp() }.Accept(*this);
-        if (!msOp)
-        {
+        if (!msOp) {
             return msOp;
         }
         auto lsOp = subtracted->GetLeastSigOp().Accept(*this);
-        if (!lsOp)
-        {
+        if (!lsOp) {
             return lsOp;
         }
 
-
-        auto RHS = Add { *(msOp.value()),*(lsOp.value()) }.Accept(*this);
-        if (!RHS)
-        {
+        auto RHS = Add { *(msOp.value()), *(lsOp.value()) }.Accept(*this);
+        if (!RHS) {
             return RHS;
         }
         return Add { *simplifiedMinuend, *(RHS.value()) }.Accept(*this);
@@ -461,23 +448,21 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
 {
     auto mostSigOp = multiply.GetMostSigOp().Copy();
     auto leastSigOp = multiply.GetLeastSigOp().Copy();
-    if (!mostSigOp)
-    {
-        return std::unexpected{"Missing most significant operand."};
+    if (!mostSigOp) {
+        return std::unexpected { "Missing most significant operand." };
     }
-    if (!leastSigOp)
-    {
-        return std::unexpected{"Missing least significant operand."};
+    if (!leastSigOp) {
+        return std::unexpected { "Missing least significant operand." };
     }
 
     auto simplifiedMostSigOpResult = mostSigOp->Accept(*this);
     auto simplifiedLeastSigOpResult = leastSigOp->Accept(*this);
 
     if (!simplifiedMostSigOpResult) {
-        return std::unexpected{simplifiedMostSigOpResult.error()};
+        return std::unexpected { simplifiedMostSigOpResult.error() };
     }
     if (!simplifiedLeastSigOpResult) {
-        return std::unexpected{simplifiedLeastSigOpResult.error()};
+        return std::unexpected { simplifiedLeastSigOpResult.error() };
     }
 
     auto simplifiedMultiplicand = std::move(simplifiedMostSigOpResult).value();
@@ -506,8 +491,7 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
 
     if (auto multCase = RecursiveCast<Multiply<Real, Divide<Expression>>>(simplifiedMultiply); multCase != nullptr) {
         auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() }.Accept(*this);
-        if (!m)
-        {
+        if (!m) {
             return m;
         }
         return gsl::not_null { Divide<Expression> { *(m.value()), (multCase->GetLeastSigOp().GetLeastSigOp()) }.Generalize() };
@@ -537,8 +521,7 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
 
     if (auto multCase = RecursiveCast<Multiply<Expression, Divide<Expression>>>(simplifiedMultiply); multCase != nullptr) {
         auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() }.Accept(*this);
-        if (!m)
-        {
+        if (!m) {
             return m;
         }
         return Divide<Expression> { *(m.value()), (multCase->GetLeastSigOp().GetLeastSigOp()) }.Accept(*this);
@@ -546,13 +529,11 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
 
     if (auto multCase = RecursiveCast<Multiply<Divide<Expression>, Divide<Expression>>>(simplifiedMultiply); multCase != nullptr) {
         auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() }.Accept(*this);
-        if (!m)
-        {
+        if (!m) {
             return m;
         }
         auto n = Multiply<Expression> { multCase->GetMostSigOp().GetLeastSigOp(), multCase->GetLeastSigOp().GetLeastSigOp() }.Accept(*this);
-        if (!n)
-        {
+        if (!n) {
             return n;
         }
         return Divide<Expression> { *(m.value()), *(n.value()) }.Accept(*this);
@@ -561,11 +542,10 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
     if (auto exprCase = RecursiveCast<Multiply<Expression, Exponent<Expression, Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp())) {
             auto lsOp = Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Accept(*this);
-            if (!lsOp)
-            {
+            if (!lsOp) {
                 return lsOp;
             }
-            return gsl::not_null { std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(),*(lsOp.value())) };
+            return gsl::not_null { std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(), *(lsOp.value())) };
         }
     }
 
@@ -573,22 +553,20 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
     if (auto exprCase = RecursiveCast<Multiply<Expression, Exponent<Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp())) {
             auto lsOp = Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Accept(*this);
-            if (!lsOp)
-            {
+            if (!lsOp) {
                 return lsOp;
             }
-            return gsl::not_null { std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(),*(lsOp.value())) };
+            return gsl::not_null { std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(), *(lsOp.value())) };
         }
     }
 
     if (auto exprCase = RecursiveCast<Multiply<Exponent<Expression>, Expression>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetLeastSigOp().Equals(exprCase->GetMostSigOp().GetMostSigOp())) {
             auto lsOp = Add<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), Real { 1.0 } }.Accept(*this);
-            if (!lsOp)
-            {
+            if (!lsOp) {
                 return lsOp;
             }
-            return gsl::not_null { std::make_unique<Exponent<Expression>>(exprCase->GetLeastSigOp(),*(lsOp.value())) };
+            return gsl::not_null { std::make_unique<Exponent<Expression>>(exprCase->GetLeastSigOp(), *(lsOp.value())) };
         }
     }
 
@@ -596,11 +574,10 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
     if (auto exprCase = RecursiveCast<Multiply<Exponent<Expression>, Exponent<Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp())) {
             auto lsOp = Add<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), exprCase->GetLeastSigOp().GetLeastSigOp() }.Accept(*this);
-            if (!lsOp)
-            {
+            if (!lsOp) {
                 return lsOp;
             }
-            return gsl::not_null { std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(),*(lsOp.value())) };
+            return gsl::not_null { std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(), *(lsOp.value())) };
         }
     }
 
@@ -616,29 +593,26 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression>, Multiply<Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().Equals(exprCase->GetLeastSigOp().GetLeastSigOp())) {
             auto msOp = Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetMostSigOp() }.Accept(*this);
-            if (!msOp)
-            {
+            if (!msOp) {
                 return msOp;
             }
             auto lsOp = Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), Real { 2.0 } }.Accept(*this);
-            if (!lsOp)
-            {
+            if (!lsOp) {
                 return lsOp;
             }
-            return gsl::not_null { std::make_unique<Multiply<Expression>>(*(msOp.value()),*(lsOp.value())) };
+            return gsl::not_null { std::make_unique<Multiply<Expression>>(*(msOp.value()), *(lsOp.value())) };
         }
     }
 
     // a*x^n*x
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression, Exponent<Expression>>, Expression>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(exprCase->GetLeastSigOp())) {
-            auto lsOp = Add<Expression> {exprCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Accept(*this);
-            if (!lsOp)
-            {
+            auto lsOp = Add<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Accept(*this);
+            if (!lsOp) {
                 return lsOp;
             }
-            return gsl::not_null{std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(),
-                Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),*(lsOp.value()) })};
+            return gsl::not_null { std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(),
+                Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(), *(lsOp.value()) }) };
         }
     }
 
@@ -646,21 +620,19 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression>, Exponent<Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp())) {
             auto lsOp = Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Accept(*this);
-            if (!lsOp)
-            {
+            if (!lsOp) {
                 return lsOp;
             }
-            return gsl::not_null{std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(),
-                Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(),*(lsOp.value()) })};
+            return gsl::not_null { std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(),
+                Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), *(lsOp.value()) }) };
         }
         if (exprCase->GetMostSigOp().GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp())) {
             auto lsOp = Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Accept(*this);
-            if (!lsOp)
-            {
+            if (!lsOp) {
                 return lsOp;
             }
-            return gsl::not_null{std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetLeastSigOp(),
-                Exponent<Expression> { exprCase->GetMostSigOp().GetMostSigOp(),*(lsOp.value()) })};
+            return gsl::not_null { std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetLeastSigOp(),
+                Exponent<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), *(lsOp.value()) }) };
         }
     }
 
@@ -668,52 +640,46 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression>, Multiply<Expression, Exponent<Expression>>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().Equals(exprCase->GetLeastSigOp().GetLeastSigOp().GetMostSigOp())) {
             auto msOp = Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetMostSigOp() }.Accept(*this);
-            if (!msOp)
-            {
+            if (!msOp) {
                 return msOp;
             }
             auto lsLsOp = Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Accept(*this);
-            if (!lsLsOp)
-            {
+            if (!lsLsOp) {
                 return lsLsOp;
             }
-            return gsl::not_null{std::make_unique<Multiply<Expression>>(
-                *(msOp.value()), Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(),*(lsLsOp.value()) })};
+            return gsl::not_null { std::make_unique<Multiply<Expression>>(
+                *(msOp.value()), Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), *(lsLsOp.value()) }) };
         }
     }
 
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression>, Multiply<Exponent<Expression>, Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp().GetMostSigOp())) {
             auto msOp = Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetLeastSigOp() }.Accept(*this);
-            if (!msOp)
-            {
+            if (!msOp) {
                 return msOp;
             }
             auto lsLsOp = Add<Expression> { exprCase->GetLeastSigOp().GetMostSigOp().GetLeastSigOp(), Real { 1.0 } }.Accept(*this);
-            if (!lsLsOp)
-            {
+            if (!lsLsOp) {
                 return lsLsOp;
             }
-            return gsl::not_null{std::make_unique<Multiply<Expression>>(
-                *(msOp.value()),Exponent<Expression>{exprCase->GetMostSigOp().GetLeastSigOp(),*(lsLsOp.value())})};
+            return gsl::not_null { std::make_unique<Multiply<Expression>>(
+                *(msOp.value()), Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), *(lsLsOp.value()) }) };
         }
     }
 
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression, Exponent<Expression>>, Multiply<Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetLeastSigOp())) {
             auto msOp = Multiply<Expression> { exprCase->GetMostSigOp().GetMostSigOp(), exprCase->GetLeastSigOp().GetLeastSigOp() }.Accept(*this);
-            if (!msOp)
-            {
+            if (!msOp) {
                 return msOp;
             }
             auto lsLsOp = Add<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } }.Accept(*this);
-            if (!lsLsOp)
-            {
+            if (!lsLsOp) {
                 return lsLsOp;
             }
-            return gsl::not_null{std::make_unique<Multiply<Expression>>(
+            return gsl::not_null { std::make_unique<Multiply<Expression>>(
                 *(msOp.value()),
-                Exponent<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(),*(lsLsOp.value())})};
+                Exponent<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(), *(lsLsOp.value()) }) };
         }
     }
 
@@ -721,14 +687,13 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
     if (auto exprCase = RecursiveCast<Multiply<Multiply<Expression, Exponent<Expression>>, Exponent<Expression>>>(simplifiedMultiply); exprCase != nullptr) {
         if (exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetLeastSigOp())) {
             auto lsOp = Add<Expression> { exprCase->GetLeastSigOp().GetMostSigOp(), exprCase->GetMostSigOp().GetLeastSigOp().GetLeastSigOp() }.Accept(*this);
-            if (!lsOp)
-            {
+            if (!lsOp) {
                 return lsOp;
             }
-            return gsl::not_null{std::make_unique<Multiply<Expression>>(
+            return gsl::not_null { std::make_unique<Multiply<Expression>>(
                 exprCase->GetMostSigOp().GetMostSigOp(),
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
-                    *(lsOp.value()) })};
+                    *(lsOp.value()) }) };
         }
     }
 
@@ -743,10 +708,10 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
             if (!lsOp) {
                 return lsOp;
             }
-            return gsl::not_null{std::make_unique<Multiply<Expression>>(
+            return gsl::not_null { std::make_unique<Multiply<Expression>>(
                 *(msOp.value()),
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
-                    *(lsOp.value()) })};
+                    *(lsOp.value()) }) };
         }
     }
 
@@ -869,30 +834,28 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
         }
     }
 
-    return gsl::not_null{BuildFromVector<Multiply>(vals)};
+    return gsl::not_null { BuildFromVector<Multiply>(vals) };
 }
 
 auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
 {
     auto mostSigOp = divide.GetMostSigOp().Copy();
     auto leastSigOp = divide.GetLeastSigOp().Copy();
-    if (!mostSigOp)
-    {
-        return std::unexpected{"Missing most significant operand."};
+    if (!mostSigOp) {
+        return std::unexpected { "Missing most significant operand." };
     }
-    if (!leastSigOp)
-    {
-        return std::unexpected{"Missing least significant operand."};
+    if (!leastSigOp) {
+        return std::unexpected { "Missing least significant operand." };
     }
 
     auto simplifiedMostSigOpResult = mostSigOp->Accept(*this);
     auto simplifiedLeastSigOpResult = leastSigOp->Accept(*this);
 
     if (!simplifiedMostSigOpResult) {
-        return std::unexpected{simplifiedMostSigOpResult.error()};
+        return std::unexpected { simplifiedMostSigOpResult.error() };
     }
     if (!simplifiedLeastSigOpResult) {
-        return std::unexpected{simplifiedLeastSigOpResult.error()};
+        return std::unexpected { simplifiedLeastSigOpResult.error() };
     }
 
     auto simplifiedDividend = std::move(simplifiedMostSigOpResult).value();
@@ -936,7 +899,7 @@ auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
     // now that we have the terms in a vector, we have to cancel like terms and simplify them
     result.reserve(numerator.size());
     for (const auto& num : numerator) {
-        if (auto div = RecursiveCast<Divide<Expression>>(*num); div != nullptr){
+        if (auto div = RecursiveCast<Divide<Expression>>(*num); div != nullptr) {
             std::vector<std::unique_ptr<Expression>> flat_n;
             std::vector<std::unique_ptr<Expression>> flat_d;
             if (auto mN = RecursiveCast<Multiply<Expression>>(*div); mN != nullptr) {
@@ -957,8 +920,7 @@ auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
             for (const auto& v : flat_d) {
                 denominator.push_back(v->Copy());
             }
-        }
-        else {
+        } else {
             result.push_back(num->Copy());
         }
     }
@@ -1047,7 +1009,7 @@ auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
                             return lsOp;
                         }
                         auto resultVisited = Exponent { expExpr->GetMostSigOp(), *(lsOp.value()) }.Accept(*this);
-                            if (!resultVisited){
+                        if (!resultVisited) {
                             return resultVisited;
                         }
                         result[i] = std::move(resultVisited.value());
@@ -1059,7 +1021,7 @@ auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
                         return lsOp;
                     }
                     auto resultVisited = Exponent { expExpr->GetMostSigOp(), *(lsOp.value()) }.Accept(*this);
-                    if (!resultVisited){
+                    if (!resultVisited) {
                         return resultVisited;
                     }
                     result[i] = std::move(resultVisited.value());
@@ -1068,7 +1030,7 @@ auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
             }
             if (i >= result.size()) {
                 auto resultVisited = Exponent<Expression> { expExpr->GetMostSigOp(), Multiply { Real { -1.0 }, expExpr->GetLeastSigOp() } }.Accept(*this);
-                if (!resultVisited){
+                if (!resultVisited) {
                     return resultVisited;
                 }
                 result.push_back(std::move(resultVisited.value()));
@@ -1079,11 +1041,11 @@ auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
             if (auto resExpr = RecursiveCast<Exponent<Expression, Expression>>(*result[i]); resExpr != nullptr) {
                 if (denom->Equals(resExpr->GetMostSigOp())) {
                     auto lsOp = Subtract { resExpr->GetLeastSigOp(), Real { 1.0 } }.Accept(*this);
-                    if (!lsOp){
+                    if (!lsOp) {
                         return lsOp;
                     }
                     auto resultVisited = Exponent { *denom, *(lsOp.value()) }.Accept(*this);
-                    if (!resultVisited){
+                    if (!resultVisited) {
                         return resultVisited;
                     }
                     result[i] = std::move(resultVisited.value());
@@ -1148,127 +1110,124 @@ auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
 
     // rebuild subtrees
     if (!dividend && divisor)
-        return gsl::not_null{Divide { Real { 1.0 }, *divisor }.Copy()};
+        return gsl::not_null { Divide { Real { 1.0 }, *divisor }.Copy() };
 
     if (dividend && !divisor)
-        return gsl::not_null{dividend->Copy()};
+        return gsl::not_null { dividend->Copy() };
 
     if (!dividend && !divisor)
-        return gsl::not_null{Real { 1.0 }.Copy()};
+        return gsl::not_null { Real { 1.0 }.Copy() };
 
-    return gsl::not_null{Divide { *dividend, *divisor }.Copy()};
+    return gsl::not_null { Divide { *dividend, *divisor }.Copy() };
 }
 
 auto SimplifyVisitor::TypedVisit(const Exponent<>& exponent) -> RetT
 {
     static auto match_cast = MatchCast<Expression>()
-                                           .Case(
-                                               [](const Exponent<Expression, Real>& zeroCase) -> bool {
-                                                   // TODO: Optimize. We're calling RecursiveCast<Expression<Real, Expression> twice. Perhaps a map of expression types to a vector of lambdas?
-                                                   const Real& power = zeroCase.GetLeastSigOp();
-                                                   return power.GetValue() == 0.0;
-                                               },
-                                               [](const Exponent<Expression, Real>&, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
-                                                   return gsl::make_not_null(std::make_unique<Real>(1.0));
-                                               })
-                                           .Case(
-                                               [](const Exponent<Real, Expression>& zeroCase) -> bool {
-                                                   const Real& base = zeroCase.GetMostSigOp();
-                                                   return base.GetValue() == 0.0;
-                                               },
-                                               [](const Exponent<Real, Expression>&, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
-                                                   return gsl::make_not_null(std::make_unique<Real>(0.0));
-                                               })
-                                           .Case(
-                                               [](const Exponent<Real>&) -> bool { return true; },
-                                               [](const Exponent<Real>& realCase, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
-                                                   const Real& base = realCase.GetMostSigOp();
-                                                   const Real& power = realCase.GetLeastSigOp();
-                                                   return gsl::make_not_null(std::make_unique<Real>(pow(base.GetValue(), power.GetValue())));
-                                               })
-                                           .Case(
-                                               [](const Exponent<Expression, Real>& oneCase) -> bool {
-                                                   const Real& power = oneCase.GetLeastSigOp();
-                                                   return power.GetValue() == 1.0;
-                                               },
-                                               [](const Exponent<Expression, Real>& oneCase, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
-                                                   return gsl::make_not_null(oneCase.GetMostSigOp().Copy());
-                                               })
-                                           .Case(
-                                               [](const Exponent<Real, Expression>& oneCase) -> bool {
-                                                   const Real& base = oneCase.GetMostSigOp();
-                                                   return base.GetValue() == 1.0;
-                                               },
-                                               [](const Exponent<Real, Expression>&, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
-                                                   return gsl::make_not_null(std::make_unique<Real>(1.0));
-                                               })
-                                           .Case(
-                                               [](const Exponent<Imaginary, Real>&) -> bool { return true; },
-                                               [](const Exponent<Imaginary, Real>& ImgCase, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
-                                                   switch (const auto power = std::fmod((ImgCase.GetLeastSigOp()).GetValue(), 4); static_cast<int>(power)) {
-                                                   case 0:
-                                                       return gsl::make_not_null(std::make_unique<Real>(1));
-                                                   case 1:
-                                                       return gsl::make_not_null(std::make_unique<Imaginary>());
-                                                   case 2:
-                                                       return gsl::make_not_null(std::make_unique<Real>(-1));
-                                                   case 3:
-                                                       return gsl::make_not_null(std::make_unique<Negate<Imaginary>>(Imaginary {}));
-                                                   default:
-                                                       return std::unexpected { "std::fmod returned an invalid value" };
-                                                   }
-                                               })
-                                           .Case(
-                                               [](const Exponent<Multiply<Real, Expression>, Real>& ImgCase) -> bool {
-                                                   return ImgCase.GetMostSigOp().GetMostSigOp().GetValue() < 0 && ImgCase.GetLeastSigOp().GetValue() == 0.5;
-                                               },
-                                               [](const Exponent<Multiply<Real, Expression>, Real>& ImgCase, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
-                                                   Multiply mul {
-                                                       Multiply { Real { pow(std::abs(ImgCase.GetMostSigOp().GetMostSigOp().GetValue()), 0.5) },
-                                                           Exponent { ImgCase.GetMostSigOp().GetLeastSigOp(), Real { 0.5 } } },
-                                                       Imaginary {}
-                                                   };
+                                 .Case(
+                                     [](const Exponent<Expression, Real>& zeroCase) -> bool {
+                                         // TODO: Optimize. We're calling RecursiveCast<Expression<Real, Expression> twice. Perhaps a map of expression types to a vector of lambdas?
+                                         const Real& power = zeroCase.GetLeastSigOp();
+                                         return power.GetValue() == 0.0;
+                                     },
+                                     [](const Exponent<Expression, Real>&, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
+                                         return gsl::make_not_null(std::make_unique<Real>(1.0));
+                                     })
+                                 .Case(
+                                     [](const Exponent<Real, Expression>& zeroCase) -> bool {
+                                         const Real& base = zeroCase.GetMostSigOp();
+                                         return base.GetValue() == 0.0;
+                                     },
+                                     [](const Exponent<Real, Expression>&, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
+                                         return gsl::make_not_null(std::make_unique<Real>(0.0));
+                                     })
+                                 .Case(
+                                     [](const Exponent<Real>&) -> bool { return true; },
+                                     [](const Exponent<Real>& realCase, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
+                                         const Real& base = realCase.GetMostSigOp();
+                                         const Real& power = realCase.GetLeastSigOp();
+                                         return gsl::make_not_null(std::make_unique<Real>(pow(base.GetValue(), power.GetValue())));
+                                     })
+                                 .Case(
+                                     [](const Exponent<Expression, Real>& oneCase) -> bool {
+                                         const Real& power = oneCase.GetLeastSigOp();
+                                         return power.GetValue() == 1.0;
+                                     },
+                                     [](const Exponent<Expression, Real>& oneCase, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
+                                         return gsl::make_not_null(oneCase.GetMostSigOp().Copy());
+                                     })
+                                 .Case(
+                                     [](const Exponent<Real, Expression>& oneCase) -> bool {
+                                         const Real& base = oneCase.GetMostSigOp();
+                                         return base.GetValue() == 1.0;
+                                     },
+                                     [](const Exponent<Real, Expression>&, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
+                                         return gsl::make_not_null(std::make_unique<Real>(1.0));
+                                     })
+                                 .Case(
+                                     [](const Exponent<Imaginary, Real>&) -> bool { return true; },
+                                     [](const Exponent<Imaginary, Real>& ImgCase, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
+                                         switch (const auto power = std::fmod((ImgCase.GetLeastSigOp()).GetValue(), 4); static_cast<int>(power)) {
+                                         case 0:
+                                             return gsl::make_not_null(std::make_unique<Real>(1));
+                                         case 1:
+                                             return gsl::make_not_null(std::make_unique<Imaginary>());
+                                         case 2:
+                                             return gsl::make_not_null(std::make_unique<Real>(-1));
+                                         case 3:
+                                             return gsl::make_not_null(std::make_unique<Negate<Imaginary>>(Imaginary {}));
+                                         default:
+                                             return std::unexpected { "std::fmod returned an invalid value" };
+                                         }
+                                     })
+                                 .Case(
+                                     [](const Exponent<Multiply<Real, Expression>, Real>& ImgCase) -> bool {
+                                         return ImgCase.GetMostSigOp().GetMostSigOp().GetValue() < 0 && ImgCase.GetLeastSigOp().GetValue() == 0.5;
+                                     },
+                                     [](const Exponent<Multiply<Real, Expression>, Real>& ImgCase, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
+                                         Multiply mul {
+                                             Multiply { Real { pow(std::abs(ImgCase.GetMostSigOp().GetMostSigOp().GetValue()), 0.5) },
+                                                 Exponent { ImgCase.GetMostSigOp().GetLeastSigOp(), Real { 0.5 } } },
+                                             Imaginary {}
+                                         };
 
-                                                   return gsl::make_not_null(mul.Copy());
-                                               })
-                                           .Case(
-                                               [](const Exponent<Exponent<>, Expression>&) -> bool { return true; },
-                                               [](const Exponent<Exponent<>, Expression>& expExpCase, SimplifyVisitor* visitor) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
-                                                   auto lsOp = Multiply { expExpCase.GetMostSigOp().GetLeastSigOp(), expExpCase.GetLeastSigOp() }.Accept(*visitor);
-                                                   if (!lsOp)
-                                                   {
-                                                       return lsOp;
-                                                   }
-                                                   Exponent exp { expExpCase.GetMostSigOp().GetMostSigOp(),*(lsOp.value()) };
-                                                   return gsl::make_not_null(exp.Copy());
-                                               })
-                                           .Case(
-                                               [](const Exponent<Expression, Log<>>& logCase) -> bool {
-                                                   return logCase.GetMostSigOp().Equals(logCase.GetLeastSigOp().GetMostSigOp());
-                                               },
-                                               [](const Exponent<Expression, Log<>>& logCase, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
-                                                   return gsl::make_not_null(logCase.GetLeastSigOp().GetLeastSigOp().Copy());
-                                               });
+                                         return gsl::make_not_null(mul.Copy());
+                                     })
+                                 .Case(
+                                     [](const Exponent<Exponent<>, Expression>&) -> bool { return true; },
+                                     [](const Exponent<Exponent<>, Expression>& expExpCase, SimplifyVisitor* visitor) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
+                                         auto lsOp = Multiply { expExpCase.GetMostSigOp().GetLeastSigOp(), expExpCase.GetLeastSigOp() }.Accept(*visitor);
+                                         if (!lsOp) {
+                                             return lsOp;
+                                         }
+                                         Exponent exp { expExpCase.GetMostSigOp().GetMostSigOp(), *(lsOp.value()) };
+                                         return gsl::make_not_null(exp.Copy());
+                                     })
+                                 .Case(
+                                     [](const Exponent<Expression, Log<>>& logCase) -> bool {
+                                         return logCase.GetMostSigOp().Equals(logCase.GetLeastSigOp().GetMostSigOp());
+                                     },
+                                     [](const Exponent<Expression, Log<>>& logCase, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
+                                         return gsl::make_not_null(logCase.GetLeastSigOp().GetLeastSigOp().Copy());
+                                     });
 
     auto mostSigOp = exponent.GetMostSigOp().Copy();
     auto leastSigOp = exponent.GetLeastSigOp().Copy();
-    if (!mostSigOp)
-    {
-        return std::unexpected{"Missing most significant operand."};
+    if (!mostSigOp) {
+        return std::unexpected { "Missing most significant operand." };
     }
-    if (!leastSigOp)
-    {
-        return std::unexpected{"Missing least significant operand."};
+    if (!leastSigOp) {
+        return std::unexpected { "Missing least significant operand." };
     }
 
     auto simplifiedMostSigOpResult = mostSigOp->Accept(*this);
     auto simplifiedLeastSigOpResult = leastSigOp->Accept(*this);
 
     if (!simplifiedMostSigOpResult) {
-        return std::unexpected{simplifiedMostSigOpResult.error()};
+        return std::unexpected { simplifiedMostSigOpResult.error() };
     }
     if (!simplifiedLeastSigOpResult) {
-        return std::unexpected{simplifiedLeastSigOpResult.error()};
+        return std::unexpected { simplifiedLeastSigOpResult.error() };
     }
 
     auto simplifiedBase = std::move(simplifiedMostSigOpResult).value();
@@ -1276,7 +1235,7 @@ auto SimplifyVisitor::TypedVisit(const Exponent<>& exponent) -> RetT
 
     const Exponent simplifiedExponent { *simplifiedBase, *simplifiedPower };
     auto matchResult = match_cast.Execute(simplifiedExponent, this).value();
-    return gsl::not_null{matchResult ? std::move(matchResult) : std::move(simplifiedExponent.Copy())};
+    return gsl::not_null { matchResult ? std::move(matchResult) : std::move(simplifiedExponent.Copy()) };
 }
 
 auto SimplifyVisitor::TypedVisit(const Log<>& logIn) -> RetT
@@ -1284,23 +1243,21 @@ auto SimplifyVisitor::TypedVisit(const Log<>& logIn) -> RetT
     auto mostSigOp = logIn.GetMostSigOp().Copy();
     auto leastSigOp = logIn.GetLeastSigOp().Copy();
 
-    if (!mostSigOp)
-    {
-        return std::unexpected{"Missing most significant operand."};
+    if (!mostSigOp) {
+        return std::unexpected { "Missing most significant operand." };
     }
-    if (!leastSigOp)
-    {
-        return std::unexpected{"Missing least significant operand."};
+    if (!leastSigOp) {
+        return std::unexpected { "Missing least significant operand." };
     }
 
     auto simplifiedMostSigOpResult = mostSigOp->Accept(*this);
     auto simplifiedLeastSigOpResult = leastSigOp->Accept(*this);
 
     if (!simplifiedMostSigOpResult) {
-        return std::unexpected{simplifiedMostSigOpResult.error()};
+        return std::unexpected { simplifiedMostSigOpResult.error() };
     }
     if (!simplifiedLeastSigOpResult) {
-        return std::unexpected{simplifiedLeastSigOpResult.error()};
+        return std::unexpected { simplifiedLeastSigOpResult.error() };
     }
 
     auto simplifiedBase = std::move(simplifiedMostSigOpResult).value();
@@ -1310,7 +1267,7 @@ auto SimplifyVisitor::TypedVisit(const Log<>& logIn) -> RetT
 
     if (const auto realBaseCase = RecursiveCast<Log<Real, Expression>>(simplifiedLog); realBaseCase != nullptr) {
         if (const Real& b = realBaseCase->GetMostSigOp(); b.GetValue() <= 0.0 || b.GetValue() == 1) {
-            return gsl::not_null{std::make_unique<Undefined>()};
+            return gsl::not_null { std::make_unique<Undefined>() };
         }
     }
 
@@ -1318,11 +1275,11 @@ auto SimplifyVisitor::TypedVisit(const Log<>& logIn) -> RetT
         const Real& argument = realExponentCase->GetLeastSigOp();
 
         if (argument.GetValue() <= 0.0) {
-            return gsl::not_null{std::make_unique<Undefined>()};
+            return gsl::not_null { std::make_unique<Undefined>() };
         }
 
         if (argument.GetValue() == 1.0) {
-            return gsl::not_null{std::make_unique<Real>(0.0)};
+            return gsl::not_null { std::make_unique<Real>(0.0) };
         }
     }
 
@@ -1330,20 +1287,20 @@ auto SimplifyVisitor::TypedVisit(const Log<>& logIn) -> RetT
         const Real& base = realCase->GetMostSigOp();
         const Real& argument = realCase->GetLeastSigOp();
 
-        return gsl::not_null{std::make_unique<Real>(log2(argument.GetValue()) * (1 / log2(base.GetValue())))};
+        return gsl::not_null { std::make_unique<Real>(log2(argument.GetValue()) * (1 / log2(base.GetValue()))) };
     }
 
     // log(a) with a < 0 log(-a)
     if (auto negCase = RecursiveCast<Log<Expression, Real>>(simplifiedLog); negCase != nullptr) {
         if (negCase->GetLeastSigOp().GetValue() < 0) {
-            return gsl::not_null{Add<Expression> { Log { negCase->GetMostSigOp(), Real { -1 * negCase->GetLeastSigOp().GetValue() } }, Multiply<Expression> { Imaginary {}, Pi {} } }.Generalize()};
+            return gsl::not_null { Add<Expression> { Log { negCase->GetMostSigOp(), Real { -1 * negCase->GetLeastSigOp().GetValue() } }, Multiply<Expression> { Imaginary {}, Pi {} } }.Generalize() };
         }
     }
 
     // log[a](a) = 1
     if (const auto sameCase = RecursiveCast<Log<Expression, Expression>>(simplifiedLog); sameCase != nullptr) {
         if (sameCase->leastSigOp->Equals(*sameCase->mostSigOp)) {
-            return gsl::not_null{Real { 1 }.Generalize()};
+            return gsl::not_null { Real { 1 }.Generalize() };
         }
     }
 
@@ -1355,7 +1312,7 @@ auto SimplifyVisitor::TypedVisit(const Log<>& logIn) -> RetT
         return Oasis::Multiply<Oasis::Expression>(factor, log).Accept(*this);
     }
 
-    return gsl::not_null{simplifiedLog.Copy()};
+    return gsl::not_null { simplifiedLog.Copy() };
 }
 
 auto SimplifyVisitor::TypedVisit(const Negate<Expression>& negate) -> RetT
@@ -1373,7 +1330,7 @@ auto SimplifyVisitor::TypedVisit(const Negate<Expression>& negate) -> RetT
 
     auto simplifiedOp = std::move(simplifiedMostSigOpResult).value();
 
-    return std::move(Multiply{Real{-1}, *simplifiedOp}.Accept(*this)).value();
+    return std::move(Multiply { Real { -1 }, *simplifiedOp }.Accept(*this)).value();
 }
 
 auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
@@ -1398,13 +1355,11 @@ auto SimplifyVisitor::TypedVisit(const Derivative<>& derivative) -> RetT
 {
     auto mostSigOp = derivative.GetMostSigOp().Copy();
     auto leastSigOp = derivative.GetLeastSigOp().Copy();
-    if (!mostSigOp)
-    {
-        return std::unexpected{"Missing most significant operand."};
+    if (!mostSigOp) {
+        return std::unexpected { "Missing most significant operand." };
     }
-    if (!leastSigOp)
-    {
-        return std::unexpected{"Missing least significant operand."};
+    if (!leastSigOp) {
+        return std::unexpected { "Missing least significant operand." };
     }
 
     auto simplifiedMostSigOpResult = mostSigOp->Accept(*this);
@@ -1421,23 +1376,21 @@ auto SimplifyVisitor::TypedVisit(const Derivative<>& derivative) -> RetT
     auto simplifiedVar = std::move(simplifiedLeastSigOpResult).value();
     auto simplifiedDiff = simplifiedExpression->Differentiate(*simplifiedVar);
     auto s = simplifiedDiff->Accept(*this);
-    if (!s){
+    if (!s) {
         return s;
     }
-    return gsl::not_null{std::move(s.value())->Accept(*this).value()};
+    return gsl::not_null { std::move(s.value())->Accept(*this).value() };
 }
 
 auto SimplifyVisitor::TypedVisit(const Integral<>& integral) -> RetT
 {
     auto mostSigOp = integral.GetMostSigOp().Copy();
     auto leastSigOp = integral.GetLeastSigOp().Copy();
-    if (!mostSigOp)
-    {
-        return std::unexpected{"Missing most significant operand."};
+    if (!mostSigOp) {
+        return std::unexpected { "Missing most significant operand." };
     }
-    if (!leastSigOp)
-    {
-        return std::unexpected{"Missing least significant operand."};
+    if (!leastSigOp) {
+        return std::unexpected { "Missing least significant operand." };
     }
 
     auto simplifiedMostSigOpResult = mostSigOp->Accept(*this);
@@ -1454,38 +1407,37 @@ auto SimplifyVisitor::TypedVisit(const Integral<>& integral) -> RetT
     auto simplifiedDifferential = std::move(simplifiedLeastSigOpResult).value();
 
     auto integrated = simplifiedIntegrand->Integrate(*simplifiedDifferential);
-    return gsl::not_null{std::move(integrated)};
+    return gsl::not_null { std::move(integrated) };
 }
 
 auto SimplifyVisitor::TypedVisit(const Matrix& matrix) -> RetT
 {
-    return gsl::not_null{matrix.Copy()};
+    return gsl::not_null { matrix.Copy() };
 }
 
 auto SimplifyVisitor::TypedVisit(const EulerNumber&) -> RetT
 {
-    return gsl::not_null{EulerNumber{}.Copy()};
+    return gsl::not_null { EulerNumber {}.Copy() };
 }
 
 auto SimplifyVisitor::TypedVisit(const Pi&) -> RetT
 {
-    return gsl::not_null{Pi{}.Copy()};
+    return gsl::not_null { Pi {}.Copy() };
 }
 
 auto SimplifyVisitor::TypedVisit(const Magnitude<Expression>& magnitude) -> RetT
 {
     auto simplified = magnitude.GetOperand().Accept(*this);
-    if (!simplified)
-    {
+    if (!simplified) {
         return simplified;
     }
     auto simpOp = std::move(simplified.value());
     if (auto realCase = RecursiveCast<Real>(*simpOp); realCase != nullptr) {
         double val = realCase->GetValue();
-        return gsl::not_null{val >= 0.0 ? std::make_unique<Real>(val) : std::make_unique<Real>(-val)};
+        return gsl::not_null { val >= 0.0 ? std::make_unique<Real>(val) : std::make_unique<Real>(-val) };
     }
     if (auto imgCase = RecursiveCast<Imaginary>(*simpOp); imgCase != nullptr) {
-        return gsl::not_null{std::make_unique<Real>(1.0)};
+        return gsl::not_null { std::make_unique<Real>(1.0) };
     }
     if (auto mulImgCase = RecursiveCast<Multiply<Expression, Imaginary>>(*simpOp); mulImgCase != nullptr) {
         return Magnitude<Expression> { mulImgCase->GetMostSigOp() }.Accept(*this);
@@ -1512,8 +1464,7 @@ auto SimplifyVisitor::TypedVisit(const Magnitude<Expression>& magnitude) -> RetT
         return Exponent { Real { sum }, Real { 0.5 } }.Accept(*this);
     }
 
-    return gsl::not_null{magnitude.Generalize()};
+    return gsl::not_null { magnitude.Generalize() };
 }
-
 
 } // Oasis

@@ -19,8 +19,8 @@
 #include "Oasis/Negate.hpp"
 #include "Oasis/Pi.hpp"
 #include "Oasis/Real.hpp"
-#include "Oasis/Subtract.hpp"
 #include "Oasis/Sine.hpp"
+#include "Oasis/Subtract.hpp"
 #include "Oasis/TeXSerializer.hpp"
 #include "Oasis/Variable.hpp"
 

@@ -13,10 +13,10 @@
 #include "Imaginary.hpp"
 #include "Matrix.hpp"
 #include "Multiply.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
 #include "Real.hpp"
 #include "RecursiveCast.hpp"
 #include "UnaryExpression.hpp"
-#include "Oasis/SimplifyVisitor.hpp"
 
 namespace Oasis {
 
@@ -39,8 +39,7 @@ public:
     {
     }
 
-    [[deprecated]]
-    [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
+    [[deprecated]] [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
     {
         SimplifyVisitor simplifyVisitor {};
         auto simpOp = this->GetOperand().Simplify();
@@ -92,7 +91,8 @@ public:
         const std::unique_ptr<Expression> operandDerivative = this->GetOperand().Differentiate(var);
         return Magnitude<Expression> {
             *operandDerivative
-        }.Generalize();
+        }
+            .Generalize();
     }
 
     [[nodiscard]] auto Integrate(const Expression& integrationVar) const -> std::unique_ptr<Expression> override
@@ -101,7 +101,8 @@ public:
         const std::unique_ptr<Expression> operandDerivative = this->GetOperand().Integrate(integrationVar);
         return Magnitude<Expression> {
             *operandDerivative
-        }.Generalize();
+        }
+            .Generalize();
     }
 
     EXPRESSION_TYPE(Magnitude)

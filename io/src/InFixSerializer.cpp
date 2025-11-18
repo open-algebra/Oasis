@@ -15,8 +15,8 @@
 #include "Oasis/Magnitude.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
-#include "Oasis/Sine.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/Sine.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 

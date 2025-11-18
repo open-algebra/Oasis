@@ -17,9 +17,9 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Pi.hpp"
 #include "Oasis/RecursiveCast.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Undefined.hpp"
-#include "Oasis/SimplifyVisitor.hpp"
 
 namespace Oasis {
 Log<Expression>::Log(const Expression& base, const Expression& argument)
@@ -79,7 +79,7 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
     // log[a](b^x) = x * log[a](b)
     if (const auto expCase = RecursiveCast<Log<Expression, Exponent<>>>(simplifiedLog); expCase != nullptr) {
-        SimplifyVisitor simplifyVisitor{};
+        SimplifyVisitor simplifyVisitor {};
         const auto exponent = expCase->GetLeastSigOp();
         const IExpression auto& log = Log<Expression>(expCase->GetMostSigOp(), exponent.GetMostSigOp()); // might need to check that it isnt nullptr
         const IExpression auto& factor = exponent.GetLeastSigOp();
@@ -98,7 +98,7 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
 auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // TODO: Implement with integrate visitor?
-    SimplifyVisitor simplifyVisitor{};
+    SimplifyVisitor simplifyVisitor {};
     if (this->mostSigOp->Equals(EulerNumber {})) {
         // ln(x)
         if (leastSigOp->Is<Variable>() && RecursiveCast<Variable>(*leastSigOp)->Equals(integrationVariable)) {
@@ -107,7 +107,7 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
             // return Subtract<Expression> { Multiply<Expression> { integrationVariable, *this }, integrationVariable }.Simplify();
         }
         auto der_Simp = Derivative<Expression> { *leastSigOp, integrationVariable }.Accept(simplifyVisitor);
-        if (!der_Simp){
+        if (!der_Simp) {
             return this->Generalize();
         }
 
@@ -152,7 +152,7 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
 
     } else {
         // Use log identity Log[b](a) = Log(a)/Log(b)
-        SimplifyVisitor simplifyVisitor{};
+        SimplifyVisitor simplifyVisitor {};
         auto numer = Log<Expression> { EulerNumber {}, *(this->leastSigOp->Generalize()) };
         auto denom = Log<Expression> { EulerNumber {}, *(this->mostSigOp->Generalize()) };
 
@@ -175,7 +175,7 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
 
 auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
-    SimplifyVisitor simplifyVisitor{};
+    SimplifyVisitor simplifyVisitor {};
     // d(log_e(6x))/dx = 1/6x * 6
     if (auto lnCase = RecursiveCast<EulerNumber>(*mostSigOp); lnCase != nullptr) {
         Divide derivative { Oasis::Real { 1.0 }, *leastSigOp };
@@ -183,7 +183,7 @@ auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVari
 
         Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(differentiationVariable) };
         auto simp = result.Accept(simplifyVisitor);
-        if (!simp){
+        if (!simp) {
             return result.Generalize();
         }
         return std::move(simp).value();
@@ -193,7 +193,7 @@ auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVari
             Derivative chain { *leastSigOp, differentiationVariable };
             Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(differentiationVariable) };
             auto simp = result.Accept(simplifyVisitor);
-            if (!simp){
+            if (!simp) {
                 return result.Generalize();
             }
             return std::move(simp).value();
@@ -202,7 +202,7 @@ auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVari
                                 Multiply { Log { EulerNumber {}, *leastSigOp }, Derivative { Log { EulerNumber {}, *mostSigOp }, differentiationVariable } } },
                 Exponent { Log { EulerNumber {}, *mostSigOp }, Real { 2 } } };
             auto simp = result.Accept(simplifyVisitor);
-            if (!simp){
+            if (!simp) {
                 return result.Generalize();
             }
             return std::move(simp).value();

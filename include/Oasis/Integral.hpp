@@ -23,11 +23,9 @@ public:
 
     Integral(const Expression& integrand, const Expression& differential);
 
-    [[deprecated]]
-    [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
+    [[deprecated]] [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
 
-    [[deprecated]]
-    [[nodiscard]] auto Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression> /* final */;
+    [[deprecated]] [[nodiscard]] auto Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression> /* final */;
 
     EXPRESSION_TYPE(Integral)
     EXPRESSION_CATEGORY(Associative | Commutative)

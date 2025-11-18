@@ -82,7 +82,7 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return std::make_unique<Log<>>(base, argument);
         }
     }
-    SimplifyVisitor simplifyVisitor{};
+    SimplifyVisitor simplifyVisitor {};
     // makes subtraction into addition because it is easier to deal with
     auto negated = Multiply<Expression> { Real { -1 }, *simplifiedSubtrahend };
     if (auto added = RecursiveCast<Add<Expression>>(negated.GetLeastSigOp()); added != nullptr) {
@@ -104,9 +104,9 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
         auto m = Multiply<Expression> { Real { -1.0 }, subtracted->GetMostSigOp() };
         auto ms = m.Accept(simplifyVisitor);
         if (!ms) {
-            return Add { *simplifiedMinuend,  Add { m, *(subtracted->GetLeastSigOp().Simplify()) }}.Generalize();
+            return Add { *simplifiedMinuend, Add { m, *(subtracted->GetLeastSigOp().Simplify()) } }.Generalize();
         }
-        auto RHS = Add { *(std::move(ms.value())),*(subtracted->GetLeastSigOp().Simplify()) };
+        auto RHS = Add { *(std::move(ms.value())), *(subtracted->GetLeastSigOp().Simplify()) };
         auto s = RHS.Accept(simplifyVisitor);
         if (!s) {
             return Add { *simplifiedMinuend, RHS }.Generalize();
@@ -118,7 +118,7 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
 auto Subtract<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
-    SimplifyVisitor simplifyVisitor{};
+    SimplifyVisitor simplifyVisitor {};
     // Single diff variable
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
         auto s = this->Accept(simplifyVisitor);
@@ -145,7 +145,7 @@ auto Subtract<Expression>::Differentiate(const Expression& differentiationVariab
 
             auto us = std::make_unique<Subtract<Expression, Expression>>(Subtract<Expression, Expression> { *(specializedLeft->Copy()), *(specializedRight->Copy()) });
             auto s1 = us->Accept(simplifyVisitor);
-            if (!s1){
+            if (!s1) {
                 return us;
             }
             return std::move(s1).value();
@@ -161,11 +161,11 @@ auto Subtract<Expression>::Differentiate(const Expression& differentiationVariab
 
 auto Subtract<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
-    SimplifyVisitor simplifyVisitor{};
+    SimplifyVisitor simplifyVisitor {};
     // Single integration variable
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
         auto s = this->Accept(simplifyVisitor);
-        if (!s){
+        if (!s) {
             return this->Generalize();
         }
         auto simplifiedSub = std::move(s).value();
