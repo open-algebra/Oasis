@@ -18,7 +18,7 @@ TEST_CASE("Substitute Unary", "[Substitute]")
         Oasis::Multiply{
             Oasis::Real { 3.0 },
             Oasis::Variable { "x" } }
-    }; // 2x+3x
+    }; // -2x+3x
 
     const auto after = before.Substitute(Oasis::Variable { "x" }, Oasis::Real { 4.0 }); // after should some std::unique_ptr<Expression> such that it equals 2(-4) + 3(4)
     REQUIRE(after->Equals(Oasis::Real { 4 }));

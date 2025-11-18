@@ -5,7 +5,6 @@
 #ifndef MATHMLSERIALIZER_HPP
 #define MATHMLSERIALIZER_HPP
 
-#define gsl_CONFIG_NOT_NULL_EXPLICIT_CTOR 0
 #include <gsl/gsl-lite.hpp>
 #include <tinyxml2.h>
 
@@ -33,6 +32,7 @@ public:
     auto TypedVisit(const Exponent<Expression, Expression>& exponent) -> RetT override;
     auto TypedVisit(const Log<Expression, Expression>& log) -> RetT override;
     auto TypedVisit(const Negate<Expression>& negate) -> RetT override;
+    auto TypedVisit(const Sine<Expression>& sine) -> RetT override;
     auto TypedVisit(const Magnitude<Expression>& magnitude) -> RetT override;
     auto TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT override;
     auto TypedVisit(const Integral<Expression, Expression>& integral) -> RetT override;

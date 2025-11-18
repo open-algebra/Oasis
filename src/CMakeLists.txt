@@ -24,6 +24,8 @@ set(Oasis_SOURCES
     Negate.cpp
     Pi.cpp
     Real.cpp
+    SimplifyVisitor.cpp
+    Sine.cpp
     Subtract.cpp
     # Summation.cpp
     Undefined.cpp

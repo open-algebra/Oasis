@@ -10,8 +10,10 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/RecursiveCast.hpp"
-
 #include <Oasis/Divide.hpp>
+#include "Oasis/SimplifyVisitor.hpp"
+
+inline Oasis::SimplifyVisitor simplifyVisitor{};
 
 TEST_CASE("Multiplication", "[Multiply]")
 {
@@ -22,7 +24,7 @@ TEST_CASE("Multiplication", "[Multiply]")
         Oasis::Real { 3.0 }
     };
 
-    auto simplified = subtract.Simplify();
+    auto simplified = subtract.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Is<Oasis::Real>());
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
@@ -38,7 +40,7 @@ TEST_CASE("Generalized Multiplication", "[Multiply][Generalized]")
         Oasis::Real { 3.0 }
     };
 
-    auto simplified = subtract.Simplify();
+    auto simplified = subtract.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Is<Oasis::Real>());
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
@@ -66,9 +68,9 @@ TEST_CASE("Imaginary Multiplication", "[Imaginary][Multiplication]")
             Oasis::Real { 2.0 } }
     };
 
-    auto simplified2 = i2.Simplify();
-    auto simplified3 = i3.Simplify();
-    auto simplified4 = i4.Simplify();
+    auto simplified2 = i2.Accept(simplifyVisitor).value();
+    auto simplified3 = i3.Accept(simplifyVisitor).value();
+    auto simplified4 = i4.Accept(simplifyVisitor).value();
 
     REQUIRE(Oasis::Multiply { Oasis::Real { -1 }, Oasis::Imaginary {} }.Equals(*simplified3));
     REQUIRE(Oasis::Real { -1.0 }.Equals(*simplified2));
@@ -88,7 +90,7 @@ TEST_CASE("Multiply Associativity", "[Multiply][Associativity]")
                 Oasis::Real { 4.0 } } }
     };
 
-    auto simplified1 = m1.Simplify();
+    auto simplified1 = m1.Accept(simplifyVisitor).value();
 
     REQUIRE(Oasis::Multiply {
         Oasis::Multiply {
@@ -126,7 +128,7 @@ TEST_CASE("Variadic Multiply Constructor", "[Multiply]")
 
     const Oasis::Real expected { 432.0 };
 
-    const auto simplified = multiply.Simplify();
+    const auto simplified = multiply.Accept(simplifyVisitor).value();
     REQUIRE(expected.Equals(*simplified));
 }
 
@@ -145,6 +147,6 @@ TEST_CASE("Multiplying Fractions", "[Multiply]")
 
     const Oasis::Real expected { 3.0 };
 
-    const auto simplified = multiply.Simplify();
+    const auto simplified = multiply.Accept(simplifyVisitor).value();
     REQUIRE(expected.Equals(*simplified));
 }

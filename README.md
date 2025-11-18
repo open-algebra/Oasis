@@ -108,17 +108,26 @@ target_link_libraries(MyApp PRIVATE Oasis::Oasis)
 ```c++
 #include <cstdlib>
 #include <print> // C++23
+#include <utility>
+#include <memory>
 
 #include <Oasis/Add.hpp>
 #include <Oasis/Real.hpp>
+#include <Oasis/SimplifyVisitor.hpp>
 
 int main() {
+    SimplifyVisitor simplifyVisitor{};
     Oasis::Add sum {
         Oasis::Real{2.0},
         Oasis::Real{3.0}
     };
 
-    auto simplified = sum.Simplify();
+    auto expr = sum.Accept(simplifiedVisitor);
+    if (!expr) { // Error Case
+        std::println(expr.error());
+        return EXIT_FAILURE;
+    }
+    auto simplified = std::move(expr).value();
     std::println("Result: {}", simplified->ToString());
 
     return EXIT_SUCCESS;

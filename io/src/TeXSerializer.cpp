@@ -19,6 +19,7 @@
 #include "Oasis/Negate.hpp"
 #include "Oasis/Pi.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/Sine.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/TeXSerializer.hpp"
 #include "Oasis/Variable.hpp"
@@ -183,6 +184,13 @@ auto TeXSerializer::TypedVisit(const Negate<Expression>& negate) -> RetT
 {
     return negate.GetOperand().Accept(*this).transform([](const std::string& str) {
         return std::format("-\\left({}\\right)", str);
+    });
+}
+
+auto TeXSerializer::TypedVisit(const Sine<Expression>& sine) -> RetT
+{
+    return sine.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("sine\\left({}\\right)", str);
     });
 }
 
