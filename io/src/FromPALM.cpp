@@ -104,119 +104,119 @@ auto isPiToken(const std::string& token) -> bool;
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseExpression(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseExpression(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses an operation from a stream of tokens.
  * Operation -> Add | Subtract | Multiply | Divide | Exponent
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseOperation(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseOperation(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses a real number from a stream of tokens.
  * Real -> std::stod(token)
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseReal(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseReal(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses an imaginary unit from a stream of tokens.
  * Imaginary -> 'i' | 'j'
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseImaginary(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseImaginary(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses a variable from a stream of tokens.
  * Variable -> std::string(token)
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseVariable(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseVariable(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses an addition operation from a stream of tokens.
  * Add -> '+' BinaryElements
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseAdd(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseAdd(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses a subtraction operation from a stream of tokens.
  * Subtract -> '-' BinaryElements
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseSubtract(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseSubtract(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses a multiplication operation from a stream of tokens.
  * Multiply -> '*' BinaryElements
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseMultiply(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseMultiply(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses a division operation from a stream of tokens.
  * Divide -> '/' BinaryElements
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseDivide(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseDivide(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses an exponentiation operation from a stream of tokens.
  * Exponent -> '^' BinaryElements
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseExponent(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseExponent(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses a logarithm operation from a stream of tokens.
  * Log -> 'log' BinaryElements
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseLog(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseLog(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses an integral operation from a stream of tokens.
  * Integral -> 'int' BinaryElements
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseIntegral(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseIntegral(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses a negate operation from a stream of tokens.
  * Negate -> 'neg' UnaryElements
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseNegate(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseNegate(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses a derivative operation from a stream of tokens.
  * Derivative -> 'd' BinaryElements
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseDerivative(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseDerivative(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses a matrix operation from a stream of tokens.
  * Matrix -> 'matrix' BinaryElements
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseMatrix(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseMatrix(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses a pi constant from a stream of tokens.
  * Pi -> 'pi' | '\pi' | 'π'
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParsePi(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParsePi(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses an euler number constant from a stream of tokens.
  * EulerNumber -> 'e'
  * @param tokens The stream of tokens to parse.
  * @return The parsed expression.
  */
-auto ParseEulerNumber(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseEulerNumber(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses an operation that takes two operands from a stream of tokens.
  * @param token The operator token.
@@ -225,7 +225,7 @@ auto ParseEulerNumber(TokenStream& tokens) -> std::expected<std::unique_ptr<Expr
  */
 template <template <typename, typename> typename T>
     requires IAssociativeAndCommutative<T>
-auto ParseBinaryOperationAssociativeAndCommutative(std::string_view token, TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseBinaryOperationAssociativeAndCommutative(std::string_view token, TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses an operation that takes two operands from a stream of tokens.
  * @param token The operator token.
@@ -234,31 +234,35 @@ auto ParseBinaryOperationAssociativeAndCommutative(std::string_view token, Token
  */
 template <template <typename, typename> typename T>
     requires IExpression<T<Expression, Expression>> && (!IAssociativeAndCommutative<T>)
-auto ParseBinaryOperationNonAssociativeAndCommutative(std::string_view token, TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto ParseBinaryOperationNonAssociativeAndCommutative(std::string_view token, TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
 /** Parses binary elements from a stream of tokens.
  * BinaryElements -> Expression Expression Expression*
  * @param tokens The stream of tokens to parse.
  * @return The parsed expressions.
  */
-auto ParseBinaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseError>;
+auto ParseBinaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseErrorOld>;
 
 /** Parses unary elements from a stream of tokens.
  * UnaryElements -> Expression Expression*
  * @param tokens The stream of tokens to parse.
  * @return The parsed expressions.
  */
-auto ParseUnaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseError>;
+auto ParseUnaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseErrorOld>;
 
 /** Parses nullary elements from a stream of tokens.
  * NullaryOperationElements -> Expression*
  * @param tokens The stream of tokens to parse.
  * @return The parsed expressions.
  */
-auto ParseNullaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseError>;
+auto ParseNullaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseErrorOld>;
 
+bool operator==(const PALMParseError& lhs, const PALMParseError& rhs)
+{
+    return lhs.token == rhs.token && lhs.type == rhs.type && lhs.message == rhs.message;
+}
 // PALM Grammar Start -> Expression $$
-auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     // Tokenize the input string
     auto tokens = TokenizePALM(palmString);
@@ -274,9 +278,9 @@ auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Ex
     }
 
     // Parsing failed
-    return std::unexpected { ParseError::UnexpectedToken };
+    return std::unexpected { ParseErrorOld::UnexpectedToken };
 }
-auto FromPALMNew(const std::string& palmString) -> std::expected<std::unique_ptr<Oasis::Expression>, Oasis::ParseError>
+auto FromPALMNew(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, PALMParseError>
 {
     // String to input stream
     auto inputStream = std::istringstream(palmString);
@@ -290,7 +294,11 @@ auto FromPALMNew(const std::string& palmString) -> std::expected<std::unique_ptr
         token = tokenizer.lookahead();
     }
 
-    return std::unexpected { Oasis::ParseError::Other };
+    return std::unexpected { PALMParseError {
+        token,
+        PALMParseErrorType::None,
+        "FromPALMNew not yet implemented."
+    } };
 }
 
 auto TokenizePALM(const std::string& palmString) -> TokenStream
@@ -315,7 +323,7 @@ auto isPiToken(const std::string& token) -> bool
     return isTokenFromArray(token, PALM_PI);
 }
 
-auto ParseExpression(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseExpression(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     // Expression -> '(' Operation ')'
     if (tokens.peek() == PALM_OPEN_PARENS) {
@@ -330,20 +338,20 @@ auto ParseExpression(TokenStream& tokens) -> std::expected<std::unique_ptr<Expre
 
         // Consume ')'
         if (tokens.pop() != PALM_CLOSE_PARENS)
-            return std::unexpected { ParseError::MissingClosingParen };
+            return std::unexpected { ParseErrorOld::MissingClosingParen };
 
         return innerExpr;
     }
 
     if (tokens.peek().empty()) {
-        return std::unexpected { ParseError::UnexpectedEndOfInput };
+        return std::unexpected { ParseErrorOld::UnexpectedEndOfInput };
     }
 
     // Unable to parse expression
-    return std::unexpected { ParseError::UnexpectedToken };
+    return std::unexpected { ParseErrorOld::UnexpectedToken };
 }
 
-auto ParseOperation(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseOperation(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     // Peek at the next token
     std::string token = tokens.peek();
@@ -418,14 +426,14 @@ auto ParseOperation(TokenStream& tokens) -> std::expected<std::unique_ptr<Expres
     }
 
     // Unable to parse operation
-    return std::unexpected { ParseError::UnknownOperator };
+    return std::unexpected { ParseErrorOld::UnknownOperator };
 }
 
-auto ParseReal(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseReal(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     // Peek at the next token
     if (tokens.peek() != PALM_REAL) {
-        return std::unexpected { ParseError::UnexpectedToken };
+        return std::unexpected { ParseErrorOld::UnexpectedToken };
     }
     // Consume 'real'
     tokens.pop();
@@ -434,17 +442,17 @@ auto ParseReal(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>
     try {
         return std::make_unique<Real>(std::stod(tokens.pop()));
     } catch (const std::invalid_argument&) {
-        return std::unexpected { ParseError::InvalidNumberFormat };
+        return std::unexpected { ParseErrorOld::InvalidNumberFormat };
     } catch (const std::out_of_range&) {
-        return std::unexpected { ParseError::InvalidNumberFormat };
+        return std::unexpected { ParseErrorOld::InvalidNumberFormat };
     }
 }
 
-auto ParseImaginary(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseImaginary(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     // Peek at the next token
     if (!isTokenFromArray(tokens.peek(), PALM_IMAGINARY)) {
-        return std::unexpected { ParseError::UnexpectedToken };
+        return std::unexpected { ParseErrorOld::UnexpectedToken };
     }
 
     // Consume 'i' or 'j'
@@ -453,11 +461,11 @@ auto ParseImaginary(TokenStream& tokens) -> std::expected<std::unique_ptr<Expres
     return std::make_unique<Imaginary>();
 }
 
-auto ParseVariable(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseVariable(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     // Peek at the next token
     if (tokens.peek() != PALM_VARIABLE) {
-        return std::unexpected { ParseError::UnexpectedToken };
+        return std::unexpected { ParseErrorOld::UnexpectedToken };
     }
 
     // Consume 'var'
@@ -466,52 +474,52 @@ auto ParseVariable(TokenStream& tokens) -> std::expected<std::unique_ptr<Express
     // Consume Variable Name
     std::string varName = tokens.pop();
     if (varName.empty() || varName == PALM_CLOSE_PARENS) {
-        return std::unexpected { ParseError::IncompleteExpression };
+        return std::unexpected { ParseErrorOld::IncompleteExpression };
     }
 
     return std::make_unique<Variable>(varName);
 }
 
-auto ParseAdd(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseAdd(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     return ParseBinaryOperationAssociativeAndCommutative<Add>(PALM_ADD, tokens);
 }
 
-auto ParseSubtract(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseSubtract(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     return ParseBinaryOperationNonAssociativeAndCommutative<Subtract>(PALM_SUBTRACT, tokens);
 }
 
-auto ParseMultiply(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseMultiply(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     return ParseBinaryOperationAssociativeAndCommutative<Multiply>(PALM_MULTIPLY, tokens);
 }
 
-auto ParseDivide(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseDivide(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     return ParseBinaryOperationNonAssociativeAndCommutative<Divide>(PALM_DIVIDE, tokens);
 }
 
-auto ParseExponent(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseExponent(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     return ParseBinaryOperationNonAssociativeAndCommutative<Exponent>(PALM_EXPONENT, tokens);
 }
 
-auto ParseLog(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseLog(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     return ParseBinaryOperationNonAssociativeAndCommutative<Log>(PALM_LOG, tokens);
 }
 
-auto ParseIntegral(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseIntegral(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     return ParseBinaryOperationAssociativeAndCommutative<Integral>(PALM_INTEGRAL, tokens);
 }
 
-auto ParseNegate(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseNegate(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     // Peek at the next token
     if (tokens.peek() != PALM_NEGATE) {
-        return std::unexpected { ParseError::UnexpectedToken };
+        return std::unexpected { ParseErrorOld::UnexpectedToken };
     }
 
     // Consume 'neg'
@@ -526,15 +534,15 @@ auto ParseNegate(TokenStream& tokens) -> std::expected<std::unique_ptr<Expressio
     return std::make_unique<Negate<>>(std::move(**expr));
 }
 
-auto ParseDerivative(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseDerivative(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     return ParseBinaryOperationNonAssociativeAndCommutative<Derivative>(PALM_DERIVATIVE, tokens);
 }
 
-auto ParsePi(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParsePi(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     if (!isPiToken(tokens.peek())) {
-        return std::unexpected { ParseError::UnexpectedToken };
+        return std::unexpected { ParseErrorOld::UnexpectedToken };
     }
 
     // Consume 'pi' | 'π'
@@ -542,10 +550,10 @@ auto ParsePi(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, 
     return std::make_unique<Pi>();
 }
 
-auto ParseEulerNumber(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseEulerNumber(TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     if (tokens.peek() != PALM_EULER) {
-        return std::unexpected { ParseError::UnexpectedToken };
+        return std::unexpected { ParseErrorOld::UnexpectedToken };
     }
 
     // Consume 'e'
@@ -555,11 +563,11 @@ auto ParseEulerNumber(TokenStream& tokens) -> std::expected<std::unique_ptr<Expr
 
 template <template <typename, typename> typename T>
     requires IAssociativeAndCommutative<T>
-auto ParseBinaryOperationAssociativeAndCommutative(const std::string_view token, TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseBinaryOperationAssociativeAndCommutative(const std::string_view token, TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     // Peek at the next token
     if (tokens.peek() != token) {
-        return std::unexpected { ParseError::UnexpectedToken };
+        return std::unexpected { ParseErrorOld::UnexpectedToken };
     }
 
     // Consume operator
@@ -576,11 +584,11 @@ auto ParseBinaryOperationAssociativeAndCommutative(const std::string_view token,
 
 template <template <typename, typename> typename T>
     requires IExpression<T<Expression, Expression>> && (!IAssociativeAndCommutative<T>)
-auto ParseBinaryOperationNonAssociativeAndCommutative(const std::string_view token, TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseError>
+auto ParseBinaryOperationNonAssociativeAndCommutative(const std::string_view token, TokenStream& tokens) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     // Peek at the next token
     if (tokens.peek() != token) {
-        return std::unexpected { ParseError::UnexpectedToken };
+        return std::unexpected { ParseErrorOld::UnexpectedToken };
     }
 
     // Consume operator
@@ -603,29 +611,29 @@ auto ParseBinaryOperationNonAssociativeAndCommutative(const std::string_view tok
     return expr;
 }
 
-auto ParseBinaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseError>
+auto ParseBinaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseErrorOld>
 {
     auto elements = ParseNullaryOperationElements(tokens);
 
     if (!elements || elements->size() < 2) {
-        return std::unexpected { ParseError::IncompleteExpression };
+        return std::unexpected { ParseErrorOld::IncompleteExpression };
     }
 
     return elements;
 }
 
-auto ParseUnaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseError>
+auto ParseUnaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseErrorOld>
 {
     auto elements = ParseNullaryOperationElements(tokens);
 
     if (!elements || elements->empty()) {
-        return std::unexpected { ParseError::IncompleteExpression };
+        return std::unexpected { ParseErrorOld::IncompleteExpression };
     }
 
     return elements;
 }
 
-auto ParseNullaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseError>
+auto ParseNullaryOperationElements(TokenStream& tokens) -> std::expected<std::vector<std::unique_ptr<Expression>>, ParseErrorOld>
 {
     std::vector<std::unique_ptr<Expression>> elements;
 

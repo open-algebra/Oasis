@@ -6,10 +6,11 @@
 #define OASIS_FROMPALM_HPP
 
 #include "Oasis/Expression.hpp"
+#include "../src/PALMTypes.hpp"
 
 namespace Oasis {
 
-enum class ParseError {
+enum class ParseErrorOld {
     None,
     IncompleteExpression, // expression opens but required operands/args missing
     MissingClosingParen, // '(' without matching ')'
@@ -24,23 +25,38 @@ enum class ParseError {
     Other // fallback
 };
 
-// struct ParseError {
-//     ParseErrorType type;
-//     size_t token_index; // index in token stream where error detected
-//     size_t char_offset; // approximate character offset in source
-//     std::string got; // token text that caused the error (if any)
-//     std::string expected; // brief description of what was expected
-//     std::string message; // human-friendly diagnostic
-// };
+/* Types of parse errors. */
+enum struct PALMParseErrorType {
+    None,
+    InvalidNumberFormat,
+    LexicalError,
+    MissingOperands,
+    ExtraOperands,
+};
+
+/* Represents a parse error in PALM parsing. */
+struct PALMParseError {
+    PALMToken token;
+    PALMParseErrorType type;
+    std::string message;
+};
+
+/** Equality operator for PALMParseError.
+ *
+ * @param lhs The left-hand side PALMParseError.
+ * @param rhs The right-hand side PALMParseError.
+ * @return True if the two errors are equal, false otherwise.
+ */
+bool operator==(const PALMParseError& lhs, const PALMParseError& rhs);
 
 /** Parses an expression from a PALM string.
  *
  * @param palmString The PALM string to parse.
  * @return The parsed expression, or nullptr if the string could not be parsed.
  */
-auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, ParseError>;
+auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
-auto FromPALMNew(const std::string& palmString) -> std::expected<std::unique_ptr<Oasis::Expression>, Oasis::ParseError>;
+auto FromPALMNew(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, PALMParseError>;
 }
 
 #endif // OASIS_FROMPALM_HPP

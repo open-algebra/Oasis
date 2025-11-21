@@ -41,7 +41,7 @@ auto Oasis::PALMTokenizer::nextToken() const -> PALMToken
 
     if (currentToken) { // Update position based on previous token
         token.tokenIndex = currentToken->tokenIndex + 1;
-        token.offset = currentToken->offset + currentToken->length;
+        token.charOffset = currentToken->charOffset + currentToken->length;
         token.line = currentToken->line;
         token.column = currentToken->column + currentToken->length;
     }
@@ -59,13 +59,13 @@ auto Oasis::PALMTokenizer::nextToken() const -> PALMToken
         } else {
             token.column++;
         }
-        token.offset++;
+        token.charOffset++;
     }
 
     // End of Input Token
     if (!inputStream.get(ch)) {
         token.type = PALMTokenType::EndOfInput;
-        token.text = "";
+        token.lexeme = "";
         token.length = 0;
         return token;
     }
@@ -76,7 +76,7 @@ auto Oasis::PALMTokenizer::nextToken() const -> PALMToken
     // Punctuator Token
     if (const auto punctuator = tryMatchPunctuator(inputStream); !punctuator.empty()) {
         token.type = PALMTokenType::Punctuator;
-        token.text = punctuator;
+        token.lexeme = punctuator;
         token.length = punctuator.length();
         return token;
     }
@@ -103,8 +103,8 @@ auto Oasis::PALMTokenizer::nextToken() const -> PALMToken
     }
 
     // Save lexeme info
-    token.text = lexemeBuffer.str();
-    token.length = token.text.length();
+    token.lexeme = lexemeBuffer.str();
+    token.length = token.lexeme.length();
 
     // Operator Token
     if (isTokenPALMOperator(lexemeBuffer.str())) {
@@ -215,12 +215,12 @@ auto Oasis::PALMTokenizer::lookahead() -> PALMToken
 
 auto Oasis::PALMTokenizer::match(const PALMToken& token) -> bool
 {
-    return match(token.text);
+    return match(token.lexeme);
 }
 
 auto Oasis::PALMTokenizer::match(const std::string& lexeme) -> bool
 {
-    if (lookahead().text == lexeme) {
+    if (lookahead().lexeme == lexeme) {
         currentToken = std::make_unique<PALMToken>(nextToken());
         return true;
     }

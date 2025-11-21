@@ -27,13 +27,26 @@ enum class PALMTokenType {
 /** Represents a token in the PALM language. */
 struct PALMToken {
     PALMTokenType type;   // type of token
-    std::string text;     // raw lexeme
-    size_t offset = 0;    // byte offset in source
+    std::string lexeme;     // raw lexeme
+    size_t charOffset = 0;    // byte offset in source
+    size_t tokenIndex = 0; // index in token stream
     size_t length = 0;    // length in bytes
     size_t line = 1;      // optional
     size_t column = 1;    // optional
-    size_t tokenIndex = 0; // index in token stream
 };
+
+/** Equality operator for PALMToken.
+ *
+ * @param lhs The left-hand side PALMToken.
+ * @param rhs The right-hand side PALMToken.
+ * @return True if the two tokens are equal, false otherwise.
+ */
+inline bool operator==(const PALMToken& lhs, const PALMToken& rhs)
+{
+    return lhs.type == rhs.type && lhs.lexeme == rhs.lexeme && lhs.charOffset == rhs.charOffset
+        && lhs.tokenIndex == rhs.tokenIndex && lhs.length == rhs.length && lhs.line == rhs.line
+        && lhs.column == rhs.column;
+}
 
 /** Operators are taken from ExpressionType enum in Expression.hpp
  * @see ExpressionType

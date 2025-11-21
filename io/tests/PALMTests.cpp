@@ -6,6 +6,8 @@
 #include "Oasis/FromPALM.hpp"
 #include "Oasis/PALMSerializer.hpp"
 
+#include "../src/PALMTypes.hpp"
+
 #include "Oasis/Add.hpp"
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
@@ -23,7 +25,9 @@
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 
-// Serializer
+/*
+ * Serialization
+ */
 TEST_CASE("PALM Serialization of Real with various precisions", "[PALM][Serializer][Real]")
 {
     const Oasis::Real real { 3.1415926535 };
@@ -716,9 +720,7 @@ TEST_CASE("PALM Serialization of Complex Expressions", "[PALM][Serializer][Compl
                 Oasis::Variable { "x" },
                 Oasis::Exponent {
                     Oasis::Real { 2.0 },
-                    Oasis::Real { 3.0 }
-                }
-            }
+                    Oasis::Real { 3.0 } } }
         };
 
         auto result = expression.Accept(serializer).value();
@@ -731,12 +733,10 @@ TEST_CASE("PALM Serialization of Complex Expressions", "[PALM][Serializer][Compl
         const Oasis::Subtract<> expression {
             Oasis::Divide {
                 Oasis::Real { 10.0 },
-                Oasis::Real { 2.0 }
-            },
+                Oasis::Real { 2.0 } },
             Oasis::Log {
                 Oasis::Real { 10.0 },
-                Oasis::Real { 100.0 }
-            }
+                Oasis::Real { 100.0 } }
         };
 
         auto result = expression.Accept(serializer).value();
@@ -757,9 +757,7 @@ TEST_CASE("PALM Serialization with Different Expression Padding", "[PALM][Serial
                 Oasis::Variable { "x" },
                 Oasis::Exponent {
                     Oasis::Real { 2.0 },
-                    Oasis::Real { 3.0 }
-                }
-            }
+                    Oasis::Real { 3.0 } } }
         };
 
         auto result = expression.Accept(serializer).value();
@@ -777,9 +775,7 @@ TEST_CASE("PALM Serialization with Different Expression Padding", "[PALM][Serial
                 Oasis::Variable { "x" },
                 Oasis::Exponent {
                     Oasis::Real { 2.0 },
-                    Oasis::Real { 3.0 }
-                }
-            }
+                    Oasis::Real { 3.0 } } }
         };
 
         auto result = expression.Accept(serializer).value();
@@ -797,9 +793,7 @@ TEST_CASE("PALM Serialization with Different Expression Padding", "[PALM][Serial
                 Oasis::Variable { "x" },
                 Oasis::Exponent {
                     Oasis::Real { 2.0 },
-                    Oasis::Real { 3.0 }
-                }
-            }
+                    Oasis::Real { 3.0 } } }
         };
 
         auto result = expression.Accept(serializer).value();
@@ -820,9 +814,7 @@ TEST_CASE("PALM Serialization with Different Token Separators", "[PALM][Serializ
                 Oasis::Variable { "x" },
                 Oasis::Exponent {
                     Oasis::Real { 2.0 },
-                    Oasis::Real { 3.0 }
-                }
-            }
+                    Oasis::Real { 3.0 } } }
         };
 
         auto result = expression.Accept(serializer).value();
@@ -840,9 +832,7 @@ TEST_CASE("PALM Serialization with Different Token Separators", "[PALM][Serializ
                 Oasis::Variable { "x" },
                 Oasis::Exponent {
                     Oasis::Real { 2.0 },
-                    Oasis::Real { 3.0 }
-                }
-            }
+                    Oasis::Real { 3.0 } } }
         };
 
         auto result = expression.Accept(serializer).value();
@@ -852,7 +842,9 @@ TEST_CASE("PALM Serialization with Different Token Separators", "[PALM][Serializ
     }
 }
 
-// Parser
+/*
+ * Parsing
+ */
 TEST_CASE("PALM Parsing of Real with various formats", "[PALM][Parser][Real]")
 {
     { // Test with integer
@@ -896,60 +888,108 @@ TEST_CASE("PALM Parsing of Real with various formats", "[PALM][Parser][Real]")
     }
 }
 
-// TEST_CASE("PALM Parsing for Malformed Real", "[PALM][Parser][Real]")
-// {
-//     { // Missing value
-//         // const auto expr = Oasis::FromPALM("( real )");
-//         // const auto expectedError = Oasis::ParseError {
-//         //     .type = Oasis::ParseErrorType::TooFewOperands,
-//         //     .token_index = 4,
-//         //     .char_offset = 7,
-//         //     .got = "",
-//         //     .expected = "real number",
-//         //     .message = "Expected a real number after 'real' token."
-//         // };
-//         //
-//         // REQUIRE(!expr);
-//         // REQUIRE(expr.error() == expectedError);
-//     }
-//
-//     { // Invalid format
-//         const auto expr = Oasis::FromPALM("( real three.point.onefour )");
-//
-//         REQUIRE(!expr);
-//         REQUIRE(expr.error() == Oasis::ParseError::InvalidNumberFormat);
-//     }
-//
-//     { // Extra tokens
-//         const auto expr = Oasis::FromPALM("( real 3.14 extra )");
-//
-//         REQUIRE(!expr);
-//         REQUIRE(expr.error() == Oasis::ParseError::UnexpectedToken);
-//     }
-//
-//
-// }
-
-//TODO: Remove
-TEST_CASE("TEMP RUN PALM")
+/*
+ * Parsing Tests
+ */
+TEST_CASE("PALM Parsing for Real", "[PALM][Parser][Real]")
 {
-    const std::string palmString = "(+(rea%l 5) (* (var x ) \n ( ^ ( real 2 ) ( real 3 ) ) ) )";
+    const auto expr = Oasis::FromPALMNew("( real 3.14 )");
 
-    const auto expr = Oasis::FromPALMNew(palmString);
+    REQUIRE(expr.has_value());
+    REQUIRE((*expr)->Is<Oasis::Real>());
+
+    const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
+    REQUIRE(real->GetValue() == 3.14);
 }
 
+TEST_CASE("PALM Parsing for Real with Malformed Input", "[PALM][Parser][Real]")
+{
+    { // Missing value
+        const auto expr = Oasis::FromPALMNew("( real )");
+
+        auto error = expr.error();
+        auto expectedError = Oasis::PALMParseError {
+            .token = Oasis::PALMToken {
+                .type = Oasis::PALMTokenType::Punctuator,
+                .lexeme = ")",
+                .charOffset = 7,
+                .tokenIndex = 2,
+                .line = 1,
+                .column = 8,
+            },
+            .type = Oasis::PALMParseErrorType::MissingOperands,
+            .message = "Expected a real number after 'real' token."
+        };
+
+        REQUIRE(!expr);
+        REQUIRE(error == expectedError);
+    }
+
+    { // Invalid number format
+        const auto expr = Oasis::FromPALMNew("( real three.point.onefour )");
+
+        auto error = expr.error();
+        auto expectedError = Oasis::PALMParseError {
+            .token = Oasis::PALMToken {
+                .type = Oasis::PALMTokenType::Identifier,
+                .lexeme = "three.point.onefour",
+                .charOffset = 12,
+                .tokenIndex = 3,
+                .line = 1,
+                .column = 13,
+            },
+            .type = Oasis::PALMParseErrorType::InvalidNumberFormat,
+            .message = "Invalid number format for real number: 'three.point.onefour'."
+        };
+
+        REQUIRE(!expr);
+        REQUIRE(error == expectedError);
+    }
+
+    { // Extra tokens
+        const auto expr = Oasis::FromPALMNew("( real 3.14 extra )");
+
+        auto error = expr.error();
+        auto expectedError = Oasis::PALMParseError {
+            .token = Oasis::PALMToken {
+                .type = Oasis::PALMTokenType::Identifier,
+                .lexeme = "extra",
+                .charOffset = 17,
+                .tokenIndex = 4,
+                .line = 1,
+                .column = 18,
+            },
+            .type = Oasis::PALMParseErrorType::ExtraOperands,
+            .message = "Unexpected token 'extra' after parsing real number."
+        };
+
+        REQUIRE(!expr);
+        REQUIRE(error == expectedError);
+    }
+}
+
+
+
+/* Beware, entering land of to be migrated */
+// TODO: Remove
+TEST_CASE("TEMP RUN PALM")
+{
+    const std::string palmString = "(+(real 5) (* (var x ) \n ( ^ ( real 2 ) ( real 3 ) ) ) )";
+
+    const std::string palmString2 = "( real three.point.onefour )";
+    const auto expr = Oasis::FromPALMNew(palmString2);
+}
 
 /*
  * Real Operation
  */
-
 
 TEST_CASE("Parse Multiple Real", "[FromPALM][Parsing]")
 {
     const auto expr = Oasis::FromPALM("( real 5 3 )");
 
     REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseError::MissingClosingParen);
+    REQUIRE(expr.error() == Oasis::ParseErrorOld::MissingClosingParen);
 }
 
 TEST_CASE("Parse Negative Integer", "[FromPALM][Parsing]")
@@ -990,7 +1030,7 @@ TEST_CASE("Parse Invalid Real", "[FromPALM][Parsing]")
     const auto expr = Oasis::FromPALM("( real five )");
 
     REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseError::InvalidNumberFormat);
+    REQUIRE(expr.error() == Oasis::ParseErrorOld::InvalidNumberFormat);
 }
 
 TEST_CASE("Parse Out of Range Real", "[FromPALM][Parsing]")
@@ -998,7 +1038,7 @@ TEST_CASE("Parse Out of Range Real", "[FromPALM][Parsing]")
     const auto expr = Oasis::FromPALM("( real 1e5000 )");
 
     REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseError::InvalidNumberFormat);
+    REQUIRE(expr.error() == Oasis::ParseErrorOld::InvalidNumberFormat);
 }
 
 /*
@@ -1072,7 +1112,7 @@ TEST_CASE("Parse without Variable Name", "[FromPALM][Parsing]")
     const auto expr = Oasis::FromPALM("( var )");
 
     REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseError::IncompleteExpression);
+    REQUIRE(expr.error() == Oasis::ParseErrorOld::IncompleteExpression);
 }
 
 /*
@@ -1112,7 +1152,7 @@ TEST_CASE("Parse Malformed Addition", "[FromPALM][Parsing]")
 {
     const auto expr = Oasis::FromPALM("( + ( real 5 ) )");
     REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseError::IncompleteExpression);
+    REQUIRE(expr.error() == Oasis::ParseErrorOld::IncompleteExpression);
 }
 
 TEST_CASE("Parse Addition Multiple Elements", "[FromPALM][Parsing]")
@@ -1136,7 +1176,7 @@ TEST_CASE("Parse Missing Parens", "[FromPALM][Parsing]")
     const auto expr = Oasis::FromPALM("( real 5 ");
 
     REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseError::MissingClosingParen);
+    REQUIRE(expr.error() == Oasis::ParseErrorOld::MissingClosingParen);
 }
 
 TEST_CASE("Parse Expression Unexpected Token", "[FromPALM][Parsing]")
@@ -1144,7 +1184,7 @@ TEST_CASE("Parse Expression Unexpected Token", "[FromPALM][Parsing]")
     const auto expr = Oasis::FromPALM("'");
 
     REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseError::UnexpectedToken);
+    REQUIRE(expr.error() == Oasis::ParseErrorOld::UnexpectedToken);
 }
 
 TEST_CASE("Parse Incomplete Expression", "[FromPALM][Parsing]")
@@ -1152,7 +1192,7 @@ TEST_CASE("Parse Incomplete Expression", "[FromPALM][Parsing]")
     const auto expr = Oasis::FromPALM("( real 5 ) e ");
 
     REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseError::UnexpectedToken);
+    REQUIRE(expr.error() == Oasis::ParseErrorOld::UnexpectedToken);
 }
 
 /*
@@ -1210,14 +1250,14 @@ TEST_CASE("Parse Malformed Subtraction", "[FromPALM][Parsing]")
 {
     const auto expr = Oasis::FromPALM("( - ( real 5 ) )");
     REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseError::IncompleteExpression);
+    REQUIRE(expr.error() == Oasis::ParseErrorOld::IncompleteExpression);
 }
 
 TEST_CASE("Parse Subtraction Invalid Subexpression", "[FromPALM][Parsing]")
 {
     const auto expr = Oasis::FromPALM("( - ( real 5 ) ( + ( real 3 ) ) )");
     REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseError::IncompleteExpression);
+    REQUIRE(expr.error() == Oasis::ParseErrorOld::IncompleteExpression);
 }
 
 /*
@@ -1655,7 +1695,7 @@ TEST_CASE("Parse Invalid Negate", "[FromPALM][Parsing]")
 {
     const auto expr = Oasis::FromPALM("( neg )");
     REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseError::UnexpectedToken);
+    REQUIRE(expr.error() == Oasis::ParseErrorOld::UnexpectedToken);
 }
 
 /*
@@ -1759,12 +1799,12 @@ TEST_CASE("Parse Invalid Expression", "[FromPALM][Parsing]")
 {
     const auto expr = Oasis::FromPALM("( unknown_op ( real 5 ) ( real 3 ) )");
     REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseError::UnknownOperator);
+    REQUIRE(expr.error() == Oasis::ParseErrorOld::UnknownOperator);
 }
 
 TEST_CASE("Parse Empty Expression", "[FromPALM][Parsing]")
 {
     const auto expr = Oasis::FromPALM("");
     REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseError::UnexpectedEndOfInput);
+    REQUIRE(expr.error() == Oasis::ParseErrorOld::UnexpectedEndOfInput);
 }
