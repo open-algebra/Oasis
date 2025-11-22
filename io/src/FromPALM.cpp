@@ -295,9 +295,9 @@ auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Ex
     }
 
     return std::unexpected { PALMParseError {
-        token,
-        PALMParseErrorType::None,
-        "FromPALMNew not yet implemented."
+        .type = PALMParseError::PALMParseErrorType::None,
+        .token = token,
+        .message = "FromPALMNew not yet implemented."
     } };
 }
 

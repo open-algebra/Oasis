@@ -12,6 +12,7 @@
 #include "Oasis/Divide.hpp"
 #include "Oasis/EulerNumber.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/FromPALM.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Log.hpp"
@@ -100,7 +101,12 @@ auto PALMSerializer::TypedVisit(const Integral<>& integral) -> RetT
 auto PALMSerializer::TypedVisit(const Matrix& /*matrix*/) -> RetT
 {
     // TODO: Implement Matrix serialization
-    return std::unexpected<std::string> { "Matrix is not implemented yet" };
+    return std::unexpected <PALMSerializationError> {
+        PALMSerializationError {
+            .type = PALMSerializationError::PALMSerializationErrorType::Other,
+            .message = "Matrix serialization not yet implemented"
+        }
+    };
 }
 
 auto PALMSerializer::TypedVisit(const EulerNumber& euler_number) -> RetT
@@ -159,7 +165,7 @@ auto PALMSerializer::PunctuatorToToken(const PALMPunctuatorType punctuator, cons
  * @param operands The serialized operands of the expression.
  * @return The serialized expression as a string, or an error if serialization fails.
  */
-auto PALMSerializer::WrapExpression(const ExpressionType expressionType, const std::vector<RetT>& operands) const -> RetT
+auto PALMSerializer::WrapExpression(const ExpressionType expressionType, const std::initializer_list<RetT>& operands) const -> RetT
 {
     // Build the serialized string
     std::ostringstream serialized;
@@ -177,8 +183,8 @@ auto PALMSerializer::WrapExpression(const ExpressionType expressionType, const s
         // Check for errors in operand serialization
         auto value = operand;
 
-        if (!value) {
-            return std::unexpected<std::string> { value.error() };
+        if (!value.has_value()) {
+            return value;
         }
 
         // Add Separator and Operand Value
@@ -217,14 +223,14 @@ auto PALMSerializer::SerializeExpression(const DerivedFromUnaryExpression auto& 
 {
     // Ensure the operand exists
     if (!expr.HasOperand()) {
-        return std::unexpected<std::string> { std::string(PALM_UNEXPECTED_NO_MOST_SIG_OP) };
+        return std::unexpected { PALMSerializationError {
+            .type = PALMSerializationError::PALMSerializationErrorType::MissingOperand,
+            .expression = &expr,
+            .message = "Expression missing operand" } };
     }
 
     // Serialize the operand
-    auto operandResult = expr.GetOperand().Accept(*this);
-    if (!operandResult) {
-        return std::unexpected<std::string> { operandResult.error() };
-    }
+    auto operandResult = expr.GetOperand().Accept(*this).value();
 
     // Serialize the expression
     return WrapExpression(expr.GetType(), { operandResult });
@@ -240,22 +246,22 @@ auto PALMSerializer::SerializeExpression(const DerivedFromBinaryExpression auto&
 {
     // Ensure both operands exist
     if (!expr.HasMostSigOp()) {
-        return std::unexpected<std::string> { std::string(PALM_UNEXPECTED_NO_MOST_SIG_OP) };
+        return std::unexpected { PALMSerializationError {
+            .type = PALMSerializationError::PALMSerializationErrorType::MissingOperand,
+            .expression = &expr,
+            .message = "Expression missing most significant operand" } };
     }
+
     if (!expr.HasLeastSigOp()) {
-        return std::unexpected<std::string> { std::string(PALM_UNEXPECTED_NO_LEAST_SIG_OP) };
+        return std::unexpected { PALMSerializationError {
+        .type = PALMSerializationError::PALMSerializationErrorType::MissingOperand,
+            .expression = &expr,
+            .message = "Expression missing least significant operand" } };
     }
 
     // Serialize both operands
-    auto mostSigOpResult = expr.GetMostSigOp().Accept(*this);
-    if (!mostSigOpResult) {
-        return std::unexpected<std::string> { mostSigOpResult.error() };
-    }
-
-    auto leastSigOpResult = expr.GetLeastSigOp().Accept(*this);
-    if (!leastSigOpResult) {
-        return std::unexpected<std::string> { leastSigOpResult.error() };
-    }
+    auto mostSigOpResult = expr.GetMostSigOp().Accept(*this).value();
+    auto leastSigOpResult = expr.GetLeastSigOp().Accept(*this).value();
 
     // Serialize the expression
     return WrapExpression(expr.GetType(), { mostSigOpResult, leastSigOpResult });

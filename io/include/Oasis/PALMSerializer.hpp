@@ -11,6 +11,7 @@
 
 #include "../../src/PALMTypes.hpp"
 #include "Oasis/Visit.hpp"
+#include "Oasis/Expression.hpp"
 
 namespace Oasis {
 
@@ -33,8 +34,11 @@ struct PALMSerializationError {
     enum class PALMSerializationErrorType {
         None,
         InvalidIdentifier,
+        MissingOperand,
+        Other
     } type;
 
+    const Expression* expression;
     std::string message;
 };
 
@@ -85,7 +89,7 @@ private:
     static inline auto OperatorToToken(ExpressionType op, const PALMSerializationOpts& options) -> std::string_view;
     static inline auto PunctuatorToToken(PALMPunctuatorType punctuator, const PALMSerializationOpts& options) -> std::string_view;
 
-    auto WrapExpression(ExpressionType expressionType, const std::vector<RetT>& operands = {}) const -> RetT;
+    auto WrapExpression(ExpressionType expressionType, const std::initializer_list<std::expected<std::string, PALMSerializationError>>& operands = {}) const -> RetT;
 
     auto SerializeExpression(const DerivedFromLeafExpression auto& expr) -> RetT;
     auto SerializeExpression(const DerivedFromUnaryExpression auto& expr) -> RetT;

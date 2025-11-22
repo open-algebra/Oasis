@@ -175,7 +175,7 @@ TEST_CASE("PALM Serialization of Imaginary with 'j' symbol", "[PALM][Serializer]
 
 // --- Variable ---
 // Accepted Identifiers
-TEST_CASE("PALM Serialization of Variable with Single Character", "[PALM][Serializer][Variable]")
+TEST_CASE("PALM Serialization of Variable with Single Character", "[PALM][Serializer][Operator][Variable]")
 {
     const Oasis::Variable variable { "x" };
 
@@ -187,7 +187,7 @@ TEST_CASE("PALM Serialization of Variable with Single Character", "[PALM][Serial
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization of Variable with Multiple Characters", "[PALM][Serializer][Variable]")
+TEST_CASE("PALM Serialization of Variable with Multiple Characters", "[PALM][Serializer][Operator][Variable]")
 {
     const Oasis::Variable variable { "velocity" };
 
@@ -199,7 +199,7 @@ TEST_CASE("PALM Serialization of Variable with Multiple Characters", "[PALM][Ser
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization of Variable with Underscore", "[PALM][Serializer][Variable]")
+TEST_CASE("PALM Serialization of Variable with Underscore", "[PALM][Serializer][Operator][Variable]")
 {
     const Oasis::Variable variable { "x_variable" };
 
@@ -212,7 +212,7 @@ TEST_CASE("PALM Serialization of Variable with Underscore", "[PALM][Serializer][
 }
 
 // Rejected Identifiers
-TEST_CASE("PALM Serialization of Variable with Invalid Identifier", "[PALM][Serializer][Variable]")
+TEST_CASE("PALM Serialization of Variable with Invalid Identifier", "[PALM][Serializer][Operator][Variable]")
 {
     const Oasis::Variable variable { "123invalid" };
 
@@ -221,13 +221,14 @@ TEST_CASE("PALM Serialization of Variable with Invalid Identifier", "[PALM][Seri
     auto error = variable.Accept(serializer).value().error();
     auto expectedError = Oasis::PALMSerializationError {
         .type = Oasis::PALMSerializationError::PALMSerializationErrorType::InvalidIdentifier,
+        .expression = &variable,
         .message = "Invalid identifier: 123invalid"
     };
 
     REQUIRE(expectedError == error);
 }
 
-TEST_CASE("PALM Serialization of Variable with Special Characters", "[PALM][Serializer][Variable]")
+TEST_CASE("PALM Serialization of Variable with Special Characters", "[PALM][Serializer][Operator][Variable]")
 {
     const Oasis::Variable variable { "var$!" };
 
@@ -236,13 +237,14 @@ TEST_CASE("PALM Serialization of Variable with Special Characters", "[PALM][Seri
     auto error = variable.Accept(serializer).value().error();
     auto expectedError = Oasis::PALMSerializationError {
         .type = Oasis::PALMSerializationError::PALMSerializationErrorType::InvalidIdentifier,
+        .expression = &variable,
         .message = "Invalid identifier: var$!"
     };
 
     REQUIRE(expectedError == error);
 }
 
-TEST_CASE("PALM Serialization of Variable with Space", "[PALM][Serializer][Variable]")
+TEST_CASE("PALM Serialization of Variable with Space", "[PALM][Serializer][Operator][Variable]")
 {
     const Oasis::Variable variable { "my var" };
 
@@ -251,13 +253,14 @@ TEST_CASE("PALM Serialization of Variable with Space", "[PALM][Serializer][Varia
     auto error = variable.Accept(serializer).value().error();
     auto expectedError = Oasis::PALMSerializationError {
         .type = Oasis::PALMSerializationError::PALMSerializationErrorType::InvalidIdentifier,
+        .expression = &variable,
         .message = "Invalid identifier: my var"
     };
 
     REQUIRE(expectedError == error);
 }
 
-TEST_CASE("PALM Serialization of Keyword as Variable", "[PALM][Serializer][Variable]")
+TEST_CASE("PALM Serialization of Keyword as Variable", "[PALM][Serializer][Operator][Variable]")
 {
     const Oasis::Variable variable { "real" };
 
@@ -266,30 +269,26 @@ TEST_CASE("PALM Serialization of Keyword as Variable", "[PALM][Serializer][Varia
     auto error = variable.Accept(serializer).value().error();
     auto expectedError = Oasis::PALMSerializationError {
         .type = Oasis::PALMSerializationError::PALMSerializationErrorType::InvalidIdentifier,
+        .expression = &variable,
         .message = "Invalid identifier: real"
     };
 
     REQUIRE(expectedError == error);
 }
 
-// ---
-
-/* -------------
- * Serialization
- * -------------
- */
-
-TEST_CASE("PALM Serialization of Addition", "[PALM][Serializer][Addition]")
+// --- Addition ---
+// Basic Tests
+TEST_CASE("PALM Serialization of Addition Operator Symbol", "[PALM][Serializer][Operator][Addition]")
 {
     const Oasis::Add<> addition {
-        Oasis::Real { 5.0 },
-        Oasis::Real { 3.0 }
+        Oasis::Real { 1.0 },
+        Oasis::Real { 2.0 }
     };
 
     Oasis::PALMSerializer serializer {};
 
     auto result = addition.Accept(serializer).value();
-    std::string expected = "( + ( real 5 ) ( real 3 ) )";
+    std::string expected = "( + ( real 1 ) ( real 2 ) )";
 
     REQUIRE(expected == result);
 }
@@ -311,32 +310,43 @@ TEST_CASE("PALM Serialization of Nested Addition", "[PALM][Serializer][Addition]
     REQUIRE(expected == result);
 }
 
-TEST_CASE("PALM Serialization of Malformed Addition", "[PALM][Serializer][Addition]")
+// Malformed Tests
+TEST_CASE("PALM Serialization of Addition missing Least Significant Operand", "[PALM][Serializer][Addition]")
 {
-    { // Missing least significant operand
-        Oasis::Add<Oasis::Real, Oasis::Expression> addition;
-        addition.SetMostSigOp(Oasis::Real { 5.0 });
+    Oasis::Add<Oasis::Real, Oasis::Expression> addition;
+    addition.SetMostSigOp(Oasis::Real { 5.0 });
 
-        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+    Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
 
-        auto result = addition.Accept(serializer);
+    auto error = addition.Accept(serializer).value().error();
+    auto expectedError = Oasis::PALMSerializationError {
+        .type = Oasis::PALMSerializationError::PALMSerializationErrorType::MissingOperand,
+        .expression = &addition,
+        .message = "Expression missing least significant operand"
+    };
 
-        REQUIRE(!result.has_value());
-        REQUIRE(result.error() == "Expression missing least significant operand");
-    }
-
-    { // Missing most significant operand
-        Oasis::Add<Oasis::Expression, Oasis::Real> addition;
-        addition.SetLeastSigOp(Oasis::Real { 3.0 });
-
-        Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
-
-        auto result = addition.Accept(serializer);
-
-        REQUIRE(!result.has_value());
-        REQUIRE(result.error() == "Expression missing most significant operand");
-    }
+    REQUIRE(expectedError == error);
 }
+
+TEST_CASE("PALM Serialization of Addition missing Most Significant Operand", "[PALM][Serializer][Addition]")
+{ // Missing most significant operand
+    Oasis::Add<Oasis::Expression, Oasis::Real> addition;
+    addition.SetLeastSigOp(Oasis::Real { 3.0 });
+
+    Oasis::PALMSerializer serializer = Oasis::PALMSerializer();
+
+    auto result = addition.Accept(serializer);
+
+    REQUIRE(!result.has_value());
+    REQUIRE(result.error() == "Expression missing most significant operand");
+}
+
+
+
+
+
+
+
 
 TEST_CASE("PALM Serialization of Subtraction", "[PALM][Serializer][Subtraction]")
 {
@@ -1042,713 +1052,713 @@ TEST_CASE("PALM Parsing of Real with various formats", "[PALM][Parser][Real]")
     }
 }
 
-TEST_CASE("PALM Parsing of Malformed Real", "[PALM][Parser][Real]")
-{
-    { // Missing value
-        const auto expr = Oasis::FromPALM("( real )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Punctuator,
-                .lexeme = ")",
-                .charOffset = 7,
-                .tokenIndex = 2,
-                .line = 1,
-                .column = 8,
-            },
-            .type = Oasis::PALMParseErrorType::MissingOperands,
-            .message = "Expected a real number after 'real' token."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Invalid number format
-        const auto expr = Oasis::FromPALM("( real three.point.onefour )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Unknown,
-                .lexeme = "three.point.onefour",
-                .charOffset = 12,
-                .tokenIndex = 3,
-                .line = 1,
-                .column = 13,
-            },
-            .type = Oasis::PALMParseErrorType::InvalidNumberFormat,
-            .message = "Invalid number format for real number: 'three.point.onefour'."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Number out of bounds
-        const auto expr = Oasis::FromPALM("( real 1e5000 )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Unknown,
-                .lexeme = "1e5000",
-                .charOffset = 12,
-                .tokenIndex = 3,
-                .line = 1,
-                .column = 13,
-            },
-            .type = Oasis::PALMParseErrorType::NumberOutOfBounds,
-            .message = "Real number out of bounds: '1e5000'."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Extra tokens
-        const auto expr = Oasis::FromPALM("( real 3.14 extra )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Identifier,
-                .lexeme = "extra",
-                .charOffset = 17,
-                .tokenIndex = 4,
-                .line = 1,
-                .column = 18,
-            },
-            .type = Oasis::PALMParseErrorType::ExtraOperands,
-            .message = "Unexpected token 'extra' when parsing operator 'real'."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-}
-
-TEST_CASE("PALM Parsing of Real with different spacing and padding", "[PALM][Parser][Real]")
-{
-    { // Extra spaces
-        const auto expr = Oasis::FromPALM("(   real    7.89   )");
-
-        REQUIRE(expr.has_value());
-        REQUIRE((*expr)->Is<Oasis::Real>());
-
-        const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
-        REQUIRE(real->GetValue() == 7.89);
-    }
-
-    { // Tab padding
-        const auto expr = Oasis::FromPALM("(\treal\t0.5772\t)");
-
-        REQUIRE(expr.has_value());
-        REQUIRE((*expr)->Is<Oasis::Real>());
-
-        const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
-        REQUIRE(real->GetValue() == 0.5772);
-    }
-
-    { // Newline padding
-        const auto expr = Oasis::FromPALM("(\nreal\n1.618\n)");
-
-        REQUIRE(expr.has_value());
-        REQUIRE((*expr)->Is<Oasis::Real>());
-
-        const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
-        REQUIRE(real->GetValue() == 1.618);
-    }
-}
-
-TEST_CASE("PALM Parsing of Imaginary with different characters", "[PALM][Parser][Imaginary]")
-{
-    { // Test with 'i'
-        const auto expr = Oasis::FromPALM("( i )");
-
-        REQUIRE(expr.has_value());
-        REQUIRE((*expr)->Is<Oasis::Imaginary>());
-    }
-
-    { // Test with 'j'
-        const auto expr = Oasis::FromPALM("( j )");
-
-        REQUIRE(expr.has_value());
-        REQUIRE((*expr)->Is<Oasis::Imaginary>());
-    }
-}
-
-TEST_CASE("PALM Parsing of Malformed Imaginary", "[PALM][Parser][Imaginary]")
-{
-    { // Extra tokens
-        const auto expr = Oasis::FromPALM("( i extra )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Identifier,
-                .lexeme = "extra",
-                .charOffset = 5,
-                .tokenIndex = 2,
-                .line = 1,
-                .column = 6,
-            },
-            .type = Oasis::PALMParseErrorType::ExtraOperands,
-            .message = "Unexpected token 'extra' when parsing operator 'i'."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-}
-
-TEST_CASE("PALM Parsing of Variable with various name formats", "[PALM][Parser][Variable]")
-{
-    { // Single letter
-        const auto expr = Oasis::FromPALM("( var x )");
-
-        REQUIRE(expr.has_value());
-        REQUIRE((*expr)->Is<Oasis::Variable>());
-
-        const auto var = Oasis::RecursiveCast<Oasis::Variable>(**expr);
-        REQUIRE(var->GetName() == "x");
-    }
-
-    { // Multi-letter
-        const auto expr = Oasis::FromPALM("( var myVariable )");
-
-        REQUIRE(expr.has_value());
-        REQUIRE((*expr)->Is<Oasis::Variable>());
-
-        const auto var = Oasis::RecursiveCast<Oasis::Variable>(**expr);
-        REQUIRE(var->GetName() == "myVariable");
-    }
-
-    { // With numbers
-        const auto expr = Oasis::FromPALM("( var var123 )");
-
-        REQUIRE(expr.has_value());
-        REQUIRE((*expr)->Is<Oasis::Variable>());
-
-        const auto var = Oasis::RecursiveCast<Oasis::Variable>(**expr);
-        REQUIRE(var->GetName() == "var123");
-    }
-
-    { // With underscore
-        const auto expr = Oasis::FromPALM("( var var_name )");
-
-        REQUIRE(expr.has_value());
-        REQUIRE((*expr)->Is<Oasis::Variable>());
-
-        const auto var = Oasis::RecursiveCast<Oasis::Variable>(**expr);
-        REQUIRE(var->GetName() == "var_name");
-    }
-}
-
-TEST_CASE("PALM Parsing of Malformed Variable", "[PALM][Parser][Variable]")
-{
-    { // Missing name
-        const auto expr = Oasis::FromPALM("( var )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Punctuator,
-                .lexeme = ")",
-                .charOffset = 6,
-                .tokenIndex = 2,
-                .line = 1,
-                .column = 7,
-            },
-            .type = Oasis::PALMParseErrorType::MissingOperands,
-            .message = "Expected a variable name after 'var' token."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Extra tokens
-        const auto expr = Oasis::FromPALM("( var x extra )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Identifier,
-                .lexeme = "extra",
-                .charOffset = 9,
-                .tokenIndex = 3,
-                .line = 1,
-                .column = 10,
-            },
-            .type = Oasis::PALMParseErrorType::ExtraOperands,
-            .message = "Unexpected token 'extra' when parsing operator 'var'."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Number
-        const auto expr = Oasis::FromPALM("( var 123 )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Number,
-                .lexeme = "123",
-                .charOffset = 6,
-                .tokenIndex = 2,
-                .line = 1,
-                .column = 7,
-            },
-            .type = Oasis::PALMParseErrorType::InvalidVariableName,
-            .message = "Invalid variable name: '123'."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Expression
-        const auto expr = Oasis::FromPALM("( var ( real 5 ) )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Punctuator,
-                .lexeme = "(",
-                .charOffset = 6,
-                .tokenIndex = 2,
-                .line = 1,
-                .column = 7,
-            },
-            .type = Oasis::PALMParseErrorType::InvalidVariableName,
-            .message = "Invalid variable name: '('."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-}
-
-TEST_CASE("PALM Parsing of Addition", "[PALM][Parser][Addition]")
-{
-    { // Simple Addition
-        const Oasis::Add<> expected {
-            Oasis::Real { 5.0 },
-            Oasis::Real { 3.0 },
-        };
-
-        OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-        const auto expr = Oasis::FromPALM("( + ( real 5 ) ( real 3 ) )");
-        REQUIRE(expr.has_value());
-        REQUIRE((*expr)->Equals(expected));
-    }
-
-    { // Nested Addition
-        const Oasis::Add<> expected {
-            Oasis::Real { 5.0 },
-            Oasis::Add {
-                Oasis::Real { 3.0 },
-                Oasis::Real { 2.0 } }
-        };
-
-        OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-        const auto expr = Oasis::FromPALM("( + ( real 5 ) ( + ( real 3 ) ( real 2 ) ) )");
-        REQUIRE(expr.has_value());
-        REQUIRE((*expr)->Equals(expected));
-    }
-}
-
-TEST_CASE("PALM Parsing of Malformed Addition", "[PALM][Parser][Addition]")
-{
-    { // Missing least significant operand
-        const auto expr = Oasis::FromPALM("( + ( real 5 ) )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Punctuator,
-                .lexeme = ")",
-                .charOffset = 15,
-                .tokenIndex = 4,
-                .line = 1,
-                .column = 16,
-            },
-            .type = Oasis::PALMParseErrorType::MissingOperands,
-            .message = "Incomplete '+' expression; expected at least two operands."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Missing most significant operand
-        const auto expr = Oasis::FromPALM("( + )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Punctuator,
-                .lexeme = ")",
-                .charOffset = 4,
-                .tokenIndex = 2,
-                .line = 1,
-                .column = 5,
-            },
-            .type = Oasis::PALMParseErrorType::MissingOperands,
-            .message = "Incomplete '+' expression; expected at least two operands."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Too many operands
-        const auto expr = Oasis::FromPALM("( + ( real 5 ) ( real 3 ) ( real 2 ) )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Identifier,
-                .lexeme = "(",
-                .charOffset = 30,
-                .tokenIndex = 6,
-                .line = 1,
-                .column = 31,
-            },
-            .type = Oasis::PALMParseErrorType::ExtraOperands,
-            .message = "Unexpected token '(' when parsing operator '+'."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Raw number as operand
-        const auto expr = Oasis::FromPALM("( + 5 ( real 3 ) )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Number,
-                .lexeme = "5",
-                .charOffset = 4,
-                .tokenIndex = 2,
-                .line = 1,
-                .column = 5,
-            },
-            .type = Oasis::PALMParseErrorType::InvalidOperand,
-            .message = "Invalid operand '5' for '+' operator; expected an expression."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Raw identifier as operand
-        const auto expr = Oasis::FromPALM("( + ( real 5 ) x )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Identifier,
-                .lexeme = "x",
-                .charOffset = 18,
-                .tokenIndex = 5,
-                .line = 1,
-                .column = 19,
-            },
-            .type = Oasis::PALMParseErrorType::InvalidOperand,
-            .message = "Invalid operand 'x' for '+' operator; expected an expression."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-}
-
-TEST_CASE("PALM Parsing of Malformed Expression", "[PALM][Parser][Expression]")
-{
-    { // Missing opening parenthesis
-        const auto expr = Oasis::FromPALM("+ ( real 5 ) ( real 3 ) )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Punctuator,
-                .lexeme = "+",
-                .charOffset = 0,
-                .tokenIndex = 0,
-                .line = 1,
-                .column = 1,
-            },
-            .type = Oasis::PALMParseErrorType::UnexpectedToken,
-            .message = "Expected '(' at the beginning of an expression."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Extra closing parenthesis
-        const auto expr = Oasis::FromPALM("( + ( real 5 ) ( real 3 ) ))");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Punctuator,
-                .lexeme = ")",
-                .charOffset = 30,
-                .tokenIndex = 7,
-                .line = 1,
-                .column = 31,
-            },
-            .type = Oasis::PALMParseErrorType::UnexpectedToken,
-            .message = "Unexpected token ')' after end of expression."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Missing expression
-        const auto expr = Oasis::FromPALM("");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::EndOfInput,
-                .lexeme = "",
-                .charOffset = 0,
-                .tokenIndex = 0,
-                .line = 1,
-                .column = 1,
-            },
-            .type = Oasis::PALMParseErrorType::UnexpectedEndOfInput,
-            .message = "Expected an expression but found end of input."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // False start of expression
-        const auto expr = Oasis::FromPALM("'");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Unknown,
-                .lexeme = "'",
-                .charOffset = 0,
-                .tokenIndex = 0,
-                .line = 1,
-                .column = 1,
-            },
-            .type = Oasis::PALMParseErrorType::UnexpectedToken,
-            .message = "Expected '(' at the beginning of an expression."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Empty expression
-        const auto expr = Oasis::FromPALM("()");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Punctuator,
-                .lexeme = ")",
-                .charOffset = 1,
-                .tokenIndex = 1,
-                .line = 1,
-                .column = 2,
-            },
-            .type = Oasis::PALMParseErrorType::MissingOperator,
-            .message = "Expected an operator after '('."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Missing operator
-        const auto expr = Oasis::FromPALM("( ( real 5 ) ( real 3 ) )");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::Punctuator,
-                .lexeme = "(",
-                .charOffset = 2,
-                .tokenIndex = 1,
-                .line = 1,
-                .column = 3,
-            },
-            .type = Oasis::PALMParseErrorType::MissingOperator,
-            .message = "Expected an operator after '('."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-
-    { // Missing closing parenthesis
-        const auto expr = Oasis::FromPALM("( + ( real 5 ) ( real 3 ) ");
-
-        auto error = expr.error();
-        auto expectedError = Oasis::PALMParseError {
-            .token = Oasis::PALMToken {
-                .type = Oasis::PALMTokenType::EndOfInput,
-                .lexeme = "",
-                .charOffset = 28,
-                .tokenIndex = 6,
-                .line = 1,
-                .column = 28,
-            },
-            .type = Oasis::PALMParseErrorType::UnexpectedEndOfInput,
-            .message = "Expected ')' at the end of the expression."
-        };
-
-        REQUIRE(!expr);
-        REQUIRE(error == expectedError);
-    }
-}
-
-/* Beware, entering land of to be migrated */
-// TODO: Remove
-TEST_CASE("TEMP RUN PALM")
-{
-    const std::string palmString = "(+(real 5) (* (var x ) \n ( ^ ( real 2 ) ( real 3 ) ) ) )";
-
-    const std::string palmString2 = "( real three.point.onefour )";
-    const auto expr = Oasis::FromPALM(palmString2);
-}
-
-/*
- * Subtraction Operation
- */
-TEST_CASE("Parse Simple Subtraction", "[FromPALM][Parsing]")
-{
-    const Oasis::Subtract expected {
-        Oasis::Real { 5.0 },
-        Oasis::Real { 3.0 }
-    };
-
-    OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-    const auto expr = Oasis::FromPALMOld("( - ( real 5 ) ( real 3 ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
-
-TEST_CASE("Parse Nested Subtraction", "[FromPALM][Parsing]")
-{
-    const Oasis::Subtract expected {
-        Oasis::Real { 5.0 },
-        Oasis::Subtract {
-            Oasis::Real { 3.0 },
-            Oasis::Real { 2.0 } }
-    };
-
-    OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-    const auto expr = Oasis::FromPALMOld("( - ( real 5 ) ( - ( real 3 ) ( real 2 ) ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
-
-TEST_CASE("Parse Subtraction Multiple Elements", "[FromPALM][Parsing]")
-{
-    const Oasis::Subtract<> expected {
-        Oasis::Real { 5.0 },
-        Oasis::Subtract {
-            Oasis::Real { 3.0 },
-            Oasis::Subtract {
-                Oasis::Real { 2.0 },
-                Oasis::Real { 1.0 } } }
-    };
-
-    OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-    const auto expr = Oasis::FromPALMOld("( - ( real 5 ) ( real 3 ) ( real 2 ) ( real 1 ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
-
-TEST_CASE("Parse Malformed Subtraction", "[FromPALM][Parsing]")
-{
-    const auto expr = Oasis::FromPALMOld("( - ( real 5 ) )");
-    REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseErrorOld::IncompleteExpression);
-}
-
-TEST_CASE("Parse Subtraction Invalid Subexpression", "[FromPALM][Parsing]")
-{
-    const auto expr = Oasis::FromPALMOld("( - ( real 5 ) ( + ( real 3 ) ) )");
-    REQUIRE(!expr);
-    REQUIRE(expr.error() == Oasis::ParseErrorOld::IncompleteExpression);
-}
-
-/*
- * Mixed Addition and Subtraction
- */
-TEST_CASE("Parse Mixed Addition and Subtraction", "[FromPALM][Parsing]")
-{
-    const Oasis::Add expected {
-        Oasis::Real { 5.0 },
-        Oasis::Subtract {
-            Oasis::Real { 3.0 },
-            Oasis::Real { 2.0 } }
-    };
-
-    OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-    const auto expr = Oasis::FromPALMOld("( + ( real 5 ) ( - ( real 3 ) ( real 2 ) ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
-
-TEST_CASE("Parse Mixed Addition and Subtraction 2", "[FromPALM][Parsing]")
-{
-    const Oasis::Subtract expected {
-        Oasis::Real { 5.0 },
-        Oasis::Add {
-            Oasis::Real { 3.0 },
-            Oasis::Real { 2.0 } }
-    };
-
-    OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-    const auto expr = Oasis::FromPALMOld("( - ( real 5 ) ( + ( real 3 ) ( real 2 ) ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
-
-TEST_CASE("Parse Mixed Addition and Subtraction Multiple Elements", "[FromPALM][Parsing]")
-{
-    const Oasis::Add<> expected {
-        Oasis::Real { 5.0 },
-        Oasis::Subtract {
-            Oasis::Real { 3.0 },
-            Oasis::Add {
-                Oasis::Real { 2.0 },
-                Oasis::Real { 1.0 } } }
-    };
-
-    OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-    const auto expr = Oasis::FromPALMOld("( + ( real 5 ) ( - ( real 3 ) ( + ( real 2 ) ( real 1 ) ) ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
+// TEST_CASE("PALM Parsing of Malformed Real", "[PALM][Parser][Real]")
+// {
+//     { // Missing value
+//         const auto expr = Oasis::FromPALM("( real )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Punctuator,
+//                 .lexeme = ")",
+//                 .charOffset = 7,
+//                 .tokenIndex = 2,
+//                 .line = 1,
+//                 .column = 8,
+//             },
+//             .type = Oasis::PALMParseErrorType::MissingOperands,
+//             .message = "Expected a real number after 'real' token."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Invalid number format
+//         const auto expr = Oasis::FromPALM("( real three.point.onefour )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Unknown,
+//                 .lexeme = "three.point.onefour",
+//                 .charOffset = 12,
+//                 .tokenIndex = 3,
+//                 .line = 1,
+//                 .column = 13,
+//             },
+//             .type = Oasis::PALMParseErrorType::InvalidNumberFormat,
+//             .message = "Invalid number format for real number: 'three.point.onefour'."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Number out of bounds
+//         const auto expr = Oasis::FromPALM("( real 1e5000 )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Unknown,
+//                 .lexeme = "1e5000",
+//                 .charOffset = 12,
+//                 .tokenIndex = 3,
+//                 .line = 1,
+//                 .column = 13,
+//             },
+//             .type = Oasis::PALMParseErrorType::NumberOutOfBounds,
+//             .message = "Real number out of bounds: '1e5000'."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Extra tokens
+//         const auto expr = Oasis::FromPALM("( real 3.14 extra )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Identifier,
+//                 .lexeme = "extra",
+//                 .charOffset = 17,
+//                 .tokenIndex = 4,
+//                 .line = 1,
+//                 .column = 18,
+//             },
+//             .type = Oasis::PALMParseErrorType::ExtraOperands,
+//             .message = "Unexpected token 'extra' when parsing operator 'real'."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+// }
+//
+// TEST_CASE("PALM Parsing of Real with different spacing and padding", "[PALM][Parser][Real]")
+// {
+//     { // Extra spaces
+//         const auto expr = Oasis::FromPALM("(   real    7.89   )");
+//
+//         REQUIRE(expr.has_value());
+//         REQUIRE((*expr)->Is<Oasis::Real>());
+//
+//         const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
+//         REQUIRE(real->GetValue() == 7.89);
+//     }
+//
+//     { // Tab padding
+//         const auto expr = Oasis::FromPALM("(\treal\t0.5772\t)");
+//
+//         REQUIRE(expr.has_value());
+//         REQUIRE((*expr)->Is<Oasis::Real>());
+//
+//         const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
+//         REQUIRE(real->GetValue() == 0.5772);
+//     }
+//
+//     { // Newline padding
+//         const auto expr = Oasis::FromPALM("(\nreal\n1.618\n)");
+//
+//         REQUIRE(expr.has_value());
+//         REQUIRE((*expr)->Is<Oasis::Real>());
+//
+//         const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
+//         REQUIRE(real->GetValue() == 1.618);
+//     }
+// }
+//
+// TEST_CASE("PALM Parsing of Imaginary with different characters", "[PALM][Parser][Imaginary]")
+// {
+//     { // Test with 'i'
+//         const auto expr = Oasis::FromPALM("( i )");
+//
+//         REQUIRE(expr.has_value());
+//         REQUIRE((*expr)->Is<Oasis::Imaginary>());
+//     }
+//
+//     { // Test with 'j'
+//         const auto expr = Oasis::FromPALM("( j )");
+//
+//         REQUIRE(expr.has_value());
+//         REQUIRE((*expr)->Is<Oasis::Imaginary>());
+//     }
+// }
+//
+// TEST_CASE("PALM Parsing of Malformed Imaginary", "[PALM][Parser][Imaginary]")
+// {
+//     { // Extra tokens
+//         const auto expr = Oasis::FromPALM("( i extra )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Identifier,
+//                 .lexeme = "extra",
+//                 .charOffset = 5,
+//                 .tokenIndex = 2,
+//                 .line = 1,
+//                 .column = 6,
+//             },
+//             .type = Oasis::PALMParseErrorType::ExtraOperands,
+//             .message = "Unexpected token 'extra' when parsing operator 'i'."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+// }
+//
+// TEST_CASE("PALM Parsing of Variable with various name formats", "[PALM][Parser][Variable]")
+// {
+//     { // Single letter
+//         const auto expr = Oasis::FromPALM("( var x )");
+//
+//         REQUIRE(expr.has_value());
+//         REQUIRE((*expr)->Is<Oasis::Variable>());
+//
+//         const auto var = Oasis::RecursiveCast<Oasis::Variable>(**expr);
+//         REQUIRE(var->GetName() == "x");
+//     }
+//
+//     { // Multi-letter
+//         const auto expr = Oasis::FromPALM("( var myVariable )");
+//
+//         REQUIRE(expr.has_value());
+//         REQUIRE((*expr)->Is<Oasis::Variable>());
+//
+//         const auto var = Oasis::RecursiveCast<Oasis::Variable>(**expr);
+//         REQUIRE(var->GetName() == "myVariable");
+//     }
+//
+//     { // With numbers
+//         const auto expr = Oasis::FromPALM("( var var123 )");
+//
+//         REQUIRE(expr.has_value());
+//         REQUIRE((*expr)->Is<Oasis::Variable>());
+//
+//         const auto var = Oasis::RecursiveCast<Oasis::Variable>(**expr);
+//         REQUIRE(var->GetName() == "var123");
+//     }
+//
+//     { // With underscore
+//         const auto expr = Oasis::FromPALM("( var var_name )");
+//
+//         REQUIRE(expr.has_value());
+//         REQUIRE((*expr)->Is<Oasis::Variable>());
+//
+//         const auto var = Oasis::RecursiveCast<Oasis::Variable>(**expr);
+//         REQUIRE(var->GetName() == "var_name");
+//     }
+// }
+//
+// TEST_CASE("PALM Parsing of Malformed Variable", "[PALM][Parser][Variable]")
+// {
+//     { // Missing name
+//         const auto expr = Oasis::FromPALM("( var )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Punctuator,
+//                 .lexeme = ")",
+//                 .charOffset = 6,
+//                 .tokenIndex = 2,
+//                 .line = 1,
+//                 .column = 7,
+//             },
+//             .type = Oasis::PALMParseErrorType::MissingOperands,
+//             .message = "Expected a variable name after 'var' token."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Extra tokens
+//         const auto expr = Oasis::FromPALM("( var x extra )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Identifier,
+//                 .lexeme = "extra",
+//                 .charOffset = 9,
+//                 .tokenIndex = 3,
+//                 .line = 1,
+//                 .column = 10,
+//             },
+//             .type = Oasis::PALMParseErrorType::ExtraOperands,
+//             .message = "Unexpected token 'extra' when parsing operator 'var'."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Number
+//         const auto expr = Oasis::FromPALM("( var 123 )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Number,
+//                 .lexeme = "123",
+//                 .charOffset = 6,
+//                 .tokenIndex = 2,
+//                 .line = 1,
+//                 .column = 7,
+//             },
+//             .type = Oasis::PALMParseErrorType::InvalidVariableName,
+//             .message = "Invalid variable name: '123'."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Expression
+//         const auto expr = Oasis::FromPALM("( var ( real 5 ) )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Punctuator,
+//                 .lexeme = "(",
+//                 .charOffset = 6,
+//                 .tokenIndex = 2,
+//                 .line = 1,
+//                 .column = 7,
+//             },
+//             .type = Oasis::PALMParseErrorType::InvalidVariableName,
+//             .message = "Invalid variable name: '('."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+// }
+//
+// TEST_CASE("PALM Parsing of Addition", "[PALM][Parser][Addition]")
+// {
+//     { // Simple Addition
+//         const Oasis::Add<> expected {
+//             Oasis::Real { 5.0 },
+//             Oasis::Real { 3.0 },
+//         };
+//
+//         OASIS_CAPTURE_WITH_SERIALIZER(expected);
+//
+//         const auto expr = Oasis::FromPALM("( + ( real 5 ) ( real 3 ) )");
+//         REQUIRE(expr.has_value());
+//         REQUIRE((*expr)->Equals(expected));
+//     }
+//
+//     { // Nested Addition
+//         const Oasis::Add<> expected {
+//             Oasis::Real { 5.0 },
+//             Oasis::Add {
+//                 Oasis::Real { 3.0 },
+//                 Oasis::Real { 2.0 } }
+//         };
+//
+//         OASIS_CAPTURE_WITH_SERIALIZER(expected);
+//
+//         const auto expr = Oasis::FromPALM("( + ( real 5 ) ( + ( real 3 ) ( real 2 ) ) )");
+//         REQUIRE(expr.has_value());
+//         REQUIRE((*expr)->Equals(expected));
+//     }
+// }
+//
+// TEST_CASE("PALM Parsing of Malformed Addition", "[PALM][Parser][Addition]")
+// {
+//     { // Missing least significant operand
+//         const auto expr = Oasis::FromPALM("( + ( real 5 ) )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Punctuator,
+//                 .lexeme = ")",
+//                 .charOffset = 15,
+//                 .tokenIndex = 4,
+//                 .line = 1,
+//                 .column = 16,
+//             },
+//             .type = Oasis::PALMParseErrorType::MissingOperands,
+//             .message = "Incomplete '+' expression; expected at least two operands."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Missing most significant operand
+//         const auto expr = Oasis::FromPALM("( + )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Punctuator,
+//                 .lexeme = ")",
+//                 .charOffset = 4,
+//                 .tokenIndex = 2,
+//                 .line = 1,
+//                 .column = 5,
+//             },
+//             .type = Oasis::PALMParseErrorType::MissingOperands,
+//             .message = "Incomplete '+' expression; expected at least two operands."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Too many operands
+//         const auto expr = Oasis::FromPALM("( + ( real 5 ) ( real 3 ) ( real 2 ) )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Identifier,
+//                 .lexeme = "(",
+//                 .charOffset = 30,
+//                 .tokenIndex = 6,
+//                 .line = 1,
+//                 .column = 31,
+//             },
+//             .type = Oasis::PALMParseErrorType::ExtraOperands,
+//             .message = "Unexpected token '(' when parsing operator '+'."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Raw number as operand
+//         const auto expr = Oasis::FromPALM("( + 5 ( real 3 ) )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Number,
+//                 .lexeme = "5",
+//                 .charOffset = 4,
+//                 .tokenIndex = 2,
+//                 .line = 1,
+//                 .column = 5,
+//             },
+//             .type = Oasis::PALMParseErrorType::InvalidOperand,
+//             .message = "Invalid operand '5' for '+' operator; expected an expression."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Raw identifier as operand
+//         const auto expr = Oasis::FromPALM("( + ( real 5 ) x )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Identifier,
+//                 .lexeme = "x",
+//                 .charOffset = 18,
+//                 .tokenIndex = 5,
+//                 .line = 1,
+//                 .column = 19,
+//             },
+//             .type = Oasis::PALMParseErrorType::InvalidOperand,
+//             .message = "Invalid operand 'x' for '+' operator; expected an expression."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+// }
+//
+// TEST_CASE("PALM Parsing of Malformed Expression", "[PALM][Parser][Expression]")
+// {
+//     { // Missing opening parenthesis
+//         const auto expr = Oasis::FromPALM("+ ( real 5 ) ( real 3 ) )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Punctuator,
+//                 .lexeme = "+",
+//                 .charOffset = 0,
+//                 .tokenIndex = 0,
+//                 .line = 1,
+//                 .column = 1,
+//             },
+//             .type = Oasis::PALMParseErrorType::UnexpectedToken,
+//             .message = "Expected '(' at the beginning of an expression."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Extra closing parenthesis
+//         const auto expr = Oasis::FromPALM("( + ( real 5 ) ( real 3 ) ))");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Punctuator,
+//                 .lexeme = ")",
+//                 .charOffset = 30,
+//                 .tokenIndex = 7,
+//                 .line = 1,
+//                 .column = 31,
+//             },
+//             .type = Oasis::PALMParseErrorType::UnexpectedToken,
+//             .message = "Unexpected token ')' after end of expression."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Missing expression
+//         const auto expr = Oasis::FromPALM("");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::EndOfInput,
+//                 .lexeme = "",
+//                 .charOffset = 0,
+//                 .tokenIndex = 0,
+//                 .line = 1,
+//                 .column = 1,
+//             },
+//             .type = Oasis::PALMParseErrorType::UnexpectedEndOfInput,
+//             .message = "Expected an expression but found end of input."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // False start of expression
+//         const auto expr = Oasis::FromPALM("'");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Unknown,
+//                 .lexeme = "'",
+//                 .charOffset = 0,
+//                 .tokenIndex = 0,
+//                 .line = 1,
+//                 .column = 1,
+//             },
+//             .type = Oasis::PALMParseErrorType::UnexpectedToken,
+//             .message = "Expected '(' at the beginning of an expression."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Empty expression
+//         const auto expr = Oasis::FromPALM("()");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Punctuator,
+//                 .lexeme = ")",
+//                 .charOffset = 1,
+//                 .tokenIndex = 1,
+//                 .line = 1,
+//                 .column = 2,
+//             },
+//             .type = Oasis::PALMParseErrorType::MissingOperator,
+//             .message = "Expected an operator after '('."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Missing operator
+//         const auto expr = Oasis::FromPALM("( ( real 5 ) ( real 3 ) )");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::Punctuator,
+//                 .lexeme = "(",
+//                 .charOffset = 2,
+//                 .tokenIndex = 1,
+//                 .line = 1,
+//                 .column = 3,
+//             },
+//             .type = Oasis::PALMParseErrorType::MissingOperator,
+//             .message = "Expected an operator after '('."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+//
+//     { // Missing closing parenthesis
+//         const auto expr = Oasis::FromPALM("( + ( real 5 ) ( real 3 ) ");
+//
+//         auto error = expr.error();
+//         auto expectedError = Oasis::PALMParseError {
+//             .token = Oasis::PALMToken {
+//                 .type = Oasis::PALMTokenType::EndOfInput,
+//                 .lexeme = "",
+//                 .charOffset = 28,
+//                 .tokenIndex = 6,
+//                 .line = 1,
+//                 .column = 28,
+//             },
+//             .type = Oasis::PALMParseErrorType::UnexpectedEndOfInput,
+//             .message = "Expected ')' at the end of the expression."
+//         };
+//
+//         REQUIRE(!expr);
+//         REQUIRE(error == expectedError);
+//     }
+// }
+//
+// /* Beware, entering land of to be migrated */
+// // TODO: Remove
+// TEST_CASE("TEMP RUN PALM")
+// {
+//     const std::string palmString = "(+(real 5) (* (var x ) \n ( ^ ( real 2 ) ( real 3 ) ) ) )";
+//
+//     const std::string palmString2 = "( real three.point.onefour )";
+//     const auto expr = Oasis::FromPALM(palmString2);
+// }
+//
+// /*
+//  * Subtraction Operation
+//  */
+// TEST_CASE("Parse Simple Subtraction", "[FromPALM][Parsing]")
+// {
+//     const Oasis::Subtract expected {
+//         Oasis::Real { 5.0 },
+//         Oasis::Real { 3.0 }
+//     };
+//
+//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
+//
+//     const auto expr = Oasis::FromPALMOld("( - ( real 5 ) ( real 3 ) )");
+//     REQUIRE(expr.has_value());
+//     REQUIRE((*expr)->Equals(expected));
+// }
+//
+// TEST_CASE("Parse Nested Subtraction", "[FromPALM][Parsing]")
+// {
+//     const Oasis::Subtract expected {
+//         Oasis::Real { 5.0 },
+//         Oasis::Subtract {
+//             Oasis::Real { 3.0 },
+//             Oasis::Real { 2.0 } }
+//     };
+//
+//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
+//
+//     const auto expr = Oasis::FromPALMOld("( - ( real 5 ) ( - ( real 3 ) ( real 2 ) ) )");
+//     REQUIRE(expr.has_value());
+//     REQUIRE((*expr)->Equals(expected));
+// }
+//
+// TEST_CASE("Parse Subtraction Multiple Elements", "[FromPALM][Parsing]")
+// {
+//     const Oasis::Subtract<> expected {
+//         Oasis::Real { 5.0 },
+//         Oasis::Subtract {
+//             Oasis::Real { 3.0 },
+//             Oasis::Subtract {
+//                 Oasis::Real { 2.0 },
+//                 Oasis::Real { 1.0 } } }
+//     };
+//
+//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
+//
+//     const auto expr = Oasis::FromPALMOld("( - ( real 5 ) ( real 3 ) ( real 2 ) ( real 1 ) )");
+//     REQUIRE(expr.has_value());
+//     REQUIRE((*expr)->Equals(expected));
+// }
+//
+// TEST_CASE("Parse Malformed Subtraction", "[FromPALM][Parsing]")
+// {
+//     const auto expr = Oasis::FromPALMOld("( - ( real 5 ) )");
+//     REQUIRE(!expr);
+//     REQUIRE(expr.error() == Oasis::ParseErrorOld::IncompleteExpression);
+// }
+//
+// TEST_CASE("Parse Subtraction Invalid Subexpression", "[FromPALM][Parsing]")
+// {
+//     const auto expr = Oasis::FromPALMOld("( - ( real 5 ) ( + ( real 3 ) ) )");
+//     REQUIRE(!expr);
+//     REQUIRE(expr.error() == Oasis::ParseErrorOld::IncompleteExpression);
+// }
+//
+// /*
+//  * Mixed Addition and Subtraction
+//  */
+// TEST_CASE("Parse Mixed Addition and Subtraction", "[FromPALM][Parsing]")
+// {
+//     const Oasis::Add expected {
+//         Oasis::Real { 5.0 },
+//         Oasis::Subtract {
+//             Oasis::Real { 3.0 },
+//             Oasis::Real { 2.0 } }
+//     };
+//
+//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
+//
+//     const auto expr = Oasis::FromPALMOld("( + ( real 5 ) ( - ( real 3 ) ( real 2 ) ) )");
+//     REQUIRE(expr.has_value());
+//     REQUIRE((*expr)->Equals(expected));
+// }
+//
+// TEST_CASE("Parse Mixed Addition and Subtraction 2", "[FromPALM][Parsing]")
+// {
+//     const Oasis::Subtract expected {
+//         Oasis::Real { 5.0 },
+//         Oasis::Add {
+//             Oasis::Real { 3.0 },
+//             Oasis::Real { 2.0 } }
+//     };
+//
+//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
+//
+//     const auto expr = Oasis::FromPALMOld("( - ( real 5 ) ( + ( real 3 ) ( real 2 ) ) )");
+//     REQUIRE(expr.has_value());
+//     REQUIRE((*expr)->Equals(expected));
+// }
+//
+// TEST_CASE("Parse Mixed Addition and Subtraction Multiple Elements", "[FromPALM][Parsing]")
+// {
+//     const Oasis::Add<> expected {
+//         Oasis::Real { 5.0 },
+//         Oasis::Subtract {
+//             Oasis::Real { 3.0 },
+//             Oasis::Add {
+//                 Oasis::Real { 2.0 },
+//                 Oasis::Real { 1.0 } } }
+//     };
+//
+//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
+//
+//     const auto expr = Oasis::FromPALMOld("( + ( real 5 ) ( - ( real 3 ) ( + ( real 2 ) ( real 1 ) ) ) )");
+//     REQUIRE(expr.has_value());
+//     REQUIRE((*expr)->Equals(expected));
+// }
 
 /*
  * Multiplication Operation

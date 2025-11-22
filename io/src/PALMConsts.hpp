@@ -13,6 +13,7 @@
 namespace Oasis {
 /** A mapping from PALM operator tokens to their corresponding ExpressionType. */
 inline const PALMOperatorBimap kPALMOperatorBimap = ::boost::assign::list_of<PALMOperatorBimap::relation>
+    ("undefined", ExpressionType::None)
     ("real", ExpressionType::Real)
     ("i", ExpressionType::Imaginary)
     ("j", ExpressionType::Imaginary)
