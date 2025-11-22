@@ -89,7 +89,8 @@ private:
     static inline auto OperatorToToken(ExpressionType op, const PALMSerializationOpts& options) -> std::string_view;
     static inline auto PunctuatorToToken(PALMPunctuatorType punctuator, const PALMSerializationOpts& options) -> std::string_view;
 
-    auto WrapExpression(ExpressionType expressionType, const std::initializer_list<std::expected<std::string, PALMSerializationError>>& operands = {}) const -> RetT;
+    [[nodiscard]] auto WrapExpression(ExpressionType expressionType, const std::initializer_list<std::expected<std::string, PALMSerializationError>>& operands = {}) const -> RetT;
+    static auto IsValidIdentifier(const std::string& string) -> bool;
 
     auto SerializeExpression(const DerivedFromLeafExpression auto& expr) -> RetT;
     auto SerializeExpression(const DerivedFromUnaryExpression auto& expr) -> RetT;

@@ -25,6 +25,8 @@
 #include "Oasis/Undefined.hpp"
 #include "Oasis/Variable.hpp"
 
+#include <regex>
+
 namespace Oasis {
 
 bool operator==(const PALMSerializationError& lhs, const PALMSerializationError& rhs)
@@ -34,6 +36,20 @@ bool operator==(const PALMSerializationError& lhs, const PALMSerializationError&
 
 auto PALMSerializer::TypedVisit(const Real& real) -> RetT
 {
+    // Handle special numeric values
+    if (std::isnan(real.GetValue())) { // NaN check
+        return WrapExpression(ExpressionType::Real, { std::string { kPALMNaN } });
+    }
+
+    if (std::isinf(real.GetValue())) { // Infinity check
+        if (real.GetValue() > 0) { // Positive infinity
+            return WrapExpression(ExpressionType::Real, { std::string { kPALMInfinity } });
+        }
+        // Negative infinity
+        return WrapExpression(ExpressionType::Real, { std::string { kPALMNegativeInfinity } });
+    }
+
+    // Format the real number with the specified number of decimal places
     auto realString = std::format("{:.{}}", real.GetValue(), palmOptions.numPlaces + 1);
     return WrapExpression(ExpressionType::Real, { realString });
 }
@@ -45,6 +61,15 @@ auto PALMSerializer::TypedVisit(const Imaginary& imaginary) -> RetT
 
 auto PALMSerializer::TypedVisit(const Variable& variable) -> RetT
 {
+    // Validate the variable name
+    if (!IsValidIdentifier(variable.GetName())) {
+        return std::unexpected { PALMSerializationError {
+            .type = PALMSerializationError::PALMSerializationErrorType::InvalidIdentifier,
+            .expression = &variable,
+            .message = "Variable name '" + variable.GetName() + "' is not a valid identifier" } };
+    }
+
+    // Serialize the valid variable
     return WrapExpression(ExpressionType::Variable, { variable.GetName() });
 }
 
@@ -200,6 +225,28 @@ auto PALMSerializer::WrapExpression(const ExpressionType expressionType, const s
 
     // Return the serialized string
     return serialized.str();
+}
+
+/** Check if a string is a valid identifier.
+ *
+ * @param string The string to check.
+ * @return True if the string is a valid identifier, false otherwise.
+ */
+auto PALMSerializer::IsValidIdentifier(const std::string& string) -> bool
+{
+    // Empty string is not a valid identifier
+    if (string.empty()) {
+        return false;
+    }
+
+    // Reserved keywords are not valid identifiers
+    if (kPALMOperatorBimap.left.count(string) > 0) {
+        return false;
+    }
+
+    // Check against the identifier regex
+    static const std::regex identifierRegex { kPALMIdentifierRegex.data() };
+    return std::regex_match(string, identifierRegex);
 }
 
 /** Serialize a leaf expression.

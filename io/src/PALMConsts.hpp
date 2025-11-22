@@ -35,8 +35,15 @@ inline const PALMOperatorBimap kPALMOperatorBimap = ::boost::assign::list_of<PAL
 /** Regular expression for valid PALM identifiers. */
 static constexpr std::string_view kPALMIdentifierRegex = R"(^[a-zA-Z_][a-zA-Z0-9_]*$)";
 
+/** PALM representations for special numeric values. */
+inline constexpr std::string_view kPALMNaN = "NaN";
+inline constexpr std::string_view kPALMInfinity = "Infinity";
+inline constexpr std::string_view kPALMNegativeInfinity = "-Infinity";
+
 /** Regular expression for valid PALM numbers. */
-static constexpr std::string_view kPALMNumberRegex = R"(^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$)";
+// In `io/src/PALMConsts.hpp`
+static constexpr std::string_view kPALMNumberRegex =
+    R"(^([+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?|[+-]?(NaN|Infinity))$)";
 
 /** A mapping from PALM punctuator tokens to their corresponding PALMPunctuatorType. */
 inline const PALMPunctuatorBimap kPALMPunctuatorBimap = ::boost::assign::list_of<PALMPunctuatorBimap::relation>
