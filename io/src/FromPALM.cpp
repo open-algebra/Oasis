@@ -262,7 +262,7 @@ bool operator==(const PALMParseError& lhs, const PALMParseError& rhs)
     return lhs.token == rhs.token && lhs.type == rhs.type && lhs.message == rhs.message;
 }
 // PALM Grammar Start -> Expression $$
-auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
+auto FromPALMOld(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>
 {
     // Tokenize the input string
     auto tokens = TokenizePALM(palmString);
@@ -280,7 +280,7 @@ auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Ex
     // Parsing failed
     return std::unexpected { ParseErrorOld::UnexpectedToken };
 }
-auto FromPALMNew(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, PALMParseError>
+auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, PALMParseError>
 {
     // String to input stream
     auto inputStream = std::istringstream(palmString);

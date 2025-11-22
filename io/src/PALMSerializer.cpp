@@ -26,6 +26,11 @@
 
 namespace Oasis {
 
+bool operator==(const PALMSerializationError& lhs, const PALMSerializationError& rhs)
+{
+    return lhs.type == rhs.type && lhs.message == rhs.message;
+}
+
 auto PALMSerializer::TypedVisit(const Real& real) -> RetT
 {
     auto realString = std::format("{:.{}}", real.GetValue(), palmOptions.numPlaces + 1);

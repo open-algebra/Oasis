@@ -25,19 +25,23 @@ enum class ParseErrorOld {
     Other // fallback
 };
 
-/* Types of parse errors. */
-enum struct PALMParseErrorType {
-    None,
-    InvalidNumberFormat,
-    LexicalError,
-    MissingOperands,
-    ExtraOperands,
-};
-
 /* Represents a parse error in PALM parsing. */
 struct PALMParseError {
+    enum class PALMParseErrorType {
+        None,
+        InvalidNumberFormat,
+        InvalidVariableName,
+        InvalidOperand,
+        NumberOutOfBounds,
+        LexicalError,
+        MissingOperator,
+        MissingOperands,
+        ExtraOperands,
+        UnexpectedToken,
+        UnexpectedEndOfInput,
+    } type;
+
     PALMToken token;
-    PALMParseErrorType type;
     std::string message;
 };
 
@@ -54,9 +58,9 @@ bool operator==(const PALMParseError& lhs, const PALMParseError& rhs);
  * @param palmString The PALM string to parse.
  * @return The parsed expression, or nullptr if the string could not be parsed.
  */
-auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
+auto FromPALMOld(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, ParseErrorOld>;
 
-auto FromPALMNew(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, PALMParseError>;
+auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Expression>, PALMParseError>;
 }
 
 #endif // OASIS_FROMPALM_HPP

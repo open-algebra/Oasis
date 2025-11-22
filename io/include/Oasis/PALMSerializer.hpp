@@ -29,10 +29,27 @@ struct PALMSerializationOpts {
     std::string expressionPadding = " ";
 };
 
+struct PALMSerializationError {
+    enum class PALMSerializationErrorType {
+        None,
+        InvalidIdentifier,
+    } type;
+
+    std::string message;
+};
+
+/** Equality operator for PALMSerializationError.
+ *
+ * @param lhs The left-hand side PALMSerializationError.
+ * @param rhs The right-hand side PALMSerializationError.
+ * @return True if the two errors are equal, false otherwise.
+ */
+bool operator==(const PALMSerializationError& lhs, const PALMSerializationError& rhs);
+
 inline std::string_view PALM_UNEXPECTED_NO_MOST_SIG_OP = "Expression missing most significant operand";
 inline std::string_view PALM_UNEXPECTED_NO_LEAST_SIG_OP = "Expression missing least significant operand";
 
-class PALMSerializer final : public TypedVisitor<std::expected<std::string, std::string>> {
+class PALMSerializer final : public TypedVisitor<std::expected<std::string, PALMSerializationError>> {
 public:
     PALMSerializer()
         : PALMSerializer(PALMSerializationOpts {})
