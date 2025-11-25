@@ -35,10 +35,12 @@ struct PALMParseError {
         NumberOutOfBounds,
         LexicalError,
         MissingOperator,
-        MissingOperands,
+        MissingOperand,
         ExtraOperands,
         UnexpectedToken,
         UnexpectedEndOfInput,
+        MissingOpeningParenthesis,
+        MissingClosingParenthesis,
     } type;
 
     PALMToken token;
