@@ -294,6 +294,10 @@ auto FromPALM(const std::string& palmString) -> std::expected<std::unique_ptr<Ex
         token = tokenizer.lookahead();
     }
 
+    if (auto oldResult = FromPALMOld(palmString)) {
+        return std::move(*oldResult);
+    }
+
     return std::unexpected { PALMParseError {
         .type = PALMParseError::PALMParseErrorType::None,
         .token = token,

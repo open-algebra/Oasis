@@ -31,6 +31,7 @@ struct PALMParseError {
         None,
         InvalidNumberFormat,
         InvalidVariableName,
+        InvalidOperator,
         InvalidOperand,
         NumberOutOfBounds,
         LexicalError,

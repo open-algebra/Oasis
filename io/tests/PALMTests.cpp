@@ -26,6 +26,7 @@
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Undefined.hpp"
 #include "Oasis/Variable.hpp"
+#include "catch2/generators/catch_generators.hpp"
 
 // =====================
 // Test Helper Functions
@@ -124,136 +125,6 @@ void requireMissingMostSignificantOperandSerializationError(
     };
 
     requireFailedSerialization(expr, expectedError, opts);
-}
-
-// ---------------
-// Parsing Helpers
-// ---------------
-void requireSuccessfulParsing(
-    const std::string& palm,
-    const Oasis::Expression& expectedExpr)
-{
-    const auto expr = Oasis::FromPALM(palm);
-
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expectedExpr));
-}
-
-void requireFailedParsing(
-    const std::string& palm,
-    const Oasis::PALMParseError& expectedError)
-{
-    const auto expr = Oasis::FromPALM(palm);
-
-    REQUIRE_FALSE(expr.has_value());
-
-    const auto& error = expr.error();
-    CAPTURE(error.message, expectedError.message);
-    REQUIRE(error == expectedError);
-}
-
-void requireExtraOperandParsingError(
-    const std::string& palm,
-    const Oasis::PALMToken& errorToken)
-{
-    const auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::ExtraOperands,
-        .token = errorToken,
-        .message = "Unexpected token '" + errorToken.lexeme + "' found after parsing expression"
-    };
-
-    requireFailedParsing(palm, expectedError);
-}
-
-void requireMissingOperandParsingError(
-    const std::string& palm,
-    const Oasis::PALMToken& errorToken)
-{
-    const auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOperand,
-        .token = errorToken,
-        .message = "Expected operand after token '" + errorToken.lexeme + "'"
-    };
-
-    requireFailedParsing(palm, expectedError);
-}
-
-void requireInvalidNumberFormatParsingError(
-    const std::string& palm,
-    const Oasis::PALMToken& errorToken)
-{
-    const auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidNumberFormat,
-        .token = errorToken,
-        .message = "Invalid number format: '" + errorToken.lexeme + "'"
-    };
-
-    requireFailedParsing(palm, expectedError);
-}
-
-void requireNumberOutOfBoundsParsingError(
-    const std::string& palm,
-    const Oasis::PALMToken& errorToken)
-{
-    const auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::NumberOutOfBounds,
-        .token = errorToken,
-        .message = "Number out of bounds: '" + errorToken.lexeme + "'"
-    };
-
-    requireFailedParsing(palm, expectedError);
-}
-
-void requireInvalidVariableNameParsingError(
-    const std::string& palm,
-    const Oasis::PALMToken& errorToken)
-{
-    const auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidVariableName,
-        .token = errorToken,
-        .message = "Invalid identifier: '" + errorToken.lexeme + "'"
-    };
-
-    requireFailedParsing(palm, expectedError);
-}
-
-void requireInvalidOperandParsingError(
-    const std::string& palm,
-    const Oasis::PALMToken& errorToken)
-{
-    const auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperand,
-        .token = errorToken,
-        .message = "Invalid operand: '" + errorToken.lexeme + "'. Expected an expression."
-    };
-
-    requireFailedParsing(palm, expectedError);
-}
-
-void requireMissingOpeningParenthesisParsingError(
-    const std::string& palm,
-    const Oasis::PALMToken& errorToken)
-{
-    const auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOpeningParenthesis,
-        .token = errorToken,
-        .message = "Expected '(' before expression starting with token '" + errorToken.lexeme + "'"
-    };
-
-    requireFailedParsing(palm, expectedError);
-}
-
-void requireMissingClosingParenthesisParsingError(
-    const std::string& palm,
-    const Oasis::PALMToken& errorToken)
-{
-    const auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::MissingClosingParenthesis,
-        .token = errorToken,
-        .message = "Expected ')' to close expression starting with token '" + errorToken.lexeme + "'"
-    };
-
-    requireFailedParsing(palm, expectedError);
 }
 
 // ========================
@@ -451,7 +322,7 @@ TEST_CASE("PALM Serialization of Keyword as Variable", "[PALM][Serializer][Opera
 }
 
 // --- Addition ---
-// Basic Tests
+// --- Basic Tests ---
 TEST_CASE("PALM Serialization of Addition Operator Symbol", "[PALM][Serializer][Operator][Addition]")
 {
     const Oasis::Add<> addition {
@@ -476,7 +347,7 @@ TEST_CASE("PALM Serialization of Nested Addition", "[PALM][Serializer][Addition]
     requireSuccessfulSerialization(addition, expected);
 }
 
-// Malformed Tests
+// --- Malformed Tests ---
 TEST_CASE("PALM Serialization of Addition Missing Least Significant Operand", "[PALM][Serializer][Addition]")
 {
     Oasis::Add<Oasis::Real, Oasis::Expression> addition;
@@ -494,7 +365,7 @@ TEST_CASE("PALM Serialization of Addition Missing Most Significant Operand", "[P
 }
 
 // --- Subtraction ---
-// Basic Tests
+// --- Basic Tests ---
 TEST_CASE("PALM Serialization of Subtraction", "[PALM][Serializer][Subtraction]")
 {
     const Oasis::Subtract<> subtraction {
@@ -519,7 +390,7 @@ TEST_CASE("PALM Serialization of Nested Subtraction", "[PALM][Serializer][Subtra
     requireSuccessfulSerialization(subtraction, expected);
 }
 
-// Malformed Tests
+// --- Malformed Tests ---
 TEST_CASE("PALM Serialization of Subtraction Missing Least Significant Operand", "[PALM][Serializer][Subtraction]")
 {
     Oasis::Subtract<Oasis::Real, Oasis::Expression> subtraction;
@@ -537,7 +408,7 @@ TEST_CASE("PALM Serialization of Subtraction Missing Most Significant Operand", 
 }
 
 // --- Multiplication ---
-// Basic Tests
+// --- Basic Tests ---
 TEST_CASE("PALM Serialization of Multiplication", "[PALM][Serializer][Multiplication]")
 {
     const Oasis::Multiply<> multiplication {
@@ -562,7 +433,7 @@ TEST_CASE("PALM Serialization of Nested Multiplication", "[PALM][Serializer][Mul
     requireSuccessfulSerialization(multiplication, expected);
 }
 
-// Malformed Tests
+// --- Malformed Tests ---
 TEST_CASE("PALM Serialization of Multiplication Missing Least Significant Operand", "[PALM][Serializer][Multiplication]")
 {
     Oasis::Multiply<Oasis::Real, Oasis::Expression> multiplication;
@@ -580,7 +451,7 @@ TEST_CASE("PALM Serialization of Multiplication Missing Most Significant Operand
 }
 
 // --- Division ---
-// Basic Tests
+// --- Basic Tests ---
 TEST_CASE("PALM Serialization of Division", "[PALM][Serializer][Division]")
 {
     const Oasis::Divide<> division {
@@ -605,7 +476,7 @@ TEST_CASE("PALM Serialization of Nested Division", "[PALM][Serializer][Division]
     requireSuccessfulSerialization(division, expected);
 }
 
-// Malformed Tests
+// --- Malformed Tests ---
 TEST_CASE("PALM Serialization of Division Missing Least Significant Operand", "[PALM][Serializer][Division]")
 {
     Oasis::Divide<Oasis::Real, Oasis::Expression> division;
@@ -623,7 +494,7 @@ TEST_CASE("PALM Serialization of Division Missing Most Significant Operand", "[P
 }
 
 // --- Exponentiation ---
-// Basic Tests
+// --- Basic Tests ---
 TEST_CASE("PALM Serialization of Exponentiation", "[PALM][Serializer][Exponentiation]")
 {
     const Oasis::Exponent<> exponent {
@@ -648,7 +519,7 @@ TEST_CASE("PALM Serialization of Nested Exponentiation", "[PALM][Serializer][Exp
     requireSuccessfulSerialization(exponent, expected);
 }
 
-// Malformed Tests
+// --- Malformed Tests ---
 TEST_CASE("PALM Serialization of Exponentiation Missing Least Significant Operand", "[PALM][Serializer][Exponentiation]")
 {
     Oasis::Exponent<Oasis::Real, Oasis::Expression> exponent;
@@ -666,7 +537,7 @@ TEST_CASE("PALM Serialization of Exponentiation Missing Most Significant Operand
 }
 
 // --- Logarithm ---
-// Basic Tests
+// --- Basic Tests ---
 TEST_CASE("PALM Serialization of Logarithm", "[PALM][Serializer][Logarithm]")
 {
     const Oasis::Log<> log {
@@ -691,7 +562,7 @@ TEST_CASE("PALM Serialization of Nested Logarithm", "[PALM][Serializer][Logarith
     requireSuccessfulSerialization(log, expected);
 }
 
-// Malformed Tests
+// --- Malformed Tests ---
 TEST_CASE("PALM Serialization of Logarithm Missing Least Significant Operand", "[PALM][Serializer][Logarithm]")
 {
     Oasis::Log<Oasis::Real, Oasis::Expression> log;
@@ -709,7 +580,7 @@ TEST_CASE("PALM Serialization of Logarithm Missing Most Significant Operand", "[
 }
 
 // --- Negation ---
-// Basic Tests
+// --- Basic Tests ---
 TEST_CASE("PALM Serialization of Negation", "[PALM][Serializer][Negation]")
 {
     const Oasis::Negate<> negate {
@@ -731,7 +602,7 @@ TEST_CASE("PALM Serialization of Nested Negation", "[PALM][Serializer][Negation]
     requireSuccessfulSerialization(negate, expected);
 }
 
-// Malformed Tests
+// --- Malformed Tests ---
 TEST_CASE("PALM Serialization of Negation Missing Operand", "[PALM][Serializer][Negation]")
 {
     const Oasis::Negate<> negate;
@@ -740,7 +611,7 @@ TEST_CASE("PALM Serialization of Negation Missing Operand", "[PALM][Serializer][
 }
 
 // --- Derivative ---
-// Basic Tests
+// --- Basic Tests ---
 TEST_CASE("PALM Serialization of Derivative", "[PALM][Serializer][Derivative]")
 {
     const Oasis::Derivative<> derivative {
@@ -765,7 +636,7 @@ TEST_CASE("PALM Serialization of Nested Derivative", "[PALM][Serializer][Derivat
     requireSuccessfulSerialization(derivative, expected);
 }
 
-// Malformed Tests
+// --- Malformed Tests ---
 TEST_CASE("PALM Serialization of Derivative Missing Least Significant Operand", "[PALM][Serializer][Derivative]")
 {
     Oasis::Derivative<Oasis::Real, Oasis::Expression> derivative;
@@ -783,7 +654,7 @@ TEST_CASE("PALM Serialization of Derivative Missing Most Significant Operand", "
 }
 
 // --- Integral ---
-// Basic Tests
+// --- Basic Tests ---
 TEST_CASE("PALM Serialization of Integral", "[PALM][Serializer][Integral]")
 {
     const Oasis::Integral<> integral {
@@ -808,7 +679,7 @@ TEST_CASE("PALM Serialization of Nested Integral", "[PALM][Serializer][Integral]
     requireSuccessfulSerialization(integral, expected);
 }
 
-// Malformed Tests
+// --- Malformed Tests ---
 TEST_CASE("PALM Serialization of Integral Missing Least Significant Operand", "[PALM][Serializer][Integral]")
 {
     Oasis::Integral<Oasis::Variable, Oasis::Expression> integral;
@@ -846,7 +717,7 @@ TEST_CASE("PALM Serialization of Pi", "[PALM][Serializer][Pi]")
 }
 
 // --- Magnitude ---
-// Basic Tests
+// --- Basic Tests ---
 TEST_CASE("PALM Serialization of Magnitude", "[PALM][Serializer][Magnitude]")
 {
     const Oasis::Magnitude magnitude {
@@ -868,7 +739,7 @@ TEST_CASE("PALM Serialization of Nested Magnitude", "[PALM][Serializer][Magnitud
     requireSuccessfulSerialization(magnitude, expected);
 }
 
-// Malformed Tests
+// --- Malformed Tests ---
 TEST_CASE("PALM Serialization of Magnitude Missing Operand", "[PALM][Serializer][Magnitude]")
 {
     const Oasis::Magnitude<Oasis::Expression> magnitude;
@@ -1037,30 +908,263 @@ TEST_CASE("PALM Serialization with Percent Separator", "[PALM][Serializer][Perce
 // PALM Parsing Tests
 // ==================
 
-// ------------------
-// Operator Templates
-// ------------------
+// ----------------
+// Helper Functions
+// ----------------
+// Success
+void requireSuccessfulParsing(
+    const std::string& palm,
+    const Oasis::Expression& expectedExpr)
+{
+    const auto expr = Oasis::FromPALM(palm);
+
+    REQUIRE(expr.has_value());
+    REQUIRE((*expr)->Equals(expectedExpr));
+}
+
+// Failure
+void requireFailedParsing(
+    const std::string& palm,
+    const Oasis::PALMParseError& expectedError)
+{
+    const auto expr = Oasis::FromPALM(palm);
+
+    REQUIRE_FALSE(expr.has_value());
+
+    const auto& error = expr.error();
+    CAPTURE(error.message, expectedError.message);
+    REQUIRE(error == expectedError);
+}
+
+// --- Specific Error Types ---
+void requireExtraOperandParsingError(
+    const std::string& palm,
+    const Oasis::PALMToken& errorToken)
+{
+    const auto expectedError = Oasis::PALMParseError {
+        .type = Oasis::PALMParseError::PALMParseErrorType::ExtraOperands,
+        .token = errorToken,
+        .message = "Unexpected token '" + errorToken.lexeme + "' found after parsing expression"
+    };
+
+    requireFailedParsing(palm, expectedError);
+}
+
+void requireMissingOperandParsingError(
+    const std::string& palm,
+    const Oasis::PALMToken& errorToken)
+{
+    const auto expectedError = Oasis::PALMParseError {
+        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOperand,
+        .token = errorToken,
+        .message = "Expected operand after token '" + errorToken.lexeme + "'"
+    };
+
+    requireFailedParsing(palm, expectedError);
+}
+
+void requireInvalidNumberFormatParsingError(
+    const std::string& palm,
+    const Oasis::PALMToken& errorToken)
+{
+    const auto expectedError = Oasis::PALMParseError {
+        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidNumberFormat,
+        .token = errorToken,
+        .message = "Invalid number format: '" + errorToken.lexeme + "'"
+    };
+
+    requireFailedParsing(palm, expectedError);
+}
+
+void requireNumberOutOfBoundsParsingError(
+    const std::string& palm,
+    const Oasis::PALMToken& errorToken)
+{
+    const auto expectedError = Oasis::PALMParseError {
+        .type = Oasis::PALMParseError::PALMParseErrorType::NumberOutOfBounds,
+        .token = errorToken,
+        .message = "Number out of bounds: '" + errorToken.lexeme + "'"
+    };
+
+    requireFailedParsing(palm, expectedError);
+}
+
+void requireInvalidVariableNameParsingError(
+    const std::string& palm,
+    const Oasis::PALMToken& errorToken)
+{
+    const auto expectedError = Oasis::PALMParseError {
+        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidVariableName,
+        .token = errorToken,
+        .message = "Invalid identifier: '" + errorToken.lexeme + "'"
+    };
+
+    requireFailedParsing(palm, expectedError);
+}
+
+void requireInvalidOperandParsingError(
+    const std::string& palm,
+    const Oasis::PALMToken& errorToken)
+{
+    const auto expectedError = Oasis::PALMParseError {
+        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperand,
+        .token = errorToken,
+        .message = "Invalid operand: '" + errorToken.lexeme + "'. Expected an expression."
+    };
+
+    requireFailedParsing(palm, expectedError);
+}
+
+void requireMissingOpeningParenthesisParsingError(
+    const std::string& palm,
+    const Oasis::PALMToken& errorToken)
+{
+    const auto expectedError = Oasis::PALMParseError {
+        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOpeningParenthesis,
+        .token = errorToken,
+        .message = "Expected '(' before expression starting with token '" + errorToken.lexeme + "'"
+    };
+
+    requireFailedParsing(palm, expectedError);
+}
+
+void requireMissingClosingParenthesisParsingError(
+    const std::string& palm,
+    const Oasis::PALMToken& errorToken)
+{
+    const auto expectedError = Oasis::PALMParseError {
+        .type = Oasis::PALMParseError::PALMParseErrorType::MissingClosingParenthesis,
+        .token = errorToken,
+        .message = "Expected ')' to close expression starting with token '" + errorToken.lexeme + "'"
+    };
+
+    requireFailedParsing(palm, expectedError);
+}
+
+void requireInvalidOperatorParsingError(
+    const std::string& palm,
+    const Oasis::PALMToken& errorToken)
+{
+    const auto expectedError = Oasis::PALMParseError {
+        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperator,
+        .token = errorToken,
+        .message = "Invalid operator: '" + errorToken.lexeme + "'"
+    };
+
+    requireFailedParsing(palm, expectedError);
+}
+
+void requireUnexpectedEndOfInputParsingError(
+    const std::string& palm,
+    const Oasis::PALMToken& errorToken)
+{
+    const auto expectedError = Oasis::PALMParseError {
+        .type = Oasis::PALMParseError::PALMParseErrorType::UnexpectedEndOfInput,
+        .token = errorToken,
+        .message = "Unexpected end of input while parsing expression"
+    };
+
+    requireFailedParsing(palm, expectedError);
+}
+
+void requireMissingOperatorParsingError(
+    const std::string& palm,
+    const Oasis::PALMToken& errorToken)
+{
+    const auto expectedError = Oasis::PALMParseError {
+        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOperator,
+        .token = errorToken,
+        .message = "Expected operator after token '" + errorToken.lexeme + "'"
+    };
+
+    requireFailedParsing(palm, expectedError);
+}
+
+void requireUnexpectedTokenParsingError(
+    const std::string& palm,
+    const Oasis::PALMToken& errorToken)
+{
+    const auto expectedError = Oasis::PALMParseError {
+        .type = Oasis::PALMParseError::PALMParseErrorType::UnexpectedToken,
+        .token = errorToken,
+        .message = "Unexpected token: '" + errorToken.lexeme + "'"
+    };
+
+    requireFailedParsing(palm, expectedError);
+}
+
+// --- Operator Mapping ---
 // Trait mapping operator class → symbol string
-template<typename T> struct OperatorSymbol;
+template <typename T>
+struct OperatorSymbol;
 
 // Binary Operators
-template<> struct OperatorSymbol<Oasis::Add<>>       { static constexpr auto value = "+"; };
-template<> struct OperatorSymbol<Oasis::Subtract<>>  { static constexpr auto value = "-"; };
-template<> struct OperatorSymbol<Oasis::Multiply<>>  { static constexpr auto value = "*"; };
-template<> struct OperatorSymbol<Oasis::Divide<>>    { static constexpr auto value = "/"; };
-template<> struct OperatorSymbol<Oasis::Exponent<>>  { static constexpr auto value = "^"; };
-template<> struct OperatorSymbol<Oasis::Log<>>       { static constexpr auto value = "log"; };
-template<> struct OperatorSymbol<Oasis::Integral<>>  { static constexpr auto value = "int"; };
-template<> struct OperatorSymbol<Oasis::Derivative<>>{ static constexpr auto value = "d"; };
+template <>
+struct OperatorSymbol<Oasis::Add<>> {
+    static constexpr auto value = "+";
+};
+template <>
+struct OperatorSymbol<Oasis::Subtract<>> {
+    static constexpr auto value = "-";
+};
+template <>
+struct OperatorSymbol<Oasis::Multiply<>> {
+    static constexpr auto value = "*";
+};
+template <>
+struct OperatorSymbol<Oasis::Divide<>> {
+    static constexpr auto value = "/";
+};
+template <>
+struct OperatorSymbol<Oasis::Exponent<>> {
+    static constexpr auto value = "^";
+};
+template <>
+struct OperatorSymbol<Oasis::Log<>> {
+    static constexpr auto value = "log";
+};
+template <>
+struct OperatorSymbol<Oasis::Integral<>> {
+    static constexpr auto value = "int";
+};
+template <>
+struct OperatorSymbol<Oasis::Derivative<>> {
+    static constexpr auto value = "d";
+};
 
 // Unary Operators
-template<> struct OperatorSymbol<Oasis::Negate<>>    { static constexpr auto value = "neg"; };
-template<> struct OperatorSymbol<Oasis::Magnitude<>> { static constexpr auto value = "magnitude"; };
+template <>
+struct OperatorSymbol<Oasis::Negate<>> {
+    static constexpr auto value = "neg";
+};
+template <>
+struct OperatorSymbol<Oasis::Magnitude<>> {
+    static constexpr auto value = "magnitude";
+};
 
-// ---------------
-// Templates Tests
-// ---------------
-// Basic Tests for Binary Expressions
+// Leaf Operators
+template <>
+struct OperatorSymbol<Oasis::Undefined> {
+    static constexpr auto value = "undefined";
+};
+template <>
+struct OperatorSymbol<Oasis::Imaginary> {
+    static constexpr auto value = "i";
+};
+template <>
+struct OperatorSymbol<Oasis::Pi> {
+    static constexpr auto value = "pi";
+};
+template <>
+struct OperatorSymbol<Oasis::EulerNumber> {
+    static constexpr auto value = "e";
+};
+
+// ------------------
+// Binary Expressions
+// ------------------
+
+// --- Basic Tests ---
 TEMPLATE_TEST_CASE(
     "PALM Parsing of Binary Expressions",
     "[PALM][Parser][Operator][Template]",
@@ -1071,8 +1175,7 @@ TEMPLATE_TEST_CASE(
     Oasis::Exponent<>,
     Oasis::Log<>,
     Oasis::Integral<>,
-    Oasis::Derivative<>
-)
+    Oasis::Derivative<>)
 {
     const TestType expected {
         Oasis::Real { 3.0 },
@@ -1094,15 +1197,13 @@ TEMPLATE_TEST_CASE(
     Oasis::Exponent<>,
     Oasis::Log<>,
     Oasis::Integral<>,
-    Oasis::Derivative<>
-)
+    Oasis::Derivative<>)
 {
     const TestType expected {
         Oasis::Real { 5.0 },
         TestType {
             Oasis::Real { 3.0 },
-            Oasis::Real { 2.0 }
-        }
+            Oasis::Real { 2.0 } }
     };
 
     const std::string op = OperatorSymbol<TestType>::value;
@@ -1110,7 +1211,7 @@ TEMPLATE_TEST_CASE(
     requireSuccessfulParsing(palm, expected);
 }
 
-// Malformed Tests for Binary Expressions
+// --- Malformed Tests ---
 TEMPLATE_TEST_CASE(
     "PALM Parsing of Binary Expressions Missing Least Significant Operand",
     "[PALM][Parser][Operator][Template][Malformed]",
@@ -1121,8 +1222,7 @@ TEMPLATE_TEST_CASE(
     Oasis::Exponent<>,
     Oasis::Log<>,
     Oasis::Integral<>,
-    Oasis::Derivative<>
-)
+    Oasis::Derivative<>)
 {
     const std::string op = OperatorSymbol<TestType>::value;
     const std::string palm = "( " + op + " ( real 5 ) )";
@@ -1148,8 +1248,7 @@ TEMPLATE_TEST_CASE(
     Oasis::Exponent<>,
     Oasis::Log<>,
     Oasis::Integral<>,
-    Oasis::Derivative<>
-)
+    Oasis::Derivative<>)
 {
     const std::string op = OperatorSymbol<TestType>::value;
     const std::string palm = "( " + op + " )";
@@ -1175,8 +1274,7 @@ TEMPLATE_TEST_CASE(
     Oasis::Exponent<>,
     Oasis::Log<>,
     Oasis::Integral<>,
-    Oasis::Derivative<>
-)
+    Oasis::Derivative<>)
 {
     const std::string op = OperatorSymbol<TestType>::value;
     const std::string palm = "( " + op + " ( real 3 ) ( real 5 ) extra_token )";
@@ -1193,17 +1291,16 @@ TEMPLATE_TEST_CASE(
 }
 
 TEMPLATE_TEST_CASE(
-        "PALM Parsing of Binary Expressions with Identifier Operand",
-        "[PALM][Parser][Operator][Template][Malformed]",
-        Oasis::Add<>,
-        Oasis::Subtract<>,
-        Oasis::Multiply<>,
-        Oasis::Divide<>,
-        Oasis::Exponent<>,
-        Oasis::Log<>,
-        Oasis::Integral<>,
-        Oasis::Derivative<>
-        )
+    "PALM Parsing of Binary Expressions with Identifier Operand",
+    "[PALM][Parser][Operator][Template][Malformed]",
+    Oasis::Add<>,
+    Oasis::Subtract<>,
+    Oasis::Multiply<>,
+    Oasis::Divide<>,
+    Oasis::Exponent<>,
+    Oasis::Log<>,
+    Oasis::Integral<>,
+    Oasis::Derivative<>)
 {
     const std::string op = OperatorSymbol<TestType>::value;
     const std::string palm = "( " + op + " ( real 3 ) x )";
@@ -1221,17 +1318,16 @@ TEMPLATE_TEST_CASE(
 }
 
 TEMPLATE_TEST_CASE(
-        "PALM Parsing of Binary Expressions with Number Operand",
-        "[PALM][Parser][Operator][Template][Malformed]",
-        Oasis::Add<>,
-        Oasis::Subtract<>,
-        Oasis::Multiply<>,
-        Oasis::Divide<>,
-        Oasis::Exponent<>,
-        Oasis::Log<>,
-        Oasis::Integral<>,
-        Oasis::Derivative<>
-        )
+    "PALM Parsing of Binary Expressions with Number Operand",
+    "[PALM][Parser][Operator][Template][Malformed]",
+    Oasis::Add<>,
+    Oasis::Subtract<>,
+    Oasis::Multiply<>,
+    Oasis::Divide<>,
+    Oasis::Exponent<>,
+    Oasis::Log<>,
+    Oasis::Integral<>,
+    Oasis::Derivative<>)
 {
     const std::string op = OperatorSymbol<TestType>::value;
     const std::string palm = "( " + op + " ( real 3 ) 42 )";
@@ -1249,17 +1345,16 @@ TEMPLATE_TEST_CASE(
 }
 
 TEMPLATE_TEST_CASE(
-        "PALM Parsing of Binary Expressions Missing Opening Parentheses",
-        "[PALM][Parser][Operator][Template][Malformed]",
-        Oasis::Add<>,
-        Oasis::Subtract<>,
-        Oasis::Multiply<>,
-        Oasis::Divide<>,
-        Oasis::Exponent<>,
-        Oasis::Log<>,
-        Oasis::Integral<>,
-        Oasis::Derivative<>
-        )
+    "PALM Parsing of Binary Expressions Missing Opening Parentheses",
+    "[PALM][Parser][Operator][Template][Malformed]",
+    Oasis::Add<>,
+    Oasis::Subtract<>,
+    Oasis::Multiply<>,
+    Oasis::Divide<>,
+    Oasis::Exponent<>,
+    Oasis::Log<>,
+    Oasis::Integral<>,
+    Oasis::Derivative<>)
 {
     const std::string op = OperatorSymbol<TestType>::value;
     const std::string palm = " " + op + " ( real 3 ) ( real 5 ) )";
@@ -1277,17 +1372,16 @@ TEMPLATE_TEST_CASE(
 }
 
 TEMPLATE_TEST_CASE(
-        "PALM Parsing of Binary Expressions Missing Closing Parentheses",
-        "[PALM][Parser][Operator][Template][Malformed]",
-        Oasis::Add<>,
-        Oasis::Subtract<>,
-        Oasis::Multiply<>,
-        Oasis::Divide<>,
-        Oasis::Exponent<>,
-        Oasis::Log<>,
-        Oasis::Integral<>,
-        Oasis::Derivative<>
-        )
+    "PALM Parsing of Binary Expressions Missing Closing Parentheses",
+    "[PALM][Parser][Operator][Template][Malformed]",
+    Oasis::Add<>,
+    Oasis::Subtract<>,
+    Oasis::Multiply<>,
+    Oasis::Divide<>,
+    Oasis::Exponent<>,
+    Oasis::Log<>,
+    Oasis::Integral<>,
+    Oasis::Derivative<>)
 {
     const std::string op = OperatorSymbol<TestType>::value;
     const std::string palm = "( " + op + " ( real 3 ) ( real 5 ) ";
@@ -1304,117 +1398,294 @@ TEMPLATE_TEST_CASE(
     requireMissingClosingParenthesisParsingError(palm, errorToken);
 }
 
-// Basic Tests for Unary Expressions
+// -----------------
+// Unary Expressions
+// -----------------
+
+// --- Basic Tests ---
 TEMPLATE_TEST_CASE(
     "PALM Parsing of Unary Expressions",
     "[PALM][Parser][Operator][Template][Unary]",
     Oasis::Negate<>,
-    Oasis::Magnitude<>
-)
+    Oasis::Magnitude<>)
 {
     const TestType expected {
         Oasis::Real { -7.0 }
     };
-        const std::string op = OperatorSymbol<TestType>::value;
 
-
-
-
-// --------------
-// Operator Tests
-// --------------
-
-// --- Undefined ---
-// Basic Tests
-TEST_CASE("PALM Parsing of Undefined", "[PALM][Parser][Operator][Undefined]")
-{
-    const std::string palm = "( undefined )";
-    const Oasis::Undefined expected {};
+    const std::string op = OperatorSymbol<TestType>::value;
+    const std::string palm = "( " + op + " ( real -7 ) )";
 
     requireSuccessfulParsing(palm, expected);
 }
 
-// Malformed Tests
-TEST_CASE("PALM Parsing of Undefined with Extra Tokens", "[PALM][Parser][Operator][Undefined]")
+TEMPLATE_TEST_CASE(
+    "PALM Parsing of Nested Unary Expressions",
+    "[PALM][Parser][Operator][Template][Unary][Nested]",
+    Oasis::Negate<>,
+    Oasis::Magnitude<>)
 {
-    const std::string palm = "( undefined extra_token )";
+    const TestType expected {
+        TestType {
+            Oasis::Real { -7.0 } }
+    };
+
+    const std::string op = OperatorSymbol<TestType>::value;
+    const std::string palm = "( " + op + " ( " + op + " ( real -7 ) ) )";
+
+    requireSuccessfulParsing(palm, expected);
+}
+
+// --- Malformed Tests ---
+TEMPLATE_TEST_CASE(
+    "PALM Parsing of Unary Expressions Missing Operand",
+    "[PALM][Parser][Operator][Template][Unary][Malformed]",
+    Oasis::Negate<>,
+    Oasis::Magnitude<>)
+{
+    const std::string op = OperatorSymbol<TestType>::value;
+    const std::string palm = "( " + op + " )";
+
+    const Oasis::PALMToken errorToken = {
+        .type = Oasis::PALMTokenType::Punctuator,
+        .lexeme = ")",
+        .charOffset = palm.size() - 1,
+        .tokenIndex = 3,
+        .line = 1,
+        .column = palm.size(),
+    };
+
+    requireMissingOperandParsingError(palm, errorToken);
+}
+
+TEMPLATE_TEST_CASE(
+    "PALM Parsing of Unary Expressions with Extra Tokens",
+    "[PALM][Parser][Operator][Template][Unary][Malformed]",
+    Oasis::Negate<>,
+    Oasis::Magnitude<>)
+{
+    const std::string op = OperatorSymbol<TestType>::value;
+    const std::string palm = "( " + op + " ( real -7 ) extra_token )";
+
     const Oasis::PALMToken errorToken = {
         .type = Oasis::PALMTokenType::Identifier,
         .lexeme = "extra_token",
-        .charOffset = 13,
-        .tokenIndex = 2,
+        .charOffset = palm.size() - 13,
+        .tokenIndex = 5,
         .line = 1,
-        .column = 14,
+        .column = palm.size() - 12,
     };
 
     requireExtraOperandParsingError(palm, errorToken);
 }
 
-// --- Real ---
-// Basic Tests
-TEST_CASE("PALM Parsing of Real Number", "[PALM][Parser][Operator][Real]")
+TEMPLATE_TEST_CASE(
+    "PALM Parsing of Unary Expressions with Number Operand",
+    "[PALM][Parser][Operator][Template][Unary][Malformed]",
+    Oasis::Negate<>,
+    Oasis::Magnitude<>)
 {
-    const std::string palm = "( real 3.14159 )";
-    const Oasis::Real expected { 3.14159 };
+    const std::string op = OperatorSymbol<TestType>::value;
+    const std::string palm = "( " + op + " 42 )";
 
-    requireSuccessfulParsing(palm, expected);
-}
-
-TEST_CASE("PALM Parsing of Negative Real Number", "[PALM][Parser][Operator][Real]")
-{
-    const std::string palm = "( real -2.71828 )";
-    const Oasis::Real expected { -2.71828 };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-TEST_CASE("PALM Parsing of Zero Real Number", "[PALM][Parser][Operator][Real]")
-{
-    const std::string palm = "( real 0.0 )";
-    const Oasis::Real expected { 0.0 };
-
-    return requireSuccessfulParsing(palm, expected);
-}
-
-TEST_CASE("PALM Parsing of Scientific Notation Real Number", "[PALM][Parser][Operator][Real]")
-{
-    const std::string palm = "( real 1.23e4 )";
-    const Oasis::Real expected { 12300.0 };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-TEST_CASE("PALM Parsing of NaN Real Number", "[PALM][Parser][Operator][Real]")
-{
-    const std::string palm = "( real NaN )";
-    const Oasis::Real expected { std::numeric_limits<double>::quiet_NaN() };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-TEST_CASE("PALM Parsing of Positive Infinity Real Number", "[PALM][Parser][Operator][Real]")
-{
-    const std::string palm = "( real Infinity )";
-    const Oasis::Real expected { std::numeric_limits<double>::infinity() };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-TEST_CASE("PALM Parsing of Negative Infinity Real Number", "[PALM][Parser][Operator][Real]")
-{
-    const std::string palm = "( real -Infinity )";
-    const Oasis::Real expected { -std::numeric_limits<double>::infinity() };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Real without Number", "[PALM][Parser][Operator][Real]")
-{
-    const std::string palm = "( real )";
     const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Punctuator,
-        .lexeme = ")",
+        .type = Oasis::PALMTokenType::Number,
+        .lexeme = "42",
+        .charOffset = palm.size() - 3,
+        .tokenIndex = 4,
+        .line = 1,
+        .column = palm.size() - 2,
+    };
+
+    return requireInvalidOperandParsingError(palm, errorToken);
+}
+
+TEMPLATE_TEST_CASE(
+    "PALM Parsing of Unary Expressions with Identifier Operand",
+    "[PALM][Parser][Operator][Template][Unary][Malformed]",
+    Oasis::Negate<>,
+    Oasis::Magnitude<>)
+{
+    const std::string op = OperatorSymbol<TestType>::value;
+    const std::string palm = "( " + op + " x )";
+
+    const Oasis::PALMToken errorToken = {
+        .type = Oasis::PALMTokenType::Identifier,
+        .lexeme = "x",
+        .charOffset = palm.size() - 2,
+        .tokenIndex = 4,
+        .line = 1,
+        .column = palm.size() - 1,
+    };
+
+    return requireInvalidOperandParsingError(palm, errorToken);
+}
+
+TEMPLATE_TEST_CASE(
+    "PALM Parsing of Unary Expressions Missing Opening Parentheses",
+    "[PALM][Parser][Operator][Template][Unary][Malformed]",
+    Oasis::Negate<>,
+    Oasis::Magnitude<>)
+{
+    const std::string op = OperatorSymbol<TestType>::value;
+    const std::string palm = " " + op + " ( real -7 ) )";
+
+    const Oasis::PALMToken errorToken = {
+        .type = Oasis::PALMTokenType::Identifier,
+        .lexeme = op,
+        .charOffset = 1,
+        .tokenIndex = 0,
+        .line = 1,
+        .column = 2,
+    };
+
+    requireMissingOpeningParenthesisParsingError(palm, errorToken);
+}
+
+TEMPLATE_TEST_CASE(
+    "PALM Parsing of Unary Expressions Missing Closing Parentheses",
+    "[PALM][Parser][Operator][Template][Unary][Malformed]",
+    Oasis::Negate<>,
+    Oasis::Magnitude<>)
+{
+    const std::string op = OperatorSymbol<TestType>::value;
+    const std::string palm = "( " + op + " ( real -7 ) ";
+
+    const Oasis::PALMToken errorToken = {
+        .type = Oasis::PALMTokenType::EndOfInput,
+        .lexeme = "",
+        .charOffset = palm.size(),
+        .tokenIndex = 5,
+        .line = 1,
+        .column = palm.size() + 1,
+    };
+
+    requireMissingClosingParenthesisParsingError(palm, errorToken);
+}
+
+// ----------------
+// Leaf Expressions
+// ----------------
+// --- Basic Tests ---
+TEMPLATE_TEST_CASE(
+    "PALM Parsing of Leaf Expressions",
+    "[PALM][Parser][Operator][Template][Leaf]",
+    Oasis::Undefined,
+    Oasis::Imaginary,
+    Oasis::EulerNumber,
+    Oasis::Pi)
+{
+    const TestType expected {};
+
+    const std::string op = OperatorSymbol<TestType>::value;
+    const std::string palm = "( " + op + " )";
+
+    requireSuccessfulParsing(palm, expected);
+}
+
+// --- Malformed Tests ---
+TEMPLATE_TEST_CASE(
+    "PALM Parsing of Leaf Expressions with Extra Tokens",
+    "[PALM][Parser][Operator][Template][Leaf][Malformed]",
+    Oasis::Undefined,
+    Oasis::Imaginary,
+    Oasis::EulerNumber,
+    Oasis::Pi)
+{
+    const std::string op = OperatorSymbol<TestType>::value;
+    const std::string palm = "( " + op + " extra_token )";
+    const Oasis::PALMToken errorToken = {
+        .type = Oasis::PALMTokenType::Identifier,
+        .lexeme = "extra_token",
+        .charOffset = palm.size() - 13,
+        .tokenIndex = 2,
+        .line = 1,
+        .column = palm.size() - 12,
+    };
+
+    requireExtraOperandParsingError(palm, errorToken);
+}
+
+TEMPLATE_TEST_CASE(
+    "PALM Parsing of Leaf Expressions with Missing Parentheses",
+    "[PALM][Parser][Operator][Template][Leaf][Malformed]",
+    Oasis::Undefined,
+    Oasis::Imaginary,
+    Oasis::EulerNumber,
+    Oasis::Pi)
+{
+    const std::string op = OperatorSymbol<TestType>::value;
+    const std::string palm = " " + op + " )";
+    const Oasis::PALMToken errorToken = {
+        .type = Oasis::PALMTokenType::Identifier,
+        .lexeme = op,
+        .charOffset = 1,
+        .tokenIndex = 0,
+        .line = 1,
+        .column = 2,
+    };
+
+    requireMissingOpeningParenthesisParsingError(palm, errorToken);
+}
+
+TEMPLATE_TEST_CASE(
+    "PALM Parsing of Leaf Expressions with Missing Closing Parentheses",
+    "[PALM][Parser][Operator][Template][Leaf][Malformed]",
+    Oasis::Undefined,
+    Oasis::Imaginary,
+    Oasis::EulerNumber,
+    Oasis::Pi)
+{
+    const std::string op = OperatorSymbol<TestType>::value;
+    const std::string palm = "( " + op + " ";
+
+    const Oasis::PALMToken errorToken = {
+        .type = Oasis::PALMTokenType::EndOfInput,
+        .lexeme = "",
+        .charOffset = palm.size(),
+        .tokenIndex = 3,
+        .line = 1,
+        .column = palm.size() + 1,
+    };
+
+    requireMissingClosingParenthesisParsingError(palm, errorToken);
+}
+
+// --------------
+// Real Tests
+// --------------
+
+// --- Basic Tests ---
+TEST_CASE("PALM Parsing of Real Numbers", "[PALM][Parser][Operator][Real]")
+{
+    auto [palm, expected] = GENERATE(
+        std::make_pair("( real 42 )", Oasis::Real { 42.0 }),
+        std::make_pair("( real -7 )", Oasis::Real { -7.0 }),
+        std::make_pair("( real 3.14159 )", Oasis::Real { 3.14159 }),
+        std::make_pair("( real -2.71828 )", Oasis::Real { -2.71828 }),
+        std::make_pair("( real 0.0 )", Oasis::Real { 0.0 }),
+        std::make_pair("( real 1.23e4 )", Oasis::Real { 12300.0 }),
+        std::make_pair("( real NaN )", Oasis::Real { std::numeric_limits<double>::quiet_NaN() }),
+        std::make_pair("( real Infinity )", Oasis::Real { std::numeric_limits<double>::infinity() }),
+        std::make_pair("( real -Infinity )", Oasis::Real { -std::numeric_limits<double>::infinity() }));
+
+    requireSuccessfulParsing(palm, expected);
+}
+
+// --- Malformed Tests ---
+TEST_CASE("PALM Parsing of Real with Invalid Number", "[PALM][Parser][Operator][Real]")
+{
+    auto [palm, errorLexeme, errorType] = GENERATE(
+        std::make_tuple("( real )", ")", Oasis::PALMTokenType::Punctuator),
+        std::make_tuple("( real ( real 5 ) )", "(", Oasis::PALMTokenType::Punctuator),
+        std::make_tuple("( real x )", "x", Oasis::PALMTokenType::Identifier),
+        std::make_tuple("( real not_a_number )", "not_a_number", Oasis::PALMTokenType::Identifier),
+        std::make_tuple("( real real )", "real", Oasis::PALMTokenType::Operator));
+
+
+    const Oasis::PALMToken errorToken = {
+        .type = errorType,
+        .lexeme = errorLexeme,
         .charOffset = 7,
         .tokenIndex = 2,
         .line = 1,
@@ -1422,21 +1693,6 @@ TEST_CASE("PALM Parsing of Real without Number", "[PALM][Parser][Operator][Real]
     };
 
     requireMissingOperandParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Real with Invalid Number", "[PALM][Parser][Operator][Real]")
-{
-    const std::string palm = "( real not_a_number )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Identifier,
-        .lexeme = "not_a_number",
-        .charOffset = 12,
-        .tokenIndex = 3,
-        .line = 1,
-        .column = 13,
-    };
-
-    requireInvalidNumberFormatParsingError(palm, errorToken);
 }
 
 TEST_CASE("PALM Parsing of Real with Out of Bounds Number", "[PALM][Parser][Operator][Real]")
@@ -1469,81 +1725,81 @@ TEST_CASE("PALM Parsing of Real with Extra Tokens", "[PALM][Parser][Operator][Re
     requireExtraOperandParsingError(palm, errorToken);
 }
 
-// --- Imaginary ---
-// Basic Tests
-TEST_CASE("PALM Parsing of Imaginary Number with 'i'", "[PALM][Parser][Operator][Imaginary]")
+TEST_CASE("PALM Parsing of Real with Missing Opening Parentheses", "[PALM][Parser][Operator][Real]")
 {
-    const std::string palm = "( i )";
-    const Oasis::Imaginary expected = {};
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-TEST_CASE("PALM Parsing of Imaginary Number with 'j'", "[PALM][Parser][Operator][Imaginary]")
-{
-    const std::string palm = "( j )";
-    const Oasis::Imaginary expected = {};
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Imaginary Missing Closing Parenthesis", "[PALM][Parser][Operator][Imaginary]")
-{
-    const std::string palm = "( i extra_token )";
+    const std::string palm = " real 3.14 )";
     const Oasis::PALMToken errorToken = {
         .type = Oasis::PALMTokenType::Identifier,
-        .lexeme = "extra_token",
-        .charOffset = 4,
-        .tokenIndex = 2,
+        .lexeme = "real",
+        .charOffset = 1,
+        .tokenIndex = 0,
         .line = 1,
-        .column = 5,
+        .column = 2,
     };
 
-    requireExtraOperandParsingError(palm, errorToken);
+    requireMissingOpeningParenthesisParsingError(palm, errorToken);
 }
 
-// --- Variable ---
-// Basic Tests
+TEST_CASE("PALM Parsing of Real with Missing Closing Parentheses", "[PALM][Parser][Operator][Real]")
+{
+    const std::string palm = "( real 3.14 ";
+    const Oasis::PALMToken errorToken = {
+        .type = Oasis::PALMTokenType::EndOfInput,
+        .lexeme = "",
+        .charOffset = palm.size(),
+        .tokenIndex = 4,
+        .line = 1,
+        .column = palm.size() + 1,
+    };
+
+    requireMissingClosingParenthesisParsingError(palm, errorToken);
+}
+
+// ---------------
+// Imaginary Tests
+// ---------------
+// Testing both 'i' and 'j' representations
+TEST_CASE("PALM Parsing of Imaginary Number", "[PALM][Parser][Operator][Imaginary]")
+{
+    auto [palm, expected] = GENERATE(
+        std::make_pair("( i )", Oasis::Imaginary {}),
+        std::make_pair("( j )", Oasis::Imaginary {}));
+
+    requireSuccessfulParsing(palm, expected);
+}
+
+// --------------
+// Variable Tests
+// --------------
+// --- Basic Tests ---
 TEST_CASE("PALM Parsing of Variable", "[PALM][Parser][Operator][Variable]")
 {
-    const std::string palm = "( var myVar )";
-    const Oasis::Variable expected { "myVar" };
+    auto [palm, expected] = GENERATE(
+        std::make_pair("( var myVar )", Oasis::Variable { "myVar" }),
+        std::make_pair("( var x )", Oasis::Variable { "x" }),
+        std::make_pair("( var var123 )", Oasis::Variable { "var123" }),
+        std::make_pair("( var var_name )", Oasis::Variable { "var_name" })
+
+    );
 
     requireSuccessfulParsing(palm, expected);
 }
 
-TEST_CASE("PALM Parsing of Variable with Single Letter Name", "[PALM][Parser][Operator][Variable]")
+// --- Malformed Tests ---
+TEST_CASE("PALM Parsing of Variable with Invalid Identifier", "[PALM][Parser][Operator][Variable]")
 {
-    const std::string palm = "( var x )";
-    const Oasis::Variable expected { "x" };
+    auto [palm, errorLexeme, errorType] = GENERATE(
+        std::make_tuple("( var var-name )", "var-name", Oasis::PALMTokenType::Unknown),
+        std::make_tuple("( var var$name )", "var$name", Oasis::PALMTokenType::Unknown),
+        std::make_tuple("( var real )", "real", Oasis::PALMTokenType::Operator),
+        std::make_tuple("( var log )", "log", Oasis::PALMTokenType::Operator),
+        std::make_tuple("( var 123 )", "123", Oasis::PALMTokenType::Number),
+        std::make_tuple("( var ( real 5 ) )", "(", Oasis::PALMTokenType::Punctuator),
+        std::make_tuple("( var )", ")", Oasis::PALMTokenType::Punctuator));
 
-    requireSuccessfulParsing(palm, expected);
-}
-
-TEST_CASE("PALM Parsing of Variable with numbers in Name", "[PALM][Parser][Operator][Variable]")
-{
-    const std::string palm = "( var var123 )";
-    const Oasis::Variable expected { "var123" };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-TEST_CASE("PALM Parsing of Variable with Underscore in Name", "[PALM][Parser][Operator][Variable]")
-{
-    const std::string palm = "( var var_name )";
-    const Oasis::Variable expected { "var_name" };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Variable with Invalid Characters in Name", "[PALM][Parser][Operator][Variable]")
-{
-    const std::string palm = "( var var-name )";
     const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Unknown,
-        .lexeme = "var-name",
+        .type = errorType,
+        .lexeme = errorLexeme,
         .charOffset = 6,
         .tokenIndex = 2,
         .line = 1,
@@ -1551,66 +1807,6 @@ TEST_CASE("PALM Parsing of Variable with Invalid Characters in Name", "[PALM][Pa
     };
 
     requireInvalidVariableNameParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Variable with Reserved Keyword as Name", "[PALM][Parser][Operator][Variable]")
-{
-    const std::string palm = "( var real )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Operator,
-        .lexeme = "real",
-        .charOffset = 6,
-        .tokenIndex = 2,
-        .line = 1,
-        .column = 7,
-    };
-
-    requireInvalidVariableNameParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Variable with Number as Name", "[PALM][Parser][Operator][Variable]")
-{
-    const std::string palm = "( var 123 )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Number,
-        .lexeme = "123",
-        .charOffset = 6,
-        .tokenIndex = 2,
-        .line = 1,
-        .column = 7,
-    };
-
-    requireInvalidVariableNameParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Variable with Expression Name", "[PALM][Parser][Operator][Variable]")
-{
-    const std::string palm = "( var ( real 5 ) )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Punctuator,
-        .lexeme = "(",
-        .charOffset = 6,
-        .tokenIndex = 2,
-        .line = 1,
-        .column = 7,
-    };
-
-    requireInvalidVariableNameParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Variable with Empty Name", "[PALM][Parser][Operator][Variable]")
-{
-    const std::string palm = "( var )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Punctuator,
-        .lexeme = ")",
-        .charOffset = 6,
-        .tokenIndex = 2,
-        .line = 1,
-        .column = 7,
-    };
-
-    requireMissingOperandParsingError(palm, errorToken);
 }
 
 TEST_CASE("PALM Parsing of Variable with Extra Tokens", "[PALM][Parser][Operator][Variable]")
@@ -1628,1683 +1824,205 @@ TEST_CASE("PALM Parsing of Variable with Extra Tokens", "[PALM][Parser][Operator
     requireExtraOperandParsingError(palm, errorToken);
 }
 
-// --- Addition ---
-// Basic Tests
-TEST_CASE("PALM Parsing of Addition", "[PALM][Parser][Operator][Addition]")
+TEST_CASE("PALM Parsing of Variable with Missing Opening Parentheses", "[PALM][Parser][Operator][Variable]")
 {
-    const std::string palm = "( + ( real 5 ) ( real 3 ) )";
-    const Oasis::Add<> expected {
-        Oasis::Real { 5.0 },
-        Oasis::Real { 3.0 },
-    };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-TEST_CASE("PALM Parsing of Nested Addition", "[PALM][Parser][Operator][Addition]")
-{
-    const std::string palm = "( + ( real 5 ) ( real 3 ) )";
-    const Oasis::Add<> expected {
-        Oasis::Real { 5.0 },
-        Oasis::Add {
-            Oasis::Real { 3.0 },
-            Oasis::Real { 2.0 } }
-    };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Addition Missing Least Significant Operand", "[PALM][Parser][Operator][Addition]")
-{
-    const std::string palm = "( + ( real 5 ) )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Punctuator,
-        .lexeme = ")",
-        .charOffset = 15,
-        .tokenIndex = 4,
-        .line = 1,
-        .column = 16,
-    };
-
-    requireMissingOperandParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Addition Missing Most Significant Operand", "[PALM][Parser][Operator][Addition]")
-{
-    const std::string palm = "( + )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Punctuator,
-        .lexeme = ")",
-        .charOffset = 4,
-        .tokenIndex = 2,
-        .line = 1,
-        .column = 5,
-    };
-
-    requireMissingOperandParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Addition with Too Many Operands", "[PALM][Parser][Operator][Addition]")
-{
-    const std::string palm = "( + ( real 5 ) ( real 3 ) ( real 2 ) )";
+    const std::string palm = " var x )";
     const Oasis::PALMToken errorToken = {
         .type = Oasis::PALMTokenType::Identifier,
-        .lexeme = "(",
-        .charOffset = 30,
-        .tokenIndex = 6,
+        .lexeme = "var",
+        .charOffset = 1,
+        .tokenIndex = 0,
         .line = 1,
-        .column = 31,
+        .column = 2,
     };
 
-    requireExtraOperandParsingError(palm, errorToken);
+    requireMissingOpeningParenthesisParsingError(palm, errorToken);
 }
 
-TEST_CASE("PALM Parsing of Addition with Number Operand", "[PALM][Parser][Operator][Addition]")
+TEST_CASE("PALM Parsing of Variable with Missing Closing Parentheses", "[PALM][Parser][Operator][Variable]")
 {
-    const std::string palm = "( + 5 ( real 3 ) )";
+    const std::string palm = "( var x ";
     const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Number,
-        .lexeme = "5",
-        .charOffset = 4,
-        .tokenIndex = 2,
+        .type = Oasis::PALMTokenType::EndOfInput,
+        .lexeme = "",
+        .charOffset = palm.size(),
+        .tokenIndex = 3,
         .line = 1,
-        .column = 5,
+        .column = palm.size() + 1,
+    };
+
+    requireMissingClosingParenthesisParsingError(palm, errorToken);
+}
+
+// ----------------
+// Expression Tests
+// ----------------
+// --- Malformed Tests ---
+TEST_CASE("PALM Parsing of Real with different spacing and padding", "[PALM][Parser][Real]")
+{
+    auto [ palm, expected ] = GENERATE(
+        std::make_pair("(   real    7.89   )", Oasis::Real{7.89}),
+        std::make_pair("(\treal\t0.5772\t)", Oasis::Real{0.5772}),
+        std::make_pair("(\nreal\n1.618\n)", Oasis::Real{1.618})
+    );
+
+    requireSuccessfulParsing(palm, expected);
+}
+
+TEST_CASE("Parse Expression with Unknown Operator", "[PALM][Parsing]")
+{
+    const std::string palm = "( unknown_op ( real 5 ) ( real 3 ) )";
+    const Oasis::PALMToken errorToken = {
+        .type = Oasis::PALMTokenType::Identifier,
+        .lexeme = "unknown_op",
+        .charOffset = 2,
+        .tokenIndex = 0,
+        .line = 1,
+        .column = 3,
     };
 
     requireInvalidOperandParsingError(palm, errorToken);
 }
 
-TEST_CASE("PALM Parsing of Addition with Identifier Operand", "[PALM][Parser][Operator][Addition]")
+TEST_CASE("Parse Empty Expression", "[PALM][Parsing]")
 {
-    const std::string palm = "( + ( real 5 ) x )";
+    const std::string palm;
     const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Identifier,
-        .lexeme = "x",
-        .charOffset = 18,
-        .tokenIndex = 5,
+        .type = Oasis::PALMTokenType::EndOfInput,
+        .lexeme = "",
+        .charOffset = 0,
+        .tokenIndex = 0,
         .line = 1,
-        .column = 19,
+        .column = 1,
     };
 
-    requireInvalidOperandParsingError(palm, errorToken);
+    requireUnexpectedEndOfInputParsingError(palm, errorToken);
 }
 
-// --- Subtraction ---
-// Basic Tests
-TEST_CASE("PALM Parsing of Subtraction", "[PALM][Parser][Operator][Subtraction]")
+TEST_CASE("Parse Expression with Only Parentheses", "[PALM][Parsing]")
 {
-    const std::string palm = "( - ( real 5 ) ( real 3 ) )";
-    const Oasis::Subtract expected {
-        Oasis::Real { 5.0 },
-        Oasis::Real { 3.0 },
-    };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-TEST_CASE("PALM Parsing of Nested Subtraction", "[PALM][Parser][Operator][Subtraction]")
-{
-    const std::string palm = "( - ( real 5 ) ( - ( real 3 ) ( real 2 ) ) )";
-    const Oasis::Subtract expected {
-        Oasis::Real { 5.0 },
-        Oasis::Subtract {
-            Oasis::Real { 3.0 },
-            Oasis::Real { 2.0 } }
-    };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Subtraction Missing Least Significant Operand", "[PALM][Parser][Operator][Subtraction]")
-{
-    const std::string palm = "( + ( real 5 ) )";
+    const std::string palm = "( )";
     const Oasis::PALMToken errorToken = {
         .type = Oasis::PALMTokenType::Punctuator,
         .lexeme = ")",
-        .charOffset = 15,
-        .tokenIndex = 4,
+        .charOffset = 2,
+        .tokenIndex = 1,
         .line = 1,
-        .column = 16,
+        .column = 3,
     };
 
-    requireMissingOperandParsingError(palm, errorToken);
+    requireMissingOperatorParsingError(palm, errorToken);
 }
 
-TEST_CASE("PALM Parsing of Subtraction Missing Most Significant Operand", "[PALM][Parser][Operator][Subtraction]")
+TEST_CASE("Parse Expression with Missing Operator", "[PALM][Parsing]")
 {
-    const std::string palm = "( - )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Punctuator,
-        .lexeme = ")",
-        .charOffset = 4,
-        .tokenIndex = 2,
-        .line = 1,
-        .column = 5,
-    };
-
-    requireMissingOperandParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Subtraction with Too Many Operands", "[PALM][Parser][Operator][Subtraction]")
-{
-    const std::string palm = "( - ( real 5 ) ( real 3 ) ( real 2 ) )";
+    const std::string palm = "( ( real 5 ) ( real 3 ) )";
     const Oasis::PALMToken errorToken = {
         .type = Oasis::PALMTokenType::Punctuator,
         .lexeme = "(",
-        .charOffset = 30,
-        .tokenIndex = 6,
+        .charOffset = 2,
+        .tokenIndex = 1,
         .line = 1,
-        .column = 31,
+        .column = 3,
     };
 
-    requireExtraOperandParsingError(palm, errorToken);
+    requireMissingOperatorParsingError(palm, errorToken);
 }
 
-TEST_CASE("PALM Parsing of Subtraction with Number Operand", "[PALM][Parser][Operator][Subtraction]")
+TEST_CASE("Parse Expression with Extra Tokens After Closing Parenthesis", "[PALM][Parsing]")
 {
-    const std::string palm = "( - 5 ( real 3 ) )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Number,
-        .lexeme = "5",
-        .charOffset = 4,
-        .tokenIndex = 2,
-        .line = 1,
-        .column = 5,
-    };
-
-    requireInvalidOperandParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Subtraction with Identifier Operand", "[PALM][Parser][Operator][Subtraction]")
-{
-    const std::string palm = "( - ( real 5 ) x )";
+    const std::string palm = "( + ( real 5 ) ( real 3 ) ) extra_token";
     const Oasis::PALMToken errorToken = {
         .type = Oasis::PALMTokenType::Identifier,
-        .lexeme = "x",
-        .charOffset = 18,
-        .tokenIndex = 5,
+        .lexeme = "extra_token",
+        .charOffset = 33,
+        .tokenIndex = 8,
         .line = 1,
-        .column = 19,
+        .column = 33,
     };
 
-    requireInvalidOperandParsingError(palm, errorToken);
+    requireUnexpectedTokenParsingError(palm, errorToken);
 }
 
-// --- Multiplication ---
-// Basic Tests
-TEST_CASE("PALM Parsing of Multiplication", "[PALM][Parser][Operator][Multiplication]")
+TEST_CASE("Parse Expression Invalid Start of Expression", "[PALM][Parsing]")
 {
-    const std::string palm = "( * ( real 5 ) ( real 3 ) )";
-    const Oasis::Multiply expected {
-        Oasis::Real { 5.0 },
-        Oasis::Real { 3.0 },
-    };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-TEST_CASE("PALM Parsing of Nested Multiplication", "[PALM][Parser][Operator][Multiplication]")
-{
-    const std::string palm = "( * ( real 5 ) ( * ( real 3 ) ( real 2 ) ) )";
-    const Oasis::Multiply expected {
-        Oasis::Real { 5.0 },
-        Oasis::Multiply {
-            Oasis::Real { 3.0 },
-            Oasis::Real { 2.0 } }
-    };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Multiplication Missing Least Significant Operand", "[PALM][Parser][Operator][Multiplication]")
-{
-    const std::string palm = "( * ( real 5 ) )";
+    const std::string palm = "'";
     const Oasis::PALMToken errorToken = {
-            .type = Oasis::PALMTokenType::Punctuator,
-            .lexeme = ")",
-            .charOffset = 15,
-            .tokenIndex = 4,
-            .line = 1,
-            .column = 16,
-    };
-
-    requireMissingOperandParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Multiplication Missing Most Significant Operand", "[PALM][Parser][Operator][Multiplication]")
-{
-    const std::string palm = "( * )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Punctuator,
-        .lexeme = ")",
-        .charOffset = 4,
-        .tokenIndex = 2,
+        .type = Oasis::PALMTokenType::Operator,
+        .lexeme = "'",
+        .charOffset = 0,
+        .tokenIndex = 0,
         .line = 1,
-        .column = 5,
+        .column = 1,
     };
 
-    requireMissingOperandParsingError(palm, errorToken);
+    requireMissingOpeningParenthesisParsingError(palm, errorToken);
 }
 
-TEST_CASE("PALM Parsing of Multiplication with Too Many Operands", "[PALM][Parser][Operator][Multiplication]")
-{
-    const std::string palm = "( * ( real 5 ) ( real 3 ) ( real 2 ) )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Punctuator,
-        .lexeme = "(",
-        .charOffset = 30,
-        .tokenIndex = 6,
-        .line = 1,
-        .column = 31,
-    };
+// ------------------------
+// Complex Expression Tests
+// ------------------------
+TEST_CASE("PALM Parsing of Complex Expressions", "[PALM][Parser][Operator]") {
+    using Factory = std::function<std::unique_ptr<Oasis::Expression>()>;
 
-    requireExtraOperandParsingError(palm, errorToken);
+    auto [palm, makeExpected] = GENERATE(
+        std::make_pair(
+            std::string{"( + ( real 5 ) ( * ( real 3 ) ( - ( real 2 ) ( real 1 ) ) ) )"},
+            Factory{[] {
+                return std::unique_ptr<Oasis::Expression>(
+                    new Oasis::Add<
+                        Oasis::Real,
+                        Oasis::Multiply<Oasis::Real, Oasis::Subtract<Oasis::Real>>
+                    >(
+                        Oasis::Real{5.0},
+                        Oasis::Multiply{
+                            Oasis::Real{3.0},
+                            Oasis::Subtract{Oasis::Real{2.0}, Oasis::Real{1.0}}
+                        }
+                    )
+                );
+            }}
+        ),
+        std::make_pair(
+            std::string{"( / ( ^ ( real 2 ) ( real 3 ) ) ( log ( real 10 ) ( real 1000 ) ) )"},
+            Factory{[] {
+                return std::unique_ptr<Oasis::Expression>(
+                    new Oasis::Divide<
+                        Oasis::Exponent<Oasis::Real, Oasis::Real>,
+                        Oasis::Log<Oasis::Real>
+                    >(
+                        Oasis::Exponent{Oasis::Real{2.0}, Oasis::Real{3.0}},
+                        Oasis::Log{Oasis::Real{10.0}, Oasis::Real{1000.0}}
+                    )
+                );
+            }}
+        ),
+        std::make_pair(
+            std::string{"( + ( real 5 ) ( - ( real 3 ) ( * ( real 2 ) ( / ( real 4 ) ( real 2 ) ) ) ) )"},
+            Factory{[] {
+                return std::unique_ptr<Oasis::Expression>(
+                    new Oasis::Add<
+                        Oasis::Real,
+                        Oasis::Subtract<
+                            Oasis::Real,
+                            Oasis::Multiply<Oasis::Real, Oasis::Divide<Oasis::Real>
+                            >
+                        >
+                    >(
+                        Oasis::Real{5.0},
+                        Oasis::Subtract{
+                            Oasis::Real{3.0},
+                            Oasis::Multiply{
+                                Oasis::Real{2.0},
+                                Oasis::Divide{Oasis::Real{4.0}, Oasis::Real{2.0}}
+                            }
+                        }
+                    )
+                );
+            }}
+        )
+    );
+
+    const auto expected = makeExpected();
+    requireSuccessfulParsing(palm, *expected);
 }
-
-TEST_CASE("PALM Parsing of Multiplication with Number Operand", "[PALM][Parser][Operator][Multiplication]")
-{
-    const std::string palm = "( * 5 ( real 3 ) )";
-    const Oasis::PALMToken errorToken = {
-            .type = Oasis::PALMTokenType::Number,
-            .lexeme = "5",
-            .charOffset = 4,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 5,
-    };
-
-    requireInvalidOperandParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Multiplication with Identifier Operand", "[PALM][Parser][Operator][Multiplication]")
-{
-    const std::string palm = "( * ( real 5 ) x )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Identifier,
-        .lexeme = "x",
-        .charOffset = 18,
-        .tokenIndex = 5,
-        .line = 1,
-        .column = 19,
-    };
-
-    requireInvalidOperandParsingError(palm, errorToken);
-}
-
-// --- Division ---
-TEST_CASE("Parse Simple Division", "[PALM][Parser][Operator][Division]")
-{
-    const std::string palm = "( / ( real 6 ) ( real 3 ) )";
-    const Oasis::Divide expected {
-        Oasis::Real { 6.0 },
-        Oasis::Real { 3.0 }
-    };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-TEST_CASE("Parse Nested Division", "[PALM][Parser][Operator][Division]")
-{
-    const std::string palm = "( / ( real 6 ) ( / ( real 3 ) ( real 2 ) ) )";
-    const Oasis::Divide expected {
-        Oasis::Real { 6.0 },
-        Oasis::Divide {
-            Oasis::Real { 3.0 },
-            Oasis::Real { 2.0 } }
-    };
-    requireSuccessfulParsing(palm, expected);
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Division Missing Least Significant Operand", "[PALM][Parser][Operator][Division]")
-{
-    const std::string palm = "( / ( real 6 ) )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Punctuator,
-        .lexeme = ")",
-        .charOffset = 15,
-        .tokenIndex = 4,
-        .line = 1,
-        .column = 16,
-    };
-
-    requireMissingOperandParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Division Missing Most Significant Operand", "[PALM][Parser][Operator][Division]")
-{
-    const std::string palm = "( / )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Punctuator,
-        .lexeme = ")",
-        .charOffset = 4,
-        .tokenIndex = 2,
-        .line = 1,
-        .column = 5,
-    };
-
-    requireMissingOperandParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Division with Too Many Operands", "[PALM][Parser][Operator][Division]")
-{
-    const std::string palm = "( / ( real 6 ) ( real 3 ) ( real 2 ) )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Identifier,
-        .lexeme = "(",
-        .charOffset = 30,
-        .tokenIndex = 6,
-        .line = 1,
-        .column = 31,
-    };
-
-    requireExtraOperandParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Division with Number Operand", "[PALM][Parser][Operator][Division]")
-{
-    const std::string palm = "( / 6 ( real 3 ) )";
-    const Oasis::PALMToken errorToken = {
-            .type = Oasis::PALMTokenType::Number,
-            .lexeme = "6",
-            .charOffset = 4,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 5,
-    };
-
-    requireInvalidOperandParsingError(palm, errorToken);
-}
-
-TEST_CASE("PALM Parsing of Division with Identifier Operand", "[PALM][Parser][Operator][Division]")
-{
-    const std::string palm = "( / ( real 6 ) x )";
-    const Oasis::PALMToken errorToken = {
-        .type = Oasis::PALMTokenType::Identifier,
-        .lexeme = "x",
-        .charOffset = 18,
-        .tokenIndex = 5,
-        .line = 1,
-        .column = 19,
-    };
-
-    requireInvalidOperandParsingError(palm, errorToken);
-}
-
-// --- Exponent ---
-// Basic Tests
-TEST_CASE("PALM Parsing of Exponent", "[PALM][Parser][Operator][Exponent]")
-{
-    const std::string palm = "( ^ ( real 2 ) ( real 3 ) )";
-    const Oasis::Exponent expected {
-        Oasis::Real { 2.0 },
-        Oasis::Real { 3.0 },
-    };
-
-    requireSuccessfulParsing(palm, expected);
-}
-
-TEST_CASE("PALM Parsing of Nested Exponent", "[PALM][Parser][Operator][Exponent]")
-{
-    const Oasis::Exponent expected {
-        Oasis::Real { 2.0 },
-        Oasis::Exponent {
-            Oasis::Real { 3.0 },
-            Oasis::Real { 2.0 } }
-    };
-
-    OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-    const auto expr = Oasis::FromPALM("( ^ ( real 2 ) ( ^ ( real 3 ) ( real 2 ) ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Exponent Missing Least Significant Operand", "[PALM][Parser][Operator][Exponent]")
-{
-    const auto expr = Oasis::FromPALM("( ^ ( real 2 ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Punctuator,
-            .lexeme = ")",
-            .charOffset = 15,
-            .tokenIndex = 4,
-            .line = 1,
-            .column = 16,
-        },
-        .message = "Incomplete '^' expression; expected two operands."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Exponent Missing Most Significant Operand", "[PALM][Parser][Operator][Exponent]")
-{
-    const auto expr = Oasis::FromPALM("( ^ )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Punctuator,
-            .lexeme = ")",
-            .charOffset = 4,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 5,
-        },
-        .message = "Incomplete '^' expression; expected two operands."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Exponent with Too Many Operands", "[PALM][Parser][Operator][Exponent]")
-{
-    const auto expr = Oasis::FromPALM("( ^ ( real 2 ) ( real 3 ) ( real 2 ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::ExtraOperands,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Identifier,
-            .lexeme = "(",
-            .charOffset = 30,
-            .tokenIndex = 6,
-            .line = 1,
-            .column = 31,
-        },
-        .message = "Unexpected token '(' when parsing operator '^'."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Exponent with Number Operand", "[PALM][Parser][Operator][Exponent]")
-{
-    const auto expr = Oasis::FromPALM("( ^ 2 ( real 3 ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Number,
-            .lexeme = "2",
-            .charOffset = 4,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 5,
-        },
-        .message = "Invalid operand '2' for '^' operator; expected an expression."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Exponent with Identifier Operand", "[PALM][Parser][Operator][Exponent]")
-{
-    const auto expr = Oasis::FromPALM("( ^ ( real 2 ) x )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Identifier,
-            .lexeme = "x",
-            .charOffset = 18,
-            .tokenIndex = 5,
-            .line = 1,
-            .column = 19,
-        },
-        .message = "Invalid operand 'x' for '^' operator; expected an expression."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-// --- Logarithm ---
-// Basic Tests
-TEST_CASE("Parse Simple Logarithm", "[PALM][Parser][Operator][Logarithm]")
-{
-    const Oasis::Log expected {
-        Oasis::Real { 2.0 },
-        Oasis::Real { 8.0 }
-    };
-
-    OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-    const auto expr = Oasis::FromPALM("( log ( real 2 ) ( real 8 ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
-
-TEST_CASE("Parse Nested Logarithm", "[PALM][Parser][Operator][Logarithm]")
-{
-    const Oasis::Log expected {
-        Oasis::Real { 2.0 },
-        Oasis::Log {
-            Oasis::Real { 3.0 },
-            Oasis::Real { 9.0 } }
-    };
-
-    OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-    const auto expr = Oasis::FromPALM("( log ( real 2 ) ( log ( real 3 ) ( real 9 ) ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Logarithm Missing Least Significant Operand", "[PALM][Parser][Operator][Logarithm]")
-{
-    const auto expr = Oasis::FromPALM("( log ( real 2 ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Punctuator,
-            .lexeme = ")",
-            .charOffset = 15,
-            .tokenIndex = 4,
-            .line = 1,
-            .column = 16,
-        },
-        .message = "Incomplete 'log' expression; expected two operands."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Logarithm Missing Most Significant Operand", "[PALM][Parser][Operator][Logarithm]")
-{
-    const auto expr = Oasis::FromPALM("( log )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Punctuator,
-            .lexeme = ")",
-            .charOffset = 4,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 5,
-        },
-        .message = "Incomplete 'log' expression; expected two operands."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Logarithm with Too Many Operands", "[PALM][Parser][Operator][Logarithm]")
-{
-    const auto expr = Oasis::FromPALM("( log ( real 2 ) ( real 8 ) ( real 4 ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::ExtraOperands,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Identifier,
-            .lexeme = "(",
-            .charOffset = 30,
-            .tokenIndex = 6,
-            .line = 1,
-            .column = 31,
-        },
-        .message = "Unexpected token '(' when parsing operator 'log'."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Logarithm with Number Operand", "[PALM][Parser][Operator][Logarithm]")
-{
-    const auto expr = Oasis::FromPALM("( log 2 ( real 8 ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Number,
-            .lexeme = "2",
-            .charOffset = 4,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 5,
-        },
-        .message = "Invalid operand '2' for 'log' operator; expected an expression."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Logarithm with Identifier Operand", "[PALM][Parser][Operator][Logarithm]")
-{
-    const auto expr = Oasis::FromPALM("( log ( real 2 ) x )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Identifier,
-            .lexeme = "x",
-            .charOffset = 18,
-            .tokenIndex = 5,
-            .line = 1,
-            .column = 19,
-        },
-        .message = "Invalid operand 'x' for 'log' operator; expected an expression."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-// --- Integral ---
-TEST_CASE("Parse Simple Integral", "[PALM][Parser][Operator][Integral]")
-{
-    const Oasis::Integral expected {
-        Oasis::Variable { "x" },
-        Oasis::Real { 0.0 },
-    };
-
-    OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-    const auto expr = Oasis::FromPALM("( int ( var x ) ( real 0 ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
-
-TEST_CASE("Parse Nested Integral", "[PALM][Parser][Operator][Integral]")
-{
-    const Oasis::Integral expected {
-        Oasis::Variable { "x" },
-        Oasis::Integral {
-            Oasis::Variable { "y" },
-            Oasis::Real { 0.0 } }
-    };
-
-    OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-    const auto expr = Oasis::FromPALM("( int ( var x ) ( int ( var y ) ( real 0 ) ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Integral Missing Least Significant Operand", "[PALM][Parser][Operator][Integral]")
-{
-    const auto expr = Oasis::FromPALM("( int ( var x ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Punctuator,
-            .lexeme = ")",
-            .charOffset = 18,
-            .tokenIndex = 5,
-            .line = 1,
-            .column = 19,
-        },
-        .message = "Incomplete 'int' expression; expected two operands."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Integral Missing Most Significant Operand", "[PALM][Parser][Operator][Integral]")
-{
-    const auto expr = Oasis::FromPALM("( int )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Punctuator,
-            .lexeme = ")",
-            .charOffset = 6,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 7,
-        },
-        .message = "Incomplete 'int' expression; expected two operands."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Integral with Too Many Operands", "[PALM][Parser][Operator][Integral]")
-{
-    const auto expr = Oasis::FromPALM("( int ( var x ) ( real 0 ) ( real 1 ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::ExtraOperands,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Identifier,
-            .lexeme = "(",
-            .charOffset = 30,
-            .tokenIndex = 6,
-            .line = 1,
-            .column = 31,
-        },
-        .message = "Unexpected token '(' when parsing operator 'int'."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Integral with Number Operand", "[PALM][Parser][Operator][Integral]")
-{
-    const auto expr = Oasis::FromPALM("( int 5 ( real 0 ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Number,
-            .lexeme = "5",
-            .charOffset = 5,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 6,
-        },
-        .message = "Invalid operand '5' for 'int' operator; expected an expression."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Integral with Identifier Operand", "[PALM][Parser][Operator][Integral]")
-{
-    const auto expr = Oasis::FromPALM("( int ( var x ) y )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Identifier,
-            .lexeme = "y",
-            .charOffset = 19,
-            .tokenIndex = 6,
-            .line = 1,
-            .column = 20,
-        },
-        .message = "Invalid operand 'y' for 'int' operator; expected an expression."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-// --- Negate ---
-// Basic Tests
-TEST_CASE("Parse Simple Negate", "[PALM][Parser][Operator][Negate]")
-{
-    const Oasis::Negate expected {
-        Oasis::Real { 5.0 }
-    };
-
-    const auto expr = Oasis::FromPALM("( neg ( real 5 ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Negate Missing Operand", "[PALM][Parser][Operator][Negate]")
-{
-    const auto expr = Oasis::FromPALM("( neg )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Punctuator,
-            .lexeme = ")",
-            .charOffset = 6,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 7,
-        },
-        .message = "Incomplete 'neg' expression; expected one operand."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Negate with Too Many Operands", "[PALM][Parser][Operator][Negate]")
-{
-    const auto expr = Oasis::FromPALM("( neg ( real 5 ) ( real 3 ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::ExtraOperands,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Identifier,
-            .lexeme = "(",
-            .charOffset = 20,
-            .tokenIndex = 5,
-            .line = 1,
-            .column = 21,
-        },
-        .message = "Unexpected token '(' when parsing operator 'neg'."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Negate with Number Operand", "[PALM][Parser][Operator][Negate]")
-{
-    const auto expr = Oasis::FromPALM("( neg 5 )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Number,
-            .lexeme = "5",
-            .charOffset = 5,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 6,
-        },
-        .message = "Invalid operand '5' for 'neg' operator; expected an expression."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Negate with Identifier Operand", "[PALM][Parser][Operator][Negate]")
-{
-    const auto expr = Oasis::FromPALM("( neg x )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Identifier,
-            .lexeme = "x",
-            .charOffset = 5,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 6,
-        },
-        .message = "Invalid operand 'x' for 'neg' operator; expected an expression."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-// --- Derivative ---
-// Basic Tests
-TEST_CASE("Parse Simple Derivative", "[PALM][Parser][Operator][Derivative]")
-{
-    const Oasis::Derivative expected {
-        Oasis::Variable { "x" },
-        Oasis::Real { 0.0 },
-    };
-
-    OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-    const auto expr = Oasis::FromPALM("( d ( var x ) ( real 0 ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
-
-TEST_CASE("Parse Nested Derivative", "[PALM][Parser][Operator][Derivative]")
-{
-    const Oasis::Derivative expected {
-        Oasis::Variable { "x" },
-        Oasis::Derivative {
-            Oasis::Variable { "y" },
-            Oasis::Real { 0.0 } }
-    };
-
-    OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-    const auto expr = Oasis::FromPALM("( d ( var x ) ( d ( var y ) ( real 0 ) ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Derivative Missing Least Significant Operand", "[PALM][Parser][Operator][Derivative]")
-{
-    const auto expr = Oasis::FromPALM("( d ( var x ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Punctuator,
-            .lexeme = ")",
-            .charOffset = 18,
-            .tokenIndex = 5,
-            .line = 1,
-            .column = 19,
-        },
-        .message = "Incomplete 'd' expression; expected two operands."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Derivative Missing Most Significant Operand", "[PALM][Parser][Operator][Derivative]")
-{
-    const auto expr = Oasis::FromPALM("( d )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Punctuator,
-            .lexeme = ")",
-            .charOffset = 4,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 5,
-        },
-        .message = "Incomplete 'd' expression; expected two operands."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Derivative with Too Many Operands", "[PALM][Parser][Operator][Derivative]")
-{
-    const auto expr = Oasis::FromPALM("( d ( var x ) ( real 0 ) ( real 1 ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::ExtraOperands,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Identifier,
-            .lexeme = "(",
-            .charOffset = 30,
-            .tokenIndex = 6,
-            .line = 1,
-            .column = 31,
-        },
-        .message = "Unexpected token '(' when parsing operator 'd'."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Derivative with Number Operand", "[PALM][Parser][Operator][Derivative]")
-{
-    const auto expr = Oasis::FromPALM("( d 5 ( real 0 ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Number,
-            .lexeme = "5",
-            .charOffset = 5,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 6,
-        },
-        .message = "Invalid operand '5' for 'd' operator; expected an expression."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Derivative with Identifier Operand", "[PALM][Parser][Operator][Derivative]")
-{
-    const auto expr = Oasis::FromPALM("( d ( var x ) y )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Identifier,
-            .lexeme = "y",
-            .charOffset = 19,
-            .tokenIndex = 6,
-            .line = 1,
-            .column = 20,
-        },
-        .message = "Invalid operand 'y' for 'd' operator; expected an expression."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-// --- Pi ---
-// Basic Tests
-TEST_CASE("Parse Constant Pi (pi)", "[PALM][Parser][Operator][Pi]")
-{
-    const auto expr = Oasis::FromPALM("( pi )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Is<Oasis::Pi>());
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Pi with Too Many Operands", "[PALM][Parser][Operator][Pi]")
-{
-    const auto expr = Oasis::FromPALM("( pi ( real 3 ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::ExtraOperands,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Punctuator,
-            .lexeme = "(",
-            .charOffset = 8,
-            .tokenIndex = 3,
-            .line = 1,
-            .column = 9,
-        },
-        .message = "Unexpected token '(' when parsing constant 'pi'."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-// --- Euler's Number ---
-// Basic Tests
-TEST_CASE("Parse Constant Euler's Number", "[PALM][Parser][Operator][EulerNumber]")
-{
-    const auto expr = Oasis::FromPALM("( e )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Is<Oasis::EulerNumber>());
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Euler's Number with Too Many Operands", "[PALM][Parser][Operator][EulerNumber]")
-{
-    const auto expr = Oasis::FromPALM("( e ( real 2 ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::ExtraOperands,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Punctuator,
-            .lexeme = "(",
-            .charOffset = 6,
-            .tokenIndex = 3,
-            .line = 1,
-            .column = 7,
-        },
-        .message = "Unexpected token '(' when parsing constant 'e'."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-// --- Magnitude ---
-// Basic Tests
-TEST_CASE("Parse Magnitude", "[PALM][Parser][Operator][Magnitude]")
-{
-    const Oasis::Magnitude expected {
-        Oasis::Real { -7.5 }
-    };
-
-    OASIS_CAPTURE_WITH_SERIALIZER(expected);
-
-    const auto expr = Oasis::FromPALM("( mag ( real -7.5 ) )");
-    REQUIRE(expr.has_value());
-    REQUIRE((*expr)->Equals(expected));
-}
-
-// Malformed Tests
-TEST_CASE("PALM Parsing of Magnitude Missing Operand", "[PALM][Parser][Operator][Magnitude]")
-{
-    const auto expr = Oasis::FromPALM("( mag )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::MissingOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Punctuator,
-            .lexeme = ")",
-            .charOffset = 6,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 7,
-        },
-        .message = "Incomplete 'mag' expression; expected one operand."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Magnitude with Too Many Operands", "[PALM][Parser][Operator][Magnitude]")
-{
-    const auto expr = Oasis::FromPALM("( mag ( real -7.5 ) ( real 3 ) )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::ExtraOperands,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Identifier,
-            .lexeme = "(",
-            .charOffset = 20,
-            .tokenIndex = 5,
-            .line = 1,
-            .column = 21,
-        },
-        .message = "Unexpected token '(' when parsing operator 'mag'."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Magnitude with Number Operand", "[PALM][Parser][Operator][Magnitude]")
-{
-    const auto expr = Oasis::FromPALM("( mag  -7.5 )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Number,
-            .lexeme = "-7.5",
-            .charOffset = 5,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 6,
-        },
-        .message = "Invalid operand '-7.5' for 'mag' operator; expected an expression."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-TEST_CASE("PALM Parsing of Magnitude with Identifier Operand", "[PALM][Parser][Operator][Magnitude]")
-{
-    const auto expr = Oasis::FromPALM("( mag x )");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::InvalidOperand,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::Identifier,
-            .lexeme = "x",
-            .charOffset = 5,
-            .tokenIndex = 2,
-            .line = 1,
-            .column = 6,
-        },
-        .message = "Invalid operand 'x' for 'mag' operator; expected an expression."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-// ---------------------
-// Malformed Expressions
-// ---------------------
-TEST_CASE("PALM Parsing of Expression with Missing Closing Parenthesis", "[PALM][Parser][Expression]")
-{
-    const auto expr = Oasis::FromPALM("( + ( real 5 ) ( real 3 ) ");
-
-    auto error = expr.error();
-    auto expectedError = Oasis::PALMParseError {
-        .type = Oasis::PALMParseError::PALMParseErrorType::UnexpectedEndOfInput,
-        .token = Oasis::PALMToken {
-            .type = Oasis::PALMTokenType::EndOfInput,
-            .lexeme = "",
-            .charOffset = 29,
-            .tokenIndex = 7,
-            .line = 1,
-            .column = 30,
-        },
-        .message = "Expected ')' at the end of the expression."
-    };
-
-    REQUIRE(!expr);
-    REQUIRE(error == expectedError);
-}
-
-// /* Beware, entering land of to be migrated */
-/*
- * Test Invalid Expressions
- */
-// TEST_CASE("Parse Invalid Expression", "[PALM][Parsing]")
-// {
-//     const auto expr = Oasis::FromPALMOld("( unknown_op ( real 5 ) ( real 3 ) )");
-//     REQUIRE(!expr);
-//     REQUIRE(expr.error() == Oasis::ParseErrorOld::UnknownOperator);
-// }
-//
-// TEST_CASE("Parse Empty Expression", "[PALM][Parsing]")
-// {
-//     const auto expr = Oasis::FromPALMOld("");
-//     REQUIRE(!expr);
-//     REQUIRE(expr.error() == Oasis::ParseErrorOld::UnexpectedEndOfInput);
-// }
-
-// Note to self, make some tests for spacing and padding and all that fun stuff
-// And end of input
-// TEST_CASE("PALM Parsing of Real with different spacing and padding", "[PALM][Parser][Real]")
-// {
-//     { // Extra spaces
-//         const auto expr = Oasis::FromPALM("(   real    7.89   )");
-//
-//         REQUIRE(expr.has_value());
-//         REQUIRE((*expr)->Is<Oasis::Real>());
-//
-//         const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
-//         REQUIRE(real->GetValue() == 7.89);
-//     }
-//
-//     { // Tab padding
-//         const auto expr = Oasis::FromPALM("(\treal\t0.5772\t)");
-//
-//         REQUIRE(expr.has_value());
-//         REQUIRE((*expr)->Is<Oasis::Real>());
-//
-//         const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
-//         REQUIRE(real->GetValue() == 0.5772);
-//     }
-//
-//     { // Newline padding
-//         const auto expr = Oasis::FromPALM("(\nreal\n1.618\n)");
-//
-//         REQUIRE(expr.has_value());
-//         REQUIRE((*expr)->Is<Oasis::Real>());
-//
-//         const auto real = Oasis::RecursiveCast<Oasis::Real>(**expr);
-//         REQUIRE(real->GetValue() == 1.618);
-//     }
-// }
-//
-// TEST_CASE("PALM Parsing of Malformed Expression", "[PALM][Parser][Expression]")
-// {
-//     { // Missing opening parenthesis
-//         const auto expr = Oasis::FromPALM("+ ( real 5 ) ( real 3 ) )");
-//
-//         auto error = expr.error();
-//         auto expectedError = Oasis::PALMParseError {
-//             .token = Oasis::PALMToken {
-//                 .type = Oasis::PALMTokenType::Punctuator,
-//                 .lexeme = "+",
-//                 .charOffset = 0,
-//                 .tokenIndex = 0,
-//                 .line = 1,
-//                 .column = 1,
-//             },
-//             .type = Oasis::PALMParseErrorType::UnexpectedToken,
-//             .message = "Expected '(' at the beginning of an expression."
-//         };
-//
-//         REQUIRE(!expr);
-//         REQUIRE(error == expectedError);
-//     }
-//
-//     { // Extra closing parenthesis
-//         const auto expr = Oasis::FromPALM("( + ( real 5 ) ( real 3 ) ))");
-//
-//         auto error = expr.error();
-//         auto expectedError = Oasis::PALMParseError {
-//             .token = Oasis::PALMToken {
-//                 .type = Oasis::PALMTokenType::Punctuator,
-//                 .lexeme = ")",
-//                 .charOffset = 30,
-//                 .tokenIndex = 7,
-//                 .line = 1,
-//                 .column = 31,
-//             },
-//             .type = Oasis::PALMParseErrorType::UnexpectedToken,
-//             .message = "Unexpected token ')' after end of expression."
-//         };
-//
-//         REQUIRE(!expr);
-//         REQUIRE(error == expectedError);
-//     }
-//
-//     { // Missing expression
-//         const auto expr = Oasis::FromPALM("");
-//
-//         auto error = expr.error();
-//         auto expectedError = Oasis::PALMParseError {
-//             .token = Oasis::PALMToken {
-//                 .type = Oasis::PALMTokenType::EndOfInput,
-//                 .lexeme = "",
-//                 .charOffset = 0,
-//                 .tokenIndex = 0,
-//                 .line = 1,
-//                 .column = 1,
-//             },
-//             .type = Oasis::PALMParseErrorType::UnexpectedEndOfInput,
-//             .message = "Expected an expression but found end of input."
-//         };
-//
-//         REQUIRE(!expr);
-//         REQUIRE(error == expectedError);
-//     }
-//
-//     { // False start of expression
-//         const auto expr = Oasis::FromPALM("'");
-//
-//         auto error = expr.error();
-//         auto expectedError = Oasis::PALMParseError {
-//             .token = Oasis::PALMToken {
-//                 .type = Oasis::PALMTokenType::Unknown,
-//                 .lexeme = "'",
-//                 .charOffset = 0,
-//                 .tokenIndex = 0,
-//                 .line = 1,
-//                 .column = 1,
-//             },
-//             .type = Oasis::PALMParseErrorType::UnexpectedToken,
-//             .message = "Expected '(' at the beginning of an expression."
-//         };
-//
-//         REQUIRE(!expr);
-//         REQUIRE(error == expectedError);
-//     }
-//
-//     { // Empty expression
-//         const auto expr = Oasis::FromPALM("()");
-//
-//         auto error = expr.error();
-//         auto expectedError = Oasis::PALMParseError {
-//             .token = Oasis::PALMToken {
-//                 .type = Oasis::PALMTokenType::Punctuator,
-//                 .lexeme = ")",
-//                 .charOffset = 1,
-//                 .tokenIndex = 1,
-//                 .line = 1,
-//                 .column = 2,
-//             },
-//             .type = Oasis::PALMParseErrorType::MissingOperator,
-//             .message = "Expected an operator after '('."
-//         };
-//
-//         REQUIRE(!expr);
-//         REQUIRE(error == expectedError);
-//     }
-//
-//     { // Missing operator
-//         const auto expr = Oasis::FromPALM("( ( real 5 ) ( real 3 ) )");
-//
-//         auto error = expr.error();
-//         auto expectedError = Oasis::PALMParseError {
-//             .token = Oasis::PALMToken {
-//                 .type = Oasis::PALMTokenType::Punctuator,
-//                 .lexeme = "(",
-//                 .charOffset = 2,
-//                 .tokenIndex = 1,
-//                 .line = 1,
-//                 .column = 3,
-//             },
-//             .type = Oasis::PALMParseErrorType::MissingOperator,
-//             .message = "Expected an operator after '('."
-//         };
-//
-//         REQUIRE(!expr);
-//         REQUIRE(error == expectedError);
-//     }
-//
-//     { // Missing closing parenthesis
-//         const auto expr = Oasis::FromPALM("( + ( real 5 ) ( real 3 ) ");
-//
-//         auto error = expr.error();
-//         auto expectedError = Oasis::PALMParseError {
-//             .token = Oasis::PALMToken {
-//                 .type = Oasis::PALMTokenType::EndOfInput,
-//                 .lexeme = "",
-//                 .charOffset = 28,
-//                 .tokenIndex = 6,
-//                 .line = 1,
-//                 .column = 28,
-//             },
-//             .type = Oasis::PALMParseErrorType::UnexpectedEndOfInput,
-//             .message = "Expected ')' at the end of the expression."
-//         };
-//
-//         REQUIRE(!expr);
-//         REQUIRE(error == expectedError);
-//     }
-// }
-// // TODO: Remove
-// TEST_CASE("TEMP RUN PALM")
-// {
-//     const std::string palmString = "(+(real 5) (* (var x ) \n ( ^ ( real 2 ) ( real 3 ) ) ) )";
-//
-//     const std::string palmString2 = "( real three.point.onefour )";
-//     const auto expr = Oasis::FromPALM(palmString2);
-// }
-//
-//
-// TEST_CASE("Parse Subtraction Multiple Elements", "[PALM][Parsing]")
-// {
-//     const Oasis::Subtract<> expected {
-//         Oasis::Real { 5.0 },
-//         Oasis::Subtract {
-//             Oasis::Real { 3.0 },
-//             Oasis::Subtract {
-//                 Oasis::Real { 2.0 },
-//                 Oasis::Real { 1.0 } } }
-//     };
-//
-//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
-//
-//     const auto expr = Oasis::FromPALMOld("( - ( real 5 ) ( real 3 ) ( real 2 ) ( real 1 ) )");
-//     REQUIRE(expr.has_value());
-//     REQUIRE((*expr)->Equals(expected));
-// }
-// /*
-//  * Mixed Addition and Subtraction
-//  */
-// TEST_CASE("Parse Mixed Addition and Subtraction", "[PALM][Parsing]")
-// {
-//     const Oasis::Add expected {
-//         Oasis::Real { 5.0 },
-//         Oasis::Subtract {
-//             Oasis::Real { 3.0 },
-//             Oasis::Real { 2.0 } }
-//     };
-//
-//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
-//
-//     const auto expr = Oasis::FromPALMOld("( + ( real 5 ) ( - ( real 3 ) ( real 2 ) ) )");
-//     REQUIRE(expr.has_value());
-//     REQUIRE((*expr)->Equals(expected));
-// }
-//
-// TEST_CASE("Parse Mixed Addition and Subtraction 2", "[PALM][Parsing]")
-// {
-//     const Oasis::Subtract expected {
-//         Oasis::Real { 5.0 },
-//         Oasis::Add {
-//             Oasis::Real { 3.0 },
-//             Oasis::Real { 2.0 } }
-//     };
-//
-//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
-//
-//     const auto expr = Oasis::FromPALMOld("( - ( real 5 ) ( + ( real 3 ) ( real 2 ) ) )");
-//     REQUIRE(expr.has_value());
-//     REQUIRE((*expr)->Equals(expected));
-// }
-//
-// TEST_CASE("Parse Mixed Addition and Subtraction Multiple Elements", "[PALM][Parsing]")
-// {
-//     const Oasis::Add<> expected {
-//         Oasis::Real { 5.0 },
-//         Oasis::Subtract {
-//             Oasis::Real { 3.0 },
-//             Oasis::Add {
-//                 Oasis::Real { 2.0 },
-//                 Oasis::Real { 1.0 } } }
-//     };
-//
-//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
-//
-//     const auto expr = Oasis::FromPALMOld("( + ( real 5 ) ( - ( real 3 ) ( + ( real 2 ) ( real 1 ) ) ) )");
-//     REQUIRE(expr.has_value());
-//     REQUIRE((*expr)->Equals(expected));
-// }
-// TEST_CASE("Parse Mixed Addition, Subtraction, and Multiplication", "[PALM][Parsing]")
-// {
-//     const Oasis::Add expected {
-//         Oasis::Real { 5.0 },
-//         Oasis::Subtract {
-//             Oasis::Real { 3.0 },
-//             Oasis::Multiply {
-//                 Oasis::Real { 2.0 },
-//                 Oasis::Real { 4.0 } } }
-//     };
-//
-//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
-//
-//     const auto expr = Oasis::FromPALMOld("( + ( real 5 ) ( - ( real 3 ) ( * ( real 2 ) ( real 4 ) ) ) )");
-//     REQUIRE(expr.has_value());
-//     REQUIRE((*expr)->Equals(expected));
-// }
-// TEST_CASE("Parse Mixed Addition, Subtraction, Multiplication, and Division", "[PALM][Parsing]")
-// {
-//     const Oasis::Add expected {
-//         Oasis::Real { 5.0 },
-//         Oasis::Subtract {
-//             Oasis::Real { 3.0 },
-//             Oasis::Multiply {
-//                 Oasis::Real { 2.0 },
-//                 Oasis::Divide {
-//                     Oasis::Real { 4.0 },
-//                     Oasis::Real { 2.0 } } } }
-//     };
-//
-//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
-//
-//     const auto expr = Oasis::FromPALMOld("( + ( real 5 ) ( - ( real 3 ) ( * ( real 2 ) ( / ( real 4 ) ( real 2 ) ) ) ) )");
-//     REQUIRE(expr.has_value());
-//     REQUIRE((*expr)->Equals(expected));
-// }
-// TEST_CASE("Parse Mixed Addition, Subtraction, Multiplication, Division, and Exponent", "[PALM][Parsing]")
-// {
-//     const Oasis::Add expected {
-//         Oasis::Real { 5.0 },
-//         Oasis::Subtract {
-//             Oasis::Real { 3.0 },
-//             Oasis::Multiply {
-//                 Oasis::Real { 2.0 },
-//                 Oasis::Divide {
-//                     Oasis::Real { 4.0 },
-//                     Oasis::Exponent {
-//                         Oasis::Real { 2.0 },
-//                         Oasis::Real { 3.0 } } } } }
-//     };
-//
-//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
-//
-//     const auto expr = Oasis::FromPALMOld("( + ( real 5 ) ( - ( real 3 ) ( * ( real 2 ) ( / ( real 4 ) ( ^ ( real 2 ) ( real 3 ) ) ) ) ) )");
-//     REQUIRE(expr.has_value());
-//     REQUIRE((*expr)->Equals(expected));
-// }
-// TEST_CASE("Parse Mixed Many", "[PALM][Parsing]")
-// {
-//     const Oasis::Add expected {
-//         Oasis::Real { 5.0 },
-//         Oasis::Subtract {
-//             Oasis::Real { 3.0 },
-//             Oasis::Multiply {
-//                 Oasis::Real { 2.0 },
-//                 Oasis::Divide {
-//                     Oasis::Real { 4.0 },
-//                     Oasis::Exponent {
-//                         Oasis::Real { 2.0 },
-//                         Oasis::Log {
-//                             Oasis::Real { 2.0 },
-//                             Oasis::Real { 8.0 } } } } } }
-//     };
-//
-//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
-//
-//     const auto expr = Oasis::FromPALMOld("( + ( real 5 ) ( - ( real 3 ) ( * ( real 2 ) ( / ( real 4 ) ( ^ ( real 2 ) ( log ( real 2 ) ( real 8 ) ) ) ) ) ) )");
-//     REQUIRE(expr.has_value());
-//     REQUIRE((*expr)->Equals(expected));
-// }
-// TEST_CASE("Parse Mixed Integral", "[PALM][Parsing]")
-// {
-//     const Oasis::Add expected {
-//         Oasis::Real { 5.0 },
-//         Oasis::Subtract {
-//             Oasis::Real { 3.0 },
-//             Oasis::Multiply {
-//                 Oasis::Real { 2.0 },
-//                 Oasis::Divide {
-//                     Oasis::Real { 4.0 },
-//                     Oasis::Exponent {
-//                         Oasis::Real { 2.0 },
-//                         Oasis::Log {
-//                             Oasis::Real { 2.0 },
-//                             Oasis::Integral {
-//                                 Oasis::Variable { "x" },
-//                                 Oasis::Real { 8.0 } } } } } } }
-//     };
-//
-//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
-//
-//     const auto expr = Oasis::FromPALMOld("( + ( real 5 ) ( - ( real 3 ) ( * ( real 2 ) ( / ( real 4 ) ( ^ ( real 2 ) ( log ( real 2 ) ( int ( var x ) ( real 8 ) ) ) ) ) ) ) )");
-//     REQUIRE(expr.has_value());
-//     REQUIRE((*expr)->Equals(expected));
-// }
-// TEST_CASE("Parse Mixed Derivative", "[PALM][Parsing]")
-// {
-//     const Oasis::Add expected {
-//         Oasis::Real { 5.0 },
-//         Oasis::Subtract {
-//             Oasis::Real { 3.0 },
-//             Oasis::Multiply {
-//                 Oasis::Real { 2.0 },
-//                 Oasis::Divide {
-//                     Oasis::Real { 4.0 },
-//                     Oasis::Exponent {
-//                         Oasis::Real { 2.0 },
-//                         Oasis::Log {
-//                             Oasis::Real { 2.0 },
-//                             Oasis::Derivative {
-//                                 Oasis::Variable { "x" },
-//                                 Oasis::Real { 8.0 } } } } } } }
-//     };
-//
-//     OASIS_CAPTURE_WITH_SERIALIZER(expected);
-//
-//     const auto expr = Oasis::FromPALMOld("( + ( real 5 ) ( - ( real 3 ) ( * ( real 2 ) ( / ( real 4 ) ( ^ ( real 2 ) ( log ( real 2 ) ( d ( var x ) ( real 8 ) ) ) ) ) ) ) )");
-//     REQUIRE(expr.has_value());
-//     REQUIRE((*expr)->Equals(expected));
-// }
