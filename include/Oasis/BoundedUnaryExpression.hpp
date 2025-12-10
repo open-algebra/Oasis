@@ -15,7 +15,7 @@ namespace Oasis {
 
 /**
  * A concept for an operand of a unary expression with bounds.
- * This should not be called for standard operations by end users.
+ * @note This class is not intended to be used directly by end users.
  * 
  * @section Parameters
  * @tparam MostSigOpT The type of the most significant operand.
