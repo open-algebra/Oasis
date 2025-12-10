@@ -32,7 +32,8 @@ public:
 
 /**
  * The Add expression adds two expressions together.
- * The Add expression takes in two and only two objects 
+ * The Add expression takes in two parameters of any OASIS type.
+ * The Add expression may take in more than two parameters of Real types.
  *
  * 
  * @section Parameters
@@ -84,18 +85,35 @@ public:
     // Will print 2*x
  * @endcode
  *
- * or if they are not the same variable:
+ * @subsection if they are not the same variable:
  * @code
  * Oasis::Add myAdditionXY {
         Oasis::Variable{"x"},
         Oasis::Variable{"y"}
     };
 
-    resultant = myAdditionXY.Simplify();
+    resultant = myAdditionXY.SimplifyVisitor();
 
     std::println("Result of addition: {}", resultant->Accept(result).value());
     // Will print x+y
  * @endcode
+ *
+ * @subsubsection Adding more than two values together
+ * 
+ * @code
+ *  auto myAdditionSimple = Oasis::Add<> {
+        Oasis::Real{4},
+        Oasis::Real{4},
+        Oasis::Real{4}
+    };
+    Oasis::InFixSerializer result;
+
+    auto resultant = myAdditionSimple.Simplify();
+
+    std::println("Result of addition: {}", resultant->Accept(result).value());
+ * @endcode
+ * 
+ * 
  */
 template <IExpression AugendT = Expression, IExpression AddendT = AugendT>
 class Add : public BinaryExpression<Add, AugendT, AddendT> {
