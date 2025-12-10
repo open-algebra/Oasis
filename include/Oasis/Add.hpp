@@ -41,7 +41,7 @@ public:
  * 
  * The Add expression can add a multitude of OASIS class types.
  * 
- * @subsection Adding two Real values together.
+ * @subsection val_val Adding two Real values together.
  * @code
  * Oasis::Add myAdditionSimple {
  *      Oasis::Real{4},
@@ -55,7 +55,7 @@ public:
  *  // Will print 8
  * @endcode
  * 
- * @subsection Adding a Real value and a Variable together.
+ * @subsection val_var Adding a Real value and a Variable together.
  * @code
  * Oasis::Add myAddition {
         Oasis::Variable{"x"},
@@ -69,7 +69,7 @@ public:
     // Will print x+4
  * @endcode
  *
- * @subsection Adding two Variables together.
+ * @subsection var_var Adding two Variables together.
  * @code
  * Oasis::Add myAdditionX {
         Oasis::Variable{"x"},
@@ -82,7 +82,7 @@ public:
     // Will print 2*x
  * @endcode
  *
- * @subsection if they are not the same variable:
+ * @subsection var_var_n if they are not the same variable:
  * @code
  * Oasis::Add myAdditionXY {
         Oasis::Variable{"x"},
@@ -95,7 +95,7 @@ public:
     // Will print x+y
  * @endcode
  *
- * @subsubsection Adding more than two values together
+ * @subsubsection multi Adding more than two values together
  * 
  * @code
  *  auto myAdditionSimple = Oasis::Add<> {
@@ -109,8 +109,7 @@ public:
 
     std::println("Result of addition: {}", resultant->Accept(result).value());
  * @endcode
- * 
- * 
+ *  
  */
 template <typename AugendT = Expression, typename AddendT = AugendT>
 class Add : public BinaryExpression<Add, AugendT, AddendT> {
