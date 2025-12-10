@@ -5,6 +5,8 @@
 #ifndef OASIS_FWDDECLS_HPP
 #define OASIS_FWDDECLS_HPP
 
+#include "Concepts.hpp"
+
 namespace Oasis {
 class Real;
 class Imaginary;
