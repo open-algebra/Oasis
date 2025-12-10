@@ -5,6 +5,8 @@
 #ifndef OASIS_CONCEPTS_HPP
 #define OASIS_CONCEPTS_HPP
 
+#include <expected>
+
 namespace Oasis {
 
 class Expression;
