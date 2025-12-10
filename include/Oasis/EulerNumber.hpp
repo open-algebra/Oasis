@@ -13,9 +13,6 @@ namespace Oasis {
  * The EulerNumber class is a representation of the Euler Number.
  * It may be used when the Euler number is desired in computations.
  * 
- * @note As of right now, EulerNumber is unsupported in:
- * - Exponent
- * 
  * @section Parameters
  * No parameters are needed for the EulerNumber class.
  * 
