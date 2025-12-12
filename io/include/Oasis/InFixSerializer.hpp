@@ -21,23 +21,23 @@ namespace Oasis {
  *
  * @section exam Example Usage:
  * @code
-    std::string exp = {"x+5"};
+std::string exp = {"x+5"};
 
-    const auto preproc = Oasis::PreProcessInFix(exp);
-    auto midResult = Oasis::FromInFix(preproc);
+const auto preproc = Oasis::PreProcessInFix(exp);
+auto midResult = Oasis::FromInFix(preproc);
 
-    const std::unique_ptr<Oasis::Expression> expression = std::move(midResult).value();
-    
-    Oasis::Integral in {
-        *expression,
-        Oasis::Variable{"x"}
-    };
-    Oasis::InFixSerializer result; // Instantiate an InFixSerializer object.
+const std::unique_ptr<Oasis::Expression> expression = std::move(midResult).value();
 
-    auto resultant= in.Simplify(); // Simplify the integral to evaluate it.
- 
-    std::println{"Result: {}", resultant->Accept(result).value()};
-    // Extract the string version of the evaluated expression
+Oasis::Integral in {
+    *expression,
+    Oasis::Variable{"x"}
+};
+Oasis::InFixSerializer result; // Instantiate an InFixSerializer object.
+
+auto resultant= in.Simplify(); // Simplify the integral to evaluate it.
+
+std::println{"Result: {}", resultant->Accept(result).value()};
+// Extract the string version of the evaluated expression
  * @endcode
  *
  */
