@@ -37,10 +37,10 @@ public:
  * @section Parameters:
  * @tparam DependentT The expression type that the derivative will be calculated of.
  * @tparam IndependentT The type of the variable with respect to which the derivative will be calculated.
- * 
+ *
  * @section Example Usage:
- * 
- * 
+ *
+ *
  * @subsection simple Simple derivative function
  * @code
  * std::string exp = {"3x^3+x^2+5x+1"};

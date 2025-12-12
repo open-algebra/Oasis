@@ -18,7 +18,7 @@ namespace Oasis {
 /**
  * A concept for an operand of a binary expression.
  * @note This class is not intended to be used directly by end users.
- * 
+ *
  * @section Parameters
  * @tparam MostSigOpT The type of the most significant operand.
  * @tparam LeastSigOpT The type of the least significant operand.

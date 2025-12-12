@@ -12,12 +12,12 @@ namespace Oasis {
 /**
  * The EulerNumber class is a representation of the Euler Number.
  * It may be used when the Euler number is desired in computations.
- * 
+ *
  * @section Parameters
  * No parameters are needed for the EulerNumber class.
- * 
+ *
  * @section Examples
- * 
+ *
  * @subsection simple Simple usage:
  * @code
  *  auto e = Oasis::EulerNumber{};

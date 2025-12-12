@@ -37,9 +37,9 @@ public:
  * @section param Parameters
  * @tparam MultiplicandT The expression to be multiplied by.
  * @tparam MultiplierT The expression to multiply the multiplicand by.
- * 
+ *
  * @section examples Example Usage:
- * 
+ *
  * @subsection real Multiplying two Real values together:
  * @code
  * Oasis::Multiply myMult {
@@ -53,7 +53,7 @@ public:
     std::println("Result: {}", resultant->Accept(result).value());
     // Will print: 60
  * @endcode
- * 
+ *
  * @subsection var Multiplying one Real and one Variable value together:
  * @code
  * Oasis::Multiply myMult {
@@ -67,7 +67,7 @@ public:
     std::println("Result: {}", resultant->Accept(result).value());
     // Will print: (x*5)
  * @endcode
- * 
+ *
  * @subsection varSame Multiplying two Variable values together:
  * @code
  * Oasis::Multiply myMult {
@@ -81,9 +81,9 @@ public:
     std::println("Result: {}", resultant->Accept(result).value());
     // Will print: (x^2)
  * @endcode
- * 
+ *
  * or if they are different variables:
- * 
+ *
  * @code
  * Oasis::Multiply myMult {
         Oasis::Variable{"x"},
@@ -96,7 +96,7 @@ public:
     std::println("Result: {}", resultant->Accept(result).value());
     // Will print: (x*y)
  * @endcode
- * 
+ *
  * @subsection exprMult Multiplying two expressions together:
  * @note The Multiply class can store two expressions, but they will not be in the most simplified form.
  * @code
@@ -123,7 +123,7 @@ public:
     std::println("Result: {}", resultant->Accept(result).value());
     // Will print: ((((2*x)+(3*y))+15)*(((5*x)+(9*y))+-10))
  * @endcode
- * 
+ *
  */
 template <IExpression MultiplicandT = Expression, IExpression MultiplierT = MultiplicandT>
 class Multiply : public BinaryExpression<Multiply, MultiplicandT, MultiplierT> {

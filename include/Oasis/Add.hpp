@@ -35,14 +35,14 @@ public:
  * The Add expression takes in two parameters of any Oasis type.
  * The Add expression may take in more than two parameters of Real types.
  *
- * 
+ *
  * @section Parameters
  * @tparam AugendT The type of the expression to add be added to.
  * @tparam AddendT The type of the expression to add to the augend.
- * 
+ *
  * @section Example Usage:
  * The Add expression can take in a multitude of Oasis classes.
- * 
+ *
  * @subsection val_val Adding two Real values together:
  * @code
  * Oasis::Add myAdditionSimple {
@@ -52,11 +52,11 @@ public:
  *  Oasis::InFixSerializer result;
  *
  *    auto resultant = myAdditionSimple.Simplify();
- * 
+ *
  *  std::println("Result of addition: {}", resultant->Accept(result).value());
  *  // Will print 8
  * @endcode
- * 
+ *
  * @subsection val_var Adding a Real value and a Variable together:
  * @code
  * Oasis::Add myAddition {
@@ -98,7 +98,7 @@ public:
  * @endcode
  *
  * @subsubsection multi Adding more than two values together:
- * 
+ *
  * @code
  *  auto myAdditionSimple = Oasis::Add<> {
         Oasis::Real{4},
@@ -111,9 +111,9 @@ public:
 
     std::println("Result of addition: {}", resultant->Accept(result).value());
  * @endcode
- *  
+ *
  * @subsection exprAdd Adding two expressions together:
- * 
+ *
  * @code
  *  std::string expr1 = {"2x+3y+15"};
     std::string expr2 = {"5x+9y-10"};
@@ -138,7 +138,7 @@ public:
     std::println("Result: {}", resultant->Accept(result).value());
     // Will print (((7*x)+(12*y))+5)
  * @endcode
- * 
+ *
  */
 template <IExpression AugendT = Expression, IExpression AddendT = AugendT>
 class Add : public BinaryExpression<Add, AugendT, AddendT> {
