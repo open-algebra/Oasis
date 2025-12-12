@@ -98,7 +98,7 @@ public:
  *
  * @subsection expr_expr Subtracting two expressions from each other:
  *
- * @note As of right now, while Oasis will accept two expressions into its constructor, results may be inaccurate. For example, 
+ * @note As of right now, while Oasis will accept two expressions into its constructor, results may be inaccurate. For example,
  * expressions containing more than two variables will produce inaccurate results. See Example 2 down below.
  *
  *
@@ -131,7 +131,7 @@ public:
  * @endcode
  *
  * @subsection ex2 Example 2 (Inaccurate Results):
- * @code 
+ * @code
  * std::string exp1 = {"4x+2y-15"};
     std::string exp2 = {"2x+4y-10"};
 

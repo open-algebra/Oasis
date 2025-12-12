@@ -38,7 +38,7 @@ public:
  *
  * @section examples Example Usage:
  * @code
- * std::string exp = {"x+5"};
+    std::string exp = {"x+5"};
 
     const auto preproc = Oasis::PreProcessInFix(exp);
     auto midResult = Oasis::FromInFix(preproc);
