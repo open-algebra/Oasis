@@ -38,23 +38,23 @@ public:
  *
  * @section examples Example Usage:
  * @code
-    std::string exp = {"x+5"};
+std::string exp = {"x+5"};
 
-    const auto preproc = Oasis::PreProcessInFix(exp);
-    auto midResult = Oasis::FromInFix(preproc);
+const auto preproc = Oasis::PreProcessInFix(exp);
+auto midResult = Oasis::FromInFix(preproc);
 
-    const std::unique_ptr<Oasis::Expression> expression = std::move(midResult).value();
-    
-    Oasis::Integral in {
-        *expression,
-        Oasis::Variable{"x"}
-    };
-    Oasis::InFixSerializer result;
+const std::unique_ptr<Oasis::Expression> expression = std::move(midResult).value();
 
-    auto resultant = in.Simplify();
+Oasis::Integral in {
+    *expression,
+    Oasis::Variable{"x"}
+};
+Oasis::InFixSerializer result;
 
-    std::println("Result: {}",resultant->Accept(result).value());
-    // Will print (((5*x)+(0.5*(x^2)))+C)
+auto resultant = in.Simplify();
+
+std::println("Result: {}",resultant->Accept(result).value());
+// Will print (((5*x)+(0.5*(x^2)))+C)
  * @endcode
  */
 template <typename IntegrandT = Expression, typename DifferentialT = IntegrandT>

@@ -36,8 +36,8 @@ namespace Oasis {
 
     auto resultant= in.Simplify(); // Simplify the integral to evaluate it.
  
-   std::println{"Result: {}", resultant->Accept(result).value()};
-   // Extract the string version of the evaluated expression
+    std::println{"Result: {}", resultant->Accept(result).value()};
+    // Extract the string version of the evaluated expression
  * @endcode
  *
  */

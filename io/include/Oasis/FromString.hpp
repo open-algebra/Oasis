@@ -63,7 +63,7 @@ auto PreProcessInFix(const std::string& str) -> std::string;
  *
  * auto midResult = Oasis::FromInFix(preproc1); // Call FromInFix on the PreProcessInFix object.
  *
- * const std::unique_ptr<Oasis::Expression> expression = std::move(midResult1).value(); 
+ * const std::unique_ptr<Oasis::Expression> expression = std::move(midResult1).value();
  * // Use std::move to now move the processed result into an Oasis Expression.
  * // expression may now be used in Oasis classes, such as:
  *
