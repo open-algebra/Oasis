@@ -35,9 +35,8 @@ public:
  * @tparam DependentT The expression type that the derivative will be calculated of.
  * @tparam IndependentT The type of the variable with respect to which the derivative will be calculated.
  * 
- * @section Examples:
+ * @section Example Usage:
  * 
- * The derivative class can take a multitude of different differential equations to solve.
  * 
  * @subsection simple Simple derivative function
  * @code
@@ -60,7 +59,6 @@ public:
     // Will print: (((9*(x^2))+(2*x))+5)
  * @endcode
  *
- * @subsection special Derivative functions on
  */
 template <typename DependentT = Expression, typename IndependentT = DependentT>
 class Derivative : public BinaryExpression<Derivative, DependentT, IndependentT> {

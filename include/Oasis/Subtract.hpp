@@ -145,7 +145,6 @@ public:
 
     const std::unique_ptr<Oasis::Expression> expression2 = std::move(midResult2).value();
 
-
     Oasis::Subtract sub {
         *expression1,
         *expression2
