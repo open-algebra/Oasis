@@ -36,13 +36,13 @@ public:
  * @section param Parameters:
  * @tparam DividendT The expression to be divided into.
  * @tparam DivisorT The expression to divide the dividend by.
- * 
+ *
  * @note If a 0 is passed into the DivisorT parameter, Oasis will evaluate it as DividendT*inf.
- * 
+ *
  * @section examples Example Usage:
- * 
+ *
  * @subsection real Dividing two Real values together:
- * 
+ *
  * @code
  * Oasis::Divide myDiv {
         Oasis::Real{50},
@@ -55,7 +55,7 @@ public:
     std::println("Result: {}", resultant->Accept(result).value());
     // Will print: 4.1667
  * @endcode
- * 
+ *
  * @subsection var Dividing a Variable and Real value together:
  * Oasis will convert the expression into a multiplication equivalent instead. See below
  * @code
@@ -70,7 +70,7 @@ public:
     std::println("Result: {}", resultant->Accept(result).value());
     // Will print: (x*0.083333)
  * @endcode
- * 
+ *
  * @subsection var_var Dividing a Variable and a Variable value together:
  * @code
  * Oasis::Divide myDiv {
@@ -84,7 +84,7 @@ public:
     std::println("Result: {}", resultant->Accept(result).value());
     // Will print: (x/y)
  * @endcode
- * 
+ *
  * @subsection expressions Dividing two expressions together:
  * Oasis will accept two expressions, but it will not display as its simplest form. See below for example.
  * @code
@@ -111,7 +111,7 @@ public:
     std::println("Result: {}", resultant->Accept(result).value());
     // Will print: ((((2*x)+(3*y))+15)/(((5*x)+(9*y))+-10))
  * @endcode
- * 
+ *
  */
 template <typename DividendT = Expression, typename DivisorT = DividendT>
 class Divide : public BinaryExpression<Divide, DividendT, DivisorT> {
