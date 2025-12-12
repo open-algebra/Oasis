@@ -32,7 +32,7 @@ public:
 
 /**
  * The Add expression adds two expressions together.
- * The Add expression takes in two parameters of any OASIS type.
+ * The Add expression takes in two parameters of any Oasis type.
  * The Add expression may take in more than two parameters of Real types.
  *
  * 
@@ -40,11 +40,10 @@ public:
  * @tparam AugendT The type of the expression to add be added to.
  * @tparam AddendT The type of the expression to add to the augend.
  * 
- * @section Examples
+ * @section Example Usage:
+ * The Add expression can take in a multitude of Oasis classes.
  * 
- * The Add expression can add a multitude of OASIS class types.
- * 
- * @subsection val_val Adding two Real values together.
+ * @subsection val_val Adding two Real values together:
  * @code
  * Oasis::Add myAdditionSimple {
  *      Oasis::Real{4},
@@ -58,7 +57,7 @@ public:
  *  // Will print 8
  * @endcode
  * 
- * @subsection val_var Adding a Real value and a Variable together.
+ * @subsection val_var Adding a Real value and a Variable together:
  * @code
  * Oasis::Add myAddition {
         Oasis::Variable{"x"},
@@ -72,7 +71,7 @@ public:
     // Will print x+4
  * @endcode
  *
- * @subsection var_var Adding two Variables together.
+ * @subsection var_var Adding two Variables together:
  * @code
  * Oasis::Add myAdditionX {
         Oasis::Variable{"x"},
@@ -98,7 +97,7 @@ public:
     // Will print x+y
  * @endcode
  *
- * @subsubsection multi Adding more than two values together
+ * @subsubsection multi Adding more than two values together:
  * 
  * @code
  *  auto myAdditionSimple = Oasis::Add<> {
@@ -113,7 +112,7 @@ public:
     std::println("Result of addition: {}", resultant->Accept(result).value());
  * @endcode
  *  
- * @subsection exprAdd Adding two expressions together
+ * @subsection exprAdd Adding two expressions together:
  * 
  * @code
  *  std::string expr1 = {"2x+3y+15"};
