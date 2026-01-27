@@ -93,12 +93,12 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (!ms || !ns) {
             return Add { *simplifiedMinuend, Add { m, n } }.Generalize();
         }
-        auto RHS = Add { *(std::move(ms.value())), *(std::move(ns.value())) };
+        auto RHS = Add { *(std::move(ms).value()), *(std::move(ns).value()) };
         auto s = RHS.Accept(simplifyVisitor);
         if (!s) {
             return Add { *simplifiedMinuend, RHS }.Generalize();
         }
-        return Add { *simplifiedMinuend, *(std::move(s.value())) }.Accept(simplifyVisitor).value();
+        return Add { *simplifiedMinuend, *(std::move(s).value()) }.Accept(simplifyVisitor).value();
     }
     if (auto subtracted = RecursiveCast<Subtract<Expression>>(negated.GetLeastSigOp()); subtracted != nullptr) {
         auto m = Multiply<Expression> { Real { -1.0 }, subtracted->GetMostSigOp() };
@@ -106,12 +106,12 @@ auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (!ms) {
             return Add { *simplifiedMinuend, Add { m, *(subtracted->GetLeastSigOp().Simplify()) } }.Generalize();
         }
-        auto RHS = Add { *(std::move(ms.value())), *(subtracted->GetLeastSigOp().Simplify()) };
+        auto RHS = Add { *(std::move(ms).value()), *(subtracted->GetLeastSigOp().Simplify()) };
         auto s = RHS.Accept(simplifyVisitor);
         if (!s) {
             return Add { *simplifiedMinuend, RHS }.Generalize();
         }
-        return Add { *simplifiedMinuend, *(std::move(s.value())) }.Accept(simplifyVisitor).value();
+        return Add { *simplifiedMinuend, *(std::move(s).value()) }.Accept(simplifyVisitor).value();
     }
     return Add { *simplifiedMinuend, negated }.Simplify();
 }

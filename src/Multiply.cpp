@@ -102,7 +102,7 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return Divide { m, (multCase->GetLeastSigOp().GetLeastSigOp()) }.Generalize();
         }
         // This doesn't have to check errors because errors should have already been caught above
-        return Divide<Expression> { *std::move(ms.value()), (multCase->GetLeastSigOp().GetLeastSigOp()) }.Accept(simplifyVisitor).value();
+        return Divide<Expression> { *std::move(ms).value(), (multCase->GetLeastSigOp().GetLeastSigOp()) }.Accept(simplifyVisitor).value();
     }
 
     if (auto multCase = RecursiveCast<Multiply<Divide<Expression>, Divide<Expression>>>(simplifiedMultiply); multCase != nullptr) {
@@ -113,7 +113,7 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (!ms || !ns) {
             return this->Generalize();
         }
-        return Divide<Expression> { *std::move(ms.value()), *std::move(ns.value()) }.Accept(simplifyVisitor).value();
+        return Divide<Expression> { *std::move(ms).value(), *std::move(ns).value() }.Accept(simplifyVisitor).value();
     }
 
     if (auto exprCase = RecursiveCast<Multiply<Expression, Exponent<Expression, Expression>>>(simplifiedMultiply); exprCase != nullptr) {
@@ -124,7 +124,7 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(), e);
             }
             return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(),
-                *(std::move(s.value())));
+                *(std::move(s).value()));
         }
     }
 
@@ -136,7 +136,7 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
             if (!s) {
                 return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(), e);
             }
-            return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(), *(std::move(s.value())));
+            return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp(), *(std::move(s).value()));
         }
     }
 
@@ -147,7 +147,7 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
             if (!s) {
                 return std::make_unique<Exponent<Expression>>(exprCase->GetLeastSigOp(), e);
             }
-            return std::make_unique<Exponent<Expression>>(exprCase->GetLeastSigOp(), *(std::move(s.value())));
+            return std::make_unique<Exponent<Expression>>(exprCase->GetLeastSigOp(), *(std::move(s).value()));
         }
     }
 
@@ -159,7 +159,7 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
             if (!s) {
                 return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(), e);
             }
-            return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(), *(std::move(s.value())));
+            return std::make_unique<Exponent<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(), *(std::move(s).value()));
         }
     }
 
@@ -182,8 +182,8 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
                 return this->Generalize();
             }
             return std::make_unique<Multiply<Expression>>(
-                *(std::move(ms.value())),
-                *(std::move(ns.value())));
+                *(std::move(ms).value()),
+                *(std::move(ns).value()));
         }
     }
 
@@ -198,7 +198,7 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
             }
             return std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(),
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
-                    *(std::move(s.value())) });
+                    *(std::move(s).value()) });
         }
     }
 
@@ -213,7 +213,7 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
             }
             return std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetMostSigOp(),
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(),
-                    *(std::move(s.value())) });
+                    *(std::move(s).value()) });
         }
         if (exprCase->GetMostSigOp().GetMostSigOp().Equals(exprCase->GetLeastSigOp().GetMostSigOp())) {
             auto e = Add<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(), Real { 1.0 } };
@@ -224,7 +224,7 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
             }
             return std::make_unique<Multiply<Expression>>(exprCase->GetMostSigOp().GetLeastSigOp(),
                 Exponent<Expression> { exprCase->GetMostSigOp().GetMostSigOp(),
-                    *(std::move(s.value())) });
+                    *(std::move(s).value()) });
         }
     }
 
@@ -240,9 +240,9 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
                     m, Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(), n });
             }
             return std::make_unique<Multiply<Expression>>(
-                *(std::move(ms.value())),
+                *(std::move(ms).value()),
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(),
-                    *(std::move(ns.value())) });
+                    *(std::move(ns).value()) });
         }
     }
 
@@ -258,9 +258,9 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
                         n });
             }
             return std::make_unique<Multiply<Expression>>(
-                *(std::move(ms.value())),
+                *(std::move(ms).value()),
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp(),
-                    *(std::move(ns.value())) });
+                    *(std::move(ns).value()) });
         }
     }
 
@@ -277,9 +277,9 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
             }
 
             return std::make_unique<Multiply<Expression>>(
-                *(std::move(ms.value())),
+                *(std::move(ms).value()),
                 Exponent<Expression> { exprCase->GetLeastSigOp().GetLeastSigOp(),
-                    *(std::move(ns.value())) });
+                    *(std::move(ns).value()) });
         }
     }
 
@@ -297,7 +297,7 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
             return std::make_unique<Multiply<Expression>>(
                 exprCase->GetMostSigOp().GetMostSigOp(),
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
-                    *(std::move(s.value())) });
+                    *(std::move(s).value()) });
         }
     }
 
@@ -315,9 +315,9 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
                         n });
             }
             return std::make_unique<Multiply<Expression>>(
-                *(std::move(ms.value())),
+                *(std::move(ms).value()),
                 Exponent<Expression> { exprCase->GetMostSigOp().GetLeastSigOp().GetMostSigOp(),
-                    *(std::move(ns.value())) });
+                    *(std::move(ns).value()) });
         }
     }
 

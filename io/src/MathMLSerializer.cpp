@@ -33,7 +33,7 @@ auto MathMLSerializer::TypedVisit(const Real& real) -> RetT
 {
     tinyxml2::XMLElement* result = doc.NewElement("mn");
     result->SetText(std::format("{:.5}", real.GetValue()).c_str());
-    return gsl::not_null(gsl::make_not_null(result));
+    return gsl::not_null(result);
 }
 
 auto MathMLSerializer::TypedVisit(const Imaginary&) -> RetT

@@ -106,7 +106,7 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
                                                        Exponent exp { expExpCase.GetMostSigOp().GetMostSigOp(), e };
                                                        return gsl::make_not_null(exp.Copy());
                                                    } else {
-                                                       Exponent exp { expExpCase.GetMostSigOp().GetMostSigOp(), *(std::move(s.value())) };
+                                                       Exponent exp { expExpCase.GetMostSigOp().GetMostSigOp(), *(std::move(s).value()) };
                                                        return gsl::make_not_null(exp.Copy());
                                                    }
                                                })

@@ -24,7 +24,7 @@
 #include "Oasis/Undefined.hpp"
 #include "Oasis/Variable.hpp"
 
-#define EPSILON 1E-6
+namespace { constexpr auto EPSILON = std::numeric_limits<float>::epsilon(); }
 
 namespace Oasis {
 
@@ -1012,7 +1012,7 @@ auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
                         if (!resultVisited) {
                             return resultVisited;
                         }
-                        result[i] = std::move(resultVisited.value());
+                        result[i] = std::move(resultVisited).value();
                         break;
                     }
                 } else if (result[i]->Equals(expExpr->GetMostSigOp())) {
@@ -1024,7 +1024,7 @@ auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
                     if (!resultVisited) {
                         return resultVisited;
                     }
-                    result[i] = std::move(resultVisited.value());
+                    result[i] = std::move(resultVisited).value();
                     break;
                 }
             }
@@ -1033,7 +1033,7 @@ auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
                 if (!resultVisited) {
                     return resultVisited;
                 }
-                result.push_back(std::move(resultVisited.value()));
+                result.push_back(std::move(resultVisited).value());
             }
             continue;
         }
@@ -1048,7 +1048,7 @@ auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
                     if (!resultVisited) {
                         return resultVisited;
                     }
-                    result[i] = std::move(resultVisited.value());
+                    result[i] = std::move(resultVisited).value();
                     break;
                 }
             } else if (result[i]->Equals(*denom)) {
@@ -1379,7 +1379,7 @@ auto SimplifyVisitor::TypedVisit(const Derivative<>& derivative) -> RetT
     if (!s) {
         return s;
     }
-    return gsl::not_null { std::move(s.value())->Accept(*this).value() };
+    return gsl::not_null { std::move(s).value()->Accept(*this).value() };
 }
 
 auto SimplifyVisitor::TypedVisit(const Integral<>& integral) -> RetT
@@ -1431,7 +1431,7 @@ auto SimplifyVisitor::TypedVisit(const Magnitude<Expression>& magnitude) -> RetT
     if (!simplified) {
         return simplified;
     }
-    auto simpOp = std::move(simplified.value());
+    auto simpOp = std::move(simplified).value();
     if (auto realCase = RecursiveCast<Real>(*simpOp); realCase != nullptr) {
         double val = realCase->GetValue();
         return gsl::not_null { val >= 0.0 ? std::make_unique<Real>(val) : std::make_unique<Real>(-val) };

@@ -14,7 +14,7 @@
 #include "Oasis/Variable.hpp"
 #include "Oasis/SimplifyVisitor.hpp"
 
-inline Oasis::SimplifyVisitor simplifyVisitor{};
+namespace { Oasis::SimplifyVisitor simplifyVisitor{}; }
 
 TEST_CASE("Addition", "[Add]")
 {

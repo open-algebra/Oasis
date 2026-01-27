@@ -88,7 +88,7 @@ auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (!s) {
             return e.Generalize();
         } else {
-            return std::move(s.value());
+            return std::move(s).value();
         }
     }
 

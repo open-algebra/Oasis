@@ -290,7 +290,7 @@ TEST_CASE("Natural Logarithm Derivative", "[Derivative][Logarithm][Euler's Numbe
     Oasis::Derivative diffLog{
         Oasis::Log{Oasis::EulerNumber{},Oasis::Multiply{Oasis::Real{6},Oasis::Variable{"x"}}}, Oasis::Variable{"x"}};
     auto raw = diffLog.Accept(simplifyVisitor);
-    auto diff = std::move(raw.value());
+    auto diff = std::move(raw).value();
     Oasis::Divide expected{Oasis::Real{1.0}, Oasis::Variable{"x"}};
     REQUIRE(diff->Equals(expected));
 }

@@ -60,7 +60,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (!s) {
             return mid;
         }
-        return std::move(s.value());
+        return std::move(s).value();
     }
 
     if (auto compCase2 = RecursiveCast<Divide<Expression, Divide>>(simplifiedDivide)) {
@@ -71,7 +71,7 @@ auto Divide<Expression>::Simplify() const -> std::unique_ptr<Expression>
         if (!e) {
             return e;
         }
-        return std::move(s.value());
+        return std::move(s).value();
     }
 
     // log(a)/log(b)=log[b](a)
