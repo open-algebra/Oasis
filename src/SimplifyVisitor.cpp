@@ -24,7 +24,9 @@
 #include "Oasis/Undefined.hpp"
 #include "Oasis/Variable.hpp"
 
-namespace { constexpr auto EPSILON = std::numeric_limits<float>::epsilon(); }
+namespace {
+constexpr auto EPSILON = std::numeric_limits<float>::epsilon();
+}
 
 namespace Oasis {
 
