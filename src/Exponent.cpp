@@ -99,9 +99,16 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
                                            .Case(
                                                [](const Exponent<Exponent<>, Expression>&) -> bool { return true; },
                                                [](const Exponent<Exponent<>, Expression>& expExpCase, const void*) -> std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string_view> {
-                                                   Exponent exp { expExpCase.GetMostSigOp().GetMostSigOp(),
-                                                       *(Multiply { expExpCase.GetMostSigOp().GetLeastSigOp(), expExpCase.GetLeastSigOp() }.Simplify()) };
-                                                   return gsl::make_not_null(exp.Copy());
+                                                   SimplifyVisitor simplifyVisitor;
+                                                   auto e = Multiply { expExpCase.GetMostSigOp().GetLeastSigOp(), expExpCase.GetLeastSigOp() };
+                                                   auto s = e.Accept(simplifyVisitor);
+                                                   if (!s) {
+                                                       Exponent exp { expExpCase.GetMostSigOp().GetMostSigOp(), e };
+                                                       return gsl::make_not_null(exp.Copy());
+                                                   } else {
+                                                       Exponent exp { expExpCase.GetMostSigOp().GetMostSigOp(), *(std::move(s).value()) };
+                                                       return gsl::make_not_null(exp.Copy());
+                                                   }
                                                })
                                            .Case(
                                                [](const Exponent<Expression, Log<>>& logCase) -> bool {
@@ -121,9 +128,14 @@ auto Exponent<Expression>::Simplify() const -> std::unique_ptr<Expression>
 
 auto Exponent<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
+    SimplifyVisitor simplifyVisitor {};
     // variable integration
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
-        auto simplifiedExponent = this->Simplify();
+        auto simplified = this->Accept(simplifyVisitor);
+        if (!simplified) {
+            return this->Generalize();
+        }
+        auto simplifiedExponent = std::move(simplified).value();
 
         std::unique_ptr<Expression> integral;
         // Variable with a constant power
@@ -153,8 +165,13 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) cons
 auto Exponent<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     // variable diff
+    SimplifyVisitor simplifyVisitor {};
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
-        auto simplifiedExponent = this->Simplify();
+        auto simplified = this->Accept(simplifyVisitor);
+        if (!simplified) {
+            return this->Generalize();
+        }
+        auto simplifiedExponent = std::move(simplified).value();
 
         std::unique_ptr<Expression> diff;
         // Variable with a constant power

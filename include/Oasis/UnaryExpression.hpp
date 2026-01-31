@@ -10,7 +10,7 @@
 
 namespace Oasis {
 
-template <template <IExpression> class DerivedT, IExpression OperandT>
+template <template <IExpression> class DerivedT, IExpression OperandT = Expression>
 class UnaryExpression : public Expression {
 
     using DerivedSpecialized = DerivedT<OperandT>;
@@ -87,8 +87,8 @@ public:
     {
         std::unique_ptr<Expression> right = ((GetOperand().Copy())->Substitute(var, val));
         DerivedT<Expression> comb = DerivedT<Expression> { *right };
-        auto ret = comb.Simplify();
-        return ret;
+        //        auto ret = comb.Accept();
+        return comb.Generalize();
     }
 
     auto AcceptInternal(Visitor& visitor) const -> any override

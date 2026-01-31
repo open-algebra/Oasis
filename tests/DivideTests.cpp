@@ -11,6 +11,9 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Add.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
+
+inline Oasis::SimplifyVisitor simplifyVisitor{};
 
 TEST_CASE("Division", "[Divide]")
 {
@@ -21,7 +24,7 @@ TEST_CASE("Division", "[Divide]")
         Oasis::Real { 2.0 }
     };
 
-    auto simplified = subtract.Simplify();
+    auto simplified = subtract.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Is<Oasis::Real>());
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
@@ -55,12 +58,10 @@ TEST_CASE("Symbolic Division, equal variables", "[Division][Symbolic]")
             }
         };
 
-    auto simplified = div.Simplify();
-    REQUIRE(simplified);
+    auto simplified = div.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Equals(Oasis::Real { 2.0 }));
 
-    auto simplified2 = div2.Simplify();
-    REQUIRE(simplified2);
+    auto simplified2 = div2.Accept(simplifyVisitor).value();
     REQUIRE(simplified2->Equals(Oasis::Real { 2.0 }));
 }
 
@@ -80,7 +81,7 @@ TEST_CASE("Symbolic Division, unequal variables", "[Division][Symbolic]")
                     Oasis::Variable { "z" } }}
         };
 
-    auto simplified = div.Simplify();
+    auto simplified = div.Accept(simplifyVisitor).value();
 
     REQUIRE(Oasis::Divide {
         Oasis::Multiply {
@@ -114,7 +115,7 @@ TEST_CASE("Symbolic Division of Expressions", "[Division][Symbolic]")
                     Oasis::Real { 1 } }}
         };
 
-    auto simplified = div.Simplify();
+    auto simplified = div.Accept(simplifyVisitor).value();
 
     REQUIRE(Oasis::Multiply {
         Oasis::Real{ 2 },
@@ -142,7 +143,7 @@ TEST_CASE("Symbolic Division, unequal exponents", "[Division][Symbolic]")
                     Oasis::Variable { "z" } }}
         };
 
-    auto simplified = div.Simplify();
+    auto simplified = div.Accept(simplifyVisitor).value();
 
     REQUIRE(Oasis::Divide {
         Oasis::Multiply {
@@ -167,7 +168,7 @@ TEST_CASE("Symbolic Division, equal exponents", "[Division][Symbolic]")
                     Oasis::Variable { "z" } }}
         };
 
-    auto simplified = div.Simplify();
+    auto simplified = div.Accept(simplifyVisitor).value();
 
     REQUIRE(Oasis::Divide {
         Oasis::Multiply {
@@ -183,7 +184,7 @@ TEST_CASE("Division of equal variables", "[Division][Symbolic]")
     // x/x = 1
 
     Oasis::Divide div { Oasis::Variable { "x" }, Oasis::Variable { "x" } };
-    auto simplified = div.Simplify();
+    auto simplified = div.Accept(simplifyVisitor).value();
     REQUIRE(Oasis::Real { 1 }.Equals(*simplified));
 }
 
@@ -197,7 +198,7 @@ TEST_CASE("Generalized Division", "[Divide][Generalized]")
         Oasis::Real { 2.0 }
     };
 
-    auto simplified = subtract.Simplify();
+    auto simplified = subtract.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Is<Oasis::Real>());
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);

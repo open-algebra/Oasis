@@ -13,6 +13,9 @@
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Log.hpp"
 #include "Oasis/EulerNumber.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
+
+inline Oasis::SimplifyVisitor simplifyVisitor{};
 
 TEST_CASE("Differentiate Nonzero number", "[Differentiate][Real][Nonzero]")
 {
@@ -62,7 +65,8 @@ TEST_CASE("Differentiate Power Rule", "[Differentiate][Exponent][Power]")
         Oasis::Multiply {
             Oasis::Exponent { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } },
             Oasis::Real { 3.0f } }};
-    auto ptr = diff1.Simplify();
+    auto ptr = diff1.Accept(simplifyVisitor).value();
+
     auto diffed = differentiate.Differentiate(var);
     REQUIRE((*diffed).Equals(*ptr));
 }
@@ -73,7 +77,7 @@ TEST_CASE("Differentiate Constant Rule Multiply", "[Differentiate][Multiply][Con
     Oasis::Multiply<Oasis::Real, Oasis::Variable> diff1 { Oasis::Real { 3.0f }, Oasis::Variable { var.GetName() } };
     Oasis::Real three {3.0};
 
-    auto ptr = three.Simplify();
+    auto ptr = three.Accept(simplifyVisitor).value();
     auto diffed = diff1.Differentiate(var);
     REQUIRE((diffed->Equals(*ptr)));
 }
@@ -84,8 +88,8 @@ TEST_CASE("Differentiate Constant Rule Divide", "[Differentiate][Divide][Constan
     Oasis::Divide<Oasis::Variable, Oasis::Real> diff1 { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
     Oasis::Real half {0.5f};
     auto diffed = diff1.Differentiate(var);
-    auto simplified = diffed->Simplify();
-    REQUIRE((simplified->Equals(*(half.Simplify()))));
+    auto simplified = diffed->Accept(simplifyVisitor).value();
+    REQUIRE((simplified->Equals(*(half.Accept(simplifyVisitor).value()))));
 }
 
 TEST_CASE("Differentiate Add Rule Different Terms", "[Differentiate][Add][Different]")
@@ -95,9 +99,9 @@ TEST_CASE("Differentiate Add Rule Different Terms", "[Differentiate][Add][Differ
 
     Oasis::Real one {1};
     auto diffed = diff1.Differentiate(var);
-    auto simplified = diffed->Simplify();
+    auto simplified = diffed->Accept(simplifyVisitor).value();
 
-    REQUIRE(simplified->Equals(*(one.Simplify())));
+    REQUIRE(simplified->Equals(*(one.Accept(simplifyVisitor).value())));
 }
 
 TEST_CASE("Differentiate Subtract Rule Different Terms", "[Differentiate][Subtract][Different]")
@@ -106,9 +110,9 @@ TEST_CASE("Differentiate Subtract Rule Different Terms", "[Differentiate][Subtra
     Oasis::Subtract<Oasis::Variable, Oasis::Real> diff1 { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
     Oasis::Real one {1};
     auto diffed = diff1.Differentiate(var);
-    auto simplified = diffed->Simplify();
+    auto simplified = diffed->Accept(simplifyVisitor).value();
 
-    REQUIRE(simplified->Equals(*(one.Simplify())));
+    REQUIRE(simplified->Equals(*(one.Accept(simplifyVisitor).value())));
 }
 
 TEST_CASE("Differentiate Add Rule Like Terms", "[Differentiate][Add][Like]")
@@ -119,9 +123,9 @@ TEST_CASE("Differentiate Add Rule Like Terms", "[Differentiate][Add][Like]")
     Oasis::Real two {2};
 
     auto diffed = diff1.Differentiate(var);
-    auto simplified = diffed->Simplify();
+    auto simplified = diffed->Accept(simplifyVisitor).value();
 
-    REQUIRE(simplified->Equals(*(two.Simplify())));
+    REQUIRE(simplified->Equals(*(two.Accept(simplifyVisitor).value())));
 }
 
 TEST_CASE("Differentiate Quotient Rule Like Terms", "[Differentiate][Divide][Like]")
@@ -147,9 +151,9 @@ TEST_CASE("Differentiate Quotient Rule Like Terms", "[Differentiate][Divide][Lik
             {Oasis::Variable {var.GetName() }, Oasis::Real
             {3}}}};
     auto diffed = diff1.Differentiate(var);
-    auto simplified = diffed->Simplify();
+    auto simplified = diffed->Accept(simplifyVisitor).value();
 
-    auto simplifiedAns = answer.Simplify();
+    auto simplifiedAns = answer.Accept(simplifyVisitor).value();
 
     REQUIRE(simplified->Equals(*(simplifiedAns)));
 }
@@ -161,8 +165,8 @@ TEST_CASE("Differentiate Multiple Variables Differentiate", "[Differentiate][Mul
     Oasis::Multiply<Oasis::Variable, Oasis::Variable> xy
     {Oasis::Variable {x.GetName()}, Oasis::Variable {y.GetName()}};
     auto diffed = xy.Differentiate(x);
-    auto simplified = diffed->Simplify();
-    REQUIRE(simplified->Equals(*(y.Simplify())));
+    auto simplified = diffed->Accept(simplifyVisitor).value();
+    REQUIRE(simplified->Equals(*(y.Accept(simplifyVisitor).value())));
 }
 
 TEST_CASE("Differentiate Multiple Variables + Real Differentiate", "[Differentiate][Multiply][Different]")
@@ -177,8 +181,8 @@ TEST_CASE("Differentiate Multiple Variables + Real Differentiate", "[Differentia
     Oasis::Multiply<Oasis::Real, Oasis::Variable> threex
             {Oasis::Real{3}, Oasis::Variable{x.GetName()}};
     auto diffed = threexy.Differentiate(y);
-    auto simplified = diffed->Simplify();
-    REQUIRE(simplified->Equals(*(threex.Simplify())));
+    auto simplified = diffed->Accept(simplifyVisitor).value();
+    REQUIRE(simplified->Equals(*(threex.Accept(simplifyVisitor).value())));
 }
 
 TEST_CASE("Derivative Wrapper Class Add", "[Differentiate][Add][Like]")
@@ -188,8 +192,8 @@ TEST_CASE("Derivative Wrapper Class Add", "[Differentiate][Add][Like]")
     {Oasis::Add<Oasis::Variable, Oasis::Real> {Oasis::Variable {x.GetName()},
                                                Oasis::Real{2}}, Oasis::Variable {x.GetName()}};
     Oasis::Real one {1};
-    auto diffed = diff1.Simplify();
-    REQUIRE(diffed->Equals(*(one.Simplify())));
+    auto diffed = diff1.Accept(simplifyVisitor).value();
+    REQUIRE(diffed->Equals(*(one.Accept(simplifyVisitor).value())));
 }
 
 TEST_CASE("Derivative Wrapper Class Subtract", "[Differentiate][Subtract][Like]")
@@ -199,8 +203,8 @@ TEST_CASE("Derivative Wrapper Class Subtract", "[Differentiate][Subtract][Like]"
             {Oasis::Subtract<Oasis::Variable, Oasis::Real> {Oasis::Variable {x.GetName()},
                                                        Oasis::Real{2}}, Oasis::Variable {x.GetName()}};
     Oasis::Real one {1};
-    auto diffed = diff1.Simplify();
-    REQUIRE(diffed->Equals(*(one.Simplify())));
+    auto diffed = diff1.Accept(simplifyVisitor).value();
+    REQUIRE(diffed->Equals(*(one.Accept(simplifyVisitor).value())));
 }
 
 TEST_CASE("Derivative Wrapper Class Multiply", "[Differentiate][Multiply][Like]")
@@ -210,8 +214,8 @@ TEST_CASE("Derivative Wrapper Class Multiply", "[Differentiate][Multiply][Like]"
             {Oasis::Multiply<Oasis::Variable, Oasis::Real> {Oasis::Variable {x.GetName()},
                                                        Oasis::Real{2}}, Oasis::Variable {x.GetName()}};
     Oasis::Real two {2};
-    auto diffed = diff1.Simplify();
-    REQUIRE(diffed->Equals(*(two.Simplify())));
+    auto diffed = diff1.Accept(simplifyVisitor).value();
+    REQUIRE(diffed->Equals(*(two.Accept(simplifyVisitor).value())));
 }
 
 TEST_CASE("Derivative Wrapper Class Divide", "[Differentiate][Divide][Like]")
@@ -221,8 +225,8 @@ TEST_CASE("Derivative Wrapper Class Divide", "[Differentiate][Divide][Like]")
             {Oasis::Divide<Oasis::Variable, Oasis::Real> {Oasis::Variable {x.GetName()},
                                                        Oasis::Real{2}}, Oasis::Variable {x.GetName()}};
     Oasis::Real half {0.5f};
-    auto diffed = diff1.Simplify();
-    REQUIRE(diffed->Equals(*(half.Simplify())));
+    auto diffed = diff1.Accept(simplifyVisitor).value();
+    REQUIRE(diffed->Equals(*(half.Accept(simplifyVisitor).value())));
 }
 
 TEST_CASE("Derivative Wrapper Class Real", "[Differentiate][Real][Like]")
@@ -231,8 +235,8 @@ TEST_CASE("Derivative Wrapper Class Real", "[Differentiate][Real][Like]")
     Oasis::Derivative<Oasis::Real, Oasis::Variable> diff1
             {Oasis::Real {2}, Oasis::Variable {x.GetName()}};
     Oasis::Real zero {0};
-    auto diffed = diff1.Simplify();
-    REQUIRE(diffed->Equals(*(zero.Simplify())));
+    auto diffed = diff1.Accept(simplifyVisitor).value();
+    REQUIRE(diffed->Equals(*(zero.Accept(simplifyVisitor).value())));
 }
 
 TEST_CASE("Derivative Wrapper Class Variable", "[Differentiate][Variable][Like]")
@@ -241,8 +245,8 @@ TEST_CASE("Derivative Wrapper Class Variable", "[Differentiate][Variable][Like]"
     Oasis::Derivative<Oasis::Variable, Oasis::Variable> diff1
             {Oasis::Variable {x.GetName()}, Oasis::Variable {x.GetName()}};
     Oasis::Real one {1};
-    auto diffed = diff1.Simplify();
-    REQUIRE(diffed->Equals(*(one.Simplify())));
+    auto diffed = diff1.Accept(simplifyVisitor).value();
+    REQUIRE(diffed->Equals(*(one.Accept(simplifyVisitor).value())));
 }
 
 TEST_CASE("Derivative Wrapper Class Exponent", "[Differentiate][Exponent][Like]")
@@ -252,8 +256,8 @@ TEST_CASE("Derivative Wrapper Class Exponent", "[Differentiate][Exponent][Like]"
             {Oasis::Exponent<Oasis::Variable, Oasis::Real> {Oasis::Variable {x.GetName()},
                                                        Oasis::Real{2}}, Oasis::Variable {x.GetName()}};
     Oasis::Multiply<Oasis::Variable, Oasis::Real> twox {Oasis::Variable {x.GetName()}, Oasis::Real {2}};
-    auto diffed = diff1.Simplify();
-    REQUIRE(diffed->Equals(*(twox.Simplify())));
+    auto diffed = diff1.Accept(simplifyVisitor).value();
+    REQUIRE(diffed->Equals(*(twox.Accept(simplifyVisitor).value())));
 }
 
 TEST_CASE("Product Rule", "[Differentiate][Product]")
@@ -261,7 +265,7 @@ TEST_CASE("Product Rule", "[Differentiate][Product]")
     Oasis::Variable f{"x"};
     Oasis::Multiply g{Oasis::Real{6.0}, Oasis::Variable{"x"}};
     Oasis::Derivative diff{Oasis::Multiply{f, g}, Oasis::Variable{"x"}};
-    auto simplified = diff.Simplify();
+    auto simplified = diff.Accept(simplifyVisitor).value();
     Oasis::Multiply expected{Oasis::Real{12.0}, Oasis::Variable{"x"}};
 
     REQUIRE(simplified->Equals(expected));
@@ -274,8 +278,8 @@ TEST_CASE("Natural Exponential Derivative", "[Derivative][Exponent][Euler's Numb
     Oasis::Derivative diffExp{exp, Oasis::Variable{"x"}};
     Oasis::Derivative diffExp2{exp2, Oasis::Variable{"x"}};
     Oasis::Multiply expected2{Oasis::Real{2.0}, exp2};
-    auto simplified = diffExp.Simplify();
-    auto simplified2 = diffExp2.Simplify();
+    auto simplified = diffExp.Accept(simplifyVisitor).value();
+    auto simplified2 = diffExp2.Accept(simplifyVisitor).value();
 
     REQUIRE(simplified->Equals(exp));
     REQUIRE(simplified2->Equals(expected2));
@@ -285,7 +289,8 @@ TEST_CASE("Natural Logarithm Derivative", "[Derivative][Logarithm][Euler's Numbe
 {
     Oasis::Derivative diffLog{
         Oasis::Log{Oasis::EulerNumber{},Oasis::Multiply{Oasis::Real{6},Oasis::Variable{"x"}}}, Oasis::Variable{"x"}};
-    auto diff = diffLog.Simplify();
+    auto raw = diffLog.Accept(simplifyVisitor);
+    auto diff = std::move(raw).value();
     Oasis::Divide expected{Oasis::Real{1.0}, Oasis::Variable{"x"}};
     REQUIRE(diff->Equals(expected));
 }
@@ -294,17 +299,17 @@ TEST_CASE("Real Base Logarithm Derivative", "[Derivative][Logarithm][Euler's Rea
 {
     Oasis::Derivative diffLog{
         Oasis::Log{Oasis::Real{10.0},Oasis::Multiply{Oasis::Real{6},Oasis::Variable{"x"}}}, Oasis::Variable{"x"}};
-    auto diff = diffLog.Simplify();
+    auto diff = diffLog.Accept(simplifyVisitor).value();
     Oasis::Divide expected{Oasis::Real{1.0}, Oasis::Multiply{Oasis::Variable{"x"},
                                                       Oasis::Log{Oasis::EulerNumber{}, Oasis::Real{10.0}}}};
-    REQUIRE(diff->Equals(*expected.Simplify()));
+    REQUIRE(diff->Equals(*expected.Accept(simplifyVisitor).value()));
 }
 
 TEST_CASE("Variable Base Logarithm Derivative", "[Derivative][Logarithm][Variable]")
 {
     Oasis::Derivative diffLog{
         Oasis::Log{Oasis::Variable{"y"},Oasis::Multiply{Oasis::Real{6},Oasis::Variable{"x"}}}, Oasis::Variable{"x"}};
-    auto diff = diffLog.Simplify();
+    auto diff = diffLog.Accept(simplifyVisitor).value();
     Oasis::Divide expected{Oasis::Real{1.0}, Oasis::Multiply{Oasis::Variable{"x"},
                                                       Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"y"}}}};
     REQUIRE(diff->Equals(expected));
@@ -315,7 +320,7 @@ TEST_CASE("Any Base Exponential Derivative", "[Derivative][Exponent]")
     Oasis::Exponent exp{Oasis::Variable{"a"}, Oasis::Multiply{Oasis::Real{2.0},Oasis::Variable{"x"}}};
     Oasis::Derivative diffExp{exp, Oasis::Variable{"x"}};
     Oasis::Multiply expected{Oasis::Multiply{Oasis::Real{2.0}, exp}, Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"a"}}};
-    auto simplified = diffExp.Simplify();
+    auto simplified = diffExp.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Equals(expected));
 }
 
@@ -325,7 +330,7 @@ TEST_CASE("Variable Base Exponential Derivative", "[Derivative][Exponent]")
     Oasis::Derivative diffExp{exp, Oasis::Variable{"x"}};
     Oasis::Multiply expected{exp , Oasis::Add{ Oasis::Multiply {Oasis::Log{Oasis::EulerNumber{}, Oasis::Variable{"x"}},
                                     Oasis::Real{2.0}},Oasis::Real{2.0}},};
-    auto simplified = diffExp.Simplify();
+    auto simplified = diffExp.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Equals(expected));
 }
 
@@ -341,15 +346,17 @@ TEST_CASE("General Exponential Derivative", "[Derivative][Exponent]")
                                     Oasis::Multiply { Oasis::Real{4.0} ,
                                         Oasis::Log{Oasis::EulerNumber{},
                                             Oasis::Add { Oasis::Variable{"x"}, Oasis::Real{3.0} }}} } };
-    auto simplified = diffExp.Simplify();
+    auto simplified = diffExp.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Equals(expected));
 }
 
-TEST_CASE("Expresion Base Exponential Derivative", "[Derivative][Exponent]")
+TEST_CASE("Expression Base Exponential Derivative", "[Derivative][Exponent]")
 {
     Oasis::Exponent exp{ Oasis::Add { Oasis::Variable{"x"}, Oasis::Real{3.0} } , Oasis::Real{2.0}};
     Oasis::Derivative diffExp{exp, Oasis::Variable{"x"}};
-    Oasis::Multiply expected{ Oasis::Real{2.0} , Oasis::Add {Oasis::Variable{"x"} , Oasis::Real {3.0}} };
-    auto simplified = diffExp.Simplify();
+
+    Oasis::Multiply expected{ Oasis::Add {Oasis::Variable{"x"} , Oasis::Real {3.0} }, Oasis::Real{ 2.0}    };
+
+    auto simplified = diffExp.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Equals(expected));
 }

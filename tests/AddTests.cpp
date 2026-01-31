@@ -12,6 +12,9 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
+
+namespace { Oasis::SimplifyVisitor simplifyVisitor{}; }
 
 TEST_CASE("Addition", "[Add]")
 {
@@ -24,7 +27,7 @@ TEST_CASE("Addition", "[Add]")
 
     OASIS_CAPTURE_WITH_SERIALIZER(add);
 
-    auto simplified = add.Simplify();
+    auto simplified = add.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Is<Oasis::Real>());
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
@@ -42,7 +45,7 @@ TEST_CASE("Symbolic Addition", "[Add][Symbolic]")
                 Oasis::Variable { "x" } }
         };
 
-    auto simplified = add.Simplify();
+    auto simplified = add.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Is<Oasis::Multiply>());
 
     REQUIRE(Oasis::Multiply {
@@ -61,7 +64,7 @@ TEST_CASE("Symbolic Addition, variable case", "[Add][Symbolic]")
                 Oasis::Variable { "x" } }
         };
 
-    auto simplified = add.Simplify();
+    auto simplified = add.Accept(simplifyVisitor).value();
 
     REQUIRE(Oasis::Add {
         Oasis::Real { 1.0 },
@@ -79,7 +82,7 @@ TEST_CASE("Generalized Addition", "[Add][Generalized]")
         Oasis::Real { 3.0 }
     };
 
-    auto simplified = add.Simplify();
+    auto simplified = add.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Is<Oasis::Real>());
 
     auto simplifiedReal = dynamic_cast<Oasis::Real&>(*simplified);
@@ -126,7 +129,7 @@ TEST_CASE("Imaginary Addition", "[Imaginary][Add]")
         Oasis::Imaginary {}
     };
 
-    auto spec1 = a1.Simplify();
+    auto spec1 = a1.Accept(simplifyVisitor).value();
 
     REQUIRE(Oasis::Multiply { Oasis::Real { 2.0 }, Oasis::Imaginary {} }.Equals(*spec1));
 }
@@ -146,7 +149,7 @@ TEST_CASE("Addition Associativity", "[Add][Associative]")
                     Oasis::Variable { "x" } } } }
     };
 
-    auto simplified1 = assoc1.Simplify();
+    auto simplified1 = assoc1.Accept(simplifyVisitor).value();
 
     REQUIRE(Oasis::Add {
         Oasis::Real { 5.0 },
@@ -177,7 +180,7 @@ TEST_CASE("Add Associativity with wider tree", "[Add][Associativity]")
                     Oasis::Variable { "x" } } } }
     };
 
-    auto simplified2 = assoc2.Simplify();
+    auto simplified2 = assoc2.Accept(simplifyVisitor).value();
 
     REQUIRE(Oasis::Add {
         Oasis::Add {
@@ -223,6 +226,6 @@ TEST_CASE("Variadic Add Constructor", "[Add]")
 
     const Oasis::Real expected { 40.0 };
 
-    const auto simplified = add.Simplify();
+    const auto simplified = add.Accept(simplifyVisitor).value();
     REQUIRE(expected.Equals(*simplified));
 }

@@ -13,6 +13,7 @@
 #include "Imaginary.hpp"
 #include "Matrix.hpp"
 #include "Multiply.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
 #include "Real.hpp"
 #include "RecursiveCast.hpp"
 #include "UnaryExpression.hpp"
@@ -24,7 +25,7 @@ namespace Oasis {
  * @tparam OperandT Type of child operand
  * This represents magnitude/absolute value
  */
-template <typename OperandT = Expression>
+template <typename OperandT>
 class Magnitude final : public UnaryExpression<Magnitude, OperandT> {
 public:
     Magnitude() = default;
@@ -38,8 +39,9 @@ public:
     {
     }
 
-    [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
+    [[deprecated]] [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
     {
+        SimplifyVisitor simplifyVisitor {};
         auto simpOp = this->GetOperand().Simplify();
         if (auto realCase = RecursiveCast<Real>(*simpOp); realCase != nullptr) {
             double val = realCase->GetValue();
@@ -49,7 +51,12 @@ public:
             return std::make_unique<Real>(1.0);
         }
         if (auto mulImgCase = RecursiveCast<Multiply<Expression, Imaginary>>(*simpOp); mulImgCase != nullptr) {
-            return Magnitude<Expression> { mulImgCase->GetMostSigOp() }.Simplify();
+            auto e = Magnitude<Expression> { mulImgCase->GetMostSigOp() };
+            auto s = e.Accept(simplifyVisitor);
+            if (!s) {
+                return e.Generalize();
+            }
+            return std::move(s).value();
         }
         if (auto addCase = RecursiveCast<Add<Expression, Imaginary>>(*simpOp); addCase != nullptr) {
             return Exponent { Add<Expression> { Exponent<Expression> { addCase->GetMostSigOp(), Real { 2 } },
@@ -79,12 +86,13 @@ public:
     [[nodiscard]] auto Differentiate(const Expression& var) const -> std::unique_ptr<Expression> override
     {
         // TODO: Implement
+        Oasis::SimplifyVisitor simplifyVisitor {};
 
         const std::unique_ptr<Expression> operandDerivative = this->GetOperand().Differentiate(var);
         return Magnitude<Expression> {
             *operandDerivative
         }
-            .Simplify();
+            .Generalize();
     }
 
     [[nodiscard]] auto Integrate(const Expression& integrationVar) const -> std::unique_ptr<Expression> override
@@ -94,7 +102,7 @@ public:
         return Magnitude<Expression> {
             *operandDerivative
         }
-            .Simplify();
+            .Generalize();
     }
 
     EXPRESSION_TYPE(Magnitude)

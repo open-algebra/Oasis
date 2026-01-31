@@ -16,6 +16,7 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/Sine.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 
@@ -75,6 +76,13 @@ auto InFixSerializer::TypedVisit(const Negate<Expression>& negate) -> RetT
 {
     return negate.GetOperand().Accept(*this).transform([](const std::string& str) {
         return std::format("-({})", str);
+    });
+}
+
+auto InFixSerializer::TypedVisit(const Sine<Expression>& sine) -> RetT
+{
+    return sine.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("sine({})", str);
     });
 }
 

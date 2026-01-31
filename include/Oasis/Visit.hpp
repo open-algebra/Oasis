@@ -26,6 +26,7 @@ public:
     virtual any Visit(const Exponent<Expression, Expression>& exponent) = 0;
     virtual any Visit(const Log<Expression, Expression>& log) = 0;
     virtual any Visit(const Negate<Expression>& negate) = 0;
+    virtual any Visit(const Sine<Expression>& sine) = 0;
     virtual any Visit(const Magnitude<Expression>& magnitude) = 0;
     virtual any Visit(const Derivative<Expression, Expression>& derivative) = 0;
     virtual any Visit(const Integral<Expression, Expression>& integral) = 0;
@@ -52,6 +53,7 @@ public:
     auto Visit(const Exponent<Expression, Expression>& exponent) -> any final { return TypedVisit(exponent); }
     auto Visit(const Log<Expression, Expression>& log) -> any final { return TypedVisit(log); }
     auto Visit(const Negate<Expression>& negate) -> any final { return TypedVisit(negate); }
+    auto Visit(const Sine<Expression>& sine) -> any final { return TypedVisit(sine); }
     auto Visit(const Magnitude<Expression>& magnitude) -> any final { return TypedVisit(magnitude); }
     auto Visit(const Derivative<Expression, Expression>& derivative) -> any final { return TypedVisit(derivative); }
     auto Visit(const Integral<Expression, Expression>& integral) -> any final { return TypedVisit(integral); }
@@ -71,6 +73,7 @@ protected:
     virtual auto TypedVisit(const Exponent<Expression, Expression>& exponent) -> RetT = 0;
     virtual auto TypedVisit(const Log<Expression, Expression>& log) -> RetT = 0;
     virtual auto TypedVisit(const Negate<Expression>& negate) -> RetT = 0;
+    virtual auto TypedVisit(const Sine<Expression>& sine) -> RetT = 0;
     virtual auto TypedVisit(const Magnitude<Expression>& magnitude) -> RetT = 0;
     virtual auto TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT = 0;
     virtual auto TypedVisit(const Integral<Expression, Expression>& integral) -> RetT = 0;

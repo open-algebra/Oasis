@@ -33,14 +33,14 @@ auto MathMLSerializer::TypedVisit(const Real& real) -> RetT
 {
     tinyxml2::XMLElement* result = doc.NewElement("mn");
     result->SetText(std::format("{:.5}", real.GetValue()).c_str());
-    return result;
+    return gsl::not_null(result);
 }
 
 auto MathMLSerializer::TypedVisit(const Imaginary&) -> RetT
 {
     tinyxml2::XMLElement* result = doc.NewElement("mi");
     result->SetText("i");
-    return result;
+    return gsl::not_null(result);
 }
 
 auto MathMLSerializer::TypedVisit(const Matrix& matrix) -> RetT
@@ -72,35 +72,35 @@ auto MathMLSerializer::TypedVisit(const Matrix& matrix) -> RetT
     mrow->InsertEndChild(table);
     mrow->InsertEndChild(closeBrace);
 
-    return mrow;
+    return gsl::not_null(mrow);
 }
 
 auto MathMLSerializer::TypedVisit(const Oasis::Pi&) -> RetT
 {
     tinyxml2::XMLElement* result = doc.NewElement("mi");
     result->SetText("&pi;");
-    return result;
+    return gsl::not_null(result);
 }
 
 auto MathMLSerializer::TypedVisit(const Oasis::EulerNumber&) -> RetT
 {
     tinyxml2::XMLElement* result = doc.NewElement("mi");
     result->SetText("e");
-    return result;
+    return gsl::not_null(result);
 }
 
 auto MathMLSerializer::TypedVisit(const Variable& variable) -> RetT
 {
     tinyxml2::XMLElement* result = doc.NewElement("mi");
     result->SetText(variable.GetName().c_str());
-    return result;
+    return gsl::not_null(result);
 }
 
 auto MathMLSerializer::TypedVisit(const Undefined&) -> RetT
 {
     tinyxml2::XMLElement* const mtext = doc.NewElement("mtext");
     mtext->SetText("Undefined");
-    return mtext;
+    return gsl::not_null(mtext);
 }
 
 auto MathMLSerializer::TypedVisit(const Add<>& add) -> RetT
@@ -122,7 +122,7 @@ auto MathMLSerializer::TypedVisit(const Add<>& add) -> RetT
 
     // remove last mo
     mrow->DeleteChild(mrow->LastChild());
-    return mrow;
+    return gsl::not_null(mrow);
 }
 
 auto MathMLSerializer::TypedVisit(const Subtract<>& subtract) -> RetT
@@ -165,7 +165,7 @@ auto MathMLSerializer::TypedVisit(const Subtract<>& subtract) -> RetT
             mrow->InsertEndChild(rightParen);
         }
 
-        return mrow;
+        return gsl::not_null(mrow);
     });
 }
 
@@ -226,7 +226,7 @@ auto MathMLSerializer::TypedVisit(const Multiply<>& multiply) -> RetT
         }
     }
 
-    return mrow;
+    return gsl::not_null(mrow);
 }
 
 auto MathMLSerializer::TypedVisit(const Divide<>& divide) -> RetT
@@ -239,7 +239,7 @@ auto MathMLSerializer::TypedVisit(const Divide<>& divide) -> RetT
         mfrac->InsertEndChild(dividendElement);
         mfrac->InsertEndChild(divisorElement);
 
-        return mfrac;
+        return gsl::not_null(mfrac);
     });
 }
 
@@ -272,7 +272,7 @@ auto MathMLSerializer::TypedVisit(const Exponent<>& exponent) -> RetT
 
         msup->InsertEndChild(powerElement);
 
-        return msup;
+        return gsl::not_null(msup);
     });
 }
 
@@ -306,7 +306,7 @@ auto MathMLSerializer::TypedVisit(const Log<>& log) -> RetT
         mrow->InsertEndChild(argElement);
         mrow->InsertEndChild(rightParen);
 
-        return mrow;
+        return gsl::not_null(mrow);
     });
 }
 
@@ -333,7 +333,14 @@ auto MathMLSerializer::TypedVisit(const Negate<Expression>& negate) -> RetT
     rightParen->SetText(")");
     mrow->InsertEndChild(rightParen);
 
-    return mrow;
+    return gsl::not_null(mrow);
+}
+
+auto MathMLSerializer::TypedVisit(const Sine<Expression>&) -> RetT
+{
+    // mrow
+    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+    return gsl::not_null(mrow);
 }
 
 auto MathMLSerializer::TypedVisit(const Derivative<>& derivative) -> RetT
@@ -372,7 +379,7 @@ auto MathMLSerializer::TypedVisit(const Derivative<>& derivative) -> RetT
         mrow->InsertEndChild(expElement);
         mrow->InsertEndChild(rightParen);
 
-        return mrow;
+        return gsl::not_null(mrow);
     });
 }
 
@@ -399,7 +406,7 @@ auto MathMLSerializer::TypedVisit(const Integral<>& integral) -> RetT
         mrow->InsertEndChild(expElement);
         mrow->InsertEndChild(dVar);
 
-        return mrow;
+        return gsl::not_null(mrow);
     });
 }
 
@@ -426,7 +433,7 @@ auto MathMLSerializer::TypedVisit(const Magnitude<Expression>& magnitude) -> Ret
     rightParen->SetText("|");
     mrow->InsertEndChild(rightParen);
 
-    return mrow;
+    return gsl::not_null(mrow);
 }
 
 }
