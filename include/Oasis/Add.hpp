@@ -10,9 +10,6 @@
 
 namespace Oasis {
 
-template <IExpression AugendT, IExpression AddendT>
-class Add;
-
 /// @cond
 template <>
 class Add<
@@ -36,7 +33,7 @@ public:
  * @tparam AugendT The type of the expression to add be added to.
  * @tparam AddendT The type of the expression to add to the augend.
  */
-template <IExpression AugendT = Expression, IExpression AddendT = AugendT>
+template <typename AugendT = Expression, typename AddendT = AugendT>
 class Add : public BinaryExpression<Add, AugendT, AddendT> {
 public:
     Add() = default;

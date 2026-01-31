@@ -9,9 +9,6 @@
 
 namespace Oasis {
 
-template <IExpression Exp, IExpression Var>
-class Derivative;
-
 /// @cond
 template <>
 class Derivative<Expression, Expression> : public BinaryExpression<Derivative> {
@@ -36,7 +33,7 @@ public:
  * @tparam DependentT The expression type that the derivative will be calculated of.
  * @tparam IndependentT The type of the variable with respect to which the derivative will be calculated.
  */
-template <IExpression DependentT = Expression, IExpression IndependentT = DependentT>
+template <typename DependentT = Expression, typename IndependentT = DependentT>
 class Derivative : public BinaryExpression<Derivative, DependentT, IndependentT> {
 public:
     Derivative() = default;
