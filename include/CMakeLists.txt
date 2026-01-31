@@ -8,6 +8,7 @@ set(Oasis_HEADERS
     Oasis/EulerNumber.hpp
     Oasis/Exponent.hpp
     Oasis/Expression.hpp
+    Oasis/FwdDecls.hpp
     Oasis/Imaginary.hpp
     Oasis/Integral.hpp
     Oasis/LeafExpression.hpp

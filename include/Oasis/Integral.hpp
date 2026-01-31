@@ -11,9 +11,6 @@
 
 namespace Oasis {
 
-template <IExpression Integrand, IExpression Differential>
-class Integral;
-
 /// @cond
 template <>
 class Integral<Expression, Expression> : public BinaryExpression<Integral> {
@@ -38,7 +35,7 @@ public:
  * @tparam IntegrandT The type of the expression to be integrated.
  * @tparam DifferentialT The type of the expression defining which variable is integrating in the IntegrandT.
  */
-template <IExpression IntegrandT = Expression, IExpression DifferentialT = IntegrandT>
+template <typename IntegrandT = Expression, typename DifferentialT = IntegrandT>
 class Integral : public BinaryExpression<Integral, IntegrandT, DifferentialT> {
 public:
     Integral() = default;

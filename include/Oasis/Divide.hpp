@@ -9,9 +9,6 @@
 
 namespace Oasis {
 
-template <IExpression DividendT, IExpression DivisorT>
-class Divide;
-
 /// @cond
 template <>
 class Divide<Expression, Expression> : public BinaryExpression<Divide> {
@@ -38,7 +35,7 @@ public:
  * @tparam DividendT The expression to be divided into.
  * @tparam DivisorT The expression to divide the dividend by.
  */
-template <IExpression DividendT = Expression, IExpression DivisorT = DividendT>
+template <typename DividendT = Expression, typename DivisorT = DividendT>
 class Divide : public BinaryExpression<Divide, DividendT, DivisorT> {
 public:
     Divide() = default;

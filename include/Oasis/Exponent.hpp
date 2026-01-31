@@ -10,9 +10,6 @@
 
 namespace Oasis {
 
-template <IExpression BaseT, IExpression PowerT>
-class Exponent;
-
 /// @cond
 template <>
 class Exponent<Expression, Expression> : public BinaryExpression<Exponent> {
@@ -39,7 +36,7 @@ public:
  * @tparam BaseT The expression to be used as the base.
  * @tparam PowerT The expression to be used as the power.
  */
-template <IExpression BaseT = Expression, IExpression PowerT = BaseT>
+template <typename BaseT = Expression, typename PowerT = BaseT>
 class Exponent : public BinaryExpression<Exponent, BaseT, PowerT> {
 public:
     Exponent() = default;

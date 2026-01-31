@@ -10,9 +10,6 @@
 
 namespace Oasis {
 
-template <IExpression MultiplicandT, IExpression MultiplierT>
-class Multiply;
-
 /// @cond
 template <>
 class Multiply<Expression, Expression> : public BinaryExpression<Multiply> {
@@ -36,7 +33,7 @@ public:
  * @tparam MultiplicandT The expression to be multiplied by.
  * @tparam MultiplierT The expression to multiply the multiplicand by.
  */
-template <IExpression MultiplicandT = Expression, IExpression MultiplierT = MultiplicandT>
+template <typename MultiplicandT = Expression, typename MultiplierT = MultiplicandT>
 class Multiply : public BinaryExpression<Multiply, MultiplicandT, MultiplierT> {
 public:
     Multiply() = default;
