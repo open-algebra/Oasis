@@ -19,31 +19,31 @@ class Pi;
 template <typename, typename>
 class Add;
 
-template <typename MinuendT, typename SubtrahendT>
+template <typename, typename>
 class Subtract;
 
-template <typename MultiplicandT, typename MultiplierT>
+template <typename, typename>
 class Multiply;
 
-template <typename DividendT, typename DivisorT>
+template <typename, typename>
 class Divide;
 
-template <typename BaseT, typename PowerT>
+template <typename, typename>
 class Exponent;
 
-template <typename BaseT, typename ArgumentT>
+template <typename, typename>
 class Log;
 
-template <typename OperandT>
+template <typename>
 class Negate;
 
-template <typename OperandT>
+template <typename>
 class Magnitude;
 
 template <typename, typename>
 class Derivative;
 
-template <typename Integrand, typename Differential>
+template <typename, typename>
 class Integral;
 }
 
