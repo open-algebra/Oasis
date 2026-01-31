@@ -16,22 +16,22 @@ class Undefined;
 class EulerNumber;
 class Pi;
 
-template <IExpression, IExpression>
+template <typename, typename>
 class Add;
 
-template <IExpression MinuendT, IExpression SubtrahendT>
+template <typename MinuendT, typename SubtrahendT>
 class Subtract;
 
-template <IExpression MultiplicandT, IExpression MultiplierT>
+template <typename MultiplicandT, typename MultiplierT>
 class Multiply;
 
-template <IExpression DividendT, IExpression DivisorT>
+template <typename DividendT, typename DivisorT>
 class Divide;
 
-template <IExpression BaseT, IExpression PowerT>
+template <typename BaseT, typename PowerT>
 class Exponent;
 
-template <IExpression BaseT, IExpression ArgumentT>
+template <typename BaseT, typename ArgumentT>
 class Log;
 
 template <typename OperandT>
@@ -40,10 +40,10 @@ class Negate;
 template <typename OperandT>
 class Magnitude;
 
-template <IExpression, IExpression>
+template <typename, typename>
 class Derivative;
 
-template <IExpression Integrand, IExpression Differential>
+template <typename Integrand, typename Differential>
 class Integral;
 }
 

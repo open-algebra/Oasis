@@ -10,9 +10,6 @@
 
 namespace Oasis {
 
-template <IExpression MinuendT, IExpression SubtrahendT>
-class Subtract;
-
 /// @cond
 template <>
 class Subtract<Expression, Expression> : public BinaryExpression<Subtract> {
@@ -39,7 +36,7 @@ public:
  * @tparam MinuendT The expression to be subtracted from.
  * @tparam SubtrahendT The expression to subtract from the minuend.
  */
-template <IExpression MinuendT = Expression, IExpression SubtrahendT = MinuendT>
+template <typename MinuendT = Expression, typename SubtrahendT = MinuendT>
 class Subtract : public BinaryExpression<Subtract, MinuendT, SubtrahendT> {
 public:
     Subtract() = default;
