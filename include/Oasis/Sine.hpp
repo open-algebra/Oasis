@@ -9,7 +9,7 @@
 
 namespace Oasis {
 
-template <IExpression OperandT>
+template <typename OperandT>
 class Sine;
 
 template <>

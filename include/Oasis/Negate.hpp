@@ -10,7 +10,7 @@
 
 namespace Oasis {
 
-template <IExpression OperandT = Expression>
+template <typename OperandT = Expression>
 class Negate final : public UnaryExpression<Negate, OperandT> {
 public:
     Negate() = default;

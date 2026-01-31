@@ -40,6 +40,9 @@ class Negate;
 template <typename>
 class Magnitude;
 
+template <typename>
+class Sine;
+
 template <typename, typename>
 class Derivative;
 

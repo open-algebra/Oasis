@@ -25,7 +25,7 @@ namespace Oasis {
  * @tparam OperandT Type of child operand
  * This represents magnitude/absolute value
  */
-template <IExpression OperandT>
+template <typename OperandT>
 class Magnitude final : public UnaryExpression<Magnitude, OperandT> {
 public:
     Magnitude() = default;
