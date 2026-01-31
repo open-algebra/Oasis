@@ -5,8 +5,8 @@
 #ifndef OASIS_SERIALIZATION_HPP
 #define OASIS_SERIALIZATION_HPP
 
-#include "FwdDecls.hpp"
 #include "Expression.hpp"
+#include "FwdDecls.hpp"
 
 namespace Oasis {
 
