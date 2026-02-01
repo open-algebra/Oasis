@@ -390,7 +390,7 @@ auto MathMLSerializer::TypedVisit(const Integral<>& integral) -> RetT
 
         // Integral symbol
         tinyxml2::XMLElement* inte = doc.NewElement("mo");
-        inte->SetText("&int;");
+        inte->SetText(reinterpret_cast<const char*>(u8"\u222B"));
 
         tinyxml2::XMLElement* dNode = doc.NewElement("mo");
         dNode->SetText("d");
