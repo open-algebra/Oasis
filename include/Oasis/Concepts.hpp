@@ -42,6 +42,9 @@ class BinaryExpression;
 template <template <IExpression> class DerivedT, IExpression OpT>
 class UnaryExpression;
 
+template <typename DerivedT>
+class LeafExpression;
+
 /**
  * Checks if type T is same as any of the provided types in U.
  *
@@ -61,6 +64,9 @@ template <typename Derived>
 concept DerivedFromUnaryExpression = requires(Derived& d) {
     []<template <typename> typename D, IExpression T>(UnaryExpression<D, T>&) { }(d);
 };
+
+template <typename T>
+concept DerivedFromLeafExpression = std::derived_from<T, LeafExpression<T>>;
 
 template <typename T>
 concept IVisitor = requires {
