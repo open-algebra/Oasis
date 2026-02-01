@@ -17,6 +17,15 @@ namespace Oasis {
  *
  * Variables are used to represent unknown values in an expression. Variables
  * can have names such as "x" or "y" or "x_1" and so on.
+ *
+ * @section Parameters
+ * @tparam Variable the variable name of the class.
+ *
+ * @section ex1 Example Usage:
+ * @code
+ * Oasis::Variable{"x"};
+ * @endcode
+ *
  */
 class Variable : public LeafExpression<Variable> {
 public:

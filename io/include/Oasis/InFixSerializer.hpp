@@ -12,6 +12,35 @@
 
 namespace Oasis {
 
+/**
+ * The InFixSerializer class is a class for end users to evaluate their results and display
+ * the final evaluated expression after computation in a string format.
+ *
+ * @section Parameters
+ * None
+ *
+ * @section exam Example Usage:
+ * @code
+std::string exp = {"x+5"};
+
+const auto preproc = Oasis::PreProcessInFix(exp);
+auto midResult = Oasis::FromInFix(preproc);
+
+const std::unique_ptr<Oasis::Expression> expression = std::move(midResult).value();
+
+Oasis::Integral in {
+    *expression,
+    Oasis::Variable{"x"}
+};
+Oasis::InFixSerializer result; // Instantiate an InFixSerializer object.
+
+auto resultant= in.Simplify(); // Simplify the integral to evaluate it.
+
+std::println{"Result: {}", resultant->Accept(result).value()};
+// Extract the string version of the evaluated expression
+ * @endcode
+ *
+ */
 class InFixSerializer final : public TypedVisitor<std::expected<std::string, std::string>> {
 public:
     auto TypedVisit(const Real& real) -> RetT override;

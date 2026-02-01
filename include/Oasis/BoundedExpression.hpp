@@ -11,6 +11,14 @@
 
 namespace Oasis {
 
+/**
+ * A concept base class for both Unary and BoundedBinary expressions.
+ * @note This class is not intended to be used directly by end users.
+ *
+ * @section Parameters
+ * @tparam LowerBoundT The lower bound of the expression.
+ * @tparam UpperBoundT The upper bound of the expression.
+ */
 template <IExpression LowerBoundT = Expression, IExpression UpperBoundT = Expression>
 class BoundedExpression : public Expression {
 public:

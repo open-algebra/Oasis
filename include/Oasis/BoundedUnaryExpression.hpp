@@ -13,6 +13,15 @@
 
 namespace Oasis {
 
+/**
+ * A concept for an operand of a unary expression with bounds.
+ * @note This class is not intended to be used directly by end users.
+ *
+ * @section Parameters
+ * @tparam MostSigOpT The type of the most significant operand.
+ * @tparam LeastSigOpT The type of the least significant operand.
+ * @tparam T The type to check.
+ */
 template <template <IExpression, IExpression, IExpression> class DerivedT, IExpression OperandT, IExpression LowerBoundT = Expression, IExpression UpperBoundT = LowerBoundT>
 class BoundedUnaryExpression : public BoundedExpression<LowerBoundT, UpperBoundT> {
 

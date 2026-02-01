@@ -15,6 +15,7 @@ enum class ExpressionType;
 
 /**
  * An expression concept.
+ * @note This class is not intended to be used directly by end users.
  *
  * An expression concept is a type that satisfies the following requirements:
  * - It is derived from `Expression`.

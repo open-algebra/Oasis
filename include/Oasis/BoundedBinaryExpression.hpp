@@ -11,6 +11,16 @@
 #include "Visit.hpp"
 
 namespace Oasis {
+/**
+ * A concept for an operand of a binary expression with bounds.
+ * @note This class is not intended to be used directly by end users.
+ *
+ * @section Parameters
+ * @tparam MostSigOpT The type of the most significant operand.
+ * @tparam LeastSigOpT The type of the least significant operand.
+ * @tparam LowerBoundT The lower bound of the binary expression.
+ * @tparam UpperBoundT The upper bound of the binary expression.
+ */
 template <template <IExpression, IExpression, IExpression, IExpression> class DerivedT, IExpression MostSigOpT = Expression, IExpression LeastSigOpT = MostSigOpT, IExpression LowerBoundT = Expression, IExpression UpperBoundT = LowerBoundT>
 class BoundedBinaryExpression : public BoundedExpression<LowerBoundT, UpperBoundT> {
 
