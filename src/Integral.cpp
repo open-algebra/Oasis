@@ -7,12 +7,50 @@
 #include "Oasis/Add.hpp"
 // #include "Oasis/Log.hpp"
 // #include "Oasis/Imaginary.hpp"
+#include "Oasis/Subtract.hpp"
 
 namespace Oasis {
 
 Integral<Expression>::Integral(const Expression& integrand, const Expression& differential)
     : BinaryExpression(integrand, differential)
 {
+}
+
+auto Integral<Expression, Expression>::IntegrateWithBounds(const Expression& variable, const Expression& lower, const Expression& upper) -> std::unique_ptr<Expression>
+{
+    // If the bounds are equal, then the integral will always return 0.
+    // Handle that here, instead of going through the whole process to get the same result.
+    if (lower.Equals(upper)) {
+        return Real { 0.0f }.Copy();
+    }
+
+    SimplifyVisitor simplifyVisitor {};
+
+    // Attempt to integrate the function.
+    // If it fails (and returns nullptr), then just return out with a nullptr.
+    std::unique_ptr<Expression> integrated = this->GetMostSigOp().Integrate(this->GetLeastSigOp());
+
+    if (integrated == nullptr) return nullptr;
+
+    // Substitute in the upper and lower bounds for the variable
+    std::unique_ptr<Expression> upperBoundResult = integrated->Copy()->Substitute(variable, upper);
+    std::unique_ptr<Expression> lowerBoundResult = integrated->Copy()->Substitute(variable, lower);
+
+    // Simplify upperBoundResult and lowerBoundResult
+    upperBoundResult = std::unique_ptr<Expression>(upperBoundResult->Accept(simplifyVisitor)->get());
+    lowerBoundResult = std::unique_ptr<Expression>(lowerBoundResult->Accept(simplifyVisitor)->get());
+
+    // Subtract the two values and simplify the result
+    Subtract<Expression, Expression> subtracted = Subtract<Expression, Expression> {
+        *upperBoundResult, *lowerBoundResult
+    };
+
+    // Simplify and rewrite the result into a std::unique_ptr<Expression>
+    std::unique_ptr<Expression> result = std::unique_ptr<Expression>(subtracted.Accept(simplifyVisitor)->get());
+
+    // TODO: Can we get an Oasis::Real from here?
+    // Use RecursiveCast<Real>(*result)?
+    return result;
 }
 
 // auto Integral<Expression>::Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression>
