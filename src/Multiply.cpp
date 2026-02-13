@@ -5,11 +5,15 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
+#include "Oasis/EulerNumber.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Matrix.hpp"
 #include "Oasis/RecursiveCast.hpp"
+
+#include "Oasis/Log.hpp"
+#include "Oasis/Subtract.hpp"
 
 #define EPSILON 10E-6
 
@@ -43,6 +47,85 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) cons
         }
 
         // TODO: Implement integration by parts
+        // Detect whether integration by parts is appropriate
+        // May need to simplify before and/or after
+        else if (auto mult = RecursiveCast<Multiply<Expression, Expression>>(*simplifiedMult); mult != nullptr) {
+            std::unique_ptr<Expression> u;
+            std::unique_ptr<Expression> dv;
+
+            // Check the rules of LIPET
+
+            // May need to recursively cast u and dv before assigning them
+            // so that method overrides can be realized.
+
+            // TODO: change dv to v and muliply by integration variable to correctly attain dv
+
+            // Logarithm
+            if (mult->GetMostSigOp().Is<Log<Expression, Expression>>()) {
+                u = mult->GetMostSigOp().Copy();
+                dv = mult->GetLeastSigOp().Copy();
+            } else if (mult->GetLeastSigOp().Is<Log<Expression, Expression>>()) {
+                u = mult->GetLeastSigOp().Copy();
+                dv = mult->GetMostSigOp().Copy();
+            }
+
+            // TODO: Inverse trigonometry
+            // Inverse trigonometry is not implemented yet in Oasis
+
+            // Polynomial
+            // TODO: Could also be exponent, in the case of (x^2)*sinx
+            // TODO: Ensure all polynomial cases are accounted for
+            if (mult->GetMostSigOp().Is<Variable>()) {
+                u = mult->GetMostSigOp().Copy();
+                dv = mult->GetLeastSigOp().Copy();
+            } else if (mult->GetLeastSigOp().Is<Variable>()) {
+                u = mult->GetLeastSigOp().Copy();
+                dv = mult->GetMostSigOp().Copy();
+            }
+
+            // Exponential - Euler's Number
+            if (mult->GetMostSigOp().Is<Exponent<EulerNumber, Expression>>()) {
+                u = mult->GetMostSigOp().Copy();
+                dv = mult->GetLeastSigOp().Copy();
+            } else if (mult->GetLeastSigOp().Is<Exponent<EulerNumber, Expression>>()) {
+                u = mult->GetLeastSigOp().Copy();
+                dv = mult->GetMostSigOp().Copy();
+            }
+
+            // TODO: Trigonometry
+            // Trigonometry is not implemented yet in Oasis
+
+            // Differentiate u and integrate dv
+            // TODO: ensure u & dv are casted as the correct types to allow method override
+            std::unique_ptr<Expression> du = u->Differentiate(*u);
+            std::unique_ptr<Expression> v = dv->Integrate(*dv);
+
+            // Apply the formula: integral(udv) = uv - integral(vdu)
+            // Work in Progress
+            Subtract<Multiply<Expression, Expression>, Integral<Expression, Expression>> subtractor {
+                Multiply<Expression, Expression> {
+                    *u,
+                    *dv },
+                Integral {}
+            };
+
+
+
+            // test code to base the structure of above tree off of
+            // Multiply<Oasis::Expression> subtract {
+            //     Multiply<Expression, Expression> {
+            //         Real { 1.0 },
+            //         Real { 2.0 } },
+            //     Real { 3.0 }
+            // };
+
+
+
+
+
+
+        }
+
     }
     Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
 
