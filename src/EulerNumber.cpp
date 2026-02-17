@@ -31,13 +31,16 @@ auto EulerNumber::Differentiate(const Expression&) const -> std::unique_ptr<Expr
 
 auto EulerNumber::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
-    if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
+    SimplifyVisitor simplifyVisitor {};
+
+    if (const auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
         // Constant rule
         Add adder {
             Multiply<EulerNumber, Variable> { EulerNumber {}, Variable { (*variable).GetName() } },
             Variable { "C" }
         };
-        return adder.Simplify();
+
+        return std::move(adder.Accept(simplifyVisitor)).value();
     }
 
     Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };

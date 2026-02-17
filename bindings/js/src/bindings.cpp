@@ -11,7 +11,9 @@ namespace
 {
     auto Simplify(std::shared_ptr<Oasis::Expression> expression_ptr) -> std::shared_ptr<Oasis::Expression>
     {
-        return expression_ptr->Simplify();
+        Oasis::SimplifyVisitor simplifyVisitor {};
+        auto simplifyResult = expression_ptr->Accept(simplifyVisitor);
+        return simplifyResult.has_value() ? std::shared_ptr<Oasis::Expression> { std::move(simplifyResult).value() } : nullptr;
     }
 
     auto FromInFixTrivial(const std::string& str) -> std::shared_ptr<Oasis::Expression>

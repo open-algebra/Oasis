@@ -30,6 +30,8 @@ auto Variable::GetName() const -> std::string
 
 auto Variable::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
+    SimplifyVisitor simplifyVisitor {};
+
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
 
         // Power rule
@@ -40,7 +42,7 @@ auto Variable::Integrate(const Expression& integrationVariable) const -> std::un
                     Real { 2.0f } },
                 Variable { "C" }
             };
-            return adder.Simplify();
+            return adder.Accept(simplifyVisitor).value();
         }
 
         // Different variable, treat as constant
@@ -48,7 +50,7 @@ auto Variable::Integrate(const Expression& integrationVariable) const -> std::un
             Multiply { Variable { name }, Variable { (*variable).GetName() } },
             Variable { "C" }
         };
-        return adder.Simplify();
+        return adder.Accept(simplifyVisitor).value();
     }
 
     Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
@@ -70,17 +72,21 @@ auto Variable::Substitute(const Expression& var, const Expression& val) -> std::
 
 auto Variable::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
+    SimplifyVisitor simplifyVisitor {};
+
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
 
         // Power rule
         if (name == (*variable).GetName()) {
             return std::make_unique<Real>(Real { 1.0f })
-                ->Simplify();
+                ->Accept(simplifyVisitor)
+                .value();
         }
 
         // Different variable, treat as constant
         return std::make_unique<Real>(Real { 0 })
-            ->Simplify();
+            ->Accept(simplifyVisitor)
+            .value();
     }
 
     return Copy();

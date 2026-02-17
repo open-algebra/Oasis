@@ -14,6 +14,8 @@
 #include <fmt/color.h>
 #include <isocline.h>
 
+#include "Oasis/SimplifyVisitor.hpp"
+
 template <typename FnT>
 auto operator|(const std::string& str, FnT fn) -> boost::callable_traits::return_type_t<FnT>
 {
@@ -39,6 +41,8 @@ auto Parse(const std::string& in) -> Oasis::FromInFixResult { return Oasis::From
 int main(int argc, char** argv)
 {
     Oasis::InFixSerializer serializer;
+    Oasis::SimplifyVisitor simplifyVisitor;
+
     constexpr auto err_style = fg(fmt::color::indian_red);
     constexpr auto success_style = fg(fmt::color::green);
 
@@ -56,8 +60,8 @@ int main(int argc, char** argv)
 
         // Calling Oasis::FromInFix passed as template fails because defaulted parameters aren't represented in the type, so a wrapper is needed
         auto result = (input | Oasis::PreProcessInFix | Parse)
-                          .transform([](const std::unique_ptr<Oasis::Expression>& expr) -> std::unique_ptr<Oasis::Expression> {
-                              return expr->Simplify();
+                          .and_then([&simplifyVisitor](const std::unique_ptr<Oasis::Expression>& expr) -> std::expected<gsl::not_null<std::unique_ptr<Oasis::Expression>>, std::string> {
+                              return expr->Accept(simplifyVisitor);
                           })
                           .and_then([&serializer](const std::unique_ptr<Oasis::Expression>& expr) -> std::expected<std::string, std::string> {
                               return expr->Accept(serializer);

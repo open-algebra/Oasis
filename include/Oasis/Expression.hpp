@@ -162,7 +162,7 @@ public:
      * Simplifies this expression.
      * @return The simplified expression.
      */
-    [[nodiscard]] virtual auto Simplify() const -> std::unique_ptr<Expression>;
+    [[nodiscard]] [[deprecated]] auto Simplify() const -> std::unique_ptr<Expression>;
 
     /**
      * Checks whether this expression is structurally equivalent to another expression.

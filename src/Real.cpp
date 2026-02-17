@@ -35,6 +35,7 @@ auto Real::GetValue() const -> double
 
 auto Real::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
+    SimplifyVisitor simplifyVisitor {};
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
         // Constant rule
         if (value != 0) {
@@ -43,11 +44,12 @@ auto Real::Integrate(const Expression& integrationVariable) const -> std::unique
                 Multiply<Real, Variable> { Real { value }, Variable { (*variable).GetName() } },
                 Variable { "C" }
             };
-            return adder.Simplify();
+
+            return std::move(adder.Accept(simplifyVisitor)).value();
         }
 
         // Zero rule
-        return std::make_unique<Variable>(Variable { "C" })->Simplify();
+        return std::make_unique<Variable>(Variable { "C" });
     }
 
     Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
