@@ -41,7 +41,6 @@ long long gcf(long long a, long long b)
 }
 
 namespace Oasis {
-
 // currently only supports polynomials of one variable.
 /**
  * The FindZeros function finds all rational zeros of a polynomial. Currently assumes an expression of the form a+bx+cx^2+dx^3+... where a, b, c, d are a integers.
@@ -50,8 +49,8 @@ namespace Oasis {
  */
 auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
 {
-    SimplifyVisitor simplifyVisitor {};
-    
+    SimplifyVisitor simplifyVisitor{};
+
     std::vector<std::unique_ptr<Expression>> results;
     std::vector<std::unique_ptr<Expression>> termsE;
     if (auto addCase = RecursiveCast<Add<Expression>>(*this); addCase != nullptr) {
@@ -78,7 +77,8 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             coefficent = prodCase->GetMostSigOp().Copy();
             variableName = prodCase->GetLeastSigOp().GetName();
             exponent = 1;
-        } else if (auto prodExpCase = RecursiveCast<Multiply<Expression, Exponent<Variable, Real>>>(*i); prodExpCase != nullptr) {
+        } else if (auto prodExpCase = RecursiveCast<Multiply<Expression, Exponent<Variable, Real>>>(*i); prodExpCase
+            != nullptr) {
             coefficent = prodExpCase->GetMostSigOp().Copy();
             variableName = prodExpCase->GetLeastSigOp().GetMostSigOp().GetName();
             exponent = prodExpCase->GetLeastSigOp().GetLeastSigOp().GetValue();
@@ -86,7 +86,8 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             coefficent = divCase->GetMostSigOp().Copy();
             variableName = divCase->GetLeastSigOp().GetName();
             exponent = -1;
-        } else if (auto divExpCase = RecursiveCast<Divide<Expression, Exponent<Variable, Real>>>(*i); divExpCase != nullptr) {
+        } else if (auto divExpCase = RecursiveCast<Divide<Expression, Exponent<Variable, Real>>>(*i); divExpCase !=
+            nullptr) {
             coefficent = divExpCase->GetMostSigOp().Copy();
             variableName = divExpCase->GetLeastSigOp().GetMostSigOp().GetName();
             exponent = -divExpCase->GetLeastSigOp().GetLeastSigOp().GetValue();
@@ -115,10 +116,12 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
             negCoefficents[flooredExponent] = Add<Expression>(*coefficent, *negCoefficents[flooredExponent]).Copy();
         }
     }
-    while (negCoefficents.size() > 0 && RecursiveCast<Real>(*negCoefficents.back()) != nullptr && RecursiveCast<Real>(*negCoefficents.back())->GetValue() == 0) {
+    while (negCoefficents.size() > 0 && RecursiveCast<Real>(*negCoefficents.back()) != nullptr && RecursiveCast<
+        Real>(*negCoefficents.back())->GetValue() == 0) {
         negCoefficents.pop_back();
     }
-    while (posCoefficents.size() > 0 && RecursiveCast<Real>(*posCoefficents.back()) != nullptr && RecursiveCast<Real>(*posCoefficents.back())->GetValue() == 0) {
+    while (posCoefficents.size() > 0 && RecursiveCast<Real>(*posCoefficents.back()) != nullptr && RecursiveCast<
+        Real>(*posCoefficents.back())->GetValue() == 0) {
         posCoefficents.pop_back();
     }
     std::vector<std::unique_ptr<Expression>> coefficents;
@@ -167,7 +170,8 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
                             if (newTermsC.size() == termsC.size() && newTermsC.back() == 0) {
                                 termsC = newTermsC;
                                 if (doAdd) {
-                                    results.push_back(std::make_unique<Divide<Real>>(Real(1.0 * mpv), Real(1.0 * qv)));
+                                    results.push_back(
+                                        std::make_unique<Divide<Real>>(Real(1.0 * mpv), Real(1.0 * qv)));
                                     doAdd = false;
                                 }
                                 do {
@@ -197,13 +201,16 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
         }
     }
     if (coefficents.size() == 2) {
-        results.push_back(Divide(Multiply(Real(-1), *coefficents[0]), *coefficents[1]).Accept(simplifyVisitor).value());
+        results.push_back(
+            Divide(Multiply(Real(-1), *coefficents[0]), *coefficents[1]).Accept(simplifyVisitor).value());
     } else if (coefficents.size() == 3) {
         auto& a = coefficents[2];
         auto& b = coefficents[1];
         auto& c = coefficents[0];
         auto negB = Multiply(Real(-1.0), *b).Accept(simplifyVisitor).value();
-        auto sqrt = Exponent(*Add(Multiply(*b, *b), Multiply(Real(-4), Multiply(*a, *c))).Accept(simplifyVisitor).value(), Divide(Real(1), Real(2))).Copy();
+        auto sqrt = Exponent(
+            *Add(Multiply(*b, *b), Multiply(Real(-4), Multiply(*a, *c))).Accept(simplifyVisitor).value(),
+            Divide(Real(1), Real(2))).Copy();
         auto twoA = Multiply(Real(2), *a).Accept(simplifyVisitor).value();
         results.push_back(Divide(Add(*negB, *sqrt), *twoA).Copy());
         results.push_back(Divide(Subtract(*negB, *sqrt), *twoA).Copy());
@@ -215,10 +222,12 @@ auto Expression::GetCategory() const -> uint32_t
 {
     return 0;
 }
+
 auto Expression::Differentiate(const Expression&) const -> std::unique_ptr<Expression>
 {
     return Copy();
 }
+
 auto Expression::GetType() const -> ExpressionType
 {
     return ExpressionType::None;
@@ -231,59 +240,66 @@ auto Expression::Generalize() const -> std::unique_ptr<Expression>
 
 auto Expression::Integrate(const Expression& variable) const -> std::unique_ptr<Expression>
 {
-    Integral<Expression, Expression> integral { *(this->Copy()), *(variable.Copy()) };
+    Integral<Expression, Expression> integral{ *(this->Copy()), *(variable.Copy()) };
 
     return integral.Copy();
 }
 
-auto Expression::IntegrateWithBounds(const Expression& variable, const Expression&, const Expression&) -> std::unique_ptr<Expression>
+auto Expression::IntegrateWithBounds(const Expression& variable, const Expression&,
+    const Expression&) -> std::unique_ptr<Expression>
 {
-    Integral<Expression, Expression> integral { *(this->Copy()), *(variable.Copy()) };
+    Integral<Expression, Expression> integral{ *(this->Copy()), *(variable.Copy()) };
 
     return integral.Copy();
 }
 
 auto Expression::Simplify() const -> std::unique_ptr<Expression>
 {
-    SimplifyVisitor sV {};
+    SimplifyVisitor sV{};
     return std::move(Accept(sV)).value();
 }
-
 } // namespace Oasis
-std::unique_ptr<Oasis::Expression> operator+(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
+std::unique_ptr<Oasis::Expression> operator+(const std::unique_ptr<Oasis::Expression>& lhs,
+    const std::unique_ptr<Oasis::Expression>& rhs)
 {
-    Oasis::SimplifyVisitor sV {};
-    auto e = Oasis::Add { *lhs, *rhs };
+    Oasis::SimplifyVisitor sV{};
+    auto e = Oasis::Add{ *lhs, *rhs };
     auto s = e.Accept(sV);
     if (!s) {
         return e.Generalize();
     }
     return std::move(s).value();
 }
-std::unique_ptr<Oasis::Expression> operator-(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
+
+std::unique_ptr<Oasis::Expression> operator-(const std::unique_ptr<Oasis::Expression>& lhs,
+    const std::unique_ptr<Oasis::Expression>& rhs)
 {
-    Oasis::SimplifyVisitor sV {};
-    auto e = Oasis::Subtract { *lhs, *rhs };
+    Oasis::SimplifyVisitor sV{};
+    auto e = Oasis::Subtract{ *lhs, *rhs };
     auto s = e.Accept(sV);
     if (!s) {
         return e.Generalize();
     }
     return std::move(s).value();
 }
-std::unique_ptr<Oasis::Expression> operator*(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
+
+std::unique_ptr<Oasis::Expression> operator*(const std::unique_ptr<Oasis::Expression>& lhs,
+    const std::unique_ptr<Oasis::Expression>& rhs)
 {
-    Oasis::SimplifyVisitor sV {};
-    auto e = Oasis::Multiply { *lhs, *rhs };
+    Oasis::SimplifyVisitor sV{};
+    auto e = Oasis::Multiply{ *lhs, *rhs };
     auto s = e.Accept(sV);
     if (!s) {
         return e.Generalize();
     }
     return std::move(s).value();
 }
-std::unique_ptr<Oasis::Expression> operator/(const std::unique_ptr<Oasis::Expression>& lhs, const std::unique_ptr<Oasis::Expression>& rhs)
+
+std::unique_ptr<Oasis::Expression> operator/(const std::unique_ptr<Oasis::Expression>& lhs,
+    const std::unique_ptr<Oasis::Expression>& rhs)
 {
-    Oasis::SimplifyVisitor sV {};
-    auto e = Oasis::Divide { *lhs, *rhs };
+    Oasis::SimplifyVisitor sV{};
+    auto e = Oasis::Divide{ *lhs, *rhs };
     auto s = e.Accept(sV);
     if (!s) {
         return e.Generalize();

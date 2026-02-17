@@ -11,17 +11,15 @@
 namespace Oasis {
 
 Integral<Expression>::Integral(const Expression& integrand, const Expression& differential)
-    : BinaryExpression(integrand, differential)
-{
-}
+    : BinaryExpression(integrand, differential) {}
 
 auto Integral<Expression>::Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression>
 {
     // Returns simplified Integral
-    SimplifyVisitor simplifyVisitor {};
+    SimplifyVisitor simplifyVisitor{};
 
-    std::unique_ptr<Expression> simplifiedIntegrand = mostSigOp ? mostSigOp->Accept(simplifyVisitor).value() : std::unique_ptr<Expression> { nullptr };
-    std::unique_ptr<Expression> simplifiedDifferential = leastSigOp ? leastSigOp->Accept(simplifyVisitor).value() : std::unique_ptr<Expression> { nullptr } ;
+    std::unique_ptr<Expression> simplifiedIntegrand = mostSigOp ? mostSigOp->Accept(simplifyVisitor).value() : std::unique_ptr<Expression>{ nullptr };
+    std::unique_ptr<Expression> simplifiedDifferential = leastSigOp ? leastSigOp->Accept(simplifyVisitor).value() : std::unique_ptr<Expression>{ nullptr };
 
     return simplifiedIntegrand->IntegrateWithBounds(*simplifiedDifferential, upper, lower);
     /*

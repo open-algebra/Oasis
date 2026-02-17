@@ -7,7 +7,7 @@
 #include "Oasis/UnaryExpression.hpp"
 
 namespace Oasis {
-    auto Sine<Expression>::Differentiate(const Expression&) const -> std::unique_ptr<Expression>
+auto Sine<Expression>::Differentiate(const Expression&) const -> std::unique_ptr<Expression>
 {
     return nullptr;
 }
