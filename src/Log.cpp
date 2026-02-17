@@ -27,74 +27,6 @@ Log<Expression>::Log(const Expression& base, const Expression& argument)
 {
 }
 
-auto Log<Expression>::Simplify() const -> std::unique_ptr<Expression>
-{
-    const auto simplifiedBase = mostSigOp ? mostSigOp->Simplify() : nullptr;
-    const auto simplifiedArgument = leastSigOp ? leastSigOp->Simplify() : nullptr;
-
-    if (!simplifiedBase || !simplifiedArgument) {
-        return nullptr;
-    }
-
-    const Log simplifiedLog { *simplifiedBase, *simplifiedArgument };
-
-    if (const auto realBaseCase = RecursiveCast<Log<Real, Expression>>(simplifiedLog); realBaseCase != nullptr) {
-        if (const Real& b = realBaseCase->GetMostSigOp(); b.GetValue() <= 0.0 || b.GetValue() == 1) {
-            return std::make_unique<Undefined>();
-        }
-    }
-
-    if (const auto realExponentCase = RecursiveCast<Log<Expression, Real>>(simplifiedLog); realExponentCase != nullptr) {
-        const Real& argument = realExponentCase->GetLeastSigOp();
-
-        if (argument.GetValue() <= 0.0) {
-            return std::make_unique<Undefined>();
-        }
-
-        if (argument.GetValue() == 1.0) {
-            return std::make_unique<Real>(0.0);
-        }
-    }
-
-    if (const auto realCase = RecursiveCast<Log<Real>>(simplifiedLog); realCase != nullptr) {
-        const Real& base = realCase->GetMostSigOp();
-        const Real& argument = realCase->GetLeastSigOp();
-
-        return std::make_unique<Real>(log2(argument.GetValue()) * (1 / log2(base.GetValue())));
-    }
-
-    // log(a) with a < 0 log(-a)
-    if (auto negCase = RecursiveCast<Log<Expression, Real>>(simplifiedLog); negCase != nullptr) {
-        if (negCase->GetLeastSigOp().GetValue() < 0) {
-            return Add<Expression> { Log { negCase->GetMostSigOp(), Real { -1 * negCase->GetLeastSigOp().GetValue() } }, Multiply<Expression> { Imaginary {}, Pi {} } }.Generalize();
-        }
-    }
-
-    // log[a](a) = 1
-    if (const auto sameCase = RecursiveCast<Log<Expression, Expression>>(simplifiedLog); sameCase != nullptr) {
-        if (sameCase->leastSigOp->Equals(*sameCase->mostSigOp)) {
-            return Real { 1 }.Generalize();
-        }
-    }
-
-    // log[a](b^x) = x * log[a](b)
-    if (const auto expCase = RecursiveCast<Log<Expression, Exponent<>>>(simplifiedLog); expCase != nullptr) {
-        SimplifyVisitor simplifyVisitor {};
-        const auto exponent = expCase->GetLeastSigOp();
-        const IExpression auto& log = Log<Expression>(expCase->GetMostSigOp(), exponent.GetMostSigOp()); // might need to check that it isnt nullptr
-        const IExpression auto& factor = exponent.GetLeastSigOp();
-        auto e = Oasis::Multiply<Oasis::Expression>(factor, log);
-        auto s = e.Accept(simplifyVisitor);
-        if (!s) {
-            return e.Generalize();
-        } else {
-            return std::move(s).value();
-        }
-    }
-
-    return simplifiedLog.Copy();
-}
-
 auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // TODO: Implement with integrate visitor?
@@ -102,7 +34,8 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
     if (this->mostSigOp->Equals(EulerNumber {})) {
         // ln(x)
         if (leastSigOp->Is<Variable>() && RecursiveCast<Variable>(*leastSigOp)->Equals(integrationVariable)) {
-            return Add { Multiply { integrationVariable, Subtract { *this, Real { 1 } } }, Variable { "C" } }.Simplify();
+            Add add { Multiply { integrationVariable, Subtract { *this, Real { 1 } } }, Variable { "C" } };
+            return add.Accept(simplifyVisitor).value();
             // alternate form
             // return Subtract<Expression> { Multiply<Expression> { integrationVariable, *this }, integrationVariable }.Simplify();
         }
@@ -114,10 +47,14 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
         auto derivative = std::move(der_Simp).value();
 
         if (derivative->Equals(Real { 0 }))
-            return Add { Multiply { integrationVariable, *this }, Variable { "C" } }.Simplify();
+        {
+            Add add{ Multiply { integrationVariable, *this }, Variable { "C" } };
+            return add.Accept(simplifyVisitor).value();
+        }
         // ln(ax + b)
         if (derivative->Is<Real>()) {
-            return Add { Divide<Expression> { Multiply { *leastSigOp, Subtract { *this, Real { 1 } } }, *derivative }, Variable { "C" } }.Simplify();
+            Add add{ Divide<> { Multiply { *leastSigOp, Subtract { *this, Real { 1 } } }, *derivative }, Variable { "C" } };
+            return add.Accept(simplifyVisitor).value();
         }
 
         // Commented out since Issue #178 is leading to incorrect integrals
@@ -152,7 +89,6 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
 
     } else {
         // Use log identity Log[b](a) = Log(a)/Log(b)
-        SimplifyVisitor simplifyVisitor {};
         auto numer = Log<Expression> { EulerNumber {}, *(this->leastSigOp->Generalize()) };
         auto denom = Log<Expression> { EulerNumber {}, *(this->mostSigOp->Generalize()) };
 
@@ -160,13 +96,17 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
         if (numer.Equals(denom))
             return Add { integrationVariable, Variable { "C" } }.Generalize();
 
+        Derivative<Log<>, Expression> derivative{ denom, integrationVariable };
         // Can only use if logaritm base is a constant
-        if (Derivative { denom, integrationVariable }.Simplify()->Equals(Real { 0 })) {
-            auto naturalint = Integral { numer, integrationVariable }.Simplify();
+        if (derivative.Accept(simplifyVisitor).value()->Equals(Real { 0 })) {
+            Integral<Log<>, Expression> integral{ numer, integrationVariable };
+            auto naturalint = integral.Accept(simplifyVisitor).value();
             if (auto specialint = RecursiveCast<Add<Expression>>(*naturalint); specialint != nullptr) {
-                return Add { Divide { specialint->GetMostSigOp(), denom }, Variable { "C" } }.Simplify();
+                Add<Divide<Expression, Log<>>, Variable> add{ Divide { specialint->GetMostSigOp(), denom }, Variable { "C" } };
+                return add.Accept(simplifyVisitor).value();
             }
-            return Divide { *naturalint, denom }.Simplify();
+            Divide<Expression, Log<>> divide{ *naturalint, denom };
+            return divide.Accept(simplifyVisitor).value();
         }
     }
 

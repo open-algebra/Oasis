@@ -15,22 +15,13 @@ Integral<Expression>::Integral(const Expression& integrand, const Expression& di
 {
 }
 
-auto Integral<Expression>::Simplify() const -> std::unique_ptr<Expression>
-{
-    // Returns simplified Integral
-
-    auto simplifiedIntegrand = mostSigOp ? mostSigOp->Simplify() : nullptr;
-    auto simplifiedDifferential = leastSigOp ? leastSigOp->Simplify() : nullptr;
-
-    return simplifiedIntegrand->Integrate(*simplifiedDifferential);
-}
-
 auto Integral<Expression>::Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression>
 {
     // Returns simplified Integral
+    SimplifyVisitor simplifyVisitor {};
 
-    auto simplifiedIntegrand = mostSigOp ? mostSigOp->Simplify() : nullptr;
-    auto simplifiedDifferential = leastSigOp ? leastSigOp->Simplify() : nullptr;
+    std::unique_ptr<Expression> simplifiedIntegrand = mostSigOp ? mostSigOp->Accept(simplifyVisitor).value() : std::unique_ptr<Expression> { nullptr };
+    std::unique_ptr<Expression> simplifiedDifferential = leastSigOp ? leastSigOp->Accept(simplifyVisitor).value() : std::unique_ptr<Expression> { nullptr } ;
 
     return simplifiedIntegrand->IntegrateWithBounds(*simplifiedDifferential, upper, lower);
     /*

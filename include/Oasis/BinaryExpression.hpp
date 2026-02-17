@@ -201,17 +201,6 @@ public:
         return std::make_unique<DerivedGeneralized>(generalized);
     }
 
-    [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
-    {
-        SimplifyVisitor simplifyVisitor {};
-        auto e = Generalize();
-        auto s = e->Accept(simplifyVisitor);
-        if (!s) {
-            return e;
-        }
-        return std::move(s).value();
-    }
-
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> override
     {
         return Generalize()->Integrate(integrationVariable);

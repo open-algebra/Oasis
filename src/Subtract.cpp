@@ -19,103 +19,6 @@ Subtract<Expression>::Subtract(const Expression& minuend, const Expression& subt
 {
 }
 
-auto Subtract<Expression>::Simplify() const -> std::unique_ptr<Expression>
-{
-    const auto simplifiedMinuend = mostSigOp ? mostSigOp->Simplify() : nullptr;
-    const auto simplifiedSubtrahend = leastSigOp ? leastSigOp->Simplify() : nullptr;
-
-    const Subtract simplifiedSubtract { *simplifiedMinuend, *simplifiedSubtrahend };
-
-    // 2 - 1 = 1
-    if (auto realCase = RecursiveCast<Subtract<Real>>(simplifiedSubtract); realCase != nullptr) {
-        const Real& minuend = realCase->GetMostSigOp();
-        const Real& subtrahend = realCase->GetLeastSigOp();
-
-        return std::make_unique<Real>(minuend.GetValue() - subtrahend.GetValue());
-    }
-
-    // x - x = 0
-    if (simplifiedMinuend->Equals(*simplifiedSubtrahend)) {
-        return std::make_unique<Real>(Real { 0.0 });
-    }
-
-    if (auto matrixCase = RecursiveCast<Subtract<Matrix, Matrix>>(simplifiedSubtract); matrixCase != nullptr) {
-        const Oasis::IExpression auto& leftTerm = matrixCase->GetMostSigOp();
-        const Oasis::IExpression auto& rightTerm = matrixCase->GetLeastSigOp();
-
-        if ((leftTerm.GetRows() == rightTerm.GetRows()) && (leftTerm.GetCols() == leftTerm.GetCols())) {
-            return std::make_unique<Matrix>(leftTerm.GetMatrix() - rightTerm.GetMatrix());
-        } else {
-            return std::make_unique<Subtract<Expression>>(leftTerm, rightTerm);
-        }
-    }
-
-    // ax - x = (a-1)x
-    if (const auto minusOneCase = RecursiveCast<Subtract<Multiply<>, Expression>>(simplifiedSubtract); minusOneCase != nullptr) {
-        if (minusOneCase->GetMostSigOp().GetLeastSigOp().Equals(minusOneCase->GetLeastSigOp())) {
-            const Subtract newCoefficient { minusOneCase->GetMostSigOp().GetMostSigOp(), Real { 1.0 } };
-            return Multiply { newCoefficient, minusOneCase->GetLeastSigOp() }.Simplify();
-        }
-    }
-
-    // x-ax = (1-a)x
-    if (const auto oneMinusCase = RecursiveCast<Subtract<Expression, Multiply<>>>(simplifiedSubtract); oneMinusCase != nullptr) {
-        if (oneMinusCase->GetMostSigOp().Equals(oneMinusCase->GetLeastSigOp().GetLeastSigOp())) {
-            const Subtract newCoefficient { Real { 1.0 }, oneMinusCase->GetLeastSigOp().GetMostSigOp() };
-            return Multiply { newCoefficient, oneMinusCase->GetMostSigOp() }.Simplify();
-        }
-    }
-
-    // ax-bx= (a-b)x
-    if (const auto coefficientCase = RecursiveCast<Subtract<Multiply<>>>(simplifiedSubtract); coefficientCase != nullptr) {
-        if (coefficientCase->GetMostSigOp().GetLeastSigOp().Equals(coefficientCase->GetLeastSigOp().GetLeastSigOp())) {
-            const Subtract newCoefficient { coefficientCase->GetMostSigOp().GetMostSigOp(), coefficientCase->GetLeastSigOp().GetMostSigOp() };
-            return Multiply { newCoefficient, coefficientCase->GetLeastSigOp().GetLeastSigOp() }.Simplify();
-        }
-    }
-
-    // log(a) - log(b) = log(a / b)
-    if (const auto logCase = RecursiveCast<Subtract<Log<>>>(simplifiedSubtract); logCase != nullptr) {
-        if (logCase->GetMostSigOp().GetMostSigOp().Equals(logCase->GetLeastSigOp().GetMostSigOp())) {
-            const IExpression auto& base = logCase->GetMostSigOp().GetMostSigOp();
-            const IExpression auto& argument = Divide({ logCase->GetMostSigOp().GetLeastSigOp(), logCase->GetLeastSigOp().GetLeastSigOp() });
-            return std::make_unique<Log<>>(base, argument);
-        }
-    }
-    SimplifyVisitor simplifyVisitor {};
-    // makes subtraction into addition because it is easier to deal with
-    auto negated = Multiply<Expression> { Real { -1 }, *simplifiedSubtrahend };
-    if (auto added = RecursiveCast<Add<Expression>>(negated.GetLeastSigOp()); added != nullptr) {
-        auto m = Multiply<Expression> { Real { -1.0 }, added->GetMostSigOp() };
-        auto n = Multiply<Expression> { Real { -1.0 }, added->GetLeastSigOp() };
-        auto ms = m.Accept(simplifyVisitor);
-        auto ns = n.Accept(simplifyVisitor);
-        if (!ms || !ns) {
-            return Add { *simplifiedMinuend, Add { m, n } }.Generalize();
-        }
-        auto RHS = Add { *(std::move(ms).value()), *(std::move(ns).value()) };
-        auto s = RHS.Accept(simplifyVisitor);
-        if (!s) {
-            return Add { *simplifiedMinuend, RHS }.Generalize();
-        }
-        return Add { *simplifiedMinuend, *(std::move(s).value()) }.Accept(simplifyVisitor).value();
-    }
-    if (auto subtracted = RecursiveCast<Subtract<Expression>>(negated.GetLeastSigOp()); subtracted != nullptr) {
-        auto m = Multiply<Expression> { Real { -1.0 }, subtracted->GetMostSigOp() };
-        auto ms = m.Accept(simplifyVisitor);
-        if (!ms) {
-            return Add { *simplifiedMinuend, Add { m, *(subtracted->GetLeastSigOp().Simplify()) } }.Generalize();
-        }
-        auto RHS = Add { *(std::move(ms).value()), *(subtracted->GetLeastSigOp().Simplify()) };
-        auto s = RHS.Accept(simplifyVisitor);
-        if (!s) {
-            return Add { *simplifiedMinuend, RHS }.Generalize();
-        }
-        return Add { *simplifiedMinuend, *(std::move(s).value()) }.Accept(simplifyVisitor).value();
-    }
-    return Add { *simplifiedMinuend, negated }.Simplify();
-}
-
 auto Subtract<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
     SimplifyVisitor simplifyVisitor {};
@@ -190,7 +93,7 @@ auto Subtract<Expression>::Integrate(const Expression& integrationVariable) cons
                           *(specializedLeft->GetMostSigOp().Copy()) },
                 Variable { "C" } };
 
-            return add.Simplify();
+            return add.Accept(simplifyVisitor).value();
         }
         // If not, use other integration technique
         else {

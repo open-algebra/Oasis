@@ -22,13 +22,6 @@ Derivative<Expression>::Derivative(const Expression& exp, const Expression& var)
 {
 }
 
-auto Derivative<Expression>::Simplify() const -> std::unique_ptr<Expression>
-{
-    auto simplifiedExpression = mostSigOp ? mostSigOp->Simplify() : nullptr;
-    auto simplifiedVar = leastSigOp ? leastSigOp->Simplify() : nullptr;
-    return simplifiedExpression->Differentiate(*simplifiedVar);
-}
-
 std::unique_ptr<Expression> Derivative<Expression, Expression>::Differentiate(const Expression&) const
 {
     return mostSigOp->Differentiate(*leastSigOp);

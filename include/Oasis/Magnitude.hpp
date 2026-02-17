@@ -39,50 +39,6 @@ public:
     {
     }
 
-    [[deprecated]] [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
-    {
-        SimplifyVisitor simplifyVisitor {};
-        auto simpOp = this->GetOperand().Simplify();
-        if (auto realCase = RecursiveCast<Real>(*simpOp); realCase != nullptr) {
-            double val = realCase->GetValue();
-            return val >= 0.0 ? std::make_unique<Real>(val) : std::make_unique<Real>(-val);
-        }
-        if (auto imgCase = RecursiveCast<Imaginary>(*simpOp); imgCase != nullptr) {
-            return std::make_unique<Real>(1.0);
-        }
-        if (auto mulImgCase = RecursiveCast<Multiply<Expression, Imaginary>>(*simpOp); mulImgCase != nullptr) {
-            auto e = Magnitude<Expression> { mulImgCase->GetMostSigOp() };
-            auto s = e.Accept(simplifyVisitor);
-            if (!s) {
-                return e.Generalize();
-            }
-            return std::move(s).value();
-        }
-        if (auto addCase = RecursiveCast<Add<Expression, Imaginary>>(*simpOp); addCase != nullptr) {
-            return Exponent { Add<Expression> { Exponent<Expression> { addCase->GetMostSigOp(), Real { 2 } },
-                                  Real { 1.0 } },
-                Real { 0.5 } }
-                .Simplify();
-        }
-        if (auto addCase = RecursiveCast<Add<Expression, Multiply<Expression, Imaginary>>>(*simpOp); addCase != nullptr) {
-            return Exponent { Add<Expression> { Exponent<Expression> { addCase->GetMostSigOp(), Real { 2 } },
-                                  Exponent<Expression> { addCase->GetLeastSigOp().GetMostSigOp(), Real { 2 } } },
-                Real { 0.5 } }
-                .Simplify();
-        }
-        if (auto matrixCase = RecursiveCast<Matrix>(*simpOp); matrixCase != nullptr) {
-            double sum = 0;
-            for (size_t i = 0; i < matrixCase->GetRows(); i++) {
-                for (size_t j = 0; j < matrixCase->GetCols(); j++) {
-                    sum += pow(matrixCase->GetMatrix()(i, j), 2);
-                }
-            }
-            return Exponent { Real { sum }, Real { 0.5 } }.Simplify();
-        }
-
-        return this->Generalize();
-    }
-
     [[nodiscard]] auto Differentiate(const Expression& var) const -> std::unique_ptr<Expression> override
     {
         // TODO: Implement

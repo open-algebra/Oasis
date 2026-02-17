@@ -19,8 +19,6 @@ public:
 
     Subtract(const Expression& minuend, const Expression& subtrahend);
 
-    [[deprecated]] [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
-
     [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
