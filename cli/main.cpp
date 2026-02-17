@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 
     const char* line;
     while ((line = ic_readline(nullptr)) != nullptr) {
-        std::string input{ line };
+        std::string input { line };
         delete[] line;
 
         input = input | trim_whitespace;
@@ -60,12 +60,12 @@ int main(int argc, char** argv)
 
         // Calling Oasis::FromInFix passed as template fails because defaulted parameters aren't represented in the type, so a wrapper is needed
         auto result = (input | Oasis::PreProcessInFix | Parse)
-                      .and_then([&simplifyVisitor](const std::unique_ptr<Oasis::Expression>& expr) -> std::expected<gsl::not_null<std::unique_ptr<Oasis::Expression>>, std::string> {
-                          return expr->Accept(simplifyVisitor);
-                      })
-                      .and_then([&serializer](const std::unique_ptr<Oasis::Expression>& expr) -> std::expected<std::string, std::string> {
-                          return expr->Accept(serializer);
-                      });
+                          .and_then([&simplifyVisitor](const std::unique_ptr<Oasis::Expression>& expr) -> std::expected<gsl::not_null<std::unique_ptr<Oasis::Expression>>, std::string> {
+                              return expr->Accept(simplifyVisitor);
+                          })
+                          .and_then([&serializer](const std::unique_ptr<Oasis::Expression>& expr) -> std::expected<std::string, std::string> {
+                              return expr->Accept(serializer);
+                          });
 
         if (result.has_value())
             fmt::println("  {}", fmt::styled(result.value(), success_style));

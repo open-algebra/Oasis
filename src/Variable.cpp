@@ -14,7 +14,9 @@
 namespace Oasis {
 
 Variable::Variable(std::string name)
-    : name(std::move(name)) {}
+    : name(std::move(name))
+{
+}
 
 auto Variable::Equals(const Expression& other) const -> bool
 {
@@ -28,30 +30,30 @@ auto Variable::GetName() const -> std::string
 
 auto Variable::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
-    SimplifyVisitor simplifyVisitor{};
+    SimplifyVisitor simplifyVisitor {};
 
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
 
         // Power rule
         if (name == (*variable).GetName()) {
-            Add adder{
-                Divide{
-                    Exponent{ Variable{ (*variable).GetName() }, Real{ 2.0f } },
-                    Real{ 2.0f } },
-                Variable{ "C" }
+            Add adder {
+                Divide {
+                    Exponent { Variable { (*variable).GetName() }, Real { 2.0f } },
+                    Real { 2.0f } },
+                Variable { "C" }
             };
             return adder.Accept(simplifyVisitor).value();
         }
 
         // Different variable, treat as constant
-        Add adder{
-            Multiply{ Variable{ name }, Variable{ (*variable).GetName() } },
-            Variable{ "C" }
+        Add adder {
+            Multiply { Variable { name }, Variable { (*variable).GetName() } },
+            Variable { "C" }
         };
         return adder.Accept(simplifyVisitor).value();
     }
 
-    Integral<Expression, Expression> integral{ *(this->Copy()), *(integrationVariable.Copy()) };
+    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
 
     return integral.Copy();
 }
@@ -70,19 +72,21 @@ auto Variable::Substitute(const Expression& var, const Expression& val) -> std::
 
 auto Variable::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
-    SimplifyVisitor simplifyVisitor{};
+    SimplifyVisitor simplifyVisitor {};
 
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
 
         // Power rule
         if (name == (*variable).GetName()) {
-            return std::make_unique<Real>(Real{ 1.0f })
-                   ->Accept(simplifyVisitor).value();
+            return std::make_unique<Real>(Real { 1.0f })
+                ->Accept(simplifyVisitor)
+                .value();
         }
 
         // Different variable, treat as constant
-        return std::make_unique<Real>(Real{ 0 })
-               ->Accept(simplifyVisitor).value();
+        return std::make_unique<Real>(Real { 0 })
+            ->Accept(simplifyVisitor)
+            .value();
     }
 
     return Copy();

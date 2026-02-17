@@ -16,7 +16,7 @@
 namespace Oasis {
 auto Multiply<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
-    SimplifyVisitor simplifyVisitor{};
+    SimplifyVisitor simplifyVisitor {};
     // Single integration variable
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
         auto s = this->Accept(simplifyVisitor);
@@ -32,10 +32,10 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) cons
             auto integrated = exp->Integrate(integrationVariable);
 
             if (auto add = RecursiveCast<Add<Expression, Variable>>(*integrated); add != nullptr) {
-                Add<Multiply<Real, Expression>, Variable> adder{
-                    Multiply<Real, Expression>{
-                        Real{ num.GetValue() }, add->GetMostSigOp() },
-                    Variable{ "C" }
+                Add<Multiply<Real, Expression>, Variable> adder {
+                    Multiply<Real, Expression> {
+                        Real { num.GetValue() }, add->GetMostSigOp() },
+                    Variable { "C" }
                 };
 
                 return adder.Accept(simplifyVisitor).value();
@@ -44,14 +44,14 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) cons
 
         // TODO: Implement integration by parts
     }
-    Integral<Expression, Expression> integral{ *(this->Copy()), *(integrationVariable.Copy()) };
+    Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
 
     return integral.Copy();
 }
 
 auto Multiply<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
-    SimplifyVisitor simplifyVisitor{};
+    SimplifyVisitor simplifyVisitor {};
     // Single integration variable
     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
         auto s = this->Accept(simplifyVisitor);
@@ -66,7 +66,7 @@ auto Multiply<Expression>::Differentiate(const Expression& differentiationVariab
             auto num = constant->GetMostSigOp();
             auto differentiate = (*exp).Differentiate(differentiationVariable);
             if (auto add = RecursiveCast<Expression>(*differentiate); add != nullptr) {
-                return std::make_unique<Multiply<Real, Expression>>(Multiply<Real, Expression>{ Real{ num.GetValue() }, *(add->Accept(simplifyVisitor).value()) })->Accept(simplifyVisitor).value();
+                return std::make_unique<Multiply<Real, Expression>>(Multiply<Real, Expression> { Real { num.GetValue() }, *(add->Accept(simplifyVisitor).value()) })->Accept(simplifyVisitor).value();
             }
 
         }
@@ -80,10 +80,11 @@ auto Multiply<Expression>::Differentiate(const Expression& differentiationVariab
             auto add2 = RecursiveCast<Expression>(*rd);
             if ((add != nullptr && add2 != nullptr)) {
                 return std::make_unique<Add<Multiply<Expression, Expression>,
-                           Multiply<Expression, Expression>>>(Add<Multiply<Expression, Expression>, Multiply<Expression, Expression>>{ Multiply<Expression, Expression>{ *add,
-                                                                                                                                                                         *right },
-                                                                                                                                       Multiply<Expression, Expression>{ *add2, *left } })
-                       ->Accept(simplifyVisitor).value();
+                    Multiply<Expression, Expression>>>(Add<Multiply<Expression, Expression>, Multiply<Expression, Expression>> { Multiply<Expression, Expression> { *add,
+                                                                                                                                     *right },
+                                                           Multiply<Expression, Expression> { *add2, *left } })
+                    ->Accept(simplifyVisitor)
+                    .value();
             }
         }
     }

@@ -16,7 +16,7 @@
 #define EPSILON 10E-6
 
 namespace Oasis {
-    auto Add<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
+auto Add<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     // Single integration variable
     SimplifyVisitor simplifyVisitor;
