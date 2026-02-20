@@ -46,6 +46,9 @@ class Sine;
 template <typename>
 class Cosine;
 
+template <typename>
+class Tan;
+
 template <typename, typename>
 class Derivative;
 

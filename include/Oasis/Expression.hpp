@@ -40,7 +40,8 @@ enum class ExpressionType {
     EulerNumber,
     Magnitude,
     Sine,
-    Cosine
+    Cosine,
+    Tan
 };
 
 /**

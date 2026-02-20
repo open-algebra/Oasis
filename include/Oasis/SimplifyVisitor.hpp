@@ -40,6 +40,7 @@ public:
     auto TypedVisit(const Negate<Expression>& negate) -> RetT override;
     auto TypedVisit(const Sine<Expression>& sine) -> RetT override;
     auto TypedVisit(const Cosine<Expression>& cosine) -> RetT override;
+    auto TypedVisit(const Tan<Expression>& tan) -> RetT override;
     auto TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT override;
     auto TypedVisit(const Integral<Expression, Expression>& integral) -> RetT override;
     auto TypedVisit(const Matrix& matrix) -> RetT override;

@@ -1369,6 +1369,67 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
             return gsl::not_null { std::make_unique<Sine<Expression>>(periodicCase->GetOperand().GetLeastSigOp())};
         }
     }
+
+    //Sine(multreal*multexp)
+    if (auto SineMultiplyOperand = RecursiveCast<Sine<Multiply<Real,Expression>>>(simplifiedOperand); SineMultiplyOperand != nullptr) {
+        const Real& multreal = SineMultiplyOperand->GetOperand().GetMostSigOp();
+        const Oasis::IExpression auto& multexp = SineMultiplyOperand->GetOperand().GetLeastSigOp();
+        
+        // Sine(-x) --> -Sine(x)
+        if (multreal.GetValue() < 0){
+            return Multiply<Expression> {Real(-1),Sine<Expression>{Mulitply<Real,Expression>{Real (multreal.GetValue() * -1),multexp}}}.Accept(*this);
+        }
+        // Sin(2x) --> 2Sin(x)Cos(x)
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
+            auto left = Sine<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 2),multexp}}.Accept(*this);
+            if (!left) {
+                return left;
+            }
+            auto right = Cosine<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 2),multexp}}.Accept(*this);
+            if (!right) {
+                return right;
+            }
+            return Multiply<Expression,Real> {Multiply<Expression>{*(left.value()),*(right.value())}, Real(2)}.Accept(*this);
+        }
+        // sin(3x) --> - 4sin^3(x) + 3sin(x)
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 3) == 0) {
+            auto left = Multiply<Real,Expression> {Real(-4),Exponent<Expression,Real>{Sine<Expression>{Multiply<Real,Expression>(Real(multreal.GetValue() / 3),multexp)},Real(3)}}.Accept(*this);
+            if (!left) {
+                return left;
+            }
+            auto right = Multiply<Real,Expression> {Real(3),Sine<Expression>{Multiply<Real,Expression>(Real(multreal.GetValue() / 3),multexp)}}.Accept(*this);
+            if (!right) {
+                return right;
+            }
+            return Add<Expression> {*(left.value()),*(right.value())}.Accept(*this);
+        }
+    }
+
+    // Sin(A + B) = Sin(A)Cos(B) + Cos(A)Sin(B)
+    if (auto CosAddOperand = RecursiveCast<Cosine<Add<Expression>>>(simplifiedOperand); CosAddOperand != nullptr) {
+        const Oasis::IExpression auto& Aexp = CosAddOperand->GetOperand().GetMostSigOp();
+        const Oasis::IExpression auto& Bexp = CosAddOperand->GetOperand().GetLeastSigOp();
+        
+        auto cosA = Cosine<Expression> {Aexp}.Accept(*this);
+        if (!cosA) {
+            return cosA;
+        }
+        auto cosB = Cosine<Expression> {Bexp}.Accept(*this);
+        if (!cosB) {
+            return cosB;
+        }
+        auto sinA = Sine<Expression> {Aexp}.Accept(*this);
+        if (!sinA) {
+            return sinA;
+        }
+        auto sinB = Sine<Expression> {Bexp}.Accept(*this);
+        if (!sinB) {
+            return sinB;
+        }
+        return Add<Expression> {Multiply<Expression>{*(sinA.value()),*(cosB.value())},Multiply<Expression>{*(sinB.value()), *(cosA.value())}}.Accept(*this);
+
+    }
+
     return gsl::not_null { simplifiedOperand.Copy() };
 }
 
@@ -1404,23 +1465,6 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
         }
     }
 
-
-    // Cos(Arccos(x)) --> x
-    // Arccos not implemented yet
-    // if (auto CosArccosineCase = RecursiveCast<Cosine<Arccosine<Expression>>>(simplifiedOperand); CosArccosineCase != nullptr) {
-    //     return std::make_unique<Expression>(CosArccosineCase->GetOperand().GetOperand());
-    // }
-/* template temporary
-auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigOp().GetMostSigOp() }.Accept(*this);
-        if (!m) {
-            return m;
-        }
-        auto n = Multiply<Expression> { multCase->GetMostSigOp().GetLeastSigOp(), multCase->GetLeastSigOp().GetLeastSigOp() }.Accept(*this);
-        if (!n) {
-            return n;
-        }
-        return Divide<Expression> { *(m.value()), *(n.value()) }.Accept(*this);
-*/
     
     if (auto CosMultiplyOperand = RecursiveCast<Cosine<Multiply<Real,Expression>>>(simplifiedOperand); CosMultiplyOperand != nullptr) {
         //Cos(multreal*multexp)
@@ -1480,6 +1524,68 @@ auto m = Multiply<Expression> { multCase->GetMostSigOp(), multCase->GetLeastSigO
         return Add<Expression> {Multiply<Expression>{*(cosA.value()),*(cosB.value())},Multiply<Real,Expression>{Real(-1),Multiply<Expression>{*(sinA.value()),*(sinB.value())}} }.Accept(*this);
 
     }
+    return gsl::not_null { simplifiedOperand.Copy() };
+}
+
+auto SimplifyVisitor::TypedVisit(const Tan<Expression>& tan) -> RetT
+{
+    auto op = tan.GetOperand().Copy();
+    if (!op) {
+        return std::unexpected { "Missing operand." };
+    }
+
+    auto simplifiedMostSigOpResult = op->Accept(*this);
+
+    if (!simplifiedMostSigOpResult) {
+        return std::unexpected { simplifiedMostSigOpResult.error() };
+    }
+    const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
+
+    // Tan(real) --> some number
+    if (const auto realCase = RecursiveCast<Tan<Real>>(simplifiedOperand); realCase != nullptr) {
+        return gsl::not_null {std::make_unique<Real>(Real(std::sin(realCase->GetOperand().GetValue())))};
+    }
+
+    // Tan(real*pi) --> some number
+    if (const auto piCase = RecursiveCast<Tan<Multiply<Real,Pi>>>(simplifiedOperand); piCase != nullptr) {
+        return gsl::not_null { std::make_unique<Real>(Real(std::sin(piCase->GetOperand().GetMostSigOp().GetValue() * piCase->GetOperand().GetLeastSigOp().GetValue())))};
+    }
+
+    //Tan(multreal*multexp)
+    if (auto TanMultiplyOperand = RecursiveCast<Tan<Multiply<Real,Expression>>>(simplifiedOperand); TanMultiplyOperand != nullptr) {
+        const Real& multreal = TanMultiplyOperand->GetOperand().GetMostSigOp();
+        const Oasis::IExpression auto& multexp = TanMultiplyOperand->GetOperand().GetLeastSigOp();
+        
+        // Tan(-x) --> -Tan(x)
+        if (multreal.GetValue() < 0){
+            return Multiply<Expression> {Real(-1),Tan<Expression>{Mulitply<Real,Expression>{Real (multreal.GetValue() * -1),multexp}}}.Accept(*this);
+        }
+        // Tan(2x) --> (2Tan(x)) / (1 - tan^2(x))
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
+            auto left = Multiply<Real,Expression>{Real(2),Multiply<Real,Expression>{Real(multreal.GetValue() / 2), multexp}}.Accept(*this);
+            if (!left) {
+                return left;
+            }
+            auto right = Add<Real,Expression>{Real(1), Multiply<Real,Expression>{Real(-1),Exponent<Expression,Real>{Multiply<Real,Expression>{Real(multreal.GetValue() / 2), multexp},Real(2)}}}.Accept(*this);
+            if (!right) {
+                return right;
+            }
+            return Divide<Expression> {*(left.value()),*(right.value())}.Accept(*this);
+        }
+        // Tan(3x) --> (3Tan(x) - tan^3(x)) / (1 - 3tan^2(x))
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 3) == 0) {
+            auto left = Add<Expression>{Multiply<Real,Expression>{Real(3),Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp}}},Multiply<Real,Expression>{Real(-1),Exponent<Expression,Real>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp},3}}}.Accept(*this);
+            if (!left) {
+                return left;
+            }
+            auto right = Add<Real,Expression>{Real(1), Multiply<Real,Expression>{Real(-3),Exponent<Expression,Real>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp},Real(2)}}}.Accept(*this);
+            if (!right) {
+                return right;
+            }
+            return Add<Expression> {*(left.value()),*(right.value())}.Accept(*this);
+        }
+    }
+
     return gsl::not_null { simplifiedOperand.Copy() };
 }
 
