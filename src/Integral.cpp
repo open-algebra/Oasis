@@ -24,6 +24,13 @@ auto Integral<Expression, Expression>::IntegrateWithBounds(const Expression& var
         return Real { 0.0f }.Copy();
     }
 
+    // To avoid a scenario with integrating 0 and having only a + C,
+    // make sure that the integral does not just contain 0.
+    if (this->GetMostSigOp().Equals( Real { 0.0f } )) {
+        // The definite integral of 0 is always 0, so just return 0.
+        return Real { 0.0f }.Copy();
+    }
+
     SimplifyVisitor simplifyVisitor {};
 
     // Attempt to integrate the function.
@@ -32,25 +39,44 @@ auto Integral<Expression, Expression>::IntegrateWithBounds(const Expression& var
 
     if (integrated == nullptr) return nullptr;
 
+    // Cast to addition so that we can access only F(x) instead of F(x) + C
+    std::unique_ptr<Add<Expression, Expression>> integratedFunction = RecursiveCast<Add<Expression, Expression>>(*integrated);
+
+    // If we failed to cast to addition, then something went wrong (there should always be F(x) + C)
+    if (integratedFunction == nullptr) {
+        return nullptr;
+    }
+
+    // Calling make_unique for a Real allows the results
+    // to be cast to general expressions, while still making use of make_unique
+    // so that the pointers do not prematurely go out of scope
+    std::unique_ptr<Expression> upperBoundResult = std::make_unique<Real>();
+    std::unique_ptr<Expression> lowerBoundResult = std::make_unique<Real>();
+
     // Substitute in the upper and lower bounds for the variable
-    std::unique_ptr<Expression> upperBoundResult = integrated->Copy()->Substitute(variable, upper);
-    std::unique_ptr<Expression> lowerBoundResult = integrated->Copy()->Substitute(variable, lower);
+    upperBoundResult = integratedFunction->GetMostSigOp().Copy()->Substitute(variable, upper);
+    lowerBoundResult = integratedFunction->GetMostSigOp().Copy()->Substitute(variable, lower);
 
-    // Simplify upperBoundResult and lowerBoundResult
-    upperBoundResult = std::unique_ptr<Expression>(upperBoundResult->Accept(simplifyVisitor)->get());
-    lowerBoundResult = std::unique_ptr<Expression>(lowerBoundResult->Accept(simplifyVisitor)->get());
+    // Further simplify upperBoundResult and lowerBoundResult
+    upperBoundResult = *upperBoundResult->Accept(simplifyVisitor);
+    lowerBoundResult = *lowerBoundResult->Accept(simplifyVisitor);
 
-    // Subtract the two values and simplify the result
+    // Subtract the two values, then simplify them
+
     Subtract<Expression, Expression> subtracted = Subtract<Expression, Expression> {
         *upperBoundResult, *lowerBoundResult
     };
 
-    // Simplify and rewrite the result into a std::unique_ptr<Expression>
-    std::unique_ptr<Expression> result = std::unique_ptr<Expression>(subtracted.Accept(simplifyVisitor)->get());
+    // The result is returned through a pointer, so we can check if it worked by checking for nullptr
 
-    // TODO: Can we get an Oasis::Real from here?
-    // Use RecursiveCast<Real>(*result)?
-    return result;
+    auto result = subtracted.Accept(simplifyVisitor);
+
+    if (!result) {
+        return nullptr;
+    }
+
+    // Otherwise, get the answer and return it
+    return std::move(result).value();
 }
 
 // auto Integral<Expression>::Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression>
