@@ -293,8 +293,8 @@ auto SimplifyVisitor::TypedVisit(const Add<>& add) -> RetT
             continue;
         }
         // no simplification possible
-        else if (auto exp = RecursiveCast<Expression>(*addend); exp != nullptr) {
-            vals.push_back(exp->Generalize());
+        else {
+            vals.push_back(addend->Copy()->Generalize());
         }
     }
     // rebuild equation after simplification.
