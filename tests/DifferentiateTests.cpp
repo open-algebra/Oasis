@@ -4,16 +4,17 @@
 #include "catch2/catch_test_macros.hpp"
 
 #include "Oasis/Add.hpp"
+#include "Oasis/Derivative.hpp"
+#include "Oasis/DifferentiateVisitor.hpp"
 #include "Oasis/Divide.hpp"
+#include "Oasis/EulerNumber.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
-#include "Oasis/Derivative.hpp"
-#include "Oasis/Log.hpp"
-#include "Oasis/EulerNumber.hpp"
-#include "Oasis/SimplifyVisitor.hpp"
 
 inline Oasis::SimplifyVisitor simplifyVisitor{};
 
@@ -97,8 +98,10 @@ TEST_CASE("Differentiate Add Rule Different Terms", "[Differentiate][Add][Differ
     Oasis::Variable var { "x" };
     Oasis::Add<Oasis::Variable, Oasis::Real>diff1 { Oasis::Variable { var.GetName() }, Oasis::Real { 2.0f } };
 
+    Oasis::DifferentiateVisitor differentiateVisitor{var.Copy()};
+
     Oasis::Real one {1};
-    auto diffed = diff1.Differentiate(var);
+    auto diffed = diff1.Accept(differentiateVisitor).value();
     auto simplified = diffed->Accept(simplifyVisitor).value();
 
     REQUIRE(simplified->Equals(*(one.Accept(simplifyVisitor).value())));
@@ -166,7 +169,7 @@ TEST_CASE("Differentiate Multiple Variables Differentiate", "[Differentiate][Mul
     {Oasis::Variable {x.GetName()}, Oasis::Variable {y.GetName()}};
     auto diffed = xy.Differentiate(x);
     auto simplified = diffed->Accept(simplifyVisitor).value();
-    REQUIRE(simplified->Equals(*(y.Accept(simplifyVisitor).value())));
+    REQUIRE(simplified->Equals(*(std::move(y.Accept(simplifyVisitor)).value())));
 }
 
 TEST_CASE("Differentiate Multiple Variables + Real Differentiate", "[Differentiate][Multiply][Different]")

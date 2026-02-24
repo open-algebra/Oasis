@@ -2,6 +2,8 @@
 
 #include <Oasis/Add.hpp>
 #include <Oasis/Divide.hpp>
+#include <Oasis/Derivative.hpp>
+#include <Oasis/DifferentiateVisitor.hpp>
 #include <Oasis/Exponent.hpp>
 #include <Oasis/Integral.hpp>
 #include <Oasis/Multiply.hpp>
@@ -221,9 +223,14 @@ auto Expression::GetCategory() const -> uint32_t
     return 0;
 }
 
-auto Expression::Differentiate(const Expression&) const -> std::unique_ptr<Expression>
+auto Expression::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
 {
-    return Copy();
+    DifferentiateVisitor dv{differentiationVariable.Copy()};
+    auto diffed = Accept(dv);
+    if (!diffed) {
+        return Derivative<Expression, Expression>{*(this->Copy()), differentiationVariable}.Generalize();
+    }
+    return std::move(diffed).value();
 }
 
 auto Expression::GetType() const -> ExpressionType

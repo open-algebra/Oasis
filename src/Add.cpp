@@ -62,19 +62,19 @@ auto Add<Expression>::Integrate(const Expression& integrationVariable) const -> 
     return integral.Copy();
 }
 
-auto Add<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
-{
-    if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
-        auto left = mostSigOp->Differentiate(differentiationVariable);
-        auto right = leastSigOp->Differentiate(differentiationVariable);
-        SimplifyVisitor simplifyVisitor;
-        auto simplified = Add<Expression> { *left, *right }.Accept(simplifyVisitor);
-        if (!simplified) {
-            Add<Expression> { *left, *right };
-        }
-        return std::move(simplified).value();
-    }
-    return Copy();
-}
+// auto Add<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
+// {
+//     if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
+//         auto left = mostSigOp->Differentiate(differentiationVariable);
+//         auto right = leastSigOp->Differentiate(differentiationVariable);
+//         SimplifyVisitor simplifyVisitor;
+//         auto simplified = Add<Expression> { *left, *right }.Accept(simplifyVisitor);
+//         if (!simplified) {
+//             Add<Expression> { *left, *right };
+//         }
+//         return std::move(simplified).value();
+//     }
+//     return Copy();
+// }
 
 } // Oasis

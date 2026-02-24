@@ -5,6 +5,7 @@ set(Oasis_HEADERS
     Oasis/Concepts.hpp
     Oasis/Derivative.hpp
     Oasis/Divide.hpp
+    Oasis/DifferentiateVisitor.hpp
     Oasis/EulerNumber.hpp
     Oasis/Exponent.hpp
     Oasis/Expression.hpp

@@ -11,6 +11,7 @@ set(Oasis_SOURCES
     # DefiniteIntegral.cpp
     Derivative.cpp
     Divide.cpp
+    DifferentiateVisitor.cpp
     EulerNumber.cpp
     Exponent.cpp
     Expression.cpp
