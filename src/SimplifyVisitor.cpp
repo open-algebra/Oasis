@@ -1361,12 +1361,14 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
     if (const auto piCase = RecursiveCast<Sine<Multiply<Real,Pi>>>(simplifiedOperand); piCase != nullptr) {
         return gsl::not_null { std::make_unique<Real>(Real(std::sin(piCase->GetOperand().GetMostSigOp().GetValue() * piCase->GetOperand().GetLeastSigOp().GetValue())))};
     }
-
-    // Sine(2npi + x) --> Sine(x)
+    // need to implement exact returns ie: pi/3 --> 1/2
+    // Sine(2npi + x) --> Sine(x), Sine(npi + x) --> -Sine(x)
     if (const auto periodicCase = RecursiveCast<Sine<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
         const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
         if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
             return gsl::not_null { std::make_unique<Sine<Expression>>(periodicCase->GetOperand().GetLeastSigOp())};
+        } else if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue())){
+            return gsl::not_null { std::make_unique<Multiply<Real,Sine<Expression>>>(Real(-1),Sine<Expression>{periodicCase->GetOperand().GetLeastSigOp()})};
         }
     }
 
@@ -1406,9 +1408,9 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
     }
 
     // Sin(A + B) = Sin(A)Cos(B) + Cos(A)Sin(B)
-    if (auto CosAddOperand = RecursiveCast<Cosine<Add<Expression>>>(simplifiedOperand); CosAddOperand != nullptr) {
-        const Oasis::IExpression auto& Aexp = CosAddOperand->GetOperand().GetMostSigOp();
-        const Oasis::IExpression auto& Bexp = CosAddOperand->GetOperand().GetLeastSigOp();
+    if (auto SineAddOperand = RecursiveCast<Sine<Add<Expression>>>(simplifiedOperand); SineAddOperand != nullptr) {
+        const Oasis::IExpression auto& Aexp = SineAddOperand->GetOperand().GetMostSigOp();
+        const Oasis::IExpression auto& Bexp = SineAddOperand->GetOperand().GetLeastSigOp();
         
         auto cosA = Cosine<Expression> {Aexp}.Accept(*this);
         if (!cosA) {
@@ -1583,6 +1585,89 @@ auto SimplifyVisitor::TypedVisit(const Tan<Expression>& tan) -> RetT
                 return right;
             }
             return Add<Expression> {*(left.value()),*(right.value())}.Accept(*this);
+        }
+    }
+
+    return gsl::not_null { simplifiedOperand.Copy() };
+}
+
+auto SimplifyVisitor::TypedVisit(const Cosecant<Expression>& cosecant) -> RetT
+{
+    auto op = cosecant.GetOperand().Copy();
+    if (!op) {
+        return std::unexpected { "Missing operand." };
+    }
+
+    auto simplifiedMostSigOpResult = op->Accept(*this);
+
+    if (!simplifiedMostSigOpResult) {
+        return std::unexpected { simplifiedMostSigOpResult.error() };
+    }
+    const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
+
+    // Cosecant(real) --> some number
+    if (const auto realCase = RecursiveCast<Cosecant<Real>>(simplifiedOperand); realCase != nullptr) {
+        float temp = std::sin(realCase->GetOperand().GetValue());
+        if (temp == 0){
+            return gsl::not_null {std::make_unique<Undefined>()};
+        } else {
+            return gsl::not_null {std::make_unique<Real>(Real( 1 / temp ))};
+        }
+    }
+
+
+    return gsl::not_null { simplifiedOperand.Copy() };
+}
+
+auto SimplifyVisitor::TypedVisit(const Secant<Expression>& secant) -> RetT
+{
+    auto op = secant.GetOperand().Copy();
+    if (!op) {
+        return std::unexpected { "Missing operand." };
+    }
+
+    auto simplifiedMostSigOpResult = op->Accept(*this);
+
+    if (!simplifiedMostSigOpResult) {
+        return std::unexpected { simplifiedMostSigOpResult.error() };
+    }
+    const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
+
+    // Secant(real) --> some number
+    if (const auto realCase = RecursiveCast<Secant<Real>>(simplifiedOperand); realCase != nullptr) {
+        float temp = std::cos(realCase->GetOperand().GetValue());
+        if (temp == 0){
+            return gsl::not_null {std::make_unique<Undefined>()};
+        } else {
+            return gsl::not_null {std::make_unique<Real>(Real( 1 / temp ))};
+        }
+    }
+
+
+    return gsl::not_null { simplifiedOperand.Copy() };
+}
+
+auto SimplifyVisitor::TypedVisit(const Cotan<Expression>& cotan) -> RetT
+{
+    auto op = cotan.GetOperand().Copy();
+    if (!op) {
+        return std::unexpected { "Missing operand." };
+    }
+
+    auto simplifiedMostSigOpResult = op->Accept(*this);
+
+    if (!simplifiedMostSigOpResult) {
+        return std::unexpected { simplifiedMostSigOpResult.error() };
+    }
+    const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
+
+    // Cotan(real) --> some number
+    if (const auto realCase = RecursiveCast<Cotan<Real>>(simplifiedOperand); realCase != nullptr) {
+        float temp = std::tan(realCase->GetOperand().GetValue());
+        if (temp == 0){
+            return gsl::not_null {std::make_unique<Undefined>()};
+        } else {
+            return gsl::not_null {std::make_unique<Real>(Real( 1 / temp ))};
         }
     }
 

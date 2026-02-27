@@ -29,6 +29,9 @@ public:
     virtual any Visit(const Sine<Expression>& sine) = 0;
     virtual any Visit(const Cosine<Expression>& cosine) = 0;
     virtual any Visit(const Tan<Expression>& tan) = 0;
+    virtual any Visit(const Cosecant<Expression>& cosecant) = 0;
+    virtual any Visit(const Secant<Expression>& secant) = 0;
+    virtual any Visit(const Cotan<Expression>& cotan) = 0;
     virtual any Visit(const Magnitude<Expression>& magnitude) = 0;
     virtual any Visit(const Derivative<Expression, Expression>& derivative) = 0;
     virtual any Visit(const Integral<Expression, Expression>& integral) = 0;
@@ -58,6 +61,9 @@ public:
     auto Visit(const Sine<Expression>& sine) -> any final { return TypedVisit(sine); }
     auto Visit(const Cosine<Expression>& cosine) -> any final { return TypedVisit(cosine); }
     auto Visit(const Tan<Expression>& tan) -> any final { return TypedVisit(tan); }
+    auto Visit(const Cosecant<Expression>& cosecant) -> any final { return TypedVisit(cosecant); }
+    auto Visit(const Secant<Expression>& secant) -> any final { return TypedVisit(secant); }
+    auto Visit(const Cotan<Expression>& cotan) -> any final { return TypedVisit(cotan); }
     auto Visit(const Magnitude<Expression>& magnitude) -> any final { return TypedVisit(magnitude); }
     auto Visit(const Derivative<Expression, Expression>& derivative) -> any final { return TypedVisit(derivative); }
     auto Visit(const Integral<Expression, Expression>& integral) -> any final { return TypedVisit(integral); }
@@ -80,6 +86,9 @@ protected:
     virtual auto TypedVisit(const Sine<Expression>& sine) -> RetT = 0;
     virtual auto TypedVisit(const Cosine<Expression>& cosine) -> RetT = 0;
     virtual auto TypedVisit(const Tan<Expression>& tan) -> RetT = 0;
+    virtual auto TypedVisit(const Cosecant<Expression>& cosecant) -> RetT = 0;
+    virtual auto TypedVisit(const Secant<Expression>& secant) -> RetT = 0;
+    virtual auto TypedVisit(const Cotan<Expression>& cotan) -> RetT = 0;
     virtual auto TypedVisit(const Magnitude<Expression>& magnitude) -> RetT = 0;
     virtual auto TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT = 0;
     virtual auto TypedVisit(const Integral<Expression, Expression>& integral) -> RetT = 0;

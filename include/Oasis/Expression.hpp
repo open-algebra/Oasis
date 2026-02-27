@@ -41,7 +41,10 @@ enum class ExpressionType {
     Magnitude,
     Sine,
     Cosine,
-    Tan
+    Tan,
+    Cosecant,
+    Secant,
+    Cotan
 };
 
 /**
