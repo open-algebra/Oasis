@@ -20,11 +20,14 @@ auto Integral<Expression, Expression>::IntegrateWithBounds(const Expression& var
 {
     // If the bounds are equal, then the integral will always return 0.
     // Handle that here, instead of going through the whole process to get the same result.
+    // Additionally, if lower > upper, then the result will be negative. This is handled by the
+    // rest of the function, so there is no need to flip the bounds and negate the expression.
     if (lower.Equals(upper)) {
         return Real { 0.0f }.Copy();
     }
 
-    // To avoid a scenario with integrating 0 and having only a + C,
+    // To avoid a scenario with integrating 0 and having only a C
+    // (so the result is 0 regardless of any bounds),
     // make sure that the integral does not just contain 0.
     if (this->GetMostSigOp().Equals( Real { 0.0f } )) {
         // The definite integral of 0 is always 0, so just return 0.
@@ -72,6 +75,7 @@ auto Integral<Expression, Expression>::IntegrateWithBounds(const Expression& var
     auto result = subtracted.Accept(simplifyVisitor);
 
     if (!result) {
+        // Something went wrong, return nullptr
         return nullptr;
     }
 
