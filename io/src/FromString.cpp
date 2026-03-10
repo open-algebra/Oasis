@@ -213,7 +213,12 @@ auto ImplicitMultiplication(std::stringstream&& sstr) -> std::string
             continue;
         }
 
-        if (lastToken == ")" && token == "(") {
+        if (lastToken == ")" && token != ",") {
+            secondPassResult << '*' << token;
+            lastToken = token;
+            continue;
+        }
+        else if (!is_function(lastToken) && token == "(") {
             secondPassResult << '*' << token;
             lastToken = token;
             continue;
