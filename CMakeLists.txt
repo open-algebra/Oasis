@@ -51,8 +51,7 @@ FetchContent_Declare(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
     GIT_TAG v3.4.0
-    FIND_PACKAGE_ARGS
-)
+    FIND_PACKAGE_ARGS)
 
 # Perhaps one day use Microsoft.GSL if
 # https://github.com/microsoft/GSL/issues/991 gets addressed
