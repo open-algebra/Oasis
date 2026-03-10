@@ -292,6 +292,10 @@ auto SimplifyVisitor::TypedVisit(const Add<>& add) -> RetT
             }
             continue;
         }
+        // no simplification possible
+        else {
+            vals.push_back(addend->Copy()->Generalize());
+        }
     }
     // rebuild equation after simplification.
 

@@ -12,6 +12,7 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/Log.hpp"
 #include "Oasis/SimplifyVisitor.hpp"
 
 namespace { Oasis::SimplifyVisitor simplifyVisitor{}; }
@@ -227,5 +228,66 @@ TEST_CASE("Variadic Add Constructor", "[Add]")
     const Oasis::Real expected { 40.0 };
 
     const auto simplified = add.Accept(simplifyVisitor).value();
+    REQUIRE(expected.Equals(*simplified));
+}
+
+TEST_CASE("Complex Addition Associativity", "[Add][Associativity][Simplification]")
+{
+    const Oasis::Add<> add {
+        Oasis::Real { 1.0 },
+        Oasis::Multiply {
+            Oasis::Add { 
+                Oasis::Variable {"x"}, 
+                Oasis::Real { 1.0 } },
+            Oasis::Log {
+                Oasis::Variable { "e" },
+                Oasis::Variable { "x" } } },
+        Oasis::Real { 1.0 }
+    };
+
+    const Oasis::Add<> expected {
+        Oasis::Real { 2.0 },
+        Oasis::Multiply {
+            Oasis::Add { 
+                Oasis::Variable {"x"}, 
+                Oasis::Real { 1.0 } },
+            Oasis::Log {
+                Oasis::Variable { "e" },
+                Oasis::Variable { "x" } } }
+    };
+
+    const auto simplified = add.Accept(simplifyVisitor).value();
+
+    REQUIRE(expected.Equals(*simplified));
+}
+
+TEST_CASE("Complex Addition Associativity With Variables", "[Add][Associativity][Simplification]")
+{
+    const Oasis::Add<> add {
+        Oasis::Real { 1.0 },
+        Oasis::Multiply {
+            Oasis::Add { 
+                Oasis::Variable {"x"}, 
+                Oasis::Real { 1.0 } },
+            Oasis::Log {
+                Oasis::Variable { "e" },
+                Oasis::Variable { "x" } } },
+        Oasis::Variable { "c" }
+    };
+
+    const Oasis::Add<> expected {
+        Oasis::Real { 1.0 },
+        Oasis::Multiply {
+            Oasis::Add { 
+                Oasis::Variable {"x"}, 
+                Oasis::Real { 1.0 } },
+            Oasis::Log {
+                Oasis::Variable { "e" },
+                Oasis::Variable { "x" } } },
+        Oasis::Variable { "c" }
+    };
+
+    const auto simplified = add.Accept(simplifyVisitor).value();
+
     REQUIRE(expected.Equals(*simplified));
 }
