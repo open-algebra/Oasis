@@ -152,7 +152,45 @@ auto DifferentiateVisitor::TypedVisit(const Multiply<Expression, Expression>& mu
 
 auto DifferentiateVisitor::TypedVisit(const Divide<Expression, Expression>& divide) -> RetT
 {
-    // TODO: IMPLEMENT
+    SimplifyVisitor simplifyVisitor {};
+    // Single differentiation variable
+    if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr) {
+        auto simplifiedDiv = divide.Accept(simplifyVisitor).value();
+
+        // Constant case - differentiation over a divisor
+        if (auto constant = RecursiveCast<Divide<Expression, Real>>(*simplifiedDiv); constant != nullptr) {
+            auto exp = constant->GetMostSigOp().Copy();
+            auto num = constant->GetLeastSigOp();
+            auto differentiate = (*exp).Differentiate(*(this->differentiationVariable));
+            if (auto add = RecursiveCast<Expression>(*differentiate); add != nullptr) {
+                auto simplifiedAdd = add->Accept(simplifyVisitor).value();
+                return std::make_unique<Divide<Expression, Real>>(Divide<Expression, Real> { *simplifiedAdd, Real { num.GetValue() } })->Accept(simplifyVisitor).value();
+            }
+        }
+        // In case of simplify turning divide into mult
+        if (auto constant = RecursiveCast<Multiply<Expression, Real>>(*simplifiedDiv); constant != nullptr) {
+            auto exp = constant->GetMostSigOp().Copy();
+            auto num = constant->GetLeastSigOp();
+            auto differentiate = (*exp).Differentiate(*(this->differentiationVariable));
+            if (auto add = RecursiveCast<Expression>(*differentiate); add != nullptr) {
+                auto simplifiedAdd = (add->Accept(simplifyVisitor).value());
+                return std::make_unique<Multiply<Expression, Real>>(Multiply<Expression, Real> { *simplifiedAdd, Real { num.GetValue() } })->Accept(simplifyVisitor).value();
+            }
+        }
+        // Quotient Rule: d/dx (f(x)/g(x)) = (g(x)f'(x)-f(x)g'(x))/(g(x)^2)
+        if (auto quotient = RecursiveCast<Divide<Expression, Expression>>(*simplifiedDiv); quotient != nullptr) {
+            auto leftexp = quotient->GetMostSigOp().Copy();
+            auto rightexp = quotient->GetLeastSigOp().Copy();
+            auto leftDiff = leftexp->Differentiate(*(this->differentiationVariable));
+            auto rightDiff = rightexp->Differentiate(*(this->differentiationVariable));
+            auto mult1 = Multiply<Expression, Expression>(Multiply<Expression, Expression> { *(rightexp->Accept(simplifyVisitor).value()), *(leftDiff->Accept(simplifyVisitor).value()) }).Accept(simplifyVisitor).value()->Accept(simplifyVisitor).value();
+            auto mult2 = Multiply<Expression, Expression>(Multiply<Expression, Expression> { *(leftexp->Accept(simplifyVisitor).value()), *(rightDiff->Accept(simplifyVisitor).value()) }).Accept(simplifyVisitor).value()->Accept(simplifyVisitor).value();
+            auto numerator = Subtract<Expression, Expression>(Subtract<Expression, Expression> { *mult1, *mult2 }).Accept(simplifyVisitor).value();
+            auto denominator = Multiply<Expression, Expression>(Multiply<Expression, Expression> { *(rightexp->Accept(simplifyVisitor).value()), *(rightexp->Accept(simplifyVisitor).value()) }).Accept(simplifyVisitor).value();
+            return Divide<Expression, Expression>({ *(numerator->Accept(simplifyVisitor).value()), *(denominator->Accept(simplifyVisitor).value()) }).Accept(simplifyVisitor).value();
+        }
+    }
+
     return gsl::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(divide.Copy()), *(this->differentiationVariable)}.Generalize());
 }
 
@@ -188,13 +226,52 @@ auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& ex
 
 auto DifferentiateVisitor::TypedVisit(const Log<Expression, Expression>& log) -> RetT
 {
-    // TODO: IMPLEMENT
+    if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr){
+        SimplifyVisitor simplifyVisitor {};
+        // d(log_e(6x))/dx = 1/6x * 6
+        if (auto lnCase = RecursiveCast<EulerNumber>(*log.mostSigOp); lnCase != nullptr) {
+            Divide derivative { Oasis::Real { 1.0 }, *log.leastSigOp };
+            Derivative chain { *log.leastSigOp, *(this->differentiationVariable) };
+
+            Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(*(this->differentiationVariable)) };
+            auto simp = result.Accept(simplifyVisitor);
+            if (!simp) {
+                return gsl::not_null<std::unique_ptr<Expression>>{result.Generalize()};
+            }
+            return std::move(simp).value();
+        } else {
+            if (auto RealCase = RecursiveCast<Real>(*log.mostSigOp); RealCase != nullptr) {
+                Divide derivative { Oasis::Real { 1.0 }, Multiply<Expression> { *log.leastSigOp, Log { EulerNumber {}, *log.mostSigOp } } };
+                Derivative chain { *log.leastSigOp, *(this->differentiationVariable) };
+                Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(*(this->differentiationVariable)) };
+                auto simp = result.Accept(simplifyVisitor);
+                if (!simp) {
+                    return gsl::not_null<std::unique_ptr<Expression>>{result.Generalize()};
+                }
+                return std::move(simp).value();
+            } else {
+                // Use log identity and Quotient rule
+                Divide result { Subtract { Multiply { Log { EulerNumber {}, *log.mostSigOp }, Derivative { Log { EulerNumber {}, *log.leastSigOp }, *(this->differentiationVariable) } },
+                                    Multiply { Log { EulerNumber {}, *log.leastSigOp }, Derivative { Log { EulerNumber {}, *log.mostSigOp }, *(this->differentiationVariable) } } },
+                    Exponent { Log { EulerNumber {}, *log.mostSigOp }, Real { 2 } } };
+                auto simp = result.Accept(simplifyVisitor);
+                if (!simp) {
+                    return gsl::not_null<std::unique_ptr<Expression>>{result.Generalize()};
+                }
+                return std::move(simp).value();
+            }
+        }
+    }
     return gsl::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(log.Copy()), *(this->differentiationVariable)}.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Negate<Expression>& negate) -> RetT
 {
-    // TODO: IMPLEMENT
+    if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr) {
+        const std::unique_ptr<Expression> operandDerivative = negate.GetOperand().Differentiate(*(this->differentiationVariable));
+        return gsl::not_null{Negate<Expression> {*operandDerivative}.Generalize()};
+    }
+
     return gsl::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(negate.Copy()), *(this->differentiationVariable)}.Generalize());
 }
 
