@@ -4,6 +4,7 @@
 
 #include <format>
 #include <cmath>
+#include <memory>
 #include <numbers>
 
 #include "Oasis/SimplifyVisitor.hpp"
@@ -1354,12 +1355,16 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
     const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
 
     //UNIT CIRCLE AAHHHAHAHAHAHAHAHA
-    
+    if (const auto onepiCase = RecursiveCast<Sine<Pi>>(simplifiedOperand); onepiCase != nullptr) {
+        return gsl::not_null {std::make_unique<Real>(Real(0))}
+    }
+
+
     // Sine(real) --> some number
     if (const auto realCase = RecursiveCast<Sine<Real>>(simplifiedOperand); realCase != nullptr) {
         if (this.SimplifyOpts.angleUnits == AngleUnits::DEGREES){
             if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()))
-                int rounds = multreal.GetValue() % 180;
+                int rounds = multreal.GetValue() % 360;
                 if (rounds == 0){
                     return gsl::not_null {std::make_unique<Real>(Real(0))};
                 } else if (rounds == 30){
@@ -1399,10 +1404,17 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
         return gsl::not_null {std::make_unique<Real>(Real(std::sin(realCase->GetOperand().GetValue())))};
     }
 
+    if (const auto dividepicase = RecursiveCast<Sine<Divide<Multiply<Real,Pi>,Real>>>(simplifiedOperand); piCase != nullptr) {
+        
+    }
+
     // Sine(real*pi) --> some number
     if (const auto piCase = RecursiveCast<Sine<Multiply<Real,Pi>>>(simplifiedOperand); piCase != nullptr) {
         if (this.SimplifyOpts.angleUnits == AngleUnits::DEGREES){
             return gsl::not_null { std::make_unique<Real>(Real(std::sin(piCase->GetOperand().GetMostSigOp().GetValue() * piCase->GetOperand().GetLeastSigOp().GetValue() * std::numbers::pi / 180)))};
+        }
+        if (piCase->GetOperand().GetMostSigOp().GetValue() >= 2){
+            return Sine<Subtract<Expression> {Subtract<Expression>{Multiply<Expression>{Real(GetOperand().GetMostSigOp().GetValue()),Pi()},Multiply<Expression>{Real(2),Pi()}}}.Accept(*this);
         }
         return gsl::not_null { std::make_unique<Real>(Real(std::sin(piCase->GetOperand().GetMostSigOp().GetValue() * piCase->GetOperand().GetLeastSigOp().GetValue())))};
     }
@@ -1494,45 +1506,49 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
     }
     const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
 
+    if (const auto onepiCase = RecursiveCast<Sine<Pi>>(simplifiedOperand); onepiCase != nullptr) {
+        return gsl::not_null {std::make_unique<Real>(Real(-1))}
+    }
+
     // Cos(real) --> some number
     if (const auto realCase = RecursiveCast<Cosine<Real>>(simplifiedOperand); realCase != nullptr) {
         if (this.SimplifyOpts.angleUnits == AngleUnits::DEGREES){
             if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()))
-            //     int rounds = multreal.GetValue() % 180;
-            //     if (rounds == 0){
-            //         return gsl::not_null {std::make_unique<Real>(Real(1))};
-            //     } else if (rounds == 30){
-            //         return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
-            //     } else if (rounds == 45){
-            //         return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
-            //     } else if (rounds == 60){
-            //         return gsl::not_null {std::make_unique<Real>(Real(0.5))};
-            //     } else if (rounds == 90){
-            //         return gsl::not_null {std::make_unique<Real>(Real(0))};
-            //     } else if (rounds == 120){
-            //         return gsl::not_null {std::make_unique<Real>(Real(0.5))};
-            //     } else if (rounds == 135){
-            //         return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
-            //     } else if (rounds == 150){
-            //         return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
-            //     } else if (rounds == 180){
-            //         return gsl::not_null {std::make_unique<Real>(Real(-1))};
-            //     } else if (rounds == 210){
-            //         return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
-            //     } else if (rounds == 225){
-            //         return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
-            //     } else if (rounds == 240){
-            //         return gsl::not_null {std::make_unique<Real>(Real(-0.5))};
-            //     } else if (rounds == 270){
-            //         return gsl::not_null {std::make_unique<Real>(Real(0))};
-            //     } else if (rounds == 300){
-            //         return gsl::not_null {std::make_unique<Real>(Real(-0.5))};
-            //     } else if (rounds == 315){
-            //         return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
-            //     } else if (rounds == 330){
-            //         return gsl::not_null {std::make_unique<Real>(Real(-0.5))};
-            //     }
-            // }
+                int rounds = multreal.GetValue() % 360;
+                if (rounds == 0){
+                    return gsl::not_null {std::make_unique<Real>(Real(1))};
+                } else if (rounds == 30){
+                    return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
+                } else if (rounds == 45){
+                    return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
+                } else if (rounds == 60){
+                    return gsl::not_null {std::make_unique<Real>(Real(0.5))};
+                } else if (rounds == 90){
+                    return gsl::not_null {std::make_unique<Real>(Real(0))};
+                } else if (rounds == 120){
+                    return gsl::not_null {std::make_unique<Real>(Real(-0.5))};
+                } else if (rounds == 135){
+                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
+                } else if (rounds == 150){
+                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
+                } else if (rounds == 180){
+                    return gsl::not_null {std::make_unique<Real>(Real(-1))};
+                } else if (rounds == 210){
+                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
+                } else if (rounds == 225){
+                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
+                } else if (rounds == 240){
+                    return gsl::not_null {std::make_unique<Real>(Real(-0.5))};
+                } else if (rounds == 270){
+                    return gsl::not_null {std::make_unique<Real>(Real(0))};
+                } else if (rounds == 300){
+                    return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
+                } else if (rounds == 315){
+                    return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
+                } else if (rounds == 330){
+                    return gsl::not_null {std::make_unique<Real>(Real(-0.5))};
+                }
+            }
             return gsl::not_null { std::make_unique<Real>(Real(std::cos(realCase->GetOperand().GetValue() * std::numbers.pi / 180)))};
         }
         return gsl::not_null { std::make_unique<Real>(Real(std::cos(realCase->GetOperand().GetValue())))};
@@ -1542,6 +1558,9 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
     if (const auto piCase = RecursiveCast<Cosine<Multiply<Real,Pi>>>(simplifiedOperand); piCase != nullptr) {
         if (this.SimplifyOpts.angleUnits == AngleUnits::DEGREES){
             return gsl::not_null { std::make_unique<Real>(Real(std::cos(piCase->GetOperand().GetMostSigOp().GetValue() * piCase->GetOperand().GetLeastSigOp().GetValue() * std::numbers.pi / 180)))};
+        }
+        if (piCase->GetOperand().GetMostSigOp().GetValue() >= 2){
+            return Sine<Subtract<Expression> {Subtract<Expression>{Multiply<Expression>{Real(GetOperand().GetMostSigOp().GetValue()),Pi()},Multiply<Expression>{Real(2),Pi()}}}.Accept(*this);
         }
         return gsl::not_null { std::make_unique<Real>(Real(std::cos(piCase->GetOperand().GetMostSigOp().GetValue() * piCase->GetOperand().GetLeastSigOp().GetValue())))};
     }
