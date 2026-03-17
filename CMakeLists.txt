@@ -46,15 +46,13 @@ if(OASIS_BUILD_WITH_COVERAGE)
     endif()
 endif()
 
-# Fetches dependencies and integrates them into the project.
-# Perhaps one day use Microsoft.GSL if
-# https://github.com/microsoft/GSL/issues/991 gets addressed
+# Fetches dependencies and integrates them into the project. Perhaps one day use
+# Microsoft.GSL if https://github.com/microsoft/GSL/issues/991 gets addressed
 FetchContent_Declare(
-        GSL
-        GIT_REPOSITORY      "https://github.com/gsl-lite/gsl-lite.git"
-        GIT_TAG             v1.1.0
-        EXCLUDE_FROM_ALL
-        FIND_PACKAGE_ARGS   CONFIG)
+    GSL
+    GIT_REPOSITORY "https://github.com/gsl-lite/gsl-lite.git"
+    GIT_TAG v1.1.0
+    EXCLUDE_FROM_ALL FIND_PACKAGE_ARGS CONFIG)
 
 FetchContent_MakeAvailable(GSL)
 
@@ -70,11 +68,10 @@ add_subdirectory(src)
 
 if(OASIS_BUILD_TESTS)
     FetchContent_Declare(
-            Catch2
-            GIT_REPOSITORY      "https://github.com/catchorg/Catch2.git"
-            GIT_TAG             v3.13.0
-            EXCLUDE_FROM_ALL
-            FIND_PACKAGE_ARGS   CONFIG)
+        Catch2
+        GIT_REPOSITORY "https://github.com/catchorg/Catch2.git"
+        GIT_TAG v3.13.0
+        EXCLUDE_FROM_ALL FIND_PACKAGE_ARGS CONFIG)
 
     FetchContent_MakeAvailable(Catch2)
     add_subdirectory(tests)
@@ -87,20 +84,16 @@ endif()
 
 if(OASIS_BUILD_CLI)
     FetchContent_Declare(
-            fmt
-            GIT_REPOSITORY      "https://github.com/fmtlib/fmt"
-            GIT_TAG             12.1.0
-            EXCLUDE_FROM_ALL
-            FIND_PACKAGE_ARGS   CONFIG
-    )
+        fmt
+        GIT_REPOSITORY "https://github.com/fmtlib/fmt"
+        GIT_TAG 12.1.0
+        EXCLUDE_FROM_ALL FIND_PACKAGE_ARGS CONFIG)
 
     FetchContent_Declare(
-            Isocline
-            GIT_REPOSITORY      "https://github.com/daanx/isocline.git"
-            GIT_TAG             v1.0.9
-            EXCLUDE_FROM_ALL
-            FIND_PACKAGE_ARGS   CONFIG
-    )
+        Isocline
+        GIT_REPOSITORY "https://github.com/daanx/isocline.git"
+        GIT_TAG v1.0.9
+        EXCLUDE_FROM_ALL FIND_PACKAGE_ARGS CONFIG)
 
     FetchContent_MakeAvailable(fmt Isocline)
     add_subdirectory(cli)
