@@ -117,3 +117,21 @@ TEST_CASE("In-Fix Works With Parenthesis", "[Parsing]")
     REQUIRE(result.has_value());
     REQUIRE(result.value()->Equals(expected));
 }
+
+TEST_CASE("In-Fix Works With Trivial Implicit Multiplication", "[Parsing]") 
+{
+    const Oasis::Multiply<> expected {
+        Oasis::Variable { "y" },
+        Oasis::Add {
+            Oasis::Variable { "x" },
+            Oasis::Real { 1 } },
+        Oasis::Log {
+            Oasis::Variable { "a" },
+            Oasis::Variable { "x" } }
+    };
+
+    auto InFixWithDefaultArgs = [](const std::string& in) { return Oasis::FromInFix(in); };
+    const auto result = std::string {"y(x+1)log(a,x)" } | Oasis::PreProcessInFix | InFixWithDefaultArgs;
+    REQUIRE(result.has_value());
+    REQUIRE(result.value()->Equals(expected));
+}
