@@ -19,49 +19,6 @@ Subtract<Expression>::Subtract(const Expression& minuend, const Expression& subt
 {
 }
 
-auto Subtract<Expression>::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
-{
-    SimplifyVisitor simplifyVisitor {};
-    // Single diff variable
-    if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
-        auto s = this->Accept(simplifyVisitor);
-        if (!s) {
-            return this->Generalize();
-        }
-        auto simplifiedSub = std::move(s).value();
-
-        // Make sure we're still subtracting
-        if (auto adder = RecursiveCast<Subtract<Expression>>(*simplifiedSub); adder != nullptr) {
-            auto rightRef = adder->GetLeastSigOp().Copy();
-            auto rightDiff = rightRef->Differentiate(differentiationVariable);
-
-            auto specializedRight = RecursiveCast<Expression>(*rightDiff);
-
-            auto leftRef = adder->GetMostSigOp().Copy();
-            auto leftDiff = leftRef->Differentiate(differentiationVariable);
-
-            auto specializedLeft = RecursiveCast<Expression>(*leftDiff);
-
-            if (specializedLeft == nullptr || specializedRight == nullptr) {
-                return Copy();
-            }
-
-            auto us = std::make_unique<Subtract<Expression, Expression>>(Subtract<Expression, Expression> { *(specializedLeft->Copy()), *(specializedRight->Copy()) });
-            auto s1 = us->Accept(simplifyVisitor);
-            if (!s1) {
-                return us;
-            }
-            return std::move(s1).value();
-
-        }
-        // If not, use other differentiation technique
-        else {
-            return simplifiedSub->Differentiate(differentiationVariable);
-        }
-    }
-    return Copy();
-}
-
 auto Subtract<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     SimplifyVisitor simplifyVisitor {};

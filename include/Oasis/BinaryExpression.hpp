@@ -133,6 +133,7 @@ public:
     // {
     //     return Generalize()->Differentiate(differentiationVariable);
     // }
+
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final
     {
         if (this->GetType() != other.GetType()) {

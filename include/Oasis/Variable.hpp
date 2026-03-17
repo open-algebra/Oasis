@@ -46,8 +46,6 @@ public:
      */
     [[nodiscard]] auto GetName() const -> std::string;
 
-    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> final;
-
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
 
     auto Substitute(const Expression& var, const Expression& val) -> std::unique_ptr<Expression> override;

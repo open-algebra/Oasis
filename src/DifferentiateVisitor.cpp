@@ -5,6 +5,7 @@
 #include <format>
 
 #include "Oasis/Add.hpp"
+#include "Oasis/BinaryExpression.hpp"
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/DifferentiateVisitor.hpp"
@@ -23,9 +24,10 @@
 #include "Oasis/Undefined.hpp"
 #include "Oasis/Variable.hpp"
 
-namespace {
-constexpr auto EPSILON = std::numeric_limits<float>::epsilon();
-}
+// I do not know why I defined this.
+// namespace {
+// constexpr auto EPSILON = std::numeric_limits<float>::epsilon();
+// }
 
 namespace Oasis {
 
@@ -39,7 +41,7 @@ DifferentiateVisitor::DifferentiateVisitor(const std::unique_ptr<Expression>& di
     this->opts = opts;
 }
 
-auto DifferentiateVisitor::TypedVisit(const Real& real) -> RetT
+auto DifferentiateVisitor::TypedVisit(const Real&) -> RetT
 {
     return gsl::not_null { std::make_unique<Real>(0.0) };
 }
@@ -196,6 +198,10 @@ auto DifferentiateVisitor::TypedVisit(const Divide<Expression, Expression>& divi
 
 auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& exponent) -> RetT
 {
+    // TODO: FIX
+    // d/dx (a^{u(x)}) = a^{u(x)} * ln(a) * u'(x)
+    // d/dx (x^n) = n*x^(n-1)
+    // Need to check exponential vs polynomial
     if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr) {
         SimplifyVisitor simplifyVisitor{};
         auto diffedleft = exponent.mostSigOp->Accept(*this);
@@ -278,24 +284,46 @@ auto DifferentiateVisitor::TypedVisit(const Negate<Expression>& negate) -> RetT
 auto DifferentiateVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
 {
     // TODO: IMPLEMENT
+    return std::unexpected<std::string>{"Not Implemented."};
     return gsl::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(sine.Copy()), *(this->differentiationVariable)}.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT
 {
-    // TODO: IMPLEMENT
+    if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr) {
+        DifferentiateVisitor dv_other{derivative.GetLeastSigOp().Generalize(), this->opts};
+        auto diff = derivative.GetMostSigOp().Accept(dv_other);
+        if (!diff) {
+            return gsl::not_null<std::unique_ptr<Expression>>(Derivative{derivative, *this->differentiationVariable}.Generalize());
+        }
+        auto res = std::move(diff).value();
+        auto result = res->Accept(*this);
+        if (!result) {
+            return gsl::not_null<std::unique_ptr<Expression>>{Derivative{*res, *this->differentiationVariable}.Generalize()};
+        }
+        return gsl::not_null<std::unique_ptr<Expression>>{std::move(result).value()};
+    }
     return gsl::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(derivative.Copy()), *(this->differentiationVariable)}.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Integral<Expression, Expression>& integral) -> RetT
 {
-    // TODO: IMPLEMENT
+    if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr) {
+        auto integral_simp = integral.GetMostSigOp().Integrate(integral.GetLeastSigOp());
+
+        auto result = integral_simp->Accept(*this);
+        if (!result) {
+            return gsl::not_null<std::unique_ptr<Expression>>{Derivative{*integral_simp, *this->differentiationVariable}.Generalize()};
+        }
+        return gsl::not_null<std::unique_ptr<Expression>>{std::move(result).value()};
+    }
     return gsl::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(integral.Copy()), *(this->differentiationVariable)}.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Matrix& matrix) -> RetT
 {
     // TODO: IMPLEMENT
+    return std::unexpected<std::string>{"Not Implemented."};
     return gsl::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(matrix.Copy()), *(this->differentiationVariable)}.Generalize());
 }
 
@@ -312,6 +340,7 @@ auto DifferentiateVisitor::TypedVisit(const Pi&) -> RetT
 auto DifferentiateVisitor::TypedVisit(const Magnitude<Expression>& magnitude) -> RetT
 {
     // TODO: IMPLEMENT
+    return std::unexpected<std::string>{"Not Implemented."};
     return gsl::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(magnitude.Copy()), *(this->differentiationVariable)}.Generalize());
 }
 

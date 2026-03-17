@@ -15,15 +15,15 @@ Integral<Expression>::Integral(const Expression& integrand, const Expression& di
 {
 }
 
-auto Integral<Expression>::Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression>
-{
-    // Returns simplified Integral
-    SimplifyVisitor simplifyVisitor {};
-
-    std::unique_ptr<Expression> simplifiedIntegrand = mostSigOp ? mostSigOp->Accept(simplifyVisitor).value() : std::unique_ptr<Expression> { nullptr };
-    std::unique_ptr<Expression> simplifiedDifferential = leastSigOp ? leastSigOp->Accept(simplifyVisitor).value() : std::unique_ptr<Expression> { nullptr };
-
-    return simplifiedIntegrand->IntegrateWithBounds(*simplifiedDifferential, upper, lower);
+// auto Integral<Expression>::Simplify(const Expression& upper, const Expression& lower) const -> std::unique_ptr<Expression>
+// {
+//     // Returns simplified Integral
+//     SimplifyVisitor simplifyVisitor {};
+//
+//     std::unique_ptr<Expression> simplifiedIntegrand = mostSigOp ? mostSigOp->Accept(simplifyVisitor).value() : std::unique_ptr<Expression> { nullptr };
+//     std::unique_ptr<Expression> simplifiedDifferential = leastSigOp ? leastSigOp->Accept(simplifyVisitor).value() : std::unique_ptr<Expression> { nullptr };
+//
+//     return simplifiedIntegrand->IntegrateWithBounds(*simplifiedDifferential, upper, lower);
     /*
         Integral simplifiedIntegrate { *simplifiedIntegrand, *simplifiedDifferential };
 
@@ -131,6 +131,5 @@ auto Integral<Expression>::Simplify(const Expression& upper, const Expression& l
         //    return simplifiedIntegrate.Copy();
         return Copy();
         */
-}
-
+// }
 } // Oasis

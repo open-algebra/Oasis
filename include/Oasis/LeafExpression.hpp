@@ -35,10 +35,10 @@ public:
         return Generalize()->Integrate(integrationVariable);
     }
 
-    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> override
-    {
-        return Generalize()->Differentiate(differentiationVariable);
-    }
+    // [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> override
+    // {
+    //     return Generalize()->Differentiate(differentiationVariable);
+    // }
     auto Substitute(const Expression&, const Expression&) -> std::unique_ptr<Expression> override
     {
         return this->Copy();

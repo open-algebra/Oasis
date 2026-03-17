@@ -20,7 +20,6 @@ public:
     Log(const Expression& base, const Expression& argument);
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
-    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> final;
 
     EXPRESSION_TYPE(Log)
     EXPRESSION_CATEGORY(BinExp)

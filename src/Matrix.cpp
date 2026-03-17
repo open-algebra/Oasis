@@ -31,12 +31,6 @@ Matrix::Matrix(size_t numRows, size_t numCols, std::vector<double>& vals)
     }
 }
 
-// TO DO: Fix?
-auto Matrix::Differentiate(const Expression&) const -> std::unique_ptr<Expression>
-{
-    return std::make_unique<Real>(0);
-}
-
 auto Matrix::Equals(const Expression& other) const -> bool
 {
     return other.Is<Matrix>() && matrix.rows() == dynamic_cast<const Matrix&>(other).matrix.rows()
