@@ -60,7 +60,7 @@ int main(int argc, char** argv)
 
         // Calling Oasis::FromInFix passed as template fails because defaulted parameters aren't represented in the type, so a wrapper is needed
         auto result = (input | Oasis::PreProcessInFix | Parse)
-                          .and_then([&simplifyVisitor](const std::unique_ptr<Oasis::Expression>& expr) -> std::expected<gsl::not_null<std::unique_ptr<Oasis::Expression>>, std::string> {
+                          .and_then([&simplifyVisitor](const std::unique_ptr<Oasis::Expression>& expr) -> std::expected<gsl_lite::not_null<std::unique_ptr<Oasis::Expression>>, std::string> {
                               return expr->Accept(simplifyVisitor);
                           })
                           .and_then([&serializer](const std::unique_ptr<Oasis::Expression>& expr) -> std::expected<std::string, std::string> {
