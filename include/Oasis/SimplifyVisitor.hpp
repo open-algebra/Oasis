@@ -5,10 +5,9 @@
 #ifndef SIMPLIFYVISITOR_HPP
 #define SIMPLIFYVISITOR_HPP
 
-#include <format>
 #include <string>
 
-#include <gsl/gsl-lite.hpp>
+#include <gsl-lite/gsl-lite.hpp>
 
 #include "Oasis/Visit.hpp"
 
@@ -22,7 +21,7 @@ struct SimplifyOpts {
         = AngleUnits::RADIANS;
 };
 
-class SimplifyVisitor final : public TypedVisitor<std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string>> {
+class SimplifyVisitor final : public TypedVisitor<std::expected<gsl_lite::not_null<std::unique_ptr<Expression>>, std::string>> {
 public:
     SimplifyVisitor();
     explicit SimplifyVisitor(SimplifyOpts& opts);

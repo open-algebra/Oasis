@@ -46,21 +46,15 @@ if(OASIS_BUILD_WITH_COVERAGE)
     endif()
 endif()
 
-# Fetches dependencies and integrates them into the project.
-FetchContent_Declare(
-    Catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v3.4.0
-    FIND_PACKAGE_ARGS)
-
-# Perhaps one day use Microsoft.GSL if
-# https://github.com/microsoft/GSL/issues/991 gets addressed
+# Fetches dependencies and integrates them into the project. Perhaps one day use
+# Microsoft.GSL if https://github.com/microsoft/GSL/issues/991 gets addressed
 FetchContent_Declare(
     GSL
     GIT_REPOSITORY "https://github.com/gsl-lite/gsl-lite.git"
-    GIT_TAG v0.42.0)
+    GIT_TAG v1.1.0
+    EXCLUDE_FROM_ALL FIND_PACKAGE_ARGS CONFIG)
 
-FetchContent_MakeAvailable(Catch2 GSL)
+FetchContent_MakeAvailable(GSL)
 
 if(NOT OASIS_BUILD_JS)
     include(cmake/FetchBoost.cmake)
@@ -72,28 +66,36 @@ include(cmake/FetchEigen.cmake)
 add_subdirectory(include)
 add_subdirectory(src)
 
+if(OASIS_BUILD_TESTS)
+    FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY "https://github.com/catchorg/Catch2.git"
+        GIT_TAG v3.13.0
+        EXCLUDE_FROM_ALL FIND_PACKAGE_ARGS CONFIG)
+
+    FetchContent_MakeAvailable(Catch2)
+    add_subdirectory(tests)
+endif()
+
 if(OASIS_BUILD_IO)
     include(cmake/FetchTinyxml2.cmake)
     add_subdirectory(io)
 endif()
 
-if(OASIS_BUILD_TESTS)
-    add_subdirectory(tests)
-endif()
-
 if(OASIS_BUILD_CLI)
     FetchContent_Declare(
         fmt
-        GIT_REPOSITORY https://github.com/fmtlib/fmt
-        GIT_TAG 11.1.3)
+        GIT_REPOSITORY "https://github.com/fmtlib/fmt"
+        GIT_TAG 12.1.0
+        EXCLUDE_FROM_ALL FIND_PACKAGE_ARGS CONFIG)
 
     FetchContent_Declare(
         Isocline
-        GIT_REPOSITORY https://github.com/daanx/isocline.git
-        GIT_TAG v1.0.9)
+        GIT_REPOSITORY "https://github.com/daanx/isocline.git"
+        GIT_TAG v1.0.9
+        EXCLUDE_FROM_ALL FIND_PACKAGE_ARGS CONFIG)
 
     FetchContent_MakeAvailable(fmt Isocline)
-
     add_subdirectory(cli)
 endif()
 
