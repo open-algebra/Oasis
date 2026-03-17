@@ -9,6 +9,7 @@
 #include <boost/any/unique_any.hpp>
 
 #include "Concepts.hpp"
+#include "Real.hpp"
 
 namespace Oasis {
 
@@ -93,6 +94,14 @@ public:
      * @tparam origonalExpresion The expression for which all the factors will be found.
      */
     auto FindZeros() const -> std::vector<std::unique_ptr<Expression>>;
+
+    /**
+     * Approximates the zeros of a function through Newton's Method.
+     *
+     * Returns a pointer to a vector of real numbers, representing all found zeros.
+     * Not all zeros can be approximated via Newton's Method. In that case, nullptr is returned instead.
+     */
+    [[nodiscard]] auto ApproximateZeros(const Expression& variable, const Expression& guess, int iterations) const -> std::unique_ptr<Expression>;
 
     /**
      * Gets the category of this expression.

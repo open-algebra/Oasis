@@ -218,6 +218,41 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
     return results;
 }
 
+auto Expression::ApproximateZeros(const Expression& variable, const Expression& guess, int iterations) const -> std::unique_ptr<Expression>
+{
+    // Formula is x_{n + 1} = x_n + (f(x_n)/f'(x_n))
+
+    // Setup simplifyVisitor for later
+    SimplifyVisitor simplifyVisitor {};
+
+    // Declare the function and its derivative
+    std::unique_ptr<Expression> original_function = this->Copy();
+    std::unique_ptr<Expression> derivative = original_function->Differentiate(variable);
+
+    // New guess (starts at the original guess's value)
+    std::unique_ptr<Expression> x = guess.Copy();
+
+    // f'(a) / f(a) for the guess a
+
+    // 3 iterations for testing
+    for (int i = 0; i < iterations; ++i) {
+        // Evaluated version of the functions
+        std::unique_ptr<Expression> evaluated_function = original_function->Substitute(variable, *x);
+        std::unique_ptr<Expression> evaluated_derivative = derivative->Substitute(variable, *x);
+
+        evaluated_function = *evaluated_function->Accept(simplifyVisitor);
+        evaluated_derivative = *evaluated_derivative->Accept(simplifyVisitor);
+
+        std::unique_ptr<Expression> divided = Divide<Expression, Expression> { *evaluated_function, *evaluated_derivative }.Copy();
+
+        divided = divided->Accept(simplifyVisitor).value();
+
+        x = Add<Expression, Expression> { *x->Copy(), *divided->Copy() }.Accept(simplifyVisitor).value();
+    }
+
+    return x->Copy();
+}
+
 auto Expression::GetCategory() const -> uint32_t
 {
     return 0;
