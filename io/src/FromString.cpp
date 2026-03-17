@@ -208,7 +208,7 @@ auto ImplicitMultiplication(std::stringstream&& sstr) -> std::string
 
     while (sstr >> token) {
         if (is_function(token) || is_operator(token)) {
-            if (lastToken == ")") {
+            if (is_function(token) && lastToken == ")") {
                 secondPassResult << "*";
             }
             secondPassResult << token;
@@ -224,7 +224,7 @@ auto ImplicitMultiplication(std::stringstream&& sstr) -> std::string
             continue;
         }
         // a(b+c) -> a*(b+c)
-        else if (lastToken != "" && !is_function(lastToken)  && token == "(") {
+        else if (lastToken != "" && !is_function(lastToken) && token == "(") {
             secondPassResult << '*' << token;
             lastToken = token;
             continue;

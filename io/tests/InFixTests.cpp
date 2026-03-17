@@ -120,7 +120,7 @@ TEST_CASE("In-Fix Works With Parenthesis", "[Parsing]")
 
 TEST_CASE("In-Fix Works With Trivial Implicit Multiplication", "[Parsing]") 
 {
-    const Oasis::Multiply<> expected {
+    const Oasis::Multiply<> mult {
         Oasis::Variable { "y" },
         Oasis::Add {
             Oasis::Variable { "x" },
@@ -131,7 +131,24 @@ TEST_CASE("In-Fix Works With Trivial Implicit Multiplication", "[Parsing]")
     };
 
     auto InFixWithDefaultArgs = [](const std::string& in) { return Oasis::FromInFix(in); };
-    const auto result = std::string {"y(x+1)log(a,x)" } | Oasis::PreProcessInFix | InFixWithDefaultArgs;
-    REQUIRE(result.has_value());
-    REQUIRE(result.value()->Equals(expected));
+    const auto multresult = std::string {"y(x+1)log(a,x)" } | Oasis::PreProcessInFix | InFixWithDefaultArgs;
+    REQUIRE(multresult.has_value());
+    REQUIRE(multresult.value()->Equals(mult));
+
+    const Oasis::Add<> add {
+        Oasis::Multiply {
+            Oasis::Variable { "a" },
+            Oasis::Add {
+                Oasis::Variable { "b" },
+                Oasis::Variable { "c" } } },
+        Oasis::Multiply { 
+            Oasis::Variable { "a" },
+            Oasis::Add {
+                Oasis::Variable { "b" },
+                Oasis::Variable { "c" } } }
+    };
+
+    const auto addresult = std::string {"a(b+c)+a(b+c)" } | Oasis::PreProcessInFix | InFixWithDefaultArgs;
+    REQUIRE(addresult.has_value());
+    REQUIRE(addresult.value()->Equals(add));
 }
