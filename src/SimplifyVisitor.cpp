@@ -844,7 +844,7 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
 }
 
 auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
-{
+{ 
     auto mostSigOp = divide.GetMostSigOp().Copy();
     auto leastSigOp = divide.GetLeastSigOp().Copy();
     if (!mostSigOp) {
@@ -868,6 +868,13 @@ auto SimplifyVisitor::TypedVisit(const Divide<>& divide) -> RetT
     auto simplifiedDivider = std::move(simplifiedLeastSigOpResult).value();
 
     Divide simplifiedDivide { *simplifiedDividend, *simplifiedDivider };
+
+    if (const auto onepiCase = RecursiveCast<Divide<Expression,Real>>(simplifiedOperand); onepiCase != nullptr) {
+         const Real& divisor = realCase->GetLeastSigOp();
+         if (divisor.GetValue() == 0){
+            return std::unexpected{"divied by 0 "};
+         }
+    }
 
     if (auto realCase = RecursiveCast<Divide<Real>>(simplifiedDivide); realCase != nullptr) {
         const Real& dividend = realCase->GetMostSigOp();
@@ -1357,7 +1364,7 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
     //UNIT CIRCLE AAHHHAHAHAHAHAHAHA
     if (const auto onepiCase = RecursiveCast<Sine<Pi>>(simplifiedOperand); onepiCase != nullptr) {
         if (this.SimplifyOpts.angleUnits == AngleUnits::DEGREES){
-            return gsl::not_null {std::make_unique<Real>(Real(std::sin((std::numbers::pi / dividereal.GetValue()) * (std::numbers::pi / 180))))};
+            return gsl::not_null {std::make_unique<Real>(Real(std::sin((std::numbers::pi) * (std::numbers::pi / 180))))};
         } else {
             return gsl::not_null {std::make_unique<Real>(Real(0))}
         }
@@ -1472,14 +1479,23 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
         }
         return gsl::not_null { std::make_unique<Real>(Real(std::sin(piCase->GetOperand().GetMostSigOp().GetValue() * piCase->GetOperand().GetLeastSigOp().GetValue())))};
     }
+    if (this.SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+        // Sine(2npi + x) --> Sine(x), Sine(npi + x) --> -Sine(x)
+        if (const auto periodicCase = RecursiveCast<Sine<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
+            const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
+            if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
+                return gsl::not_null { std::make_unique<Sine<Expression>>(periodicCase->GetOperand().GetLeastSigOp())};
+            } else if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue())){
+                return gsl::not_null { std::make_unique<Multiply<Real,Sine<Expression>>>(Real(-1),Sine<Expression>{periodicCase->GetOperand().GetLeastSigOp()})};
+            }
+        }
 
-    // Sine(2npi + x) --> Sine(x), Sine(npi + x) --> -Sine(x)
-    if (const auto periodicCase = RecursiveCast<Sine<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
-        const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
-            return gsl::not_null { std::make_unique<Sine<Expression>>(periodicCase->GetOperand().GetLeastSigOp())};
-        } else if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue())){
-            return gsl::not_null { std::make_unique<Multiply<Real,Sine<Expression>>>(Real(-1),Sine<Expression>{periodicCase->GetOperand().GetLeastSigOp()})};
+        if (auto cofunction = RecursiveCast<Sine<Add<Divide<Pi,Real>,Expression>>>(simplifiedOperand); cofunction != nullptr) {
+            const Oasis::IExpression auto& realnumber = SineAddOperand->GetOperand().GetMostSigOp().GetLeastSigOp();
+            const Oasis::IExpression auto& exp = SineAddOperand->GetOperand().GetLeastSigOp();
+            if (realnumber.GetValue() == 2){
+                return Cosine<Expression> {exp}.Accept(*this);
+            }
         }
     }
 
@@ -1517,6 +1533,8 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
             return Add<Expression> {*(left.value()),*(right.value())}.Accept(*this);
         }
     }
+
+
 
     // Sin(A + B) = Sin(A)Cos(B) + Cos(A)Sin(B)
     if (auto SineAddOperand = RecursiveCast<Sine<Add<Expression>>>(simplifiedOperand); SineAddOperand != nullptr) {
@@ -1563,7 +1581,7 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
     //UNIT CIRCLE AAHHHAHAHAHAHAHAHA
     if (const auto onepiCase = RecursiveCast<Cosine<Pi>>(simplifiedOperand); onepiCase != nullptr) {
         if (this.SimplifyOpts.angleUnits == AngleUnits::DEGREES){
-            return gsl::not_null {std::make_unique<Real>(Real(std::cos((std::numbers::pi / dividereal.GetValue()) * (std::numbers::pi / 180))))};
+            return gsl::not_null {std::make_unique<Real>(Real(std::cos((std::numbers::pi) * (std::numbers::pi / 180))))};
         } else {
             return gsl::not_null {std::make_unique<Real>(Real(1))}
         }
@@ -1674,14 +1692,23 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
         return gsl::not_null { std::make_unique<Real>(Real(std::cos(piCase->GetOperand().GetMostSigOp().GetValue() * piCase->GetOperand().GetLeastSigOp().GetValue())))};
     }
 
-    // Cos(2npi + x) --> Cos(x)
-    if (const auto periodicCase = RecursiveCast<Cosine<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
-        const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
-            return gsl::not_null { std::make_unique<Cosine<Expression>>(periodicCase->GetOperand().GetLeastSigOp())};
+    if (this.SimplifyOpts.angleUnits == AngleUnits::DEGREES){
+        // Cos(2npi + x) --> Cos(x)
+        if (const auto periodicCase = RecursiveCast<Cosine<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
+            const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
+            if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
+                return gsl::not_null { std::make_unique<Cosine<Expression>>(periodicCase->GetOperand().GetLeastSigOp())};
+            }
+        }
+        
+        if (auto cofunction = RecursiveCast<Cosine<Add<Divide<Pi,Real>,Expression>>>(simplifiedOperand); cofunction != nullptr) {
+            const Oasis::IExpression auto& realnumber = SineAddOperand->GetOperand().GetMostSigOp().GetLeastSigOp();
+            const Oasis::IExpression auto& exp = SineAddOperand->GetOperand().GetLeastSigOp();
+            if (realnumber.GetValue() == 2){
+                return Cosine<Expression> {Multiply<Expression>{Real(-1),exp}}.Accept(*this);
+            }
         }
     }
-
     
     if (auto CosMultiplyOperand = RecursiveCast<Cosine<Multiply<Real,Expression>>>(simplifiedOperand); CosMultiplyOperand != nullptr) {
         //Cos(multreal*multexp)
@@ -1766,33 +1793,35 @@ auto SimplifyVisitor::TypedVisit(const Tan<Expression>& tan) -> RetT
 
     // Tan(real*pi) --> some number
     if (const auto piCase = RecursiveCast<Tan<Multiply<Real,Pi>>>(simplifiedOperand); piCase != nullptr) {
-        return Divide<Expression> {Sine<Multiply<Real,Pi>>{Real(piCase->GetOperand().GetMostSigOp().GetValue()),Pi()},
-                                    Cosine<Multiply<Real,Pi>>{Real(piCase->GetOperand().GetMostSigOp().GetValue()),Pi()}}.Accept(*this);
+        return Divide<Expression> {Sine<Multiply<Real,Pi>>{Multiply<Expression>{Real(piCase->GetOperand().GetMostSigOp().GetValue()),Pi()}},
+                                    Cosine<Multiply<Real,Pi>>{Multiply<Expression>{Real(piCase->GetOperand().GetMostSigOp().GetValue()),Pi()}}}.Accept(*this);
     }
     if (const auto onepiCase = RecursiveCast<Tan<Pi>>(simplifiedOperand); onepiCase != nullptr) {
         return Divide<Expression> {Sine<Pi>{Pi()},
                                     Cosine<Pi>{Pi()}}.Accept(*this);
     }
     if (const auto pidividereal = RecursiveCast<Tan<Divide<Pi,Real>>>(simplifiedOperand); pidividereal != nullptr) {
-        return Divide<Expression> {Sine<Divide<Pi,Real>>{Pi(),Real(pidividereal->GetOperand().GetLeastSigOp().GetValue())},
-                                    Cosine<Divide<Pi,Real>>{Pi(),Real(pidividereal->GetOperand().GetLeastSigOp().GetValue())}}.Accept(*this);
+        return Divide<Expression> {Sine<Divide<Pi,Real>>{Divide<Expression>{Pi(),Real(pidividereal->GetOperand().GetLeastSigOp().GetValue())}},
+                                    Cosine<Divide<Pi,Real>>{Divide<Expression>{Pi(),Real(pidividereal->GetOperand().GetLeastSigOp().GetValue())}}}.Accept(*this);
     }
     if (const auto mixedpireal = RecursiveCast<Cosine<Divide<Multiply<Real,Pi>,Real>>>(simplifiedOperand); mixedpireal != nullptr) {
-        return Divide<Expression> {Sine<Divide<Multiply<Real,Pi>,Real>>{Multiply<Real,Pi>{Real(mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp()),Pi()},Real(mixedpireal->GetOperand().GetLeastSigOp().GetValue())},
-                                    Cosine<Divide<Multiply<Real,Pi>,Real>>{Multiply<Real,Pi>{Real(mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp()),Pi()},Real(mixedpireal->GetOperand().GetLeastSigOp().GetValue())}}.Accept(*this);
+        return Divide<Expression> {Sine<Divide<Multiply<Real,Pi>,Real>>{Divide<Expression>{Multiply<Real,Pi>{Real(mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp()),Pi()},Real(mixedpireal->GetOperand().GetLeastSigOp().GetValue())}},
+                                    Cosine<Divide<Multiply<Real,Pi>,Real>>{Divide<Expression>{Multiply<Real,Pi>{Real(mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp()),Pi()},Real(mixedpireal->GetOperand().GetLeastSigOp().GetValue())}}}.Accept(*this);
     }
     
-    // Tan(npi + x) --> Tan(x)
-    if (const auto periodicCase = RecursiveCast<Tan<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
-        const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue())){
+    if (this.SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+        // Tan(npi + x) --> Tan(x)
+        if (const auto periodicCase = RecursiveCast<Tan<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
+            const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
+            if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue())){
+                return Tan<Expression> {periodicCase->GetOperand().GetLeastSigOp()}.Accept(*this);
+            }
+        }
+        // Tan(npi + x) --> Tan(x)
+        if (const auto periodicCase2 = RecursiveCast<Tan<Add<Pi,Expression>>>(simplifiedOperand); periodicCase2 != nullptr) {
             return Tan<Expression> {periodicCase->GetOperand().GetLeastSigOp()}.Accept(*this);
         }
     }
-    if (const auto periodicCase2 = RecursiveCast<Tan<Add<Pi,Expression>>>(simplifiedOperand); periodicCase2 != nullptr) {
-        return Tan<Expression> {periodicCase->GetOperand().GetLeastSigOp()}.Accept(*this);
-    }
-
     //Tan(multreal*multexp)
     if (auto TanMultiplyOperand = RecursiveCast<Tan<Multiply<Real,Expression>>>(simplifiedOperand); TanMultiplyOperand != nullptr) {
         const Real& multreal = TanMultiplyOperand->GetOperand().GetMostSigOp();
