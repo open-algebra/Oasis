@@ -11,6 +11,8 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/FromString.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/Exponent.hpp"
+#include "Oasis/Derivative.hpp"
 
 template <typename FnT>
 auto operator|(const std::string& str, FnT fn) -> boost::callable_traits::return_type_t<FnT>
@@ -131,7 +133,7 @@ TEST_CASE("In-Fix Works With Trivial Implicit Multiplication", "[Parsing]")
     };
 
     auto InFixWithDefaultArgs = [](const std::string& in) { return Oasis::FromInFix(in); };
-    const auto multresult = std::string {"y(x+1)log(a,x)" } | Oasis::PreProcessInFix | InFixWithDefaultArgs;
+    const auto multresult = std::string { "y(x+1)log(a,x)" } | Oasis::PreProcessInFix | InFixWithDefaultArgs;
     REQUIRE(multresult.has_value());
     REQUIRE(multresult.value()->Equals(mult));
 
@@ -148,7 +150,23 @@ TEST_CASE("In-Fix Works With Trivial Implicit Multiplication", "[Parsing]")
                 Oasis::Variable { "c" } } }
     };
 
-    const auto addresult = std::string {"a(b+c)+a(b+c)" } | Oasis::PreProcessInFix | InFixWithDefaultArgs;
+    const auto addresult = std::string { "a(b+c)+a(b+c)" } | Oasis::PreProcessInFix | InFixWithDefaultArgs;
     REQUIRE(addresult.has_value());
     REQUIRE(addresult.value()->Equals(add));
+
+    const Oasis::Multiply ddexp { 
+        Oasis::Variable { "a" },
+        Oasis::Add {
+            Oasis::Variable { "x" },
+            Oasis::Exponent { 
+                Oasis::Add {
+                    Oasis::Variable { "x" },
+                    Oasis::Real { 1 } },
+                Oasis::Real { 2 } } } 
+    };
+    const Oasis::Derivative dd {ddexp, Oasis::Variable { "x" } };
+
+    const auto ddresult = std::string { "dd(a(x+(x+1)^2),x)" } | Oasis::PreProcessInFix | InFixWithDefaultArgs;
+    REQUIRE(ddresult.has_value());
+    REQUIRE(ddresult.value()->Equals(dd));
 }
