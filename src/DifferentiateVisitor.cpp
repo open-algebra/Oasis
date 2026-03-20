@@ -198,34 +198,95 @@ auto DifferentiateVisitor::TypedVisit(const Divide<Expression, Expression>& divi
 
 auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& exponent) -> RetT
 {
+    SimplifyVisitor simplifyVisitor{};
     // TODO: FIX
-    // d/dx (a^{u(x)}) = a^{u(x)} * ln(a) * u'(x)
-    // d/dx (x^n) = n*x^(n-1)
     // Need to check exponential vs polynomial
     if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr) {
-        SimplifyVisitor simplifyVisitor{};
-        auto diffedleft = exponent.mostSigOp->Accept(*this);
-        if (!diffedleft) {
-            return std::unexpected { diffedleft.error() };
-        }
+        // d/dx (x^n) = n*x^(n-1)
+        if (auto polynomial = RecursiveCast<Exponent<Expression, Real>>(exponent); polynomial != nullptr) {
+            auto diffedleft = polynomial->GetMostSigOp().Accept(*this);
+            if (!diffedleft) {
+                return std::unexpected { diffedleft.error() };
+            }
 
-        auto left = std::move(diffedleft).value();
+            auto left = std::move(diffedleft).value();
 
-        auto multiplied = Multiply<Expression> {
-            Multiply{
-                Exponent{
-                    *exponent.mostSigOp->Copy(),
-                    Subtract{*exponent.leastSigOp->Copy(), Real{1.0}}
+            auto multiplied = Multiply<Expression> {
+                Multiply{
+                    Exponent{
+                        *polynomial->mostSigOp,
+                        Real{polynomial->GetLeastSigOp().GetValue() - 1.0}
                 },
-                *exponent.leastSigOp->Copy()
-            },
-            *left
-        }.Accept(simplifyVisitor);
+                *polynomial->leastSigOp,
+                },
+                *left
+            }.Accept(simplifyVisitor);
 
-        if (!multiplied) {
-            return std::unexpected { multiplied.error() };
+            if (!multiplied) {
+                return std::unexpected { multiplied.error() };
+            }
+            return std::move(multiplied).value();
         }
-        return std::move(multiplied).value();
+        // d/dx (a^{u(x)}) = a^{u(x)} * ln(a) * u'(x)
+        if (auto exponential = RecursiveCast<Exponent<Real, Expression>>(exponent); exponential != nullptr) {
+            auto a = exponential->mostSigOp->Copy();
+            auto u = exponential->leastSigOp->Copy();
+            auto uprime = u->Accept(*this);
+            if (!uprime) {
+                return std::unexpected { uprime.error() };
+            }
+            auto uprime_ = std::move(uprime).value();
+            auto lna = Log<Expression, Expression>{EulerNumber{}, *a};
+            auto simplified = Multiply<Expression, Expression> { *exponential,
+                                Multiply {
+                                    lna,
+                                    *uprime_
+                                }
+            }.Accept(simplifyVisitor);
+
+            if (!simplified) {
+                return std::unexpected { simplified.error() };
+            }
+            return std::move(simplified).value();
+        }
+        if (auto exponential_e = RecursiveCast<Exponent<EulerNumber, Expression>>(exponent); exponential_e != nullptr) {
+            auto u = exponential_e->leastSigOp->Copy();
+            auto uprime = u->Accept(*this);
+
+            if (!uprime) {
+                return std::unexpected { uprime.error() };
+            }
+            auto uprime_ = std::move(uprime).value();
+
+            auto simplified = Multiply<Expression> {*exponential_e, *uprime_}.Accept(simplifyVisitor);
+            if (!simplified) {
+                return std::unexpected { simplified.error() };
+            }
+            return std::move(simplified).value();
+        }
+        if (auto exponential_var = RecursiveCast<Exponent<Variable, Expression>>(exponent); (exponential_var != nullptr) && (exponential_var->mostSigOp->GetName() != variable->GetName())) {
+            auto a = exponential_var->mostSigOp->Copy();
+            auto u = exponential_var->leastSigOp->Copy();
+            auto uprime = u->Accept(*this);
+            if (!uprime) {
+                return std::unexpected { uprime.error() };
+            }
+            auto uprime_ = std::move(uprime).value();
+            auto lna = Log<Expression, Expression>{EulerNumber{}, *a};
+            auto simplified = Multiply<Expression, Expression> { *exponential_var,
+                                Multiply {
+                                    lna,
+                                    *uprime_
+                                }
+            }.Accept(simplifyVisitor);
+
+            if (!simplified) {
+                return std::unexpected { simplified.error() };
+            }
+            return std::move(simplified).value();
+        }
+
+        return gsl::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(exponent.Copy()), *(this->differentiationVariable)}.Generalize());
     }
     return gsl::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(exponent.Copy()), *(this->differentiationVariable)}.Generalize());
 }
