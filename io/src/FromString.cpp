@@ -22,8 +22,6 @@
 
 #include "Oasis/FromString.hpp"
 
-#include <iostream>
-
 namespace {
 
 enum class Operator {
@@ -209,7 +207,6 @@ auto ImplicitMultiplication(std::stringstream&& sstr) -> std::string
     std::string lastToken, token;
 
     while (sstr >> token) {
-        printf("token: %s\n", token.c_str());
         if (is_function(token) || is_operator(token)) {
             if (is_function(token) && lastToken == ")") {
                 secondPassResult << "*";
@@ -260,7 +257,6 @@ auto ImplicitMultiplication(std::stringstream&& sstr) -> std::string
         lastToken = token;
     }
 
-    printf("\n");
     return secondPassResult.str();
 }
 
@@ -280,7 +276,6 @@ auto FromInFix(const std::string& str, ParseImaginaryOption option) -> std::expe
     std::stringstream ss { str };
 
     while (ss >> token) {
-        printf("token: %s\n", token.c_str());
         // Operand
         if (auto newNumber = is_number(token); newNumber) {
             st.push(std::make_unique<Real>(newNumber.value()));
