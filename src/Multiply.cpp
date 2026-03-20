@@ -491,7 +491,6 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) cons
         // Detect whether integration by parts is appropriate
         // May need to simplify before and/or after
         else {
-
             // In the form of mult{u, dv}
             Multiply mult {
                 this->GetMostSigOp(),
@@ -500,7 +499,7 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) cons
 
             // // Check the rules of LIPET
             // Current code assumes MostSigOp is u and LeastSigOp is dv
-            // TODO: Need to rewrite if statements in the case it's necessary to swap operands
+            // TODO: Need to rewrite if statements in the case it's necessary to swap operands of mult
             // // Logarithm
             // if (simplifiedMostSigOp->Is<Log<Expression, Expression>>()) {
             //     u = simplifiedMostSigOp->Copy();
@@ -542,12 +541,23 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) cons
             // TODO: Make test cases in the event that IBP needs to be done again on integrated_vdu
             auto integrated_vdu = (unsimplified_vdu.Accept(simplifyVisitor).value())->Integrate(integrationVariable);
 
+            // Adjust the coefficient of the Constant variable "C" to be -1, since the quantity will be subtracted afterward
+            // TODO: change the exponent on (-1) to the level of recursion
+            if (auto adjusted_vdu = RecursiveCast<Add<Expression, Variable>>(*integrated_vdu); adjusted_vdu != nullptr) {
+                Add corrected_coefficient {
+                    adjusted_vdu->GetMostSigOp(),
+                    Multiply { Exponent { Real {-1}, Real { 1 }}, Variable { "C" } }
+
+                };
+                integrated_vdu = corrected_coefficient.Accept(simplifyVisitor).value();
+            }
+
             // Apply the formula: integral(udv) = uv - integral(vdu)
             Subtract<Multiply<Expression, Expression>, Expression> subtractor {
                 Multiply<Expression, Expression> { mult.GetMostSigOp(), mult.GetLeastSigOp() },
                 *integrated_vdu
             };
-            // TODO: Need to address the -C at the end of the integral, should be +C
+
 
             return subtractor.Accept(simplifyVisitor).value();
         }
