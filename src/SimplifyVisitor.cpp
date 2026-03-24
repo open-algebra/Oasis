@@ -1489,12 +1489,12 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
                 return gsl::not_null { std::make_unique<Multiply<Real,Sine<Expression>>>(Real(-1),Sine<Expression>{periodicCase->GetOperand().GetLeastSigOp()})};
             }
         }
-
+        //Sine(pi/2 + x) --> Cosine(-x)
         if (auto cofunction = RecursiveCast<Sine<Add<Divide<Pi,Real>,Expression>>>(simplifiedOperand); cofunction != nullptr) {
-            const Oasis::IExpression auto& realnumber = SineAddOperand->GetOperand().GetMostSigOp().GetLeastSigOp();
-            const Oasis::IExpression auto& exp = SineAddOperand->GetOperand().GetLeastSigOp();
+            const Oasis::IExpression auto& realnumber = cofunction->GetOperand().GetMostSigOp().GetLeastSigOp();
+            const Oasis::IExpression auto& exp = cofunction->GetOperand().GetLeastSigOp();
             if (realnumber.GetValue() == 2){
-                return Cosine<Expression> {exp}.Accept(*this);
+                return Cosine<Expression> {Multiply<Expression> {Real(-1),exp}}.Accept(*this);
             }
         }
     }
@@ -1702,8 +1702,8 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
         }
         
         if (auto cofunction = RecursiveCast<Cosine<Add<Divide<Pi,Real>,Expression>>>(simplifiedOperand); cofunction != nullptr) {
-            const Oasis::IExpression auto& realnumber = SineAddOperand->GetOperand().GetMostSigOp().GetLeastSigOp();
-            const Oasis::IExpression auto& exp = SineAddOperand->GetOperand().GetLeastSigOp();
+            const Oasis::IExpression auto& realnumber = cofunction->GetOperand().GetMostSigOp().GetLeastSigOp();
+            const Oasis::IExpression auto& exp = cofunction->GetOperand().GetLeastSigOp();
             if (realnumber.GetValue() == 2){
                 return Cosine<Expression> {Multiply<Expression>{Real(-1),exp}}.Accept(*this);
             }
@@ -1804,7 +1804,7 @@ auto SimplifyVisitor::TypedVisit(const Tan<Expression>& tan) -> RetT
         return Divide<Expression> {Sine<Divide<Pi,Real>>{Divide<Expression>{Pi(),Real(pidividereal->GetOperand().GetLeastSigOp().GetValue())}},
                                     Cosine<Divide<Pi,Real>>{Divide<Expression>{Pi(),Real(pidividereal->GetOperand().GetLeastSigOp().GetValue())}}}.Accept(*this);
     }
-    if (const auto mixedpireal = RecursiveCast<Cosine<Divide<Multiply<Real,Pi>,Real>>>(simplifiedOperand); mixedpireal != nullptr) {
+    if (const auto mixedpireal = RecursiveCast<Tan<Divide<Multiply<Real,Pi>,Real>>>(simplifiedOperand); mixedpireal != nullptr) {
         return Divide<Expression> {Sine<Divide<Multiply<Real,Pi>,Real>>{Divide<Expression>{Multiply<Real,Pi>{Real(mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp()),Pi()},Real(mixedpireal->GetOperand().GetLeastSigOp().GetValue())}},
                                     Cosine<Divide<Multiply<Real,Pi>,Real>>{Divide<Expression>{Multiply<Real,Pi>{Real(mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp()),Pi()},Real(mixedpireal->GetOperand().GetLeastSigOp().GetValue())}}}.Accept(*this);
     }
@@ -1819,9 +1819,20 @@ auto SimplifyVisitor::TypedVisit(const Tan<Expression>& tan) -> RetT
         }
         // Tan(npi + x) --> Tan(x)
         if (const auto periodicCase2 = RecursiveCast<Tan<Add<Pi,Expression>>>(simplifiedOperand); periodicCase2 != nullptr) {
-            return Tan<Expression> {periodicCase->GetOperand().GetLeastSigOp()}.Accept(*this);
+            return Tan<Expression> {periodicCase2->GetOperand().GetLeastSigOp()}.Accept(*this);
+        }
+        
+        //Tan(pi/2 + x) --> Cotan(-x)
+        if (auto cofunction = RecursiveCast<Tan<Add<Divide<Pi,Real>,Expression>>>(simplifiedOperand); cofunction != nullptr) {
+            const Oasis::IExpression auto& realnumber = cofunction->GetOperand().GetMostSigOp().GetLeastSigOp();
+            const Oasis::IExpression auto& exp = cofunction->GetOperand().GetLeastSigOp();
+            if (realnumber.GetValue() == 2){
+                return Cotan<Expression> {Multiply<Expression> {Real(-1),exp}}.Accept(*this);
+            }
         }
     }
+
+
     //Tan(multreal*multexp)
     if (auto TanMultiplyOperand = RecursiveCast<Tan<Multiply<Real,Expression>>>(simplifiedOperand); TanMultiplyOperand != nullptr) {
         const Real& multreal = TanMultiplyOperand->GetOperand().GetMostSigOp();
@@ -1833,11 +1844,11 @@ auto SimplifyVisitor::TypedVisit(const Tan<Expression>& tan) -> RetT
         }
         // Tan(2x) --> (2Tan(x)) / (1 - tan^2(x))
         if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
-            auto left = Multiply<Real,Expression>{Real(2),Multiply<Real,Expression>{Real(multreal.GetValue() / 2), multexp}}.Accept(*this);
+            auto left = Multiply<Real,Expression>{Real(2),Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 2), multexp}}}.Accept(*this);
             if (!left) {
                 return left;
             }
-            auto right = Add<Real,Expression>{Real(1), Multiply<Real,Expression>{Real(-1),Exponent<Expression,Real>{Multiply<Real,Expression>{Real(multreal.GetValue() / 2), multexp},Real(2)}}}.Accept(*this);
+            auto right = Add<Real,Expression>{Real(1), Multiply<Real,Expression>{Real(-1),Exponent<Expression,Real>{Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 2), multexp}},Real(2)}}}.Accept(*this);
             if (!right) {
                 return right;
             }
@@ -1845,11 +1856,11 @@ auto SimplifyVisitor::TypedVisit(const Tan<Expression>& tan) -> RetT
         }
         // Tan(3x) --> (3Tan(x) - tan^3(x)) / (1 - 3tan^2(x))
         if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 3) == 0) {
-            auto left = Add<Expression>{Multiply<Real,Expression>{Real(3),Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp}}},Multiply<Real,Expression>{Real(-1),Exponent<Expression,Real>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp},3}}}.Accept(*this);
+            auto left = Add<Expression>{Multiply<Real,Expression>{Real(3),Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp}}},Multiply<Real,Expression>{Real(-1),Exponent<Expression,Real>{Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp}},3}}}.Accept(*this);
             if (!left) {
                 return left;
             }
-            auto right = Add<Real,Expression>{Real(1), Multiply<Real,Expression>{Real(-3),Exponent<Expression,Real>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp},Real(2)}}}.Accept(*this);
+            auto right = Add<Real,Expression>{Real(1), Multiply<Real,Expression>{Real(-3),Exponent<Expression,Real>{Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp}},Real(2)}}}.Accept(*this);
             if (!right) {
                 return right;
             }
@@ -1857,6 +1868,22 @@ auto SimplifyVisitor::TypedVisit(const Tan<Expression>& tan) -> RetT
         }
     }
 
+    // Tan(A + B) = (tan(A) + tan(B)) / (1 - tan(A) * tan(B)) 
+    if (auto TanAddOperand = RecursiveCast<Tan<Add<Expression>>>(simplifiedOperand); TanAddOperand != nullptr) {
+        const Oasis::IExpression auto& Aexp = TanAddOperand->GetOperand().GetMostSigOp();
+        const Oasis::IExpression auto& Bexp = TanAddOperand->GetOperand().GetLeastSigOp();
+        
+        auto tanA = Tan<Expression> {Aexp}.Accept(*this);
+        if (!tanA) {
+            return tanA;
+        }
+        auto tanB = Tan<Expression> {Bexp}.Accept(*this);
+        if (!tanB) {
+            return tanB;
+        }
+
+        return Divide<Expression> {Add<Expression>{*(tanA.value()),*(tanB.value())},Add<Expression>{Real(1),Multiply<Expression>{Real(-1),Multiply<Expression>{*(tanA.value()),*(tanB.value())}}}}.Accept(*this);
+    }
     return gsl::not_null { simplifiedOperand.Copy() };
 }
 
@@ -1876,14 +1903,54 @@ auto SimplifyVisitor::TypedVisit(const Cosecant<Expression>& cosecant) -> RetT
 
     // Cosecant(real) --> some number
     if (const auto realCase = RecursiveCast<Cosecant<Real>>(simplifiedOperand); realCase != nullptr) {
-        float temp = std::sin(realCase->GetOperand().GetValue());
-        if (temp == 0){
-            return gsl::not_null {std::make_unique<Undefined>()};
-        } else {
-            return gsl::not_null {std::make_unique<Real>(Real( 1 / temp ))};
+        return Divide<Expression> {Real(1),Sine<Real>{Real(realCase->GetOperand().GetValue())}}.Accept(*this);
+    }
+
+    if (this.SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+        // Csc(2npi + x) --> Csc(x)
+        if (const auto periodicCase = RecursiveCast<Cosecant<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
+            const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
+            if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && multreal.GetValue() % 2 == 0){
+                return Cosecant<Expression> {periodicCase->GetOperand().GetLeastSigOp()}.Accept(*this);
+            }
+        }
+        
+        //Cosecant(pi/2 + x) --> Secant(-x)
+        if (auto cofunction = RecursiveCast<Cosecant<Add<Divide<Pi,Real>,Expression>>>(simplifiedOperand); cofunction != nullptr) {
+            const Oasis::IExpression auto& realnumber = cofunction->GetOperand().GetMostSigOp().GetLeastSigOp();
+            const Oasis::IExpression auto& exp = cofunction->GetOperand().GetLeastSigOp();
+            if (realnumber.GetValue() == 2){
+                return Secant<Expression> {Multiply<Expression> {Real(-1),exp}}.Accept(*this);
+            }
+        }
+        
+    }
+
+    //Cosecant(multreal*multexp)
+    if (auto CosecantMultiplyOperand = RecursiveCast<Cosecant<Multiply<Real,Expression>>>(simplifiedOperand); CosecantMultiplyOperand != nullptr) {
+        const Real& multreal = CosecantMultiplyOperand->GetOperand().GetMostSigOp();
+        const Oasis::IExpression auto& multexp = CosecantMultiplyOperand->GetOperand().GetLeastSigOp();
+        
+        // Cosecant(-x) --> -Cosecant(x)
+        if (multreal.GetValue() < 0){
+            return Multiply<Expression> {Real(-1),Cosecant<Expression>{Mulitply<Real,Expression>{Real (multreal.GetValue() * -1),multexp}}}.Accept(*this);
+        }
+        // Cosecant(2x) --> 1 / Sin(2x)
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
+            return Divide<Expression> {Real(1),Sine<Expression>{Multiply<Expression>{Real(multreal.GetValue()),multexp}}}.Accept(*this);
+        }
+        // Cosecant(3x) --> 1 / Sin(3x)
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 3) == 0) {
+            return Divide<Expression> {Real(1),Sine<Expression>{Multiply<Expression>{Real(multreal.GetValue()),multexp}}}.Accept(*this);
         }
     }
 
+    //Cosecant(A + B) = 1/ Sine(A + B)
+    if (auto CosecantAddOperand = RecursiveCast<Cosecant<Add<Expression,Expression>>>(simplifiedOperand); CosecantAddOperand != nullptr) {
+        const Oasis::IExpression auto& leftexp = CosecantAddOperand->GetOperand().GetMostSigOp();
+        const Oasis::IExpression auto& rightexp = CosecantAddOperand->GetOperand().GetLeastSigOp(); 
+        return Divide<Expression> {Real(1),Sine<Expression>{Add<Expression>{leftexp,rightexp}}}.Accept(*this);
+    }
 
     return gsl::not_null { simplifiedOperand.Copy() };
 }
@@ -1904,14 +1971,54 @@ auto SimplifyVisitor::TypedVisit(const Secant<Expression>& secant) -> RetT
 
     // Secant(real) --> some number
     if (const auto realCase = RecursiveCast<Secant<Real>>(simplifiedOperand); realCase != nullptr) {
-        float temp = std::cos(realCase->GetOperand().GetValue());
-        if (temp == 0){
-            return gsl::not_null {std::make_unique<Undefined>()};
-        } else {
-            return gsl::not_null {std::make_unique<Real>(Real( 1 / temp ))};
+        return Divide<Expression> {Real(1),Cosine<Real>{Real(realCase->GetOperand().GetValue())}}.Accept(*this);
+    }
+
+    if (this.SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+        // Sec(2npi + x) --> Sec(x)
+        if (const auto periodicCase = RecursiveCast<Secant<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
+            const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
+            if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && multreal.GetValue() % 2 == 0){
+                return Secant<Expression> {periodicCase->GetOperand().GetLeastSigOp()}.Accept(*this);
+            }
+        }
+        
+        //Secant(pi/2 + x) --> Cosecant(-x)
+        if (auto cofunction = RecursiveCast<Secant<Add<Divide<Pi,Real>,Expression>>>(simplifiedOperand); cofunction != nullptr) {
+            const Oasis::IExpression auto& realnumber = cofunction->GetOperand().GetMostSigOp().GetLeastSigOp();
+            const Oasis::IExpression auto& exp = cofunction->GetOperand().GetLeastSigOp();
+            if (realnumber.GetValue() == 2){
+                return Cosecant<Expression> {Multiply<Expression> {Real(-1),exp}}.Accept(*this);
+            }
+        }
+        
+    }
+
+    //Cosecant(multreal*multexp)
+    if (auto SecantMultiplyOperand = RecursiveCast<Secant<Multiply<Real,Expression>>>(simplifiedOperand); SecantMultiplyOperand != nullptr) {
+        const Real& multreal = SecantMultiplyOperand->GetOperand().GetMostSigOp();
+        const Oasis::IExpression auto& multexp = SecantMultiplyOperand->GetOperand().GetLeastSigOp();
+        
+        // Secant(-x) --> Secant(x)
+        if (multreal.GetValue() < 0){
+            return Secant<Expression> {multexp}.Accept(*this);
+        }
+        // Secant(2x) --> 1 / Cos(2x)
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
+            return Divide<Expression> {Real(1),Cosine<Expression>{Multiply<Expression>{Real(multreal.GetValue()),multexp}}}.Accept(*this);
+        }
+        // Secant(3x) --> 1 / Cos(3x)
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 3) == 0) {
+            return Divide<Expression> {Real(1),Cosine<Expression>{Multiply<Expression>{Real(multreal.GetValue()),multexp}}}.Accept(*this);
         }
     }
 
+    //Secant(A + B) = 1/ Cosine(A + B)
+    if (auto SecantAddOperand = RecursiveCast<Secant<Add<Expression,Expression>>>(simplifiedOperand); SecantAddOperand != nullptr) {
+        const Oasis::IExpression auto& leftexp = SecantAddOperand->GetOperand().GetMostSigOp();
+        const Oasis::IExpression auto& rightexp = SecantAddOperand->GetOperand().GetLeastSigOp(); 
+        return Divide<Expression> {Real(1),Cosine<Expression>{Add<Expression>{leftexp,rightexp}}}.Accept(*this);
+    }
 
     return gsl::not_null { simplifiedOperand.Copy() };
 }
