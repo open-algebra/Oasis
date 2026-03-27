@@ -309,8 +309,11 @@ auto DifferentiateVisitor::TypedVisit(const Log<Expression, Expression>& log) ->
         } else {
             if (auto RealCase = RecursiveCast<Real>(*log.mostSigOp); RealCase != nullptr) {
                 Divide derivative { Oasis::Real { 1.0 }, Multiply<Expression> { *log.leastSigOp, Log { EulerNumber {}, *log.mostSigOp } } };
-                Derivative chain { *log.leastSigOp, *(this->differentiationVariable) };
-                Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(*(this->differentiationVariable)) };
+                auto chain = log.leastSigOp->Accept(*this);
+                if (!chain) {
+                    return std::unexpected { chain.error() };
+                }
+                Multiply result = Multiply<Expression> { derivative, **chain };
                 auto simp = result.Accept(simplifyVisitor);
                 if (!simp) {
                     return gsl::not_null<std::unique_ptr<Expression>>{result.Generalize()};
@@ -352,13 +355,13 @@ auto DifferentiateVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
 auto DifferentiateVisitor::TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT
 {
     if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr) {
-        DifferentiateVisitor dv_other{derivative.GetLeastSigOp().Generalize(), this->opts};
-        auto diff = derivative.GetMostSigOp().Accept(dv_other);
+        SimplifyVisitor sv{};
+        auto diff = derivative.GetMostSigOp().Accept(*this);
         if (!diff) {
             return gsl::not_null<std::unique_ptr<Expression>>(Derivative{derivative, *this->differentiationVariable}.Generalize());
         }
         auto res = std::move(diff).value();
-        auto result = res->Accept(*this);
+        auto result = res->Accept(sv);
         if (!result) {
             return gsl::not_null<std::unique_ptr<Expression>>{Derivative{*res, *this->differentiationVariable}.Generalize()};
         }
