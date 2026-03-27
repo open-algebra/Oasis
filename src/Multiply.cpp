@@ -459,7 +459,11 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return simplifiedMultiply.Copy();
 }
 
-auto Multiply<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
+auto Multiply<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> {
+    return Integrate(integrationVariable, 1);
+}
+
+auto Multiply<Expression>::Integrate(const Expression& integrationVariable, int recurseLevel) const -> std::unique_ptr<Expression>
 {
     SimplifyVisitor simplifyVisitor {};
     // Single integration variable
@@ -488,76 +492,75 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) cons
         }
 
         // TODO: Finish implementation of integration by parts
-        // Detect whether integration by parts is appropriate
-        // May need to simplify before and/or after
         else {
             // In the form of mult{u, dv}
-            Multiply mult {
+            Multiply copy {
                 this->GetMostSigOp(),
                 this->GetLeastSigOp()
             };
 
-            // // Check the rules of LIPET
+            auto mult = std::make_unique<Multiply<Expression, Expression>>(copy);
             // Current code assumes MostSigOp is u and LeastSigOp is dv
-            // TODO: Need to rewrite if statements in the case it's necessary to swap operands of mult
-            // // Logarithm
-            // if (simplifiedMostSigOp->Is<Log<Expression, Expression>>()) {
-            //     u = simplifiedMostSigOp->Copy();
-            //     dv = simplifiedLeastSigOp->Copy();
-            // } else if (simplifiedLeastSigOp->Is<Log<Expression, Expression>>()) {
-            //     u = simplifiedLeastSigOp->Copy();
-            //     dv = simplifiedMostSigOp->Copy();
+            // Check if by LIPET it's necessary to swap operands of mult
+            // Logarithm
+            // if ( !(mult->GetMostSigOp().Is<Log<Expression, Expression>>()) && mult->GetLeastSigOp().Is<Log<Expression, Expression>>()) {
+            //     mult = std::make_unique<Multiply<Expression, Expression>>(mult->SwapOperands());
             // }
-            //
-            // // TODO: Inverse trigonometry
-            // // Inverse trigonometry is not implemented yet in Oasis
-            //
-            // // Polynomial
-            // // TODO: Could also be exponent, in the case of (x^2)*sinx
-            // // TODO: Ensure all polynomial cases are accounted for
-            // if (simplifiedMostSigOp->Is<Variable>() || simplifiedMostSigOp->Is<Exponent<Variable, Expression>>()) {
-            //     u = simplifiedMostSigOp->Copy();
-            //     dv = simplifiedLeastSigOp->Copy();
-            // } else if (simplifiedLeastSigOp->Is<Variable>() || simplifiedMostSigOp->Is<Exponent<Variable, Expression>>()) {
-            //     u = simplifiedLeastSigOp->Copy();
-            //     dv = simplifiedMostSigOp->Copy();
+
+            // TODO: Inverse trigonometry
+            // Inverse trigonometry is not implemented yet in Oasis
+
+            // Polynomial
+            // TODO: Could also be exponent, in the case of (x^2)*sinx
+            // TODO: Ensure all polynomial cases are accounted for
+            // else if (mult->GetLeastSigOp().Is<Variable>() || mult->GetLeastSigOp().Is<Exponent<Variable, Expression>>()) {
+            //     mult = std::make_unique<Multiply<Expression, Expression>>(mult->SwapOperands());
             // }
-            //
-            // // Exponential - Euler's Number
-            // if (simplifiedMostSigOp->Is<Exponent<EulerNumber, Expression>>()) {
-            //     u = simplifiedMostSigOp->Copy();
-            //     dv = simplifiedLeastSigOp->Copy();
-            // } else if (simplifiedLeastSigOp->Is<Exponent<EulerNumber, Expression>>()) {
-            //     u = simplifiedLeastSigOp->Copy();
-            //     dv = simplifiedMostSigOp->Copy();
+
+            // Exponential - Euler's Number
+            // else if ( !(mult->GetMostSigOp().Is<Exponent<EulerNumber, Expression>>()) && mult->GetLeastSigOp().Is<Exponent<EulerNumber, Expression>>()) {
+            //     mult = std::make_unique<Multiply<Expression, Expression>>(mult->SwapOperands());
             // }
             // TODO: Trigonometry
             // Trigonometry is not implemented yet in Oasis
 
             Multiply unsimplified_vdu {
-                *mult.GetMostSigOp().Differentiate(integrationVariable),
-                *mult.GetLeastSigOp().Differentiate(integrationVariable)};
+                *(mult->GetMostSigOp().Differentiate(integrationVariable)),
+                *(mult->GetLeastSigOp().Differentiate(integrationVariable))};
 
             // TODO: Make test cases in the event that IBP needs to be done again on integrated_vdu
-            auto integrated_vdu = (unsimplified_vdu.Accept(simplifyVisitor).value())->Integrate(integrationVariable);
 
-            // Adjust the coefficient of the Constant variable "C" to be -1, since the quantity will be subtracted afterward
-            // TODO: change the exponent on (-1) to the level of recursion
-            if (auto adjusted_vdu = RecursiveCast<Add<Expression, Variable>>(*integrated_vdu); adjusted_vdu != nullptr) {
-                Add corrected_coefficient {
-                    adjusted_vdu->GetMostSigOp(),
-                    Multiply { Exponent { Real {-1}, Real { 1 }}, Variable { "C" } }
+            auto simplified_vdu = unsimplified_vdu.Accept(simplifyVisitor).value();;
 
-                };
-                integrated_vdu = corrected_coefficient.Accept(simplifyVisitor).value();
+            std::unique_ptr<Expression> integrated_vdu;
+
+            // Check if simplified_vdu would be integrated by parts again.
+            // If so, include the recursive level with the integration call
+            // Otherwise, call the normal integration function.
+            if (auto multiply = RecursiveCast<Multiply<Expression, Expression>>(*simplified_vdu); multiply != nullptr ) {
+                integrated_vdu = multiply->Integrate(integrationVariable, recurseLevel + 1);
+            }
+            else {
+                integrated_vdu = simplified_vdu->Integrate(integrationVariable);
+            }
+
+            // Correct the coefficient of the constant variable "C", if necessary
+            // Subtracting a negative "C" would produce a positive "C" in the final answer with an odd final recurse level
+            if (recurseLevel % 2 == 1) {
+                if (auto adjusted_vdu = RecursiveCast<Add<Expression, Variable>>(*integrated_vdu); adjusted_vdu != nullptr) {
+                    Subtract corrected_coefficient {
+                        adjusted_vdu->GetMostSigOp(),
+                        adjusted_vdu->GetLeastSigOp()
+                    };
+                    integrated_vdu = corrected_coefficient.Accept(simplifyVisitor).value();
+                }
             }
 
             // Apply the formula: integral(udv) = uv - integral(vdu)
             Subtract<Multiply<Expression, Expression>, Expression> subtractor {
-                Multiply<Expression, Expression> { mult.GetMostSigOp(), mult.GetLeastSigOp() },
+                Multiply<Expression, Expression> { mult->GetMostSigOp(), mult->GetLeastSigOp() },
                 *integrated_vdu
             };
-
 
             return subtractor.Accept(simplifyVisitor).value();
         }
