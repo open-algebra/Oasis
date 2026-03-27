@@ -225,29 +225,62 @@ auto Expression::ApproximateZeros(const Expression& variable, const Expression& 
     // Setup simplifyVisitor for later
     SimplifyVisitor simplifyVisitor {};
 
+    // Helper variables
+
+    // List of guesses that we've taken.
+    // If any of these are duplicates, then we've run into a cycle and can't find a root.
+    std::unique_ptr<Expression> guess_list[iterations];
+
+    // Variable representing the number 0.
+    // Useful in determining a situation where the guess a results in f(a) = 0 or f'(a) = 0
+    std::unique_ptr<Expression> zero = Real { 0.0f }.Copy();
+
     // Declare the function and its derivative
     std::unique_ptr<Expression> original_function = this->Copy();
     std::unique_ptr<Expression> derivative = original_function->Differentiate(variable);
+
+    if (derivative == nullptr) return nullptr;
 
     // New guess (starts at the original guess's value)
     std::unique_ptr<Expression> x = guess.Copy();
 
     // f'(a) / f(a) for the guess a
 
-    // 3 iterations for testing
-    for (int i = 0; i < iterations; ++i) {
+    // Iterate for the given number of times
+    // The higher the number of iterations, the more accurate the result (in theory)
+    for (int i = 0; i < iterations; ++i)
+    {
         // Evaluated version of the functions
         std::unique_ptr<Expression> evaluated_function = original_function->Substitute(variable, *x);
         std::unique_ptr<Expression> evaluated_derivative = derivative->Substitute(variable, *x);
 
-        evaluated_function = *evaluated_function->Accept(simplifyVisitor);
-        evaluated_derivative = *evaluated_derivative->Accept(simplifyVisitor);
+        evaluated_function = evaluated_function->Accept(simplifyVisitor).value();
+        evaluated_derivative = evaluated_derivative->Accept(simplifyVisitor).value();
+
+        // If either of these are true, then we are either in a divide-by-0 case
+        // (when evaluated_function = 0) or we are in a cycle (evaluated_derivative = 0).
+        // In either case, we can't continue, so return nullptr.
+        if (evaluated_function->Equals(*zero) || evaluated_derivative->Equals(*zero)) return nullptr;
 
         std::unique_ptr<Expression> divided = Divide<Expression, Expression> { *evaluated_function, *evaluated_derivative }.Copy();
 
         divided = divided->Accept(simplifyVisitor).value();
 
         x = Add<Expression, Expression> { *x->Copy(), *divided->Copy() }.Accept(simplifyVisitor).value();
+
+        guess_list[i] = std::move(x->Copy());
+
+        // Make sure that we haven't already seen this value.
+        // If we have, then we've gone into a cycle and won't be able to find a solution.
+        for (int j = 0; j < i; ++j)
+        {
+            if (guess_list[i]->Equals(*guess_list[j]))
+            {
+                // We found a duplicate and will be going in a loop
+                // We can't find anything from here, so we have to return nullptr.
+                return nullptr;
+            }
+        }
     }
 
     return x->Copy();
