@@ -8,7 +8,7 @@
 #include <format>
 #include <string>
 
-#include <gsl/gsl-lite.hpp>
+#include <gsl-lite/gsl-lite.hpp>
 
 #include "Oasis/Visit.hpp"
 
@@ -22,7 +22,7 @@ struct DifferentiationOpts {
         = Multivariate::SINGLE_VARIABLE;
 };
 
-class DifferentiateVisitor final : public TypedVisitor<std::expected<gsl::not_null<std::unique_ptr<Expression>>, std::string>> {
+class DifferentiateVisitor final : public TypedVisitor<std::expected<gsl_lite::not_null<std::unique_ptr<Expression>>, std::string>> {
 public:
     explicit DifferentiateVisitor(const std::unique_ptr<Expression>& differentiationVariable);
     explicit DifferentiateVisitor(const std::unique_ptr<Expression>& differentiationVariable, const DifferentiationOpts& opts);
