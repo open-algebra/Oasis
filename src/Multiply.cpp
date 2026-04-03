@@ -500,35 +500,36 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable, int 
             };
 
             auto mult = std::make_unique<Multiply<Expression, Expression>>(copy);
-            // Current code assumes MostSigOp is u and LeastSigOp is dv
-            // Check if by LIPET it's necessary to swap operands of mult
-            // Logarithm
-            // if ( !(mult->GetMostSigOp().Is<Log<Expression, Expression>>()) && mult->GetLeastSigOp().Is<Log<Expression, Expression>>()) {
-            //     mult = std::make_unique<Multiply<Expression, Expression>>(mult->SwapOperands());
-            // }
 
-            // TODO: Inverse trigonometry
-            // Inverse trigonometry is not implemented yet in Oasis
+            // Assume MostSigOp is u and LeastSigOp is dv
+            // Check if by LIPET it's necessary to swap operands
 
-            // Polynomial
-            // TODO: Could also be exponent, in the case of (x^2)*sinx
-            // TODO: Ensure all polynomial cases are accounted for
-            // else if (mult->GetLeastSigOp().Is<Variable>() || mult->GetLeastSigOp().Is<Exponent<Variable, Expression>>()) {
-            //     mult = std::make_unique<Multiply<Expression, Expression>>(mult->SwapOperands());
-            // }
+            // LIPET: Logarithm case
+            if (!(mult->GetMostSigOp().Is<Log<Expression, Expression>>())
+                && mult->GetLeastSigOp().Is<Log<Expression, Expression>>()) {
+                mult = std::make_unique<Multiply<Expression, Expression>>(mult->SwapOperands());
+            }
 
-            // Exponential - Euler's Number
-            // else if ( !(mult->GetMostSigOp().Is<Exponent<EulerNumber, Expression>>()) && mult->GetLeastSigOp().Is<Exponent<EulerNumber, Expression>>()) {
-            //     mult = std::make_unique<Multiply<Expression, Expression>>(mult->SwapOperands());
-            // }
-            // TODO: Trigonometry
-            // Trigonometry is not implemented yet in Oasis
+            // LIPET: Inverse trigonometry is not implemented yet in Oasis
+
+            // LIPET: Swap polynomial (linear variable) and EulerNumber
+            if ((mult->GetLeastSigOp().Is<Variable>()
+                    && mult->GetMostSigOp().Is<Exponent<EulerNumber, Expression>>())) {
+                mult = std::make_unique<Multiply<Expression, Expression>>(mult->SwapOperands());
+            }
+
+            // LIPET: Swap polynomial (exponential) and EulerNumber
+            if (auto test1 = RecursiveCast<Exponent<Variable, Real>>(mult->GetLeastSigOp()); test1 != nullptr) {
+                if (auto test2 = RecursiveCast<Exponent<EulerNumber, Variable>>(mult->GetMostSigOp()); test2 != nullptr) {
+                    mult = std::make_unique<Multiply<Expression, Expression>>(mult->SwapOperands());
+                }
+            }
+
+            // LIPET: Trigonometry is not implemented yet in Oasis
 
             Multiply unsimplified_vdu {
                 *(mult->GetMostSigOp().Differentiate(integrationVariable)),
                 *(mult->GetLeastSigOp().Differentiate(integrationVariable))};
-
-            // TODO: Make test cases in the event that IBP needs to be done again on integrated_vdu
 
             auto simplified_vdu = unsimplified_vdu.Accept(simplifyVisitor).value();;
 
@@ -542,6 +543,12 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable, int 
             }
             else {
                 integrated_vdu = simplified_vdu->Integrate(integrationVariable);
+            }
+
+            // Prevent infinite recursion
+            // if an expression cannot be integrated, return the integral returned by the integration attempt
+            if (simplified_vdu->Equals(*integrated_vdu)) {
+                return integrated_vdu->Copy();
             }
 
             // Correct the coefficient of the constant variable "C", if necessary
