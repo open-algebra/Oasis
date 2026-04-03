@@ -239,6 +239,7 @@ auto Expression::ApproximateZeros(const Expression& variable, const Expression& 
     std::unique_ptr<Expression> original_function = this->Copy();
     std::unique_ptr<Expression> derivative = original_function->Differentiate(variable);
 
+    // Function fails to differentiate
     if (derivative == nullptr) return nullptr;
 
     // New guess (starts at the original guess's value)
@@ -257,16 +258,19 @@ auto Expression::ApproximateZeros(const Expression& variable, const Expression& 
         evaluated_function = evaluated_function->Accept(simplifyVisitor).value();
         evaluated_derivative = evaluated_derivative->Accept(simplifyVisitor).value();
 
-        // If either of these are true, then we are either in a divide-by-0 case
-        // (when evaluated_function = 0) or we are in a cycle (evaluated_derivative = 0).
-        // In either case, we can't continue, so return nullptr.
-        if (evaluated_function->Equals(*zero) || evaluated_derivative->Equals(*zero)) return nullptr;
+        // If this is true, then we are in a divide-by-0 case
+        // (when evaluated_function = 0). We can't continue, so return nullptr.
+        if (evaluated_derivative->Equals(*zero)) return nullptr;
+
+        // If evaluated_function = 0 (and evaluated_derivative != 0),
+        // then we found an approximation. Return that value.
+        if (evaluated_function->Equals(*zero)) return x;
 
         std::unique_ptr<Expression> divided = Divide<Expression, Expression> { *evaluated_function, *evaluated_derivative }.Copy();
 
         divided = divided->Accept(simplifyVisitor).value();
 
-        x = Add<Expression, Expression> { *x->Copy(), *divided->Copy() }.Accept(simplifyVisitor).value();
+        x = Subtract<Expression, Expression> { *x->Copy(), *divided->Copy() }.Accept(simplifyVisitor).value();
 
         guess_list[i] = std::move(x->Copy());
 
