@@ -19,6 +19,8 @@ struct SimplifyOpts {
         DEGREES,
     } angleUnits
         = AngleUnits::RADIANS;
+
+    bool enableDistributiveProperty = false;
 };
 
 class SimplifyVisitor final : public TypedVisitor<std::expected<gsl_lite::not_null<std::unique_ptr<Expression>>, std::string>> {
