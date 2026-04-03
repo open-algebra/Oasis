@@ -15,6 +15,7 @@
 #include "Oasis/SimplifyVisitor.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
+#include "Common.hpp"
 
 inline Oasis::SimplifyVisitor simplifyVisitor{};
 
@@ -349,8 +350,12 @@ TEST_CASE("General Exponential Derivative", "[Derivative][Exponent]")
                                     Oasis::Multiply { Oasis::Real{4.0} ,
                                         Oasis::Log{Oasis::EulerNumber{},
                                             Oasis::Add { Oasis::Variable{"x"}, Oasis::Real{3.0} }}} } };
-    auto simplified = diffExp.Accept(simplifyVisitor).value();
-    REQUIRE(simplified->Equals(expected));
+    const auto& simplified = diffExp.Accept(simplifyVisitor);
+    const auto& simplifiedValue = *simplified.value();
+    const auto& simplifiedExpected = expected.Accept(simplifyVisitor);
+    const auto& simplifiedExpectedValue = *simplifiedExpected.value();
+    OASIS_CAPTURE_WITH_SERIALIZER(simplifiedExpectedValue);
+    REQUIRE(simplifiedValue.Equals(simplifiedExpectedValue));
 }
 
 TEST_CASE("Expression Base Exponential Derivative", "[Derivative][Exponent]")

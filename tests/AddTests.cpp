@@ -236,8 +236,8 @@ TEST_CASE("Complex Addition Associativity", "[Add][Associativity][Simplification
     const Oasis::Add<> add {
         Oasis::Real { 1.0 },
         Oasis::Multiply {
-            Oasis::Add { 
-                Oasis::Variable {"x"}, 
+            Oasis::Add {
+                Oasis::Variable {"x"},
                 Oasis::Real { 1.0 } },
             Oasis::Log {
                 Oasis::Variable { "e" },
@@ -248,8 +248,8 @@ TEST_CASE("Complex Addition Associativity", "[Add][Associativity][Simplification
     const Oasis::Add<> expected {
         Oasis::Real { 2.0 },
         Oasis::Multiply {
-            Oasis::Add { 
-                Oasis::Variable {"x"}, 
+            Oasis::Add {
+                Oasis::Variable {"x"},
                 Oasis::Real { 1.0 } },
             Oasis::Log {
                 Oasis::Variable { "e" },
@@ -266,8 +266,8 @@ TEST_CASE("Complex Addition Associativity With Variables", "[Add][Associativity]
     const Oasis::Add<> add {
         Oasis::Real { 1.0 },
         Oasis::Multiply {
-            Oasis::Add { 
-                Oasis::Variable {"x"}, 
+            Oasis::Add {
+                Oasis::Variable {"x"},
                 Oasis::Real { 1.0 } },
             Oasis::Log {
                 Oasis::Variable { "e" },
@@ -278,8 +278,8 @@ TEST_CASE("Complex Addition Associativity With Variables", "[Add][Associativity]
     const Oasis::Add<> expected {
         Oasis::Real { 1.0 },
         Oasis::Multiply {
-            Oasis::Add { 
-                Oasis::Variable {"x"}, 
+            Oasis::Add {
+                Oasis::Variable {"x"},
                 Oasis::Real { 1.0 } },
             Oasis::Log {
                 Oasis::Variable { "e" },

@@ -9,6 +9,8 @@
 #include "Oasis/Derivative.hpp"
 #include "Oasis/Divide.hpp"
 #include "Oasis/DifferentiateVisitor.hpp"
+
+#include "../io/include/Oasis/InFixSerializer.hpp"
 #include "Oasis/EulerNumber.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Integral.hpp"
@@ -199,7 +201,6 @@ auto DifferentiateVisitor::TypedVisit(const Divide<Expression, Expression>& divi
 auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& exponent) -> RetT
 {
     SimplifyVisitor simplifyVisitor{};
-    // TODO: FIX
     // Need to check exponential vs polynomial
     if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr) {
         // d/dx (x^n) = n*x^(n-1)
@@ -216,11 +217,11 @@ auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& ex
                     Exponent{
                         *polynomial->mostSigOp,
                         Real{polynomial->GetLeastSigOp().GetValue() - 1.0}
-                },
-                *polynomial->leastSigOp,
-                },
-                *left
-            }.Accept(simplifyVisitor);
+                    },
+                    *polynomial->leastSigOp,
+                    },
+                    *left
+                }.Accept(simplifyVisitor);
 
             if (!multiplied) {
                 return std::unexpected { multiplied.error() };
@@ -286,7 +287,49 @@ auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& ex
             return std::move(simplified).value();
         }
 
-        return gsl::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(exponent.Copy()), *(this->differentiationVariable)}.Generalize());
+        // https://math.stackexchange.com/questions/276041/derivative-of-fxgx#:~:text=dydx=g(x)⋅f(,⋅g′(x).
+
+        auto f = exponent.mostSigOp->Copy();
+        auto g = exponent.leastSigOp->Copy();
+
+        auto df = f->Accept(*this);
+        if (!df) {
+            return std::unexpected { df.error() };
+        }
+        auto dg = g->Accept(*this);
+        if (!dg) {
+            return std::unexpected { dg.error() };
+        }
+
+        auto f_prime = std::move(df).value();
+        auto g_prime = std::move(dg).value();
+
+        auto y = Multiply{
+            exponent,
+            Add {
+                Divide{
+                    Multiply{
+                        *g,
+                        *f_prime
+                    },
+                    *f
+                },
+                Multiply{
+                    *g_prime,
+                    Log{EulerNumber{},*f}
+                }
+            }
+        }.Accept(simplifyVisitor);
+
+        if (!y) {
+            return std::unexpected { y.error() };
+        }
+
+        auto dy = std::move(y).value();
+        InFixSerializer InFix {};
+        dy->Accept(InFix);
+
+        return dy;
     }
     return gsl::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(exponent.Copy()), *(this->differentiationVariable)}.Generalize());
 }
