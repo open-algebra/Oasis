@@ -10,7 +10,6 @@
 #include "Oasis/DifferentiateVisitor.hpp"
 #include "Oasis/Divide.hpp"
 
-#include "../io/include/Oasis/InFixSerializer.hpp"
 #include "Oasis/EulerNumber.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Integral.hpp"
@@ -317,8 +316,8 @@ auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& ex
         }
 
         auto dy = std::move(y).value();
-        InFixSerializer InFix {};
-        dy->Accept(InFix);
+        SimplifyVisitor SV{};
+        dy->Accept(SV);
 
         return dy;
     }

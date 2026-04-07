@@ -14,8 +14,8 @@
 #include <fmt/color.h>
 #include <isocline.h>
 
-#include "Oasis/SimplifyVisitor.hpp"
 #include "Oasis/DifferentiateVisitor.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
 
 template <typename FnT>
 auto operator|(const std::string& str, FnT fn) -> boost::callable_traits::return_type_t<FnT>
