@@ -32,6 +32,9 @@ public:
     auto TypedVisit(const Variable& variable) -> RetT override;
     auto TypedVisit(const Undefined& undefined) -> RetT override;
     auto TypedVisit(const Add<Expression, Expression>& add) -> RetT override;
+    auto TypedVisit(const Arcsine<Expression>& arcsine) -> RetT override;
+    auto TypedVisit(const Arccosine<Expression>& arccosine) -> RetT override;
+    auto TypedVisit(const Arctan<Expression>& arctan) -> RetT override;
     auto TypedVisit(const Subtract<Expression, Expression>& subtract) -> RetT override;
     auto TypedVisit(const Multiply<Expression, Expression>& multiply) -> RetT override;
     auto TypedVisit(const Divide<Expression, Expression>& divide) -> RetT override;

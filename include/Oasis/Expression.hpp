@@ -44,7 +44,10 @@ enum class ExpressionType {
     Tan,
     Cosecant,
     Secant,
-    Cotan
+    Cotan,
+    Arcsine,
+    Arccosine,
+    Arctan
 };
 
 /**

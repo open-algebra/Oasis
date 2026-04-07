@@ -19,6 +19,15 @@ class Pi;
 template <typename, typename>
 class Add;
 
+template <typename>
+class Arcsine;
+
+template <typename>
+class Arccosine;
+
+template <typename>
+class Arctan;
+
 template <typename, typename>
 class Subtract;
 

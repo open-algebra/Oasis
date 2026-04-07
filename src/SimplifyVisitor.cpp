@@ -1370,6 +1370,7 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
     const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
 
     //UNIT CIRCLE 
+    //Sine (pi)
     if (const auto onepiCase = RecursiveCast<Sine<Pi>>(simplifiedOperand); onepiCase != nullptr) {
         if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
             return gsl::not_null {std::make_unique<Real>(std::sin((std::numbers::pi) * (std::numbers::pi / 180)))};
@@ -1377,6 +1378,7 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
             return gsl::not_null {std::make_unique<Real>(0)};
         }
     }
+    // Sine (pi/x)
     if (const auto pidividereal = RecursiveCast<Sine<Divide<Pi,Real>>>(simplifiedOperand); pidividereal != nullptr) {
         const Real& dividereal = pidividereal->GetOperand().GetLeastSigOp();
         if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
@@ -1385,9 +1387,9 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
             if (dividereal.GetValue() == 6){
                 return gsl::not_null {std::make_unique<Real>(0.5)};
             } else if (dividereal.GetValue() == 4){
-                return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
+                return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Real,Real>{Real(2),Real(0.5)},Real(2))};
             } else if (dividereal.GetValue() == 3) {
-                return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
+                return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Real,Real>{Real(3),Real(0.5)},Real(2))};
             } else if (dividereal.GetValue() == 2) {
                 return gsl::not_null {std::make_unique<Real>(1)};
             } else {
@@ -1395,6 +1397,7 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
             }
         }  
     }
+    //Sine( ypi/x)
     if (const auto mixedpireal = RecursiveCast<Sine<Divide<Multiply<Real,Pi>,Real>>>(simplifiedOperand); mixedpireal != nullptr) {
         const Real& dividereal = mixedpireal->GetOperand().GetLeastSigOp();
         const Real& multreal = mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp();
@@ -1402,23 +1405,23 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
             return gsl::not_null {std::make_unique<Real>(std::sin((std::numbers::pi / dividereal.GetValue()) * (std::numbers::pi / 180)))};
         } else {
             if (multreal.GetValue() == 2 && dividereal.GetValue() == 3){
-                return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
+                return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Real,Real>{Real(3),Real(0.5)},Real(2))};
             } else if (multreal.GetValue() == 3 && dividereal.GetValue() == 4){
-                return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
+                return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Real,Real>{Real(2),Real(0.5)},Real(2))};
             } else if (multreal.GetValue() == 5 && dividereal.GetValue() == 6){
                 return gsl::not_null {std::make_unique<Real>(0.5)};
             } else if (multreal.GetValue() == 7 && dividereal.GetValue() == 6){
                 return gsl::not_null {std::make_unique<Real>(-0.5)};
             } else if (multreal.GetValue() == 5 && dividereal.GetValue() == 4){
-                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
+                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Real,Real>{Real(2),Real(0.5)},Real(2)))};
             } else if (multreal.GetValue() == 4 && dividereal.GetValue() == 3){
-                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
+                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Real,Real>{Real(3),Real(0.5)},Real(2)))};
             } else if (multreal.GetValue() == 3 && dividereal.GetValue() == 2){
                 return gsl::not_null {std::make_unique<Real>(-1)};
             } else if (multreal.GetValue() == 5 && dividereal.GetValue() == 3){
-                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
+                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
             } else if (multreal.GetValue() == 7 && dividereal.GetValue() == 4){
-                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
+                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
             } else if (multreal.GetValue() == 11 && dividereal.GetValue() == 6){
                 return gsl::not_null {std::make_unique<Real>(-0.5)};
             } else if (multreal.GetValue() * std::numbers::pi / dividereal.GetValue() >= 2 * std::numbers::pi) {
@@ -1434,21 +1437,21 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
         const Real& multreal = realCase->GetOperand();
         if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
             if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue())){
-                int rounds = std::floor(multreal.GetValue()) % 360;
+                int rounds = static_cast<int>(multreal.GetValue()) % 360;
                 if (rounds == 0){
                     return gsl::not_null {std::make_unique<Real>(0)};
                 } else if (rounds == 30){
                     return gsl::not_null {std::make_unique<Real>(0.5)};
                 } else if (rounds == 45){
-                    return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
+                    return gsl::not_null {std::make_unique<Divide<Expression>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
                 } else if (rounds == 60){
-                    return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
+                    return gsl::not_null {std::make_unique<Divide<Expression>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
                 } else if (rounds == 90){
                     return gsl::not_null {std::make_unique<Real>(1)};
                 } else if (rounds == 120){
-                    return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
+                    return gsl::not_null {std::make_unique<Divide<Expression>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
                 } else if (rounds == 135){
-                    return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
+                    return gsl::not_null {std::make_unique<Divide<Expression>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
                 } else if (rounds == 150){
                     return gsl::not_null {std::make_unique<Real>(0.5)};
                 } else if (rounds == 180){
@@ -1456,15 +1459,15 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
                 } else if (rounds == 210){
                     return gsl::not_null {std::make_unique<Real>(-0.5)};
                 } else if (rounds == 225){
-                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
+                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
                 } else if (rounds == 240){
-                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
+                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
                 } else if (rounds == 270){
                     return gsl::not_null {std::make_unique<Real>(-1)};
                 } else if (rounds == 300){
-                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
+                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
                 } else if (rounds == 315){
-                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
+                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
                 } else if (rounds == 330){
                     return gsl::not_null {std::make_unique<Real>(-0.5)};
                 }
@@ -1474,36 +1477,35 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
         return gsl::not_null {std::make_unique<Real>(std::sin(realCase->GetOperand().GetValue()))};
     }
 
-    if (const auto dividepicase = RecursiveCast<Sine<Divide<Multiply<Real,Pi>,Real>>>(simplifiedOperand); piCase != nullptr) {
-        
-    }
 
     //Sine(Arcsine(x)) --> x
     if (const auto arcsineCase = RecursiveCast<Sine<Arcsine<Expression>>>(simplifiedOperand); arcsineCase != nullptr) {
         return gsl::not_null {(arcsineCase->GetOperand().GetOperand()).Copy()};
     }
     //Triangle identities
+    // Sine(Arccosine(x))
     if (const auto arccosineCase = RecursiveCast<Sine<Arccosine<Expression>>>(simplifiedOperand); arccosineCase != nullptr) {
         return Exponent<Expression,Real>(Add<Expression>(Real(1),Negate<Expression>(arccosineCase->GetOperand().GetOperand())),Real(0.5)).Accept(*this);
     }
+    //Sine(Arctan(x))
     if (const auto arctanCase = RecursiveCast<Sine<Arctan<Expression>>>(simplifiedOperand); arctanCase != nullptr) {
         return Divide<Expression>(arctanCase->GetOperand().GetOperand(),Exponent<Expression,Real>(Add<Expression>(Real(1),arctanCase->GetOperand().GetOperand()),Real(0.5))).Accept(*this);
     }
-    // Sine(real*pi) --> some number
+    // Sine(real*pi) --> some number line  <-- line 1494
     if (const auto piCase = RecursiveCast<Sine<Multiply<Real,Pi>>>(simplifiedOperand); piCase != nullptr) {
         if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
             return gsl::not_null { std::make_unique<Real>(std::sin(piCase->GetOperand().GetMostSigOp().GetValue() * piCase->GetOperand().GetLeastSigOp().GetValue() * std::numbers::pi / 180))};
         }
         if (piCase->GetOperand().GetMostSigOp().GetValue() >= 2){
-            return Sine<Subtract<Expression> {Subtract<Expression>{Multiply<Expression>{Real(GetOperand().GetMostSigOp().GetValue()),Pi()},Multiply<Expression>{Real(2),Pi()}}}.Accept(*this);
+            return Sine<Subtract<Expression>> {Subtract<Expression>{Multiply<Expression>{Real(piCase->GetOperand().GetMostSigOp().GetValue()),Pi()},Multiply<Expression>{Real(2),Pi()}}}.Accept(*this);
         }
         return gsl::not_null { std::make_unique<Real>(std::sin(piCase->GetOperand().GetMostSigOp().GetValue() * piCase->GetOperand().GetLeastSigOp().GetValue()))};
     }
-    if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+    if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
         // Sine(2npi + x) --> Sine(x), Sine(npi + x) --> -Sine(x)
         if (const auto periodicCase = RecursiveCast<Sine<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
             const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
-            if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
+            if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( static_cast<int>(multreal.GetValue()) % 2) == 0) {
                 return gsl::not_null { std::make_unique<Sine<Expression>>(periodicCase->GetOperand().GetLeastSigOp())};
             } else if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue())){
                 return gsl::not_null { std::make_unique<Multiply<Real,Sine<Expression>>>(Real(-1),Sine<Expression>{periodicCase->GetOperand().GetLeastSigOp()})};
@@ -1526,10 +1528,10 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
         
         // Sine(-x) --> -Sine(x)
         if (multreal.GetValue() < 0){
-            return Multiply<Expression> {Real(-1),Sine<Expression>{Mulitply<Real,Expression>{Real (multreal.GetValue() * -1),multexp}}}.Accept(*this);
+            return Multiply<Expression> {Real(-1),Sine<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() * -1),multexp}}}.Accept(*this);
         }
         // Sin(2x) --> 2Sin(x)Cos(x)
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( static_cast<int>(multreal.GetValue()) % 2) == 0) {
             auto left = Sine<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 2),multexp}}.Accept(*this);
             if (!left) {
                 return left;
@@ -1541,7 +1543,7 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
             return Multiply<Expression,Real> {Multiply<Expression>{*(left.value()),*(right.value())}, Real(2)}.Accept(*this);
         }
         // sin(3x) --> - 4sin^3(x) + 3sin(x)
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 3) == 0) {
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( static_cast<int>(multreal.GetValue()) % 3) == 0) {
             auto left = Multiply<Real,Expression> {Real(-4),Exponent<Expression,Real>{Sine<Expression>{Multiply<Real,Expression>(Real(multreal.GetValue() / 3),multexp)},Real(3)}}.Accept(*this);
             if (!left) {
                 return left;
@@ -1612,9 +1614,9 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
             return gsl::not_null {std::make_unique<Real>(std::sin((std::numbers::pi / dividereal.GetValue()) * (std::numbers::pi / 180)))};
         } else {
             if (dividereal.GetValue() == 6){
-                return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
+                return gsl::not_null {std::make_unique<Divide<Expression>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
             } else if (dividereal.GetValue() == 4){
-                return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
+                return gsl::not_null {std::make_unique<Divide<Expression>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
             } else if (dividereal.GetValue() == 3) {
                 return gsl::not_null {std::make_unique<Real>(0.5)};
             } else if (dividereal.GetValue() == 2) {
@@ -1633,21 +1635,21 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
             if (multreal.GetValue() == 2 && dividereal.GetValue() == 3){
                 return gsl::not_null {std::make_unique<Real>(-0.5)};
             } else if (multreal.GetValue() == 3 && dividereal.GetValue() == 4){
-                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
+                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
             } else if (multreal.GetValue() == 5 && dividereal.GetValue() == 6){
-                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
+                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
             } else if (multreal.GetValue() == 7 && dividereal.GetValue() == 6){
-                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
+                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
             } else if (multreal.GetValue() == 5 && dividereal.GetValue() == 4){
-                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
+                return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
             } else if (multreal.GetValue() == 4 && dividereal.GetValue() == 3){
                 return gsl::not_null {std::make_unique<Real>(-0.5)};
             } else if (multreal.GetValue() == 3 && dividereal.GetValue() == 2){
                 return gsl::not_null {std::make_unique<Real>(0)};
             } else if (multreal.GetValue() == 5 && dividereal.GetValue() == 3){
-                return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
+                return gsl::not_null {std::make_unique<Divide<Expression>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
             } else if (multreal.GetValue() == 7 && dividereal.GetValue() == 4){
-                return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
+                return gsl::not_null {std::make_unique<Divide<Expression>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
             } else if (multreal.GetValue() == 11 && dividereal.GetValue() == 6){
                 return gsl::not_null {std::make_unique<Real>(-0.5)};
             } else if (multreal.GetValue() * std::numbers::pi / dividereal.GetValue() >= 2 * std::numbers::pi) {
@@ -1662,13 +1664,13 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
         const Real& multreal = realCase->GetOperand();
         if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
             if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue())){
-                int rounds = multreal.GetValue() % 360;
+                int rounds = static_cast<int>(multreal.GetValue()) % 360;
                 if (rounds == 0){
                     return gsl::not_null {std::make_unique<Real>(1)};
                 } else if (rounds == 30){
-                    return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
+                    return gsl::not_null {std::make_unique<Divide<Expression>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
                 } else if (rounds == 45){
-                    return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
+                    return gsl::not_null {std::make_unique<Divide<Expression>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
                 } else if (rounds == 60){
                     return gsl::not_null {std::make_unique<Real>(0.5)};
                 } else if (rounds == 90){
@@ -1676,28 +1678,28 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
                 } else if (rounds == 120){
                     return gsl::not_null {std::make_unique<Real>(-0.5)};
                 } else if (rounds == 135){
-                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
+                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
                 } else if (rounds == 150){
-                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
+                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
                 } else if (rounds == 180){
                     return gsl::not_null {std::make_unique<Real>(-1)};
                 } else if (rounds == 210){
-                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
+                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(3),Real(0.5)},Real(2)))};
                 } else if (rounds == 225){
-                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Exponent<Real,Real>,Real>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
+                    return gsl::not_null {std::make_unique<Multiply<Real,Divide<Expression>>>( Real(-1),Divide<Expression>(Exponent<Expression>{Real(2),Real(0.5)},Real(2)))};
                 } else if (rounds == 240){
                     return gsl::not_null {std::make_unique<Real>(-0.5)};
                 } else if (rounds == 270){
                     return gsl::not_null {std::make_unique<Real>(0)};
                 } else if (rounds == 300){
-                    return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
+                    return gsl::not_null {std::make_unique<Divide<Expression>>(Exponent<Expression>{Real(3),Real(0.5)},Real(2))};
                 } else if (rounds == 315){
-                    return gsl::not_null {std::make_unique<Divide<Exponent<Real,Real>,Real>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
+                    return gsl::not_null {std::make_unique<Divide<Expression>>(Exponent<Expression>{Real(2),Real(0.5)},Real(2))};
                 } else if (rounds == 330){
                     return gsl::not_null {std::make_unique<Real>(-0.5)};
                 }
             }
-            return gsl::not_null { std::make_unique<Real>(std::cos(realCase->GetOperand().GetValue() * std::numbers.pi / 180))};
+            return gsl::not_null { std::make_unique<Real>(std::cos(realCase->GetOperand().GetValue() * std::numbers::pi / 180))};
         }
         return gsl::not_null { std::make_unique<Real>(std::cos(realCase->GetOperand().GetValue()))};
     }
@@ -1711,15 +1713,15 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
         return Exponent<Expression,Real>(Add<Expression>(Real(1),Negate<Expression>(arcsineCase->GetOperand().GetOperand())),Real(0.5)).Accept(*this);
     }
     if (const auto arctanCase = RecursiveCast<Cosine<Arctan<Expression>>>(simplifiedOperand); arctanCase != nullptr) {
-        return Divide<Expression>(Real(1),Exponent<Expression,Real>(Add<Expression>(Real(1),arctanCase->GetOperand().GetOperand())),Real(0.5)).Accept(*this);
+        return Divide<Expression>(Real(1),Exponent<Expression,Real>(Add<Expression>(Real(1),arctanCase->GetOperand().GetOperand()),Real(0.5))).Accept(*this);
     }
     // Cos(real*pi) --> some number
     if (const auto piCase = RecursiveCast<Cosine<Multiply<Real,Pi>>>(simplifiedOperand); piCase != nullptr) {
         if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
-            return gsl::not_null { std::make_unique<Real>(std::cos(piCase->GetOperand().GetMostSigOp().GetValue() * piCase->GetOperand().GetLeastSigOp().GetValue() * std::numbers.pi / 180))};
+            return gsl::not_null { std::make_unique<Real>(std::cos(piCase->GetOperand().GetMostSigOp().GetValue() * piCase->GetOperand().GetLeastSigOp().GetValue() * std::numbers::pi / 180))};
         }
         if (piCase->GetOperand().GetMostSigOp().GetValue() >= 2){
-            return Sine<Subtract<Expression> {Subtract<Expression>{Multiply<Expression>{Real(GetOperand().GetMostSigOp().GetValue()),Pi()},Multiply<Expression>{Real(2),Pi()}}}.Accept(*this);
+            return Sine<Subtract<Expression>> {Subtract<Expression>{Multiply<Expression>{Real(piCase->GetOperand().GetMostSigOp().GetValue()),Pi()},Multiply<Expression>{Real(2),Pi()}}}.Accept(*this);
         }
         return gsl::not_null { std::make_unique<Real>(std::cos(piCase->GetOperand().GetMostSigOp().GetValue() * piCase->GetOperand().GetLeastSigOp().GetValue()))};
     }
@@ -1728,7 +1730,7 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
         // Cos(2npi + x) --> Cos(x)
         if (const auto periodicCase = RecursiveCast<Cosine<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
             const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
-            if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
+            if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( static_cast<int>(multreal.GetValue()) % 2) == 0) {
                 return gsl::not_null { std::make_unique<Cosine<Expression>>(periodicCase->GetOperand().GetLeastSigOp())};
             }
         }
@@ -1752,7 +1754,7 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
             return Cosine<Expression> {Multiply<Real,Expression>{Real (multreal.GetValue() * -1),multexp}}.Accept(*this);
         }
         // Cos(2x) --> cos^2(x) - sin^2(x)
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( static_cast<int>(multreal.GetValue()) % 2) == 0) {
             auto left = Exponent<Expression,Real>{Cosine<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 2),multexp}},Real(2)}.Accept(*this);
             if (!left) {
                 return left;
@@ -1764,7 +1766,7 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
             return Add<Expression> {*(left.value()),*(right.value())}.Accept(*this);
         }
         // Cos(3x) --> 4cos^3(x) - 3cos(x)
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 3) == 0) {
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( static_cast<int>(multreal.GetValue()) % 3) == 0) {
             auto left = Multiply<Real,Expression> {Real(4),Exponent<Expression,Real>{Cosine<Expression>{Multiply<Real,Expression>(Real(multreal.GetValue() / 3),multexp)},Real(3)}}.Accept(*this);
             if (!left) {
                 return left;
@@ -1825,20 +1827,20 @@ auto SimplifyVisitor::TypedVisit(const Tan<Expression>& tan) -> RetT
 
     // Tan(real*pi) --> some number
     if (const auto piCase = RecursiveCast<Tan<Multiply<Real,Pi>>>(simplifiedOperand); piCase != nullptr) {
-        return Divide<Expression> {Sine<Multiply<Real,Pi>>{Multiply<Expression>{Real(piCase->GetOperand().GetMostSigOp().GetValue()),Pi()}},
-                                    Cosine<Multiply<Real,Pi>>{Multiply<Expression>{Real(piCase->GetOperand().GetMostSigOp().GetValue()),Pi()}}}.Accept(*this);
+        return Divide<Expression> {Sine<Expression>{Multiply<Expression>{Real(piCase->GetOperand().GetMostSigOp().GetValue()),Pi()}},
+                                    Cosine<Expression>{Multiply<Expression>{Real(piCase->GetOperand().GetMostSigOp().GetValue()),Pi()}}}.Accept(*this);
     }
     if (const auto onepiCase = RecursiveCast<Tan<Pi>>(simplifiedOperand); onepiCase != nullptr) {
         return Divide<Expression> {Sine<Pi>{Pi()},
                                     Cosine<Pi>{Pi()}}.Accept(*this);
     }
     if (const auto pidividereal = RecursiveCast<Tan<Divide<Pi,Real>>>(simplifiedOperand); pidividereal != nullptr) {
-        return Divide<Expression> {Sine<Divide<Pi,Real>>{Divide<Expression>{Pi(),Real(pidividereal->GetOperand().GetLeastSigOp().GetValue())}},
-                                    Cosine<Divide<Pi,Real>>{Divide<Expression>{Pi(),Real(pidividereal->GetOperand().GetLeastSigOp().GetValue())}}}.Accept(*this);
+        return Divide<Expression> {Sine<Expression>{Divide<Expression>{Pi(),Real(pidividereal->GetOperand().GetLeastSigOp().GetValue())}},
+                                    Cosine<Expression>{Divide<Expression>{Pi(),Real(pidividereal->GetOperand().GetLeastSigOp().GetValue())}}}.Accept(*this);
     }
     if (const auto mixedpireal = RecursiveCast<Tan<Divide<Multiply<Real,Pi>,Real>>>(simplifiedOperand); mixedpireal != nullptr) {
-        return Divide<Expression> {Sine<Divide<Multiply<Real,Pi>,Real>>{Divide<Expression>{Multiply<Real,Pi>{Real(mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp()),Pi()},Real(mixedpireal->GetOperand().GetLeastSigOp().GetValue())}},
-                                    Cosine<Divide<Multiply<Real,Pi>,Real>>{Divide<Expression>{Multiply<Real,Pi>{Real(mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp()),Pi()},Real(mixedpireal->GetOperand().GetLeastSigOp().GetValue())}}}.Accept(*this);
+        return Divide<Expression> {Sine<Expression>{Divide<Expression>{Multiply<Real,Pi>{Real(mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp()),Pi()},Real(mixedpireal->GetOperand().GetLeastSigOp().GetValue())}},
+                                    Cosine<Expression>{Divide<Expression>{Multiply<Real,Pi>{Real(mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp()),Pi()},Real(mixedpireal->GetOperand().GetLeastSigOp().GetValue())}}}.Accept(*this);
     }
 
     //Tan(Arctan(x)) --> x
@@ -1853,7 +1855,7 @@ auto SimplifyVisitor::TypedVisit(const Tan<Expression>& tan) -> RetT
         return Divide<Expression>(Exponent<Expression,Real>(Add<Expression>(Real(1),Negate<Expression>(arccosineCase->GetOperand().GetOperand())),Real(0.5)),arccosineCase->GetOperand().GetOperand()).Accept(*this);
     }
     
-    if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+    if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
         // Tan(npi + x) --> Tan(x)
         if (const auto periodicCase = RecursiveCast<Tan<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
             const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
@@ -1884,10 +1886,10 @@ auto SimplifyVisitor::TypedVisit(const Tan<Expression>& tan) -> RetT
         
         // Tan(-x) --> -Tan(x)
         if (multreal.GetValue() < 0){
-            return Multiply<Expression> {Real(-1),Tan<Expression>{Mulitply<Real,Expression>{Real (multreal.GetValue() * -1),multexp}}}.Accept(*this);
+            return Multiply<Expression> {Real(-1),Tan<Expression>{Multiply<Real,Expression>{Real (multreal.GetValue() * -1),multexp}}}.Accept(*this);
         }
         // Tan(2x) --> (2Tan(x)) / (1 - tan^2(x))
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( static_cast<int>(multreal.GetValue()) % 2) == 0) {
             auto left = Multiply<Real,Expression>{Real(2),Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 2), multexp}}}.Accept(*this);
             if (!left) {
                 return left;
@@ -1899,8 +1901,8 @@ auto SimplifyVisitor::TypedVisit(const Tan<Expression>& tan) -> RetT
             return Divide<Expression> {*(left.value()),*(right.value())}.Accept(*this);
         }
         // Tan(3x) --> (3Tan(x) - tan^3(x)) / (1 - 3tan^2(x))
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 3) == 0) {
-            auto left = Add<Expression>{Multiply<Real,Expression>{Real(3),Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp}}},Multiply<Real,Expression>{Real(-1),Exponent<Expression,Real>{Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp}},3}}}.Accept(*this);
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( static_cast<int>(multreal.GetValue()) % 3) == 0) {
+            auto left = Add<Expression>{Multiply<Real,Expression>{Real(3),Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp}}},Multiply<Real,Expression>{Real(-1),Exponent<Expression,Real>{Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp}},Real(3)}}}.Accept(*this);
             if (!left) {
                 return left;
             }
@@ -1950,11 +1952,11 @@ auto SimplifyVisitor::TypedVisit(const Cosecant<Expression>& cosecant) -> RetT
         return Divide<Expression> {Real(1),Sine<Real>{Real(realCase->GetOperand().GetValue())}}.Accept(*this);
     }
 
-    if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+    if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
         // Csc(2npi + x) --> Csc(x)
         if (const auto periodicCase = RecursiveCast<Cosecant<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
             const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
-            if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && multreal.GetValue() % 2 == 0){
+            if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && static_cast<int>(multreal.GetValue()) % 2 == 0){
                 return Cosecant<Expression> {periodicCase->GetOperand().GetLeastSigOp()}.Accept(*this);
             }
         }
@@ -1977,14 +1979,14 @@ auto SimplifyVisitor::TypedVisit(const Cosecant<Expression>& cosecant) -> RetT
         
         // Cosecant(-x) --> -Cosecant(x)
         if (multreal.GetValue() < 0){
-            return Multiply<Expression> {Real(-1),Cosecant<Expression>{Mulitply<Real,Expression>{Real (multreal.GetValue() * -1),multexp}}}.Accept(*this);
+            return Multiply<Expression> {Real(-1),Cosecant<Expression>{Multiply<Real,Expression>{Real (multreal.GetValue() * -1),multexp}}}.Accept(*this);
         }
         // Cosecant(2x) --> 1 / Sin(2x)
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( static_cast<int>(multreal.GetValue()) % 2) == 0) {
             return Divide<Expression> {Real(1),Sine<Expression>{Multiply<Expression>{Real(multreal.GetValue()),multexp}}}.Accept(*this);
         }
         // Cosecant(3x) --> 1 / Sin(3x)
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 3) == 0) {
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( static_cast<int>(multreal.GetValue()) % 3) == 0) {
             return Divide<Expression> {Real(1),Sine<Expression>{Multiply<Expression>{Real(multreal.GetValue()),multexp}}}.Accept(*this);
         }
     }
@@ -2018,11 +2020,11 @@ auto SimplifyVisitor::TypedVisit(const Secant<Expression>& secant) -> RetT
         return Divide<Expression> {Real(1),Cosine<Real>{Real(realCase->GetOperand().GetValue())}}.Accept(*this);
     }
 
-    if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+    if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
         // Sec(2npi + x) --> Sec(x)
         if (const auto periodicCase = RecursiveCast<Secant<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
             const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
-            if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && multreal.GetValue() % 2 == 0){
+            if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && static_cast<int>(multreal.GetValue()) % 2 == 0){
                 return Secant<Expression> {periodicCase->GetOperand().GetLeastSigOp()}.Accept(*this);
             }
         }
@@ -2048,11 +2050,11 @@ auto SimplifyVisitor::TypedVisit(const Secant<Expression>& secant) -> RetT
             return Secant<Expression> {multexp}.Accept(*this);
         }
         // Secant(2x) --> 1 / Cos(2x)
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( static_cast<int>(multreal.GetValue()) % 2) == 0) {
             return Divide<Expression> {Real(1),Cosine<Expression>{Multiply<Expression>{Real(multreal.GetValue()),multexp}}}.Accept(*this);
         }
         // Secant(3x) --> 1 / Cos(3x)
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 3) == 0) {
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( static_cast<int>(multreal.GetValue()) % 3) == 0) {
             return Divide<Expression> {Real(1),Cosine<Expression>{Multiply<Expression>{Real(multreal.GetValue()),multexp}}}.Accept(*this);
         }
     }
@@ -2089,23 +2091,23 @@ auto SimplifyVisitor::TypedVisit(const Cotan<Expression>& cotan) -> RetT
 
     // Cotan(real*pi) --> some number
     if (const auto piCase = RecursiveCast<Cotan<Multiply<Real,Pi>>>(simplifiedOperand); piCase != nullptr) {
-        return Divide<Expression> {Cosine<Multiply<Real,Pi>>{Multiply<Expression>{Real(piCase->GetOperand().GetMostSigOp().GetValue()),Pi()}},
-                                    Sine<Multiply<Real,Pi>>{Multiply<Expression>{Real(piCase->GetOperand().GetMostSigOp().GetValue()),Pi()}}}.Accept(*this);
+        return Divide<Expression> {Cosine<Expression>{Multiply<Expression>{Real(piCase->GetOperand().GetMostSigOp().GetValue()),Pi()}},
+                                    Sine<Expression>{Multiply<Expression>{Real(piCase->GetOperand().GetMostSigOp().GetValue()),Pi()}}}.Accept(*this);
     }
     if (const auto onepiCase = RecursiveCast<Cotan<Pi>>(simplifiedOperand); onepiCase != nullptr) {
         return Divide<Expression> {Cosine<Pi>{Pi()},
                                     Sine<Pi>{Pi()}}.Accept(*this);
     }
     if (const auto pidividereal = RecursiveCast<Cotan<Divide<Pi,Real>>>(simplifiedOperand); pidividereal != nullptr) {
-        return Divide<Expression> {Cosine<Divide<Pi,Real>>{Divide<Expression>{Pi(),Real(pidividereal->GetOperand().GetLeastSigOp().GetValue())}},
-                                    Sine<Divide<Pi,Real>>{Divide<Expression>{Pi(),Real(pidividereal->GetOperand().GetLeastSigOp().GetValue())}}}.Accept(*this);
+        return Divide<Expression> {Cosine<Expression>{Divide<Expression>{Pi(),Real(pidividereal->GetOperand().GetLeastSigOp().GetValue())}},
+                                    Sine<Expression>{Divide<Expression>{Pi(),Real(pidividereal->GetOperand().GetLeastSigOp().GetValue())}}}.Accept(*this);
     }
     if (const auto mixedpireal = RecursiveCast<Cotan<Divide<Multiply<Real,Pi>,Real>>>(simplifiedOperand); mixedpireal != nullptr) {
-        return Divide<Expression> {Cosine<Divide<Multiply<Real,Pi>,Real>>{Divide<Expression>{Multiply<Real,Pi>{Real(mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp()),Pi()},Real(mixedpireal->GetOperand().GetLeastSigOp().GetValue())}},
-                                    Sine<Divide<Multiply<Real,Pi>,Real>>{Divide<Expression>{Multiply<Real,Pi>{Real(mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp()),Pi()},Real(mixedpireal->GetOperand().GetLeastSigOp().GetValue())}}}.Accept(*this);
+        return Divide<Expression> {Cosine<Expression>{Divide<Expression>{Multiply<Real,Pi>{Real(mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp()),Pi()},Real(mixedpireal->GetOperand().GetLeastSigOp().GetValue())}},
+                                    Sine<Expression>{Divide<Expression>{Multiply<Real,Pi>{Real(mixedpireal->GetOperand().GetMostSigOp().GetMostSigOp()),Pi()},Real(mixedpireal->GetOperand().GetLeastSigOp().GetValue())}}}.Accept(*this);
     }
     
-    if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+    if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
         // Cotan(npi + x) --> Cotan(x)
         if (const auto periodicCase = RecursiveCast<Cotan<Add<Multiply<Real,Pi>,Expression>>>(simplifiedOperand); periodicCase != nullptr) {
             const Real& multreal = periodicCase->GetOperand().GetMostSigOp().GetMostSigOp();
@@ -2135,10 +2137,10 @@ auto SimplifyVisitor::TypedVisit(const Cotan<Expression>& cotan) -> RetT
         
         // Cotan(-x) --> -Cotan(x)
         if (multreal.GetValue() < 0){
-            return Multiply<Expression> {Real(-1),Cotan<Expression>{Mulitply<Real,Expression>{Real (multreal.GetValue() * -1),multexp}}}.Accept(*this);
+            return Multiply<Expression> {Real(-1),Cotan<Expression>{Multiply<Real,Expression>{Real (multreal.GetValue() * -1),multexp}}}.Accept(*this);
         }
         // Cotan(2x) --> (cot^2(x) - 1) / (2 cot(x))
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 2) == 0) {
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( static_cast<int>(multreal.GetValue()) % 2) == 0) {
             auto left = Add<Real,Expression>{Real(-1), Exponent<Expression,Real>{Cotan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 2), multexp}},Real(2)}}.Accept(*this);
             if (!left) {
                 return left;
@@ -2150,12 +2152,12 @@ auto SimplifyVisitor::TypedVisit(const Cotan<Expression>& cotan) -> RetT
             return Divide<Expression> {*(left.value()),*(right.value())}.Accept(*this);
         }
         // Cotan(3x) --> (1 - 3tan^2(x)) / (3Tan(x) - tan^3(x))
-        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( ((int)multreal.GetValue()) % 3) == 0) {
+        if (std::floor(multreal.GetValue()) == std::ceil(multreal.GetValue()) && ( static_cast<int>(multreal.GetValue()) % 3) == 0) {
             auto left = Add<Real,Expression>{Real(1), Multiply<Real,Expression>{Real(-3),Exponent<Expression,Real>{Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp}},Real(2)}}}.Accept(*this);
             if (!left) {
                 return left;
             }
-            auto right = Add<Expression>{Multiply<Real,Expression>{Real(3),Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp}}},Multiply<Real,Expression>{Real(-1),Exponent<Expression,Real>{Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp}},3}}}.Accept(*this);
+            auto right = Add<Expression>{Multiply<Real,Expression>{Real(3),Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp}}},Multiply<Real,Expression>{Real(-1),Exponent<Expression,Real>{Tan<Expression>{Multiply<Real,Expression>{Real(multreal.GetValue() / 3), multexp}},Real(3)}}}.Accept(*this);
             if (!right) {
                 return right;
             }
@@ -2185,7 +2187,7 @@ auto SimplifyVisitor::TypedVisit(const Cotan<Expression>& cotan) -> RetT
 
 auto SimplifyVisitor::TypedVisit(const Arcsine<Expression>& arcsine) -> RetT
 {
-    auto op = sine.GetOperand().Copy();
+    auto op = arcsine.GetOperand().Copy();
     if (!op) {
         return std::unexpected { "Missing operand." };
     }
@@ -2202,36 +2204,36 @@ auto SimplifyVisitor::TypedVisit(const Arcsine<Expression>& arcsine) -> RetT
     if (const auto realCase = RecursiveCast<Arcsine<Real>>(simplifiedOperand); realCase != nullptr) {
         const Real& multreal = realCase->GetOperand();
         if (multreal.GetValue() > 1 || multreal.GetValue() < -1 ){
-            return std::unexpected {"input outside arcsine range."}
+            return std::unexpected {"input outside arcsine range."};
         } else {
             if (multreal.GetValue() == 0){
                 return gsl::not_null { std::make_unique<Real>(0)};
             } else if (multreal.GetValue() == 1){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Pi,Real>>(Pi(),Real(2))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(90)};
                 }
             } else if (multreal.GetValue() == -1){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Multiply<Real,Pi>,Real>>(Multiply<Real,Pi>{Real(3),Pi()},Real(2))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(270)};
                 }
             } else if (multreal.GetValue() == 0.5){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Pi,Real>>(Pi(),Real(6))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(30)};
                 }   
             } else if (multreal.GetValue() == -0.5){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Multiply<Real,Pi>,Real>>(Multiply<Real,Pi>{Real(11),Pi()},Real(6))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(330)};
                 }
             } else {
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Real>(std::asin(multreal.GetValue()))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(std::asin(multreal.GetValue()) * 180 / std::numbers::pi)};
@@ -2244,7 +2246,7 @@ auto SimplifyVisitor::TypedVisit(const Arcsine<Expression>& arcsine) -> RetT
         const Real& dividereal = realDivideCase->GetOperand().GetLeastSigOp();
         const Real& dividendreal = realDivideCase->GetOperand().GetMostSigOp();
         if (dividendreal.GetValue() == 1 && dividereal.GetValue() == 2){
-            if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+            if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                 return gsl::not_null {std::make_unique<Divide<Pi,Real>>(Pi(),Real(6))};
             } else {
                 return gsl::not_null {std::make_unique<Real>(30)};
@@ -2257,7 +2259,7 @@ auto SimplifyVisitor::TypedVisit(const Arcsine<Expression>& arcsine) -> RetT
         const Real& dividereal = realDivideCase->GetOperand().GetOperand().GetLeastSigOp();
         const Real& dividendreal = realDivideCase->GetOperand().GetOperand().GetMostSigOp();
         if (dividendreal.GetValue() == 1 && dividereal.GetValue() == 2){
-            if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+            if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                 return gsl::not_null {std::make_unique<Divide<Multiply<Real,Pi>,Real>>(Multiply<Real,Pi>(Real(11),Pi()),Real(6))};
             } else {
                 return gsl::not_null {std::make_unique<Real>(330)};
@@ -2272,13 +2274,13 @@ auto SimplifyVisitor::TypedVisit(const Arcsine<Expression>& arcsine) -> RetT
         const Real& exponentreal = squarerootdividecase->GetOperand().GetMostSigOp().GetLeastSigOp();
         if (exponentreal.GetValue() == 0.5 && rootedreal.GetValue() == 2){
             if (dividereal.GetValue() == 2){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Pi,Real>>(Pi(),Real(4))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(45)};
                 }
             } else if (dividereal.GetValue() == 3){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Pi,Real>>(Pi(),Real(3))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(60)};
@@ -2293,13 +2295,13 @@ auto SimplifyVisitor::TypedVisit(const Arcsine<Expression>& arcsine) -> RetT
         const Real& exponentreal = negatesquarerootdividecase->GetOperand().GetOperand().GetMostSigOp().GetLeastSigOp();
         if (exponentreal.GetValue() == 0.5 && rootedreal.GetValue() == 2){
             if (dividereal.GetValue() == 2){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Multiply<Real,Pi>,Real>>(Multiply<Real,Pi>(Real(7),Pi()),Real(4))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(315)};
                 }
             } else if (dividereal.GetValue() == 3){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Multiply<Real,Pi>,Real>>(Multiply<Real,Pi>(Real(5),Pi()),Real(3))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(300)};
@@ -2309,16 +2311,16 @@ auto SimplifyVisitor::TypedVisit(const Arcsine<Expression>& arcsine) -> RetT
     }
 
     //Arcsine (negate(expression))
-    if (const auto negateCase = RecursiveCast<Arcsine<Real>>(simplifiedOperand); negateCase != nullptr) {
-        const Oasis::IExpression auto& negexpression = negateCase->GetOperand().GetOperand();
-        return gst::not_null {std::make_unique<Neagate<Expression>>(Arcsine<Expression>(*(negexpression.value())))};
+    if (const auto negateCase = RecursiveCast<Arcsine<Expression>>(simplifiedOperand); negateCase != nullptr) {
+        const Oasis::IExpression auto& negexpression = negateCase->GetOperand();
+        return gsl::not_null {std::make_unique<Negate<Expression>>(Arcsine<Expression>(negexpression))};
     }
-
+    return gsl::not_null { simplifiedOperand.Copy() };
 }
 
 auto SimplifyVisitor::TypedVisit(const Arccosine<Expression>& arccosine) -> RetT
 {
-    auto op = sine.GetOperand().Copy();
+    auto op = arccosine.GetOperand().Copy();
     if (!op) {
         return std::unexpected { "Missing operand." };
     }
@@ -2335,36 +2337,36 @@ auto SimplifyVisitor::TypedVisit(const Arccosine<Expression>& arccosine) -> RetT
     if (const auto realCase = RecursiveCast<Arccosine<Real>>(simplifiedOperand); realCase != nullptr) {
         const Real& multreal = realCase->GetOperand();
         if (multreal.GetValue() > 1 || multreal.GetValue() < -1 ){
-            return std::unexpected {"input outside arccosine range."}
+            return std::unexpected {"input outside arccosine range."};
         } else {
             if (multreal.GetValue() == 1){
                 return gsl::not_null { std::make_unique<Real>(0)};
             } else if (multreal.GetValue() == 0){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Pi,Real>>(Pi(),Real(2))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(90)};
                 }
             } else if (multreal.GetValue() == -1){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Pi>()};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(180)};
                 }
             } else if (multreal.GetValue() == 0.5){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Pi,Real>>(Pi(),Real(3))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(60)};
                 }   
             } else if (multreal.GetValue() == -0.5){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Multiply<Real,Pi>,Real>>(Multiply<Real,Pi>{Real(2),Pi()},Real(3))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(120)};
                 }
             } else {
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Real>(std::asin(multreal.GetValue()))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(std::asin(multreal.GetValue()) * 180 / std::numbers::pi)};
@@ -2377,7 +2379,7 @@ auto SimplifyVisitor::TypedVisit(const Arccosine<Expression>& arccosine) -> RetT
         const Real& dividereal = realDivideCase->GetOperand().GetLeastSigOp();
         const Real& dividendreal = realDivideCase->GetOperand().GetMostSigOp();
         if (dividendreal.GetValue() == 1 && dividereal.GetValue() == 2){
-            if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+            if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                 return gsl::not_null {std::make_unique<Divide<Pi,Real>>(Pi(),Real(3))};
             } else {
                 return gsl::not_null {std::make_unique<Real>(60)};
@@ -2390,7 +2392,7 @@ auto SimplifyVisitor::TypedVisit(const Arccosine<Expression>& arccosine) -> RetT
         const Real& dividereal = realDivideCase->GetOperand().GetOperand().GetLeastSigOp();
         const Real& dividendreal = realDivideCase->GetOperand().GetOperand().GetMostSigOp();
         if (dividendreal.GetValue() == 1 && dividereal.GetValue() == 2){
-            if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+            if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                 return gsl::not_null {std::make_unique<Divide<Multiply<Real,Pi>,Real>>(Multiply<Real,Pi>{Real(2),Pi()},Real(3))};
             } else {
                 return gsl::not_null {std::make_unique<Real>(120)};
@@ -2405,13 +2407,13 @@ auto SimplifyVisitor::TypedVisit(const Arccosine<Expression>& arccosine) -> RetT
         const Real& exponentreal = squarerootdividecase->GetOperand().GetMostSigOp().GetLeastSigOp();
         if (exponentreal.GetValue() == 0.5 && rootedreal.GetValue() == 2){
             if (dividereal.GetValue() == 2){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Pi,Real>>(Pi(),Real(4))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(45)};
                 }
             } else if (dividereal.GetValue() == 3){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Pi,Real>>(Pi(),Real(6))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(30)};
@@ -2426,13 +2428,13 @@ auto SimplifyVisitor::TypedVisit(const Arccosine<Expression>& arccosine) -> RetT
         const Real& exponentreal = negatesquarerootdividecase->GetOperand().GetOperand().GetMostSigOp().GetLeastSigOp();
         if (exponentreal.GetValue() == 0.5 && rootedreal.GetValue() == 2){
             if (dividereal.GetValue() == 2){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Multiply<Real,Pi>,Real>>(Multiply<Real,Pi>(Real(3),Pi()),Real(4))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(135)};
                 }
             } else if (dividereal.GetValue() == 3){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Multiply<Real,Pi>,Real>>(Multiply<Real,Pi>(Real(5),Pi()),Real(6))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(150)};
@@ -2441,20 +2443,21 @@ auto SimplifyVisitor::TypedVisit(const Arccosine<Expression>& arccosine) -> RetT
         }
     }
     //Arccosine (negate(expression))
-    if (const auto negateCase = RecursiveCast<Arccosine<Real>>(simplifiedOperand); negateCase != nullptr) {
-        const Oasis::IExpression auto& negexpression = negateCase->GetOperand().GetOperand();
-        if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
-            return gst::not_null {std::make_unique<Add<Expression>>(Pi(),Negate<Expression>(Arccosine<Expression>(*(negexpression.value()))))};
+    if (const auto negateCase = RecursiveCast<Arccosine<Expression>>(simplifiedOperand); negateCase != nullptr) {
+        const Oasis::IExpression auto& negexpression = negateCase->GetOperand();
+        if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
+            return gsl::not_null {std::make_unique<Add<Expression>>(Pi(),Negate<Expression>(Arccosine<Expression>(negexpression)))};
         } else {
-            return gst::not_null {std::make_unique<Add<Expression>>(Real(180),Negate<Expression>(Arccosine<Expression>(*(negexpression.value()))))};
+            return gsl::not_null {std::make_unique<Add<Expression>>(Real(180),Negate<Expression>(Arccosine<Expression>(negexpression)))};
         }
         
     }
+    return gsl::not_null { simplifiedOperand.Copy() };
 }
 
 auto SimplifyVisitor::TypedVisit(const Arctan<Expression>& arctan) -> RetT
 {
-    auto op = sine.GetOperand().Copy();
+    auto op = arctan.GetOperand().Copy();
     if (!op) {
         return std::unexpected { "Missing operand." };
     }
@@ -2471,18 +2474,18 @@ auto SimplifyVisitor::TypedVisit(const Arctan<Expression>& arctan) -> RetT
     if (const auto realCase = RecursiveCast<Arctan<Real>>(simplifiedOperand); realCase != nullptr) {
         const Real& multreal = realCase->GetOperand();
         if (multreal.GetValue() > 1 || multreal.GetValue() < -1 ){
-            return std::unexpected {"input outside arccosine range."}
+            return std::unexpected {"input outside arccosine range."};
         } else {
             if (multreal.GetValue() == 0){
                 return gsl::not_null { std::make_unique<Real>(0)};
             } else if (multreal.GetValue() == 1){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Pi,Real>>(Pi(),Real(4))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(45)};
                 }
             } else {
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Real>(std::atan(multreal.GetValue()))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(std::atan(multreal.GetValue()) * 180 / std::numbers::pi)};
@@ -2498,7 +2501,7 @@ auto SimplifyVisitor::TypedVisit(const Arctan<Expression>& arctan) -> RetT
          const Real& exponentrealbot = squarerootdividecase->GetOperand().GetMostSigOp().GetLeastSigOp().GetLeastSigOp();
         if (exponentrealtop.GetValue() == 1 && rootedreal.GetValue() == 3 && exponentrealbot.GetValue() == 3){
             if (dividereal.GetValue() == 3){
-                if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+                if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                     return gsl::not_null {std::make_unique<Divide<Pi,Real>>(Pi(),Real(4))};
                 } else {
                     return gsl::not_null {std::make_unique<Real>(45)};
@@ -2512,7 +2515,7 @@ auto SimplifyVisitor::TypedVisit(const Arctan<Expression>& arctan) -> RetT
         const Real& exponentrealtop = squarerootdividecase->GetOperand().GetLeastSigOp().GetMostSigOp();
          const Real& exponentrealbot = squarerootdividecase->GetOperand().GetLeastSigOp().GetLeastSigOp();
         if (exponentrealtop.GetValue() == 1 && rootedreal.GetValue() == 3 && exponentrealbot.GetValue() == 3){
-            if (this->SimplifyOpts.angleUnits != AngleUnits::DEGREES){
+            if (this->options.angleUnits == SimplifyOpts::AngleUnits::DEGREES){
                 return gsl::not_null {std::make_unique<Divide<Pi,Real>>(Pi(),Real(3))};
             } else {
                 return gsl::not_null {std::make_unique<Real>(60)};
@@ -2520,12 +2523,12 @@ auto SimplifyVisitor::TypedVisit(const Arctan<Expression>& arctan) -> RetT
         }
     }
     //Arctan (negate(expression))
-    if (const auto negateCase = RecursiveCast<Arctan<Real>>(simplifiedOperand); negateCase != nullptr) {
-        const Oasis::IExpression auto& negexpression = negateCase->GetOperand().GetOperand();
-        return gst::not_null {std::make_unique<Neagate<Expression>>(Arctan<Expression>(*(negexpression.value())))};
+    if (const auto negateCase = RecursiveCast<Arctan<Expression>>(simplifiedOperand); negateCase != nullptr) {
+        const Oasis::IExpression auto& negexpression = negateCase->GetOperand();
+        return gsl::not_null {std::make_unique<Negate<Expression>>(Arctan<Expression>(negexpression))};
     }
 
-
+    return gsl::not_null { simplifiedOperand.Copy() };
 }
 
 auto SimplifyVisitor::TypedVisit(const Derivative<>& derivative) -> RetT
