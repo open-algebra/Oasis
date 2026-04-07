@@ -7,8 +7,8 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/BinaryExpression.hpp"
 #include "Oasis/Derivative.hpp"
-#include "Oasis/Divide.hpp"
 #include "Oasis/DifferentiateVisitor.hpp"
+#include "Oasis/Divide.hpp"
 
 #include "../io/include/Oasis/InFixSerializer.hpp"
 #include "Oasis/EulerNumber.hpp"
@@ -58,8 +58,7 @@ auto DifferentiateVisitor::TypedVisit(const Variable& var) -> RetT
     if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr) {
         if (variable->GetName() == var.GetName()) {
             return gsl_lite::not_null { std::make_unique<Real>(1.0) };
-        }
-        else if (this->opts.multivariate == DifferentiationOpts::Multivariate::MULTIVARIABLE ){
+        } else if (this->opts.multivariate == DifferentiationOpts::Multivariate::MULTIVARIABLE) {
             return gsl_lite::not_null { std::make_unique<Derivative<Expression, Expression>>(var, *this->differentiationVariable) };
         } else {
             return gsl_lite::not_null { std::make_unique<Real>(0.0) };
@@ -89,14 +88,14 @@ auto DifferentiateVisitor::TypedVisit(const Add<Expression, Expression>& add) ->
         auto left = std::move(diffedleft).value();
         auto right = std::move(diffedright).value();
 
-        SimplifyVisitor simplifyVisitor{};
+        SimplifyVisitor simplifyVisitor {};
         auto simplified = Add<Expression> { *left, *right }.Accept(simplifyVisitor);
         if (!simplified) {
-            return std::unexpected{simplified.error()};
+            return std::unexpected { simplified.error() };
         }
         return std::move(simplified).value();
     }
-    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(add.Copy()), *(this->differentiationVariable)}.Generalize());
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(add.Copy()), *(this->differentiationVariable) }.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Subtract<Expression, Expression>& subtract) -> RetT
@@ -115,14 +114,14 @@ auto DifferentiateVisitor::TypedVisit(const Subtract<Expression, Expression>& su
         auto left = std::move(diffedleft).value();
         auto right = std::move(diffedright).value();
 
-        SimplifyVisitor simplifyVisitor{};
+        SimplifyVisitor simplifyVisitor {};
         auto simplified = Subtract<Expression> { *left, *right }.Accept(simplifyVisitor);
         if (!simplified) {
-            return std::unexpected{simplified.error()};
+            return std::unexpected { simplified.error() };
         }
         return std::move(simplified).value();
     }
-    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(subtract.Copy()), *(this->differentiationVariable)}.Generalize());
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(subtract.Copy()), *(this->differentiationVariable) }.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Multiply<Expression, Expression>& multiply) -> RetT
@@ -140,10 +139,10 @@ auto DifferentiateVisitor::TypedVisit(const Multiply<Expression, Expression>& mu
         auto left = std::move(diffedleft).value();
         auto right = std::move(diffedright).value();
 
-        SimplifyVisitor simplifyVisitor{};
+        SimplifyVisitor simplifyVisitor {};
         auto multiplied = Add<Expression> {
-            Multiply{*left, *multiply.leastSigOp->Copy()},
-            Multiply{*multiply.mostSigOp->Copy(), *right}
+            Multiply { *left, *multiply.leastSigOp->Copy() },
+            Multiply { *multiply.mostSigOp->Copy(), *right }
         }.Accept(simplifyVisitor);
 
         if (!multiplied) {
@@ -151,7 +150,7 @@ auto DifferentiateVisitor::TypedVisit(const Multiply<Expression, Expression>& mu
         }
         return std::move(multiplied).value();
     }
-    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(multiply.Copy()), *(this->differentiationVariable)}.Generalize());
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(multiply.Copy()), *(this->differentiationVariable) }.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Divide<Expression, Expression>& divide) -> RetT
@@ -195,12 +194,12 @@ auto DifferentiateVisitor::TypedVisit(const Divide<Expression, Expression>& divi
         }
     }
 
-    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(divide.Copy()), *(this->differentiationVariable)}.Generalize());
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(divide.Copy()), *(this->differentiationVariable) }.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& exponent) -> RetT
 {
-    SimplifyVisitor simplifyVisitor{};
+    SimplifyVisitor simplifyVisitor {};
     // Need to check exponential vs polynomial
     if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr) {
         // d/dx (x^n) = n*x^(n-1)
@@ -213,15 +212,15 @@ auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& ex
             auto left = std::move(diffedleft).value();
 
             auto multiplied = Multiply<Expression> {
-                Multiply{
-                    Exponent{
+                Multiply {
+                    Exponent {
                         *polynomial->mostSigOp,
-                        Real{polynomial->GetLeastSigOp().GetValue() - 1.0}
-                    },
+                        Real { polynomial->GetLeastSigOp().GetValue() - 1.0 } },
                     *polynomial->leastSigOp,
-                    },
-                    *left
-                }.Accept(simplifyVisitor);
+                },
+                *left
+            }
+                                  .Accept(simplifyVisitor);
 
             if (!multiplied) {
                 return std::unexpected { multiplied.error() };
@@ -237,13 +236,11 @@ auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& ex
                 return std::unexpected { uprime.error() };
             }
             auto uprime_ = std::move(uprime).value();
-            auto lna = Log<Expression, Expression>{EulerNumber{}, *a};
+            auto lna = Log<Expression, Expression> { EulerNumber {}, *a };
             auto simplified = Multiply<Expression, Expression> { *exponential,
-                                Multiply {
-                                    lna,
-                                    *uprime_
-                                }
-            }.Accept(simplifyVisitor);
+                Multiply {
+                    lna,
+                    *uprime_ } }.Accept(simplifyVisitor);
 
             if (!simplified) {
                 return std::unexpected { simplified.error() };
@@ -259,7 +256,7 @@ auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& ex
             }
             auto uprime_ = std::move(uprime).value();
 
-            auto simplified = Multiply<Expression> {*exponential_e, *uprime_}.Accept(simplifyVisitor);
+            auto simplified = Multiply<Expression> { *exponential_e, *uprime_ }.Accept(simplifyVisitor);
             if (!simplified) {
                 return std::unexpected { simplified.error() };
             }
@@ -273,13 +270,11 @@ auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& ex
                 return std::unexpected { uprime.error() };
             }
             auto uprime_ = std::move(uprime).value();
-            auto lna = Log<Expression, Expression>{EulerNumber{}, *a};
+            auto lna = Log<Expression, Expression> { EulerNumber {}, *a };
             auto simplified = Multiply<Expression, Expression> { *exponential_var,
-                                Multiply {
-                                    lna,
-                                    *uprime_
-                                }
-            }.Accept(simplifyVisitor);
+                Multiply {
+                    lna,
+                    *uprime_ } }.Accept(simplifyVisitor);
 
             if (!simplified) {
                 return std::unexpected { simplified.error() };
@@ -304,21 +299,17 @@ auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& ex
         auto f_prime = std::move(df).value();
         auto g_prime = std::move(dg).value();
 
-        auto y = Multiply{
+        auto y = Multiply {
             exponent,
             Add {
-                Divide{
-                    Multiply{
+                Divide {
+                    Multiply {
                         *g,
-                        *f_prime
-                    },
-                    *f
-                },
-                Multiply{
+                        *f_prime },
+                    *f },
+                Multiply {
                     *g_prime,
-                    Log{EulerNumber{},*f}
-                }
-            }
+                    Log { EulerNumber {}, *f } } }
         }.Accept(simplifyVisitor);
 
         if (!y) {
@@ -331,12 +322,12 @@ auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& ex
 
         return dy;
     }
-    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(exponent.Copy()), *(this->differentiationVariable)}.Generalize());
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(exponent.Copy()), *(this->differentiationVariable) }.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Log<Expression, Expression>& log) -> RetT
 {
-    if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr){
+    if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr) {
         SimplifyVisitor simplifyVisitor {};
         // d(log_e(6x))/dx = 1/6x * 6
         if (auto lnCase = RecursiveCast<EulerNumber>(*log.mostSigOp); lnCase != nullptr) {
@@ -346,7 +337,7 @@ auto DifferentiateVisitor::TypedVisit(const Log<Expression, Expression>& log) ->
             Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(*(this->differentiationVariable)) };
             auto simp = result.Accept(simplifyVisitor);
             if (!simp) {
-                return gsl_lite::not_null<std::unique_ptr<Expression>>{result.Generalize()};
+                return gsl_lite::not_null<std::unique_ptr<Expression>> { result.Generalize() };
             }
             return std::move(simp).value();
         } else {
@@ -359,7 +350,7 @@ auto DifferentiateVisitor::TypedVisit(const Log<Expression, Expression>& log) ->
                 Multiply result = Multiply<Expression> { derivative, **chain };
                 auto simp = result.Accept(simplifyVisitor);
                 if (!simp) {
-                    return gsl_lite::not_null<std::unique_ptr<Expression>>{result.Generalize()};
+                    return gsl_lite::not_null<std::unique_ptr<Expression>> { result.Generalize() };
                 }
                 return std::move(simp).value();
             } else {
@@ -369,48 +360,48 @@ auto DifferentiateVisitor::TypedVisit(const Log<Expression, Expression>& log) ->
                     Exponent { Log { EulerNumber {}, *log.mostSigOp }, Real { 2 } } };
                 auto simp = result.Accept(simplifyVisitor);
                 if (!simp) {
-                    return gsl_lite::not_null<std::unique_ptr<Expression>>{result.Generalize()};
+                    return gsl_lite::not_null<std::unique_ptr<Expression>> { result.Generalize() };
                 }
                 return std::move(simp).value();
             }
         }
     }
-    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(log.Copy()), *(this->differentiationVariable)}.Generalize());
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(log.Copy()), *(this->differentiationVariable) }.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Negate<Expression>& negate) -> RetT
 {
     if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr) {
         const std::unique_ptr<Expression> operandDerivative = negate.GetOperand().Differentiate(*(this->differentiationVariable));
-        return gsl_lite::not_null{Negate<Expression> {*operandDerivative}.Generalize()};
+        return gsl_lite::not_null { Negate<Expression> { *operandDerivative }.Generalize() };
     }
 
-    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(negate.Copy()), *(this->differentiationVariable)}.Generalize());
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(negate.Copy()), *(this->differentiationVariable) }.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
 {
     // TODO: IMPLEMENT
-    return std::unexpected<std::string>{"Not Implemented."};
-    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(sine.Copy()), *(this->differentiationVariable)}.Generalize());
+    return std::unexpected<std::string> { "Not Implemented." };
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(sine.Copy()), *(this->differentiationVariable) }.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT
 {
     if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr) {
-        SimplifyVisitor sv{};
+        SimplifyVisitor sv {};
         auto diff = derivative.GetMostSigOp().Accept(*this);
         if (!diff) {
-            return gsl_lite::not_null<std::unique_ptr<Expression>>(Derivative{derivative, *this->differentiationVariable}.Generalize());
+            return gsl_lite::not_null<std::unique_ptr<Expression>>(Derivative { derivative, *this->differentiationVariable }.Generalize());
         }
         auto res = std::move(diff).value();
         auto result = res->Accept(sv);
         if (!result) {
-            return gsl_lite::not_null<std::unique_ptr<Expression>>{Derivative{*res, *this->differentiationVariable}.Generalize()};
+            return gsl_lite::not_null<std::unique_ptr<Expression>> { Derivative { *res, *this->differentiationVariable }.Generalize() };
         }
-        return gsl_lite::not_null<std::unique_ptr<Expression>>{std::move(result).value()};
+        return gsl_lite::not_null<std::unique_ptr<Expression>> { std::move(result).value() };
     }
-    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(derivative.Copy()), *(this->differentiationVariable)}.Generalize());
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(derivative.Copy()), *(this->differentiationVariable) }.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Integral<Expression, Expression>& integral) -> RetT
@@ -420,35 +411,35 @@ auto DifferentiateVisitor::TypedVisit(const Integral<Expression, Expression>& in
 
         auto result = integral_simp->Accept(*this);
         if (!result) {
-            return gsl_lite::not_null<std::unique_ptr<Expression>>{Derivative{*integral_simp, *this->differentiationVariable}.Generalize()};
+            return gsl_lite::not_null<std::unique_ptr<Expression>> { Derivative { *integral_simp, *this->differentiationVariable }.Generalize() };
         }
-        return gsl_lite::not_null<std::unique_ptr<Expression>>{std::move(result).value()};
+        return gsl_lite::not_null<std::unique_ptr<Expression>> { std::move(result).value() };
     }
-    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(integral.Copy()), *(this->differentiationVariable)}.Generalize());
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(integral.Copy()), *(this->differentiationVariable) }.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Matrix& matrix) -> RetT
 {
     // TODO: IMPLEMENT
-    return std::unexpected<std::string>{"Not Implemented."};
-    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(matrix.Copy()), *(this->differentiationVariable)}.Generalize());
+    return std::unexpected<std::string> { "Not Implemented." };
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(matrix.Copy()), *(this->differentiationVariable) }.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const EulerNumber&) -> RetT
 {
-    return gsl_lite::not_null<std::unique_ptr<Expression>>(Real{0.0}.Generalize());
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Real { 0.0 }.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Pi&) -> RetT
 {
-    return gsl_lite::not_null<std::unique_ptr<Expression>>(Real{0.0}.Generalize());
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Real { 0.0 }.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Magnitude<Expression>& magnitude) -> RetT
 {
     // TODO: IMPLEMENT
-    return std::unexpected<std::string>{"Not Implemented."};
-    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression>{*(magnitude.Copy()), *(this->differentiationVariable)}.Generalize());
+    return std::unexpected<std::string> { "Not Implemented." };
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(magnitude.Copy()), *(this->differentiationVariable) }.Generalize());
 }
 
 } // Oasis
