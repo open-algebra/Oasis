@@ -164,7 +164,7 @@ TEST_CASE("Multiplying Linear Expressions", "[Multiply]")
                 Oasis::Real{-5}}
     };
 
-    Oasis::SimplifyOpts opts = {.enableDistributiveProperty = true};
+    Oasis::SimplifyOpts opts = {.distributivePolicy = Oasis::SimplifyOpts::DistributivePolicy::PREFER};
     Oasis::SimplifyVisitor distributiveSimplifyVisitor { opts};
     const auto multiply_simplified = multiply.Accept(distributiveSimplifyVisitor).value();
 
@@ -199,7 +199,7 @@ TEST_CASE("Multiplying Quadratics", "[Multiply]")
         }
     };
 
-    Oasis::SimplifyOpts opts = {.enableDistributiveProperty = true};
+    Oasis::SimplifyOpts opts = {.distributivePolicy = Oasis::SimplifyOpts::DistributivePolicy::PREFER};
     Oasis::SimplifyVisitor distributiveSimplifyVisitor { opts};
     const auto simplified = polynom.Accept(distributiveSimplifyVisitor).value();
 

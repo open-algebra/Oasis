@@ -724,7 +724,8 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
     if (auto mul = RecursiveCast<Multiply<Real, Add<>>>(simplifiedMultiply); mul != nullptr) {
         auto lhs = mul->GetMostSigOp();
         auto rhs = mul->GetLeastSigOp();
-        if (options.enableDistributiveProperty || std::abs(lhs.GetValue() + 1.0) <= EPSILON) {
+        if (options.distributivePolicy == SimplifyOpts::DistributivePolicy::PREFER
+            || std::abs(lhs.GetValue() + 1.0) <= EPSILON) {
             return Add { Multiply { lhs, rhs.GetMostSigOp() },
                 Multiply { lhs, rhs.GetLeastSigOp() } }
                 .Accept(*this);

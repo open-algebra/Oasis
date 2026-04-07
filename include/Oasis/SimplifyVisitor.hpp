@@ -20,7 +20,11 @@ struct SimplifyOpts {
     } angleUnits
         = AngleUnits::RADIANS;
 
-    bool enableDistributiveProperty = false;
+    enum class DistributivePolicy {
+        PREFER,
+        DEFAULT,
+    } distributivePolicy
+        = DistributivePolicy::DEFAULT;
 };
 
 class SimplifyVisitor final : public TypedVisitor<std::expected<gsl_lite::not_null<std::unique_ptr<Expression>>, std::string>> {
