@@ -14,7 +14,7 @@ on:
 jobs:
     format:
         runs-on: blacksmith-4vcpu-ubuntu-2404
-        container: ghcr.io/open-algebra/gh-actions:main
+        container: ghcr.io/open-algebra/actions:main
 
         steps:
             # Checks out the repository.
