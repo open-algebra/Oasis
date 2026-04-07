@@ -315,11 +315,7 @@ auto DifferentiateVisitor::TypedVisit(const Exponent<Expression, Expression>& ex
             return std::unexpected { y.error() };
         }
 
-        auto dy = std::move(y).value();
-        SimplifyVisitor SV{};
-        dy->Accept(SV);
-
-        return dy;
+        return std::move(y).value();
     }
     return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(exponent.Copy()), *(this->differentiationVariable) }.Generalize());
 }
