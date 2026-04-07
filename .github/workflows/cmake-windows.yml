@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
     build_and_test_windows:
-        runs-on: windows-latest
+        runs-on: blacksmith-4vcpu-windows-2025
 
         strategy:
             # Sets fail-fast to false to ensure that feedback is delivered for all platforms.
