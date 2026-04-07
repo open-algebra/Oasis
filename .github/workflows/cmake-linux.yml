@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
     build_and_test_linux:
-        runs-on: ubuntu-latest
+        runs-on: blacksmith-4vcpu-ubuntu-2404
         container: ghcr.io/open-algebra/gh-actions:main
 
         strategy:
