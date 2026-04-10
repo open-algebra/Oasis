@@ -22,6 +22,7 @@ set(Oasis_TESTS
     NegateTests.cpp
     PolynomialTests.cpp
     SubtractTests.cpp
+    TrigonomicTests.cpp
     UnaryExpressionTests.cpp)
 
 # Adds an executable target called "OasisTests" to be built from sources files.

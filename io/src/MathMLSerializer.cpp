@@ -21,6 +21,15 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/Sine.hpp"
+#include "Oasis/Cosine.hpp"
+#include "Oasis/Tan.hpp"
+#include "Oasis/Arcsine.hpp"
+#include "Oasis/Arccosine.hpp"
+#include "Oasis/Arctan.hpp"
+#include "Oasis/Cotan.hpp"
+#include "Oasis/Secant.hpp"
+#include "Oasis/Cosecant.hpp"
 
 namespace Oasis {
 

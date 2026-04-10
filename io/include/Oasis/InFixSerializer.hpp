@@ -61,6 +61,14 @@ public:
     auto TypedVisit(const EulerNumber&) -> RetT override;
     auto TypedVisit(const Pi&) -> RetT override;
     auto TypedVisit(const Magnitude<Expression>& magnitude) -> RetT override;
+    auto TypedVisit(const Arcsine<Expression>& arcsine) -> RetT override;
+    auto TypedVisit(const Arccosine<Expression>& arccosine) -> RetT override;
+    auto TypedVisit(const Arctan<Expression>& arctan) -> RetT override;
+    auto TypedVisit(const Cosine<Expression>& cosine) -> RetT override;
+    auto TypedVisit(const Cosecant<Expression>& cosecant) -> RetT override;
+    auto TypedVisit(const Cotan<Expression>& cotan) -> RetT override;
+    auto TypedVisit(const Secant<Expression>& secant) -> RetT override;
+    auto TypedVisit(const Tan<Expression>& tan) -> RetT override;
 
 private:
     auto GetOpsOfBinExp(const DerivedFromBinaryExpression auto& visited) -> std::expected<std::pair<std::string, std::string>, std::string>;

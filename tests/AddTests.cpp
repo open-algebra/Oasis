@@ -13,6 +13,7 @@
 #include "Oasis/RecursiveCast.hpp"
 #include "Oasis/Variable.hpp"
 #include "Oasis/SimplifyVisitor.hpp"
+#include "Oasis/InFixSerializer.hpp"
 
 namespace { Oasis::SimplifyVisitor simplifyVisitor{}; }
 
