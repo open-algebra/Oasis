@@ -2,16 +2,19 @@
 // Created by Matthew McCall on 8/10/23.
 //
 
+#include "Common.hpp"
 #include "catch2/catch_test_macros.hpp"
 
-#include "Oasis/Imaginary.hpp"
-#include "Oasis/Multiply.hpp"
-#include "Oasis/Real.hpp"
-#include "Oasis/Subtract.hpp"
-#include "Oasis/Variable.hpp"
 #include "Oasis/Add.hpp"
+#include "Oasis/Imaginary.hpp"
+#include "Oasis/InFixSerializer.hpp"
+#include "Oasis/Multiply.hpp"
+#include "Oasis/Negate.hpp"
+#include "Oasis/Real.hpp"
 #include "Oasis/RecursiveCast.hpp"
 #include "Oasis/SimplifyVisitor.hpp"
+#include "Oasis/Subtract.hpp"
+#include "Oasis/Variable.hpp"
 
 inline Oasis::SimplifyVisitor simplifyVisitor{};
 
@@ -87,4 +90,63 @@ TEST_CASE("Simplify Equation with subtraction", "[Subtract]") {
     };
 
     auto simplified = add1.Accept(simplifyVisitor).value();
+}
+
+TEST_CASE("Polynomial Subtraction", "[Subtract]")
+{
+    Oasis::Add polynom1 { // 6x^2+3x-15
+        Oasis::Multiply{
+            Oasis::Real{6},
+            Oasis::Multiply{ Oasis::Variable{"x"}, Oasis::Variable{"x"}}},
+        Oasis::Add{
+            Oasis::Multiply{
+                Oasis::Real{3},
+                Oasis::Variable{"x"}},
+            Oasis::Real{-15}}
+    };
+
+    Oasis::Add polynom2 { // 3x^2+4x-5
+        Oasis::Multiply{
+            Oasis::Real{3},
+            Oasis::Multiply{ Oasis::Variable{"x"}, Oasis::Variable{"x"}}},
+        Oasis::Add{
+            Oasis::Multiply{
+                Oasis::Real{4},
+                Oasis::Variable{"x"}},
+            Oasis::Real{-5}}
+    };
+
+    Oasis::Add polynom2_negated { // -3x^2-4x+5
+        Oasis::Multiply{
+            Oasis::Real{-3},
+            Oasis::Multiply{ Oasis::Variable{"x"}, Oasis::Variable{"x"}}},
+        Oasis::Add{
+            Oasis::Multiply{
+                Oasis::Real{-4},
+                Oasis::Variable{"x"}},
+            Oasis::Real{5}}
+    };
+
+    Oasis::Add expected { // 3x^2-x-10
+        Oasis::Multiply{
+            Oasis::Real{3},
+            Oasis::Multiply{ Oasis::Variable{"x"}, Oasis::Variable{"x"}}},
+        Oasis::Add{
+            Oasis::Multiply{
+                Oasis::Real{-1},
+                Oasis::Variable{"x"}},
+            Oasis::Real{-10}}
+    };
+    auto expected_simplified = expected.Accept(simplifyVisitor).value();
+
+    auto subtracted = Oasis::Subtract{
+        polynom1,
+        polynom2
+    }.Accept(simplifyVisitor).value();
+
+
+    OASIS_CAPTURE_WITH_SERIALIZER(*subtracted);
+    OASIS_CAPTURE_WITH_SERIALIZER(*expected_simplified);
+
+    REQUIRE(subtracted->Equals(*expected_simplified));
 }

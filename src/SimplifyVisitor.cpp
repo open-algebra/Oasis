@@ -721,11 +721,16 @@ auto SimplifyVisitor::TypedVisit(const Multiply<>& multiply) -> RetT
         }
     }
 
-    // IDK why this is commented out but it was commented out where I sourced it from
-    //    if (auto negate = RecursiveCast<Multiply<Real, Negate<Subtract<Expression>>>>(simplifiedMultiply); negate != nullptr){
-    //        return Add{Multiply{negate->GetMostSigOp(), negate->GetLeastSigOp().GetOperand().GetMostSigOp()},
-    //                   Multiply{negate->GetMostSigOp(), negate->GetLeastSigOp().GetOperand().GetLeastSigOp()}}.Simplify();
-    //    }
+    if (auto mul = RecursiveCast<Multiply<Real, Add<>>>(simplifiedMultiply); mul != nullptr) {
+        auto lhs = mul->GetMostSigOp();
+        auto rhs = mul->GetLeastSigOp();
+        if (options.distributivePolicy == SimplifyOpts::DistributivePolicy::PREFER
+            || std::abs(lhs.GetValue() + 1.0) <= EPSILON) {
+            return Add { Multiply { lhs, rhs.GetMostSigOp() },
+                Multiply { lhs, rhs.GetLeastSigOp() } }
+                .Accept(*this);
+        }
+    }
 
     // multiply add like terms
     std::vector<std::unique_ptr<Expression>> multiplies;

@@ -3,15 +3,16 @@
 //
 
 #include "catch2/catch_test_macros.hpp"
+#include "Common.hpp"
 
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/InFixSerializer.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/RecursiveCast.hpp"
 #include <Oasis/Divide.hpp>
-#include "Oasis/SimplifyVisitor.hpp"
 
 inline Oasis::SimplifyVisitor simplifyVisitor{};
 
@@ -149,4 +150,75 @@ TEST_CASE("Multiplying Fractions", "[Multiply]")
 
     const auto simplified = multiply.Accept(simplifyVisitor).value();
     REQUIRE(expected.Equals(*simplified));
+}
+
+TEST_CASE("Multiplying Linear Expressions", "[Multiply]")
+{
+    // 2*(4x-5)
+    Oasis::Multiply multiply {
+        Oasis::Real{2},
+            Oasis::Add{
+                Oasis::Multiply{
+                    Oasis::Real{4},
+                    Oasis::Variable{"x"}},
+                Oasis::Real{-5}}
+    };
+
+    Oasis::SimplifyOpts opts = {.distributivePolicy = Oasis::SimplifyOpts::DistributivePolicy::PREFER};
+    Oasis::SimplifyVisitor distributiveSimplifyVisitor { opts};
+    const auto multiply_simplified = multiply.Accept(distributiveSimplifyVisitor).value();
+
+    // 8x-10
+    const Oasis::Add expected {
+
+            Oasis::Multiply{
+                Oasis::Real{8},
+                Oasis::Variable{"x"}},
+            Oasis::Real{-10}
+    };
+
+    OASIS_CAPTURE_WITH_SERIALIZER((*multiply_simplified));
+
+    REQUIRE(multiply_simplified->Equals(expected));
+}
+
+TEST_CASE("Multiplying Quadratics", "[Multiply]")
+{
+    // 2*(3x^2+4x-5)
+    Oasis::Multiply polynom {
+        Oasis::Real{2},
+        Oasis::Add {
+            Oasis::Multiply{
+                Oasis::Real{3},
+                Oasis::Multiply{ Oasis::Variable{"x"}, Oasis::Variable{"x"}}},
+            Oasis::Add{
+                Oasis::Multiply{
+                    Oasis::Real{4},
+                    Oasis::Variable{"x"}},
+                Oasis::Real{-5}}
+        }
+    };
+
+    Oasis::SimplifyOpts opts = {.distributivePolicy = Oasis::SimplifyOpts::DistributivePolicy::PREFER};
+    Oasis::SimplifyVisitor distributiveSimplifyVisitor { opts};
+    const auto simplified = polynom.Accept(distributiveSimplifyVisitor).value();
+
+    // 6x^2+8x-10
+    const Oasis::Add expected {
+        Oasis::Multiply{
+            Oasis::Real{6},
+            Oasis::Multiply{ Oasis::Variable{"x"}, Oasis::Variable{"x"}}},
+        Oasis::Add{
+            Oasis::Multiply{
+                Oasis::Real{8},
+                Oasis::Variable{"x"}},
+            Oasis::Real{-10}}
+    };
+
+    auto expected_simpl = expected.Accept(simplifyVisitor).value();
+
+    OASIS_CAPTURE_WITH_SERIALIZER(*simplified);
+    OASIS_CAPTURE_WITH_SERIALIZER(*expected_simpl);
+
+    REQUIRE(simplified->Equals(*expected_simpl));
 }
