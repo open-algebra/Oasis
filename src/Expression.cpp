@@ -220,8 +220,6 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
 
 auto Expression::ApproximateZeros(const Expression& variable, const Expression& guess, int iterations) const -> std::unique_ptr<Expression>
 {
-    // Formula is x_{n + 1} = x_n + (f(x_n)/f'(x_n))
-
     // Setup simplifyVisitor for later
     SimplifyVisitor simplifyVisitor {};
 
@@ -245,13 +243,12 @@ auto Expression::ApproximateZeros(const Expression& variable, const Expression& 
     // New guess (starts at the original guess's value)
     std::unique_ptr<Expression> x = guess.Copy();
 
-    // f'(a) / f(a) for the guess a
-
     // Iterate for the given number of times
     // The higher the number of iterations, the more accurate the result (in theory)
     for (int i = 0; i < iterations; ++i)
     {
         // Evaluated version of the functions
+        // f(a) and f'(a), for the guess a (stored in x)
         std::unique_ptr<Expression> evaluated_function = original_function->Substitute(variable, *x);
         std::unique_ptr<Expression> evaluated_derivative = derivative->Substitute(variable, *x);
 
@@ -264,14 +261,35 @@ auto Expression::ApproximateZeros(const Expression& variable, const Expression& 
 
         // If evaluated_function = 0 (and evaluated_derivative != 0),
         // then we found an approximation. Return that value.
-        if (evaluated_function->Equals(*zero)) return x;
+        if (evaluated_function->Equals(*zero))
+        {
+            // If our current approximation is just the original guess,
+            // then we weren't able to make a new guess (either we went in
+            // a loop, or f(guess) = 0). In that case, we didn't find
+            // anything useful, so we should return nullptr instead.
+            if (x->Equals(guess)) return nullptr;
+
+            // Otherwise, we found an actual approximation, so return that.
+            return x;
+        }
+
+        // We might not be able to evaluate this function as a number.
+        // In that case, we can't get to a number, so we need to return nullptr.
+        if (!evaluated_function->Is<Real>() || !evaluated_derivative->Is<Real>())
+        {
+            return nullptr;
+        }
+
+        // Divide f'(a) /  f(a)
 
         std::unique_ptr<Expression> divided = Divide<Expression, Expression> { *evaluated_function, *evaluated_derivative }.Copy();
 
         divided = divided->Accept(simplifyVisitor).value();
 
+        // Subtract x - (f'(a) / f(a)) to get the new guess
         x = Subtract<Expression, Expression> { *x->Copy(), *divided->Copy() }.Accept(simplifyVisitor).value();
 
+        // Add this to our list of guesses
         guess_list[i] = std::move(x->Copy());
 
         // Make sure that we haven't already seen this value.

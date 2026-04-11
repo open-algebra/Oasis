@@ -99,6 +99,7 @@ public:
      *
      * Returns a pointer to a vector of real numbers, representing all found zeros.
      * Not all zeros can be approximated via Newton's Method. In that case, nullptr is returned instead.
+     * Works best with polynomials (and functions with simple derivatives).
      */
     [[nodiscard]] auto ApproximateZeros(const Expression& variable, const Expression& guess, int iterations) const -> std::unique_ptr<Expression>;
 

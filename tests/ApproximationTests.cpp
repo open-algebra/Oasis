@@ -5,11 +5,28 @@
 #include <iostream>
 
 #include "catch2/catch_test_macros.hpp"
+#include "Oasis/Add.hpp"
 #include "Oasis/Variable.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Expression.hpp"
+#include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
+
+TEST_CASE("Approximation of a Linear function", "[Real][Approximation]")
+{
+    Oasis::Variable x { "x" };
+    Oasis::Add<Oasis::Multiply<Oasis::Real, Oasis::Variable>, Oasis::Real> linear {
+        Oasis::Multiply<Oasis::Real, Oasis::Variable> { Oasis::Real { 5.0f }, x },
+        Oasis::Real { -10.0f }
+    };
+    Oasis::Real guess { 5.0f };
+    std::unique_ptr<Oasis::Expression> ans = Oasis::Real { 2.0f }.Copy();
+
+    std::unique_ptr<Oasis::Expression> result = linear.ApproximateZeros(x, *guess.Copy(), 10);
+
+    REQUIRE(result->Equals(*ans));
+}
 
 TEST_CASE("Approximation of a Polynomial", "[Real][Approximation]")
 {
@@ -44,6 +61,36 @@ TEST_CASE("Approximation of a Polynomial", "[Real][Approximation]")
     // So, the approximations should be equal to the roots themselves.
     REQUIRE(root1_approximation->Equals(*root1_ans));
     REQUIRE(root2_approximation->Equals(*root2_ans));
+}
+
+TEST_CASE("Approximation of a Higher-Degree Polynomial", "[Real][Approximation]")
+{
+    Oasis::Variable x { "x" };
+
+    // Approximating 256x^10 - 16x^6 = 0
+    // One root is x = 0.5 (looking for it here)
+    Oasis::Subtract<Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>>, Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>>> polynomial
+    = Oasis::Subtract<Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>>, Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>>> {
+        Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>> {
+            Oasis::Real { 256.0f },
+            Oasis::Exponent<Oasis::Variable, Oasis::Real> {
+                x, Oasis::Real { 10.0f }
+            }
+        },
+        Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>> {
+            Oasis::Real { 16.0f },
+            Oasis::Exponent<Oasis::Variable, Oasis::Real> {
+                x, Oasis::Real { 6.0f }
+            }
+        }
+    };
+
+    Oasis::Real guess { 3.0f };
+    std::unique_ptr<Oasis::Expression> answer = Oasis::Real { 0.5f }.Copy();
+
+    std::unique_ptr<Oasis::Expression> result = polynomial.ApproximateZeros(*x.Copy(), *guess.Copy(), 25);
+
+    REQUIRE(result->Equals(*answer));
 }
 
 TEST_CASE("Impossible Approximation of a Polynomial (Stuck)", "[Approximation]")
