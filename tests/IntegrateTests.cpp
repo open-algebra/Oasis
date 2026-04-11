@@ -253,6 +253,41 @@ TEST_CASE("Integration By Parts: Exponent and Euler's Number", "[Integrate][Expo
 
 }
 
+TEST_CASE("Integration By Parts: Variable and Logarithm", "[Integrate][Variable][Logarithm]")
+{
+    Oasis::Variable var { "x" };
+
+    Oasis::Multiply<Oasis::Variable, Oasis::Log<Oasis::EulerNumber, Oasis::Variable>> integrand {
+        Oasis::Variable { var.GetName() },
+        Oasis::Log { Oasis::EulerNumber{}, Oasis::Variable { var.GetName() } }
+    };
+
+    Oasis::Add<Oasis::Multiply<Oasis::Exponent<Oasis::Variable, Oasis::Real>,
+    Oasis::Add<Oasis::Multiply< Oasis::Divide<Oasis::Real, Oasis::Real>,
+    Oasis::Log<Oasis::EulerNumber, Oasis::Variable>>, Oasis::Divide<Oasis::Real, Oasis::Real>>>, Oasis::Variable> integral {
+        Oasis::Add {
+            Oasis::Multiply {
+                Oasis::Exponent { Oasis::Variable { var.GetName() }, Oasis::Real { 2 }  },
+                Oasis::Add {
+                    Oasis::Multiply {
+                        Oasis::Divide { Oasis::Real { 1 }, Oasis::Real { 2 } },
+                        Oasis::Log { Oasis::EulerNumber{}, Oasis::Variable { var.GetName() } }
+                    },
+                    Oasis::Divide { Oasis::Real { -1 }, Oasis::Real { 4 } },
+                 }
+            },
+            Oasis::Variable { "C" }
+        }
+    };
+
+    auto ptr = integral.Accept(simplifyVisitor).value();
+    auto integrated = integrand.Integrate(var);
+    REQUIRE((integrated->Equals(*ptr)));
+
+    integrated = integrand.SwapOperands().Integrate(var);
+    REQUIRE((integrated->Equals(*ptr)));
+}
+
 TEST_CASE("Integration By Parts: Exponent and Logarithm", "[Integrate][Exponent][Logarithm]")
 {
     Oasis::Variable var { "x" };
@@ -287,4 +322,3 @@ TEST_CASE("Integration By Parts: Exponent and Logarithm", "[Integrate][Exponent]
      integrated = integrand.SwapOperands().Integrate(var);
      REQUIRE((integrated->Equals(*ptr)));
 }
-
