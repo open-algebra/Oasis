@@ -2,8 +2,6 @@
 // Created by Justin Romanelli on 3/20/26.
 //
 
-#include <iostream>
-
 #include "catch2/catch_test_macros.hpp"
 #include "Oasis/Add.hpp"
 #include "Oasis/Variable.hpp"
@@ -15,6 +13,7 @@
 
 TEST_CASE("Approximation of a Linear function", "[Real][Approximation]")
 {
+    // Testing and setup variables
     Oasis::Variable x { "x" };
     Oasis::Add<Oasis::Multiply<Oasis::Real, Oasis::Variable>, Oasis::Real> linear {
         Oasis::Multiply<Oasis::Real, Oasis::Variable> { Oasis::Real { 5.0f }, x },
@@ -23,8 +22,12 @@ TEST_CASE("Approximation of a Linear function", "[Real][Approximation]")
     Oasis::Real guess { 5.0f };
     std::unique_ptr<Oasis::Expression> ans = Oasis::Real { 2.0f }.Copy();
 
+    // Approximate a root
     std::unique_ptr<Oasis::Expression> result = linear.ApproximateZeros(x, *guess.Copy(), 10);
 
+    // After a certain level of precision, the approximation becomes "exact", in that
+    // it truncates the decimal to the regular value if the result is precise enough.
+    // So, the approximations should be equal to the roots themselves.
     REQUIRE(result->Equals(*ans));
 }
 
@@ -41,30 +44,29 @@ TEST_CASE("Approximation of a Polynomial", "[Real][Approximation]")
     };
 
     // Actual roots to the polynomial
-    std::unique_ptr<Oasis::Expression> root1_ans = Oasis::Real { -2.0f }.Copy();
-    std::unique_ptr<Oasis::Expression> root2_ans = Oasis::Real {  2.0f }.Copy();
+    std::unique_ptr<Oasis::Expression> root1Ans = Oasis::Real { -2.0f }.Copy();
+    std::unique_ptr<Oasis::Expression> root2Ans = Oasis::Real {  2.0f }.Copy();
 
     // Approximations (to test)
-    std::unique_ptr<Oasis::Expression> root1_approximation = polynomial.Copy()->ApproximateZeros(*x.Copy(), *Oasis::Real { -5.0f }.Copy(), 10);
-    std::unique_ptr<Oasis::Expression> root2_approximation = polynomial.Copy()->ApproximateZeros(*x.Copy(), *Oasis::Real {  5.0f }.Copy(), 10);
+    std::unique_ptr<Oasis::Expression> root1Approximation = polynomial.Copy()->ApproximateZeros(*x.Copy(), *Oasis::Real { -5.0f }.Copy(), 10);
+    std::unique_ptr<Oasis::Expression> root2Approximation = polynomial.Copy()->ApproximateZeros(*x.Copy(), *Oasis::Real {  5.0f }.Copy(), 10);
 
     // Make sure the approximations completed correctly
-    REQUIRE(root1_approximation != nullptr);
-    REQUIRE(root2_approximation != nullptr);
+    REQUIRE(root1Approximation != nullptr);
+    REQUIRE(root2Approximation != nullptr);
 
     // Simplify the approximation
-    root1_approximation = *root1_approximation->Accept(sV);
-    root2_approximation = *root2_approximation->Accept(sV);
+    root1Approximation = *root1Approximation->Accept(sV);
+    root2Approximation = *root2Approximation->Accept(sV);
 
-    // After a certain level of precision, the approximation becomes "exact", in that
-    // it truncates the decimal to the regular value if the result is precise enough.
-    // So, the approximations should be equal to the roots themselves.
-    REQUIRE(root1_approximation->Equals(*root1_ans));
-    REQUIRE(root2_approximation->Equals(*root2_ans));
+    // Check that they equal the actual roots (root1Ans and root2Ans)
+    REQUIRE(root1Approximation->Equals(*root1Ans));
+    REQUIRE(root2Approximation->Equals(*root2Ans));
 }
 
 TEST_CASE("Approximation of a Higher-Degree Polynomial", "[Real][Approximation]")
 {
+    // Testing and setup variables
     Oasis::Variable x { "x" };
 
     // Approximating 256x^10 - 16x^6 = 0
@@ -85,16 +87,21 @@ TEST_CASE("Approximation of a Higher-Degree Polynomial", "[Real][Approximation]"
         }
     };
 
+    // Initial guess and answer
     Oasis::Real guess { 3.0f };
     std::unique_ptr<Oasis::Expression> answer = Oasis::Real { 0.5f }.Copy();
 
+    // Approximate the answer here
     std::unique_ptr<Oasis::Expression> result = polynomial.ApproximateZeros(*x.Copy(), *guess.Copy(), 25);
 
+    // Check to make sure it's equal to the actual answer (with many iterations)
     REQUIRE(result->Equals(*answer));
 }
 
 TEST_CASE("Impossible Approximation of a Polynomial (Stuck)", "[Approximation]")
 {
+    // Testing variables
+    // Take x^2 - 1 = 0
     Oasis::Variable x { "x" };
     Oasis::Subtract<Oasis::Exponent<Oasis::Variable, Oasis::Real>, Oasis::Real> polynomial {
         Oasis::Exponent<Oasis::Variable, Oasis::Real> {

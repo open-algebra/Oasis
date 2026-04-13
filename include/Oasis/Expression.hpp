@@ -1,7 +1,6 @@
 #ifndef OASIS_EXPRESSION_HPP
 #define OASIS_EXPRESSION_HPP
 
-#include <cstdint>
 #include <expected>
 #include <memory>
 #include <vector>
@@ -97,9 +96,16 @@ public:
     /**
      * Approximates the zeros of a function through Newton's Method.
      *
-     * Returns a pointer to a vector of real numbers, representing all found zeros.
+     * The number of iterations determines how accurate the final approximation will be, and the initial
+     * guess acts as a starting point. The closer the initial guess, the more accurate the final approximation.
+     *
      * Not all zeros can be approximated via Newton's Method. In that case, nullptr is returned instead.
      * Works best with polynomials (and functions with simple derivatives).
+     *
+     * @tparam variable The variable that the expression is with respect to.
+     * @tparam guess The initial guess to kick off the approximation. A closer guess leads to a closer approximation.
+     * @tparam iterations The number of iterations to approximate. More iterations is more accurate, but takes longer.
+     * @return a pointer to an Expression representing an approximation of one of the function's zeros, or nullptr if no approximation is found.
      */
     [[nodiscard]] auto ApproximateZeros(const Expression& variable, const Expression& guess, int iterations) const -> std::unique_ptr<Expression>;
 
