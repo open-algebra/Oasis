@@ -345,10 +345,237 @@ auto MathMLSerializer::TypedVisit(const Negate<Expression>& negate) -> RetT
     return gsl::not_null(mrow);
 }
 
-auto MathMLSerializer::TypedVisit(const Sine<Expression>&) -> RetT
+auto MathMLSerializer::TypedVisit(const Sine<Expression>& sine) -> RetT
 {
     // mrow
     tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+
+    // mo
+    tinyxml2::XMLElement* const mo = doc.NewElement("mo");
+    mo->SetText("sine");
+    mrow->InsertEndChild(mo);
+
+    // (
+    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+    leftParen->SetText("(");
+    mrow->InsertEndChild(leftParen);
+
+    const auto operandElement = sine.GetOperand().Accept(*this).value();
+    mrow->InsertEndChild(operandElement);
+
+    // )
+    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+    rightParen->SetText(")");
+    mrow->InsertEndChild(rightParen);
+
+    return gsl::not_null(mrow);
+}
+
+auto MathMLSerializer::TypedVisit(const Cosine<Expression>& cosine) -> RetT
+{
+    // mrow
+    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+
+    // mo
+    tinyxml2::XMLElement* const mo = doc.NewElement("mo");
+    mo->SetText("cosine");
+    mrow->InsertEndChild(mo);
+
+    // (
+    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+    leftParen->SetText("(");
+    mrow->InsertEndChild(leftParen);
+
+    const auto operandElement = cosine.GetOperand().Accept(*this).value();
+    mrow->InsertEndChild(operandElement);
+
+    // )
+    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+    rightParen->SetText(")");
+    mrow->InsertEndChild(rightParen);
+
+    return gsl::not_null(mrow);
+}
+
+auto MathMLSerializer::TypedVisit(const Tan<Expression>& tan) -> RetT
+{
+    // mrow
+    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+
+    // mo
+    tinyxml2::XMLElement* const mo = doc.NewElement("mo");
+    mo->SetText("tan");
+    mrow->InsertEndChild(mo);
+
+    // (
+    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+    leftParen->SetText("(");
+    mrow->InsertEndChild(leftParen);
+
+    const auto operandElement = tan.GetOperand().Accept(*this).value();
+    mrow->InsertEndChild(operandElement);
+
+    // )
+    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+    rightParen->SetText(")");
+    mrow->InsertEndChild(rightParen);
+
+    return gsl::not_null(mrow);
+}
+
+auto MathMLSerializer::TypedVisit(const Secant<Expression>& secant) -> RetT
+{
+    // mrow
+    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+
+    // mo
+    tinyxml2::XMLElement* const mo = doc.NewElement("mo");
+    mo->SetText("secant");
+    mrow->InsertEndChild(mo);
+
+    // (
+    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+    leftParen->SetText("(");
+    mrow->InsertEndChild(leftParen);
+
+    const auto operandElement = secant.GetOperand().Accept(*this).value();
+    mrow->InsertEndChild(operandElement);
+
+    // )
+    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+    rightParen->SetText(")");
+    mrow->InsertEndChild(rightParen);
+
+    return gsl::not_null(mrow);
+}
+
+auto MathMLSerializer::TypedVisit(const Cosecant<Expression>& cosecant) -> RetT
+{
+    // mrow
+    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+
+    // mo
+    tinyxml2::XMLElement* const mo = doc.NewElement("mo");
+    mo->SetText("cosecant");
+    mrow->InsertEndChild(mo);
+
+    // (
+    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+    leftParen->SetText("(");
+    mrow->InsertEndChild(leftParen);
+
+    const auto operandElement = cosecant.GetOperand().Accept(*this).value();
+    mrow->InsertEndChild(operandElement);
+
+    // )
+    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+    rightParen->SetText(")");
+    mrow->InsertEndChild(rightParen);
+
+    return gsl::not_null(mrow);
+}
+
+auto MathMLSerializer::TypedVisit(const Cotan<Expression>& cotan) -> RetT
+{
+    // mrow
+    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+
+    // mo
+    tinyxml2::XMLElement* const mo = doc.NewElement("mo");
+    mo->SetText("cotan");
+    mrow->InsertEndChild(mo);
+
+    // (
+    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+    leftParen->SetText("(");
+    mrow->InsertEndChild(leftParen);
+
+    const auto operandElement = cotan.GetOperand().Accept(*this).value();
+    mrow->InsertEndChild(operandElement);
+
+    // )
+    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+    rightParen->SetText(")");
+    mrow->InsertEndChild(rightParen);
+
+    return gsl::not_null(mrow);
+}
+
+auto MathMLSerializer::TypedVisit(const Arcsine<Expression>& arcsine) -> RetT
+{
+    // mrow
+    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+
+    // mo
+    tinyxml2::XMLElement* const mo = doc.NewElement("mo");
+    mo->SetText("arcsine");
+    mrow->InsertEndChild(mo);
+
+    // (
+    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+    leftParen->SetText("(");
+    mrow->InsertEndChild(leftParen);
+
+    const auto operandElement = arcsine.GetOperand().Accept(*this).value();
+    mrow->InsertEndChild(operandElement);
+
+    // )
+    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+    rightParen->SetText(")");
+    mrow->InsertEndChild(rightParen);
+
+    return gsl::not_null(mrow);
+}
+
+auto MathMLSerializer::TypedVisit(const Arccosine<Expression>& arccosine) -> RetT
+{
+    // mrow
+    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+
+    // mo
+    tinyxml2::XMLElement* const mo = doc.NewElement("mo");
+    mo->SetText("arccosine");
+    mrow->InsertEndChild(mo);
+
+    // (
+    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+    leftParen->SetText("(");
+    mrow->InsertEndChild(leftParen);
+
+    const auto operandElement = arccosine.GetOperand().Accept(*this).value();
+    mrow->InsertEndChild(operandElement);
+
+    // )
+    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+    rightParen->SetText(")");
+    mrow->InsertEndChild(rightParen);
+
+    return gsl::not_null(mrow);
+}
+
+auto MathMLSerializer::TypedVisit(const Arctan<Expression>& arctan) -> RetT
+{
+    // mrow
+    tinyxml2::XMLElement* const mrow = doc.NewElement("mrow");
+
+    // mo
+    tinyxml2::XMLElement* const mo = doc.NewElement("mo");
+    mo->SetText("arctan");
+    mrow->InsertEndChild(mo);
+
+    // (
+    tinyxml2::XMLElement* const leftParen = doc.NewElement("mo");
+    leftParen->SetText("(");
+    mrow->InsertEndChild(leftParen);
+
+    const auto operandElement = arctan.GetOperand().Accept(*this).value();
+    mrow->InsertEndChild(operandElement);
+
+    // )
+    tinyxml2::XMLElement* const rightParen = doc.NewElement("mo");
+    rightParen->SetText(")");
+    mrow->InsertEndChild(rightParen);
+
     return gsl::not_null(mrow);
 }
 

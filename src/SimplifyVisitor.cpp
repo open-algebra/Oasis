@@ -1367,7 +1367,8 @@ auto SimplifyVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
         return std::unexpected { simplifiedMostSigOpResult.error() };
     }
 
-    const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
+    auto simplifiedOp = std::move(simplifiedMostSigOpResult).value();
+    Sine simplifiedOperand {*simplifiedOp};
 
     //UNIT CIRCLE 
     //Sine (pi)
@@ -1598,7 +1599,8 @@ auto SimplifyVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
     if (!simplifiedMostSigOpResult) {
         return std::unexpected { simplifiedMostSigOpResult.error() };
     }
-    const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
+    auto simplifiedOp = std::move(simplifiedMostSigOpResult).value();
+    Cosine simplifiedOperand {*simplifiedOp};
 
     //UNIT CIRCLE AAHHHAHAHAHAHAHAHA
     if (const auto onepiCase = RecursiveCast<Cosine<Pi>>(simplifiedOperand); onepiCase != nullptr) {
@@ -1817,7 +1819,8 @@ auto SimplifyVisitor::TypedVisit(const Tan<Expression>& tan) -> RetT
     if (!simplifiedMostSigOpResult) {
         return std::unexpected { simplifiedMostSigOpResult.error() };
     }
-    const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
+    auto simplifiedOp = std::move(simplifiedMostSigOpResult).value();
+    Tan simplifiedOperand {*simplifiedOp};
 
     // Tan(real) --> some number
     if (const auto realCase = RecursiveCast<Tan<Real>>(simplifiedOperand); realCase != nullptr) {
@@ -1945,7 +1948,8 @@ auto SimplifyVisitor::TypedVisit(const Cosecant<Expression>& cosecant) -> RetT
     if (!simplifiedMostSigOpResult) {
         return std::unexpected { simplifiedMostSigOpResult.error() };
     }
-    const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
+    auto simplifiedOp = std::move(simplifiedMostSigOpResult).value();
+    Cosecant simplifiedOperand {*simplifiedOp};
 
     // Cosecant(real) --> some number
     if (const auto realCase = RecursiveCast<Cosecant<Real>>(simplifiedOperand); realCase != nullptr) {
@@ -2013,7 +2017,8 @@ auto SimplifyVisitor::TypedVisit(const Secant<Expression>& secant) -> RetT
     if (!simplifiedMostSigOpResult) {
         return std::unexpected { simplifiedMostSigOpResult.error() };
     }
-    const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
+    auto simplifiedOp = std::move(simplifiedMostSigOpResult).value();
+    Secant simplifiedOperand {*simplifiedOp};
 
     // Secant(real) --> some number
     if (const auto realCase = RecursiveCast<Secant<Real>>(simplifiedOperand); realCase != nullptr) {
@@ -2081,7 +2086,8 @@ auto SimplifyVisitor::TypedVisit(const Cotan<Expression>& cotan) -> RetT
     if (!simplifiedMostSigOpResult) {
         return std::unexpected { simplifiedMostSigOpResult.error() };
     }
-    const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
+    auto simplifiedOp = std::move(simplifiedMostSigOpResult).value();
+    Cotan simplifiedOperand {*simplifiedOp};
 
     // Cotan(real) --> some number
     if (const auto realCase = RecursiveCast<Cotan<Real>>(simplifiedOperand); realCase != nullptr) {
@@ -2198,7 +2204,8 @@ auto SimplifyVisitor::TypedVisit(const Arcsine<Expression>& arcsine) -> RetT
         return std::unexpected { simplifiedMostSigOpResult.error() };
     }
 
-    const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
+    auto simplifiedOp = std::move(simplifiedMostSigOpResult).value();
+    Arcsine simplifiedOperand {*simplifiedOp};
 
     // Arcsine(real) --> some number
     if (const auto realCase = RecursiveCast<Arcsine<Real>>(simplifiedOperand); realCase != nullptr) {
@@ -2331,7 +2338,8 @@ auto SimplifyVisitor::TypedVisit(const Arccosine<Expression>& arccosine) -> RetT
         return std::unexpected { simplifiedMostSigOpResult.error() };
     }
 
-    const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
+    auto simplifiedOp = std::move(simplifiedMostSigOpResult).value();
+    Arccosine simplifiedOperand {*simplifiedOp};
 
     // Arccosine(real) --> some number
     if (const auto realCase = RecursiveCast<Arccosine<Real>>(simplifiedOperand); realCase != nullptr) {
@@ -2468,7 +2476,8 @@ auto SimplifyVisitor::TypedVisit(const Arctan<Expression>& arctan) -> RetT
         return std::unexpected { simplifiedMostSigOpResult.error() };
     }
 
-    const Oasis::Expression& simplifiedOperand = *std::move(simplifiedMostSigOpResult).value();
+    auto simplifiedOp = std::move(simplifiedMostSigOpResult).value();
+    Arctan simplifiedOperand {*simplifiedOp};
 
     // Arctan(real) --> some number
     if (const auto realCase = RecursiveCast<Arctan<Real>>(simplifiedOperand); realCase != nullptr) {
