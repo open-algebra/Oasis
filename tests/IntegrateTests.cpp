@@ -5,11 +5,11 @@
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
+#include "Oasis/SimplifyVisitor.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
-#include "Oasis/SimplifyVisitor.hpp"
 
-inline Oasis::SimplifyVisitor simplifyVisitor{};
+inline Oasis::SimplifyVisitor simplifyVisitor {};
 
 TEST_CASE("Integrate Nonzero number", "[Integrate][Real][Nonzero]")
 {
