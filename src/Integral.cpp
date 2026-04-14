@@ -5,8 +5,6 @@
 #include "Oasis/Integral.hpp"
 
 #include "Oasis/Add.hpp"
-// #include "Oasis/Log.hpp"
-// #include "Oasis/Imaginary.hpp"
 #include "Oasis/Subtract.hpp"
 
 namespace Oasis {
@@ -19,59 +17,54 @@ Integral<Expression>::Integral(const Expression& integrand, const Expression& di
 auto Integral<Expression, Expression>::IntegrateWithBounds(const Expression& variable, const Expression& lower, const Expression& upper) -> std::unique_ptr<Expression>
 {
     // If the bounds are equal, then the integral will always return 0.
-    // Handle that here, instead of going through the whole process to get the same result.
-    // Additionally, if lower > upper, then the result will be negative. This is handled by the
-    // rest of the function, so there is no need to flip the bounds and negate the expression.
+    // We do not check if lower > upper because the base functionality can handle
+    // that fine, so there is no need to flip the bounds and negate the expression.
     if (lower.Equals(upper)) {
         return Real { 0.0f }.Copy();
     }
 
     // To avoid a scenario with integrating 0 and having only a C
-    // (so the result is 0 regardless of any bounds),
+    // (where the result is 0 regardless of the bounds),
     // make sure that the integral does not just contain 0.
     if (this->GetMostSigOp().Equals( Real { 0.0f } )) {
-        // The definite integral of 0 is always 0, so just return 0.
+        // The definite integral of 0 is always 0, so return 0.
         return Real { 0.0f }.Copy();
     }
 
     SimplifyVisitor simplifyVisitor {};
 
     // Attempt to integrate the function.
-    // If it fails (and returns nullptr), then just return out with a nullptr.
+    // If it fails (and returns nullptr or the original integrand), then just return out with a nullptr.
     std::unique_ptr<Expression> integrated = this->GetMostSigOp().Integrate(this->GetLeastSigOp());
 
-    if (integrated == nullptr) return nullptr;
+    if (integrated == nullptr || integrated->Equals(this->GetMostSigOp())) return nullptr;
 
-    // Cast to addition so that we can access only F(x) instead of F(x) + C
+    // Cast to addition so that we can access only F(x) instead of being stuck at F(x) + C
     std::unique_ptr<Add<Expression, Expression>> integratedFunction = RecursiveCast<Add<Expression, Expression>>(*integrated);
 
-    // If we failed to cast to addition, then something went wrong (there should always be F(x) + C)
-    if (integratedFunction == nullptr) {
-        return nullptr;
-    }
+    // If we failed to cast to addition, then something went wrong
+    // Should always be in the form F(x) + C, unless we're integrating 0 (handled above)
+    if (integratedFunction == nullptr) return nullptr;
 
-    // Calling make_unique for a Real allows the results
-    // to be cast to general expressions, while still making use of make_unique
-    // so that the pointers do not prematurely go out of scope
+    // Call make_unique to ensure that the pointers won't go out of scope
+    // Use make_unique<Real>, since Expression is abstract and make_unique<Expression> won't work
     std::unique_ptr<Expression> upperBoundResult = std::make_unique<Real>();
     std::unique_ptr<Expression> lowerBoundResult = std::make_unique<Real>();
 
     // Substitute in the upper and lower bounds for the variable
+    // integratedFunction's mostSigOp is F(x) here, so we only take that for the substitution
     upperBoundResult = integratedFunction->GetMostSigOp().Copy()->Substitute(variable, upper);
     lowerBoundResult = integratedFunction->GetMostSigOp().Copy()->Substitute(variable, lower);
 
-    // Further simplify upperBoundResult and lowerBoundResult
+    // Simplify the bounds (nested expression -> number or simple expression)
     upperBoundResult = *upperBoundResult->Accept(simplifyVisitor);
     lowerBoundResult = *lowerBoundResult->Accept(simplifyVisitor);
 
-    // Subtract the two values, then simplify them
+    // Subtract the two values, creating one big expression
+    Subtract<Expression, Expression> subtracted { *upperBoundResult, *lowerBoundResult };
 
-    Subtract<Expression, Expression> subtracted = Subtract<Expression, Expression> {
-        *upperBoundResult, *lowerBoundResult
-    };
-
-    // The result is returned through a pointer, so we can check if it worked by checking for nullptr
-
+    // Simplify the big expression in subtracted down to a number (or smaller expression)
+    // The result is returned through a pointer that contains the final (simplified) answer
     auto result = subtracted.Accept(simplifyVisitor);
 
     if (!result) {
