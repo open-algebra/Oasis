@@ -459,11 +459,7 @@ auto Multiply<Expression>::Simplify() const -> std::unique_ptr<Expression>
     return simplifiedMultiply.Copy();
 }
 
-auto Multiply<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> {
-    return Integrate(integrationVariable, 1);
-}
-
-auto Multiply<Expression>::Integrate(const Expression& integrationVariable, int recurseLevel) const -> std::unique_ptr<Expression>
+auto Multiply<Expression>::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     SimplifyVisitor simplifyVisitor {};
     // Single integration variable
@@ -491,124 +487,102 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable, int 
             }
         }
 
-        // TODO: Finish implementation of integration by parts
+        // Apply Integration By Parts
         else {
-            // In the form of mult{u, dv}
-            Multiply copy {
-                this->GetMostSigOp(),
-                this->GetLeastSigOp()
-            };
+            // Start by assuming u is MostSigOp and dv is LeastSigOp
+            auto multiplyCopy = std::make_unique<Multiply<Expression, Expression>>(Multiply{this->GetMostSigOp(), this->GetLeastSigOp()});
 
-            auto mult = std::make_unique<Multiply<Expression, Expression>>(copy);
-
-            // Assume MostSigOp is u and LeastSigOp is dv
-            // Check if by LIPET it's necessary to swap operands
-
+            // Check by LIPET if it's necessary to swap operands so u is LeastSigOp and dv is MostSigOp
             // LIPET: Logarithm case
-            if (!(mult->GetMostSigOp().Is<Log<Expression, Expression>>())
-                && mult->GetLeastSigOp().Is<Log<Expression, Expression>>()) {
-                mult = std::make_unique<Multiply<Expression, Expression>>(mult->SwapOperands());
+            if (!(multiplyCopy->GetMostSigOp().Is<Log<Expression, Expression>>())
+                    && multiplyCopy->GetLeastSigOp().Is<Log<Expression, Expression>>()) {
+                multiplyCopy = std::make_unique<Multiply<Expression, Expression>>(multiplyCopy->SwapOperands());
             }
 
             // LIPET: Inverse trigonometry is not implemented yet in Oasis
 
             // LIPET: Swap polynomial (linear variable) and EulerNumber
-            if ((mult->GetLeastSigOp().Is<Variable>()
-                    && mult->GetMostSigOp().Is<Exponent<EulerNumber, Expression>>())) {
-                mult = std::make_unique<Multiply<Expression, Expression>>(mult->SwapOperands());
+            if ((multiplyCopy->GetLeastSigOp().Is<Variable>()
+                    && multiplyCopy->GetMostSigOp().Is<Exponent<EulerNumber, Expression>>())) {
+                multiplyCopy = std::make_unique<Multiply<Expression, Expression>>(multiplyCopy->SwapOperands());
             }
 
             // LIPET: Swap polynomial (exponential) and EulerNumber
-            if (auto test1 = RecursiveCast<Exponent<Variable, Real>>(mult->GetLeastSigOp()); test1 != nullptr) {
-                if (auto test2 = RecursiveCast<Exponent<EulerNumber, Variable>>(mult->GetMostSigOp()); test2 != nullptr) {
-                    mult = std::make_unique<Multiply<Expression, Expression>>(mult->SwapOperands());
+            if (auto polynomial = RecursiveCast<Exponent<Variable, Real>>(multiplyCopy->GetLeastSigOp()); polynomial != nullptr) {
+                if (auto euler = RecursiveCast<Exponent<EulerNumber, Variable>>(multiplyCopy->GetMostSigOp()); euler != nullptr) {
+                    multiplyCopy = std::make_unique<Multiply<Expression, Expression>>(multiplyCopy->SwapOperands());
                 }
             }
 
             // LIPET: Trigonometry is not implemented yet in Oasis
 
-            auto v = mult->GetLeastSigOp().Integrate(integrationVariable);
-            auto du = mult->GetMostSigOp().Differentiate(integrationVariable);
+            // Integrate dv and differentiate u to attain v and du
+            auto v = multiplyCopy->GetLeastSigOp().Integrate(integrationVariable);
+            auto du = multiplyCopy->GetMostSigOp().Differentiate(integrationVariable);
 
-            // Remove the +C from the integral
+            // Remove the +C from v
             auto vPlusC = RecursiveCast<Add<Expression, Variable>>(*v);
-            v = vPlusC->GetMostSigOp().Copy(); // Accept(simplifyVisitor).value();
+            v = vPlusC->GetMostSigOp().Copy();
 
-            Real v_coefficient_local { 1 };
-            Real du_coefficient_local { 1 };
-            std::unique_ptr<Expression> v_coefficient = v_coefficient_local.Copy();
-            std::unique_ptr<Expression> du_coefficient = du_coefficient_local.Copy();
+            // Initialize the coefficients of v and du to 1
+            auto vCoefficient = std::make_unique<Real>(Real {1});
+            auto duCoefficient = std::make_unique<Real>(Real {1});
 
-            // Make a copy of v so that the coefficients can be factored out
-            // when computing vdu
-            auto v_vdu = v->Copy();
+            // Make a copy of v so that the coefficient can be factored out when computing vdu,
+            // while preserving the original v for the multiplication of u*v
+            auto v_VDU = v->Copy();
 
-            // Factor out the coefficient for v
-            if (auto v_coeff = RecursiveCast<Multiply<Real, Expression>>(*v); v_coeff != nullptr) {
-                v_coefficient = v_coeff->GetMostSigOp().Accept(simplifyVisitor).value();
-                v_vdu = v_coeff->GetLeastSigOp().Accept(simplifyVisitor).value();
+            // Factor out the coefficient for v; v_VDU now has a coefficient of one
+            if (auto coefficientMultiply = RecursiveCast<Multiply<Real, Expression>>(*v); coefficientMultiply != nullptr) {
+                vCoefficient = RecursiveCast<Real>(coefficientMultiply->GetMostSigOp());
+                v_VDU = coefficientMultiply->GetLeastSigOp().Accept(simplifyVisitor).value();
             }
 
-            // Factor out the cofficient for du
-            if (auto du_coeff = RecursiveCast<Multiply<Real, Expression>>(*du); du_coeff != nullptr) {
-                du_coefficient = du_coeff->GetMostSigOp().Accept(simplifyVisitor).value();
-                du = du_coeff->GetLeastSigOp().Accept(simplifyVisitor).value();
+            // Factor out the coefficient for du; du now has a coefficient of one
+            if (auto coefficientMultiply = RecursiveCast<Multiply<Real, Expression>>(*du); coefficientMultiply != nullptr) {
+                duCoefficient = RecursiveCast<Real>(coefficientMultiply->GetMostSigOp());
+                du = coefficientMultiply->GetLeastSigOp().Accept(simplifyVisitor).value();
             }
 
-            // Attain one constant for the coefficient of vdu
-            Multiply vdu_coefficient { *v_coefficient, *du_coefficient };
-            auto vdu_coefficient_simplified = vdu_coefficient.Accept(simplifyVisitor).value();
+            // Attain a constant for the coefficient of vdu
+            auto vduCoefficient = std::make_unique<Multiply<Expression, Expression>>(Multiply{*vCoefficient, *duCoefficient})->Accept(simplifyVisitor).value();
 
-            Multiply part_vdu { *v_vdu, *du };
-            auto part_vdu_simplified = part_vdu.Accept(simplifyVisitor).value(); // std::move(part_vdu).Accept(simplifyVisitor).value();
-
-            auto simplified_vdu = part_vdu_simplified->Copy();
-
-
-            std::unique_ptr<Expression> integrated_vdu;
-
-            // Check if simplified_vdu would be integrated by parts again.
-            // If so, include the recursive level with the integration call
-            // Otherwise, call the normal integration function.
-
-            // TODO: Below code may be redundant, remove after additional testing
-            // if (auto multiply = RecursiveCast<Multiply<Expression, Expression>>(*simplified_vdu); multiply != nullptr) {
-            //     integrated_vdu = multiply->Integrate(integrationVariable, recurseLevel + 1);
-            // } else {
-            //     integrated_vdu = simplified_vdu->Integrate(integrationVariable);
-            // }
-            // There is an implicit base case in that eventually, the integrand of vdu will not be a multiply instance
-            integrated_vdu = simplified_vdu->Integrate(integrationVariable);
-
-            if (auto removeC = RecursiveCast<Add<Expression, Expression>>(*integrated_vdu); removeC != nullptr) {
-                integrated_vdu = removeC->GetMostSigOp().Copy();//Accept(simplifyVisitor).value();
-            }
-
-            // Apply coefficient correction for integrated_vdu
-            Multiply full_vdu { *vdu_coefficient_simplified, *integrated_vdu};
-
-            integrated_vdu = full_vdu.Copy();
+            // Multiply v and du to attain partVDU, which is vdu with a coefficient of one
+            auto partVDU = std::make_unique<Multiply<Expression, Expression>>(Multiply{*v_VDU, *du})->Accept(simplifyVisitor).value();
 
             // Prevent infinite recursion
-            // if an expression cannot be integrated, return the integral returned by the integration attempt
-            // TODO: Assess if necessary, given implicit recursion base case
-            if (simplified_vdu->Equals(*integrated_vdu)) {
-                return integrated_vdu->Copy();
+            // If fullVDU is equal to the original Multiply instance,
+            // then IBP cannot reduce the integrand, so return an integral of the Multiply instance
+            auto fullVDU = std::make_unique<Multiply<Expression, Expression>>(Multiply{*vduCoefficient, *partVDU});
+            if (multiplyCopy->Equals(*fullVDU)) {
+                Integral<Expression, Expression> integral { *(multiplyCopy->Copy()), *(integrationVariable.Copy()) };
+                return integral.Copy();
             }
 
-            // Apply the formula: integral(udv) = uv - integral(vdu)
+            // If partVDU is a Multiply instance it will use IBP again,
+            // otherwise it will find another integration method to use.
+            // Implicit base case: IBP will eventually reduce the integrand such that it is not a Multiply instance.
+            auto integratedPartVDU = partVDU->Integrate(integrationVariable);
+
+            // Remove the +C from the integration result
+            if (auto removeC = RecursiveCast<Add<Expression, Expression>>(*integratedPartVDU); removeC != nullptr) {
+                integratedPartVDU = removeC->GetMostSigOp().Copy();
+            }
+
+            // Apply coefficient correction for integratedPartVDU, thus building integratedFullVDU
+            auto integratedFullVDU = std::make_unique<Multiply<Expression, Expression>>(Multiply{*vduCoefficient, *integratedPartVDU});
+
+            // Apply the Integration By Parts formula, and add the +C at the end
             Add<Subtract<Multiply<Expression, Expression>, Expression>, Variable> adder {
                 Subtract<Multiply<Expression, Expression>, Expression>  {
-                    Multiply<Expression, Expression> { mult->GetMostSigOp(), *v },
-                    *integrated_vdu
+                    Multiply<Expression, Expression> { multiplyCopy->GetMostSigOp(), *v },
+                    *integratedFullVDU
                 },
                 Variable {"C"}
             };
 
             return adder.Accept(simplifyVisitor).value();
         }
-
-
     }
     Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
 

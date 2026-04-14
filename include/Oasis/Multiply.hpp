@@ -22,8 +22,6 @@ public:
 
     EXPRESSION_TYPE(Multiply)
     EXPRESSION_CATEGORY(Associative | Commutative | BinExp)
-private:
-    [[nodiscard]] auto Integrate(const Expression& integrationVariable, int recurseLevel) const -> std::unique_ptr<Expression>;
 };
 /// @endcond
 
