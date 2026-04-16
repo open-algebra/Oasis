@@ -124,8 +124,6 @@ auto Integral<Expression>::Simplify(const Expression& upper, const Expression& l
 
         // Integration by Parts
         // Needs Trig and Euler's Number
-        // Work in Progress
-
 
         // Partial Fraction Decomposition
         // Work in Progress
