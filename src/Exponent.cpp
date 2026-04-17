@@ -51,6 +51,18 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) cons
                 return adder.Accept(simplifyVisitor).value();
             }
         }
+
+        // EulerNumber raised to a (degree-one) Variable
+        if (auto eulerBase = RecursiveCast<Exponent<EulerNumber, Variable>>(*simplifiedExponent); eulerBase != nullptr) {
+            const Variable& expPow = eulerBase->GetLeastSigOp();
+
+            Add adder {
+                Exponent { EulerNumber {}, expPow },
+                Variable { "C" }
+            };
+
+            return adder.Accept(simplifyVisitor).value();
+        }
     }
 
     Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
