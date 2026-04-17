@@ -9,10 +9,9 @@
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
 #include "Oasis/Integral.hpp"
+#include "Oasis/Log.hpp"
 #include "Oasis/Matrix.hpp"
 #include "Oasis/RecursiveCast.hpp"
-
-#include "Oasis/Log.hpp"
 #include "Oasis/Subtract.hpp"
 
 #define EPSILON 10E-6
