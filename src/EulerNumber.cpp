@@ -24,11 +24,6 @@ auto EulerNumber::GetValue() -> double
     return std::numbers::e;
 }
 
-auto EulerNumber::Differentiate(const Expression&) const -> std::unique_ptr<Expression>
-{
-    return std::make_unique<Real>(0);
-}
-
 auto EulerNumber::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
     SimplifyVisitor simplifyVisitor {};

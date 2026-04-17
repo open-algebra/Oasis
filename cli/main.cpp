@@ -14,6 +14,7 @@
 #include <fmt/color.h>
 #include <isocline.h>
 
+#include "Oasis/DifferentiateVisitor.hpp"
 #include "Oasis/SimplifyVisitor.hpp"
 
 template <typename FnT>

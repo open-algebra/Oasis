@@ -24,15 +24,6 @@ public:
     {
     }
 
-    [[nodiscard]] auto Differentiate(const Expression& var) const -> std::unique_ptr<Expression> override
-    {
-        const std::unique_ptr<Expression> operandDerivative = this->GetOperand().Differentiate(var);
-        return Negate<Expression> {
-            *operandDerivative
-        }
-            .Generalize(); // TODO: FIX WITH VISITOR
-    }
-
     EXPRESSION_TYPE(Negate)
     EXPRESSION_CATEGORY(UnExp)
 };

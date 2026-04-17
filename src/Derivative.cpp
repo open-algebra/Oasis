@@ -22,9 +22,4 @@ Derivative<Expression>::Derivative(const Expression& exp, const Expression& var)
 {
 }
 
-std::unique_ptr<Expression> Derivative<Expression, Expression>::Differentiate(const Expression&) const
-{
-    return mostSigOp->Differentiate(*leastSigOp);
-}
-
 }

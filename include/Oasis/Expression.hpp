@@ -72,7 +72,7 @@ public:
      * Tries to differentiate this function.
      * @return the differentiated expression.
      */
-    [[nodiscard]] virtual auto Differentiate(const Expression&) const -> std::unique_ptr<Expression>;
+    [[nodiscard]] auto Differentiate(const Expression&) const -> std::unique_ptr<Expression>;
 
     /**
      * Compares this expression to another expression for equality.

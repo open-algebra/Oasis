@@ -8,14 +8,16 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
+#include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/RecursiveCast.hpp"
-#include "Oasis/Variable.hpp"
-#include "Oasis/Log.hpp"
 #include "Oasis/SimplifyVisitor.hpp"
+#include "Oasis/Variable.hpp"
 
-namespace { Oasis::SimplifyVisitor simplifyVisitor{}; }
+namespace {
+Oasis::SimplifyVisitor simplifyVisitor {};
+}
 
 TEST_CASE("Addition", "[Add]")
 {
@@ -40,18 +42,19 @@ TEST_CASE("Symbolic Addition", "[Add][Symbolic]")
     Oasis::Add add {
         Oasis::Multiply {
             Oasis::Real { 1.0 },
-            Oasis::Variable { "x"} },
+            Oasis::Variable { "x" } },
         Oasis::Multiply {
-                Oasis::Real { 2.0 },
-                Oasis::Variable { "x" } }
-        };
+            Oasis::Real { 2.0 },
+            Oasis::Variable { "x" } }
+    };
 
     auto simplified = add.Accept(simplifyVisitor).value();
     REQUIRE(simplified->Is<Oasis::Multiply>());
 
     REQUIRE(Oasis::Multiply {
         Oasis::Real { 3.0 },
-        Oasis::Variable { "x" } }.Equals(*simplified));
+        Oasis::Variable { "x" } }
+            .Equals(*simplified));
 }
 
 TEST_CASE("Symbolic Addition, variable case", "[Add][Symbolic]")
@@ -61,9 +64,9 @@ TEST_CASE("Symbolic Addition, variable case", "[Add][Symbolic]")
             Oasis::Real { 1.0 },
             Oasis::Variable { "x" } },
         Oasis::Multiply {
-                Oasis::Real { 2.0 },
-                Oasis::Variable { "x" } }
-        };
+            Oasis::Real { 2.0 },
+            Oasis::Variable { "x" } }
+    };
 
     auto simplified = add.Accept(simplifyVisitor).value();
 
@@ -71,7 +74,8 @@ TEST_CASE("Symbolic Addition, variable case", "[Add][Symbolic]")
         Oasis::Real { 1.0 },
         Oasis::Multiply {
             Oasis::Real { 3.0 },
-            Oasis::Variable { "x" } }}.Equals(*simplified));
+            Oasis::Variable { "x" } } }
+            .Equals(*simplified));
 }
 
 TEST_CASE("Generalized Addition", "[Add][Generalized]")
@@ -119,8 +123,7 @@ TEST_CASE("Specialization", "[Specialization]")
     REQUIRE(Oasis::RecursiveCast<Oasis::Add<Oasis::Real>>(
         Oasis::Add<Oasis::Expression> {
             Oasis::Real {},
-            Oasis::Real {} }
-        ));
+            Oasis::Real {} }));
 }
 
 TEST_CASE("Imaginary Addition", "[Imaginary][Add]")
@@ -157,7 +160,7 @@ TEST_CASE("Addition Associativity", "[Add][Associative]")
         Oasis::Multiply {
             Oasis::Real { 6.0 },
             Oasis::Variable { "x" } } }
-                .Equals(*simplified1));
+            .Equals(*simplified1));
 }
 
 TEST_CASE("Add Associativity with wider tree", "[Add][Associativity]")
@@ -196,21 +199,19 @@ TEST_CASE("Add Associativity with wider tree", "[Add][Associativity]")
         Oasis::Multiply {
             Oasis::Real { 5.0 },
             Oasis::Variable { "x" } } }
-                .Equals(*simplified2));
+            .Equals(*simplified2));
 }
-
 
 TEST_CASE("Add Operator Overload", "[Add][Operator Overload]")
 {
     const std::unique_ptr<Oasis::Expression> a = std::make_unique<Oasis::Real>(1.0);
     const std::unique_ptr<Oasis::Expression> b = std::make_unique<Oasis::Real>(2.0);
 
-    const auto sum = a+b;
+    const auto sum = a + b;
     auto realSum = Oasis::RecursiveCast<Oasis::Real>(*sum);
 
     REQUIRE(realSum != nullptr);
     REQUIRE(realSum->GetValue() == 3.0);
-
 }
 
 TEST_CASE("Variadic Add Constructor", "[Add]")
@@ -236,8 +237,8 @@ TEST_CASE("Complex Addition Associativity", "[Add][Associativity][Simplification
     const Oasis::Add<> add {
         Oasis::Real { 1.0 },
         Oasis::Multiply {
-            Oasis::Add { 
-                Oasis::Variable {"x"}, 
+            Oasis::Add {
+                Oasis::Variable { "x" },
                 Oasis::Real { 1.0 } },
             Oasis::Log {
                 Oasis::Variable { "e" },
@@ -248,8 +249,8 @@ TEST_CASE("Complex Addition Associativity", "[Add][Associativity][Simplification
     const Oasis::Add<> expected {
         Oasis::Real { 2.0 },
         Oasis::Multiply {
-            Oasis::Add { 
-                Oasis::Variable {"x"}, 
+            Oasis::Add {
+                Oasis::Variable { "x" },
                 Oasis::Real { 1.0 } },
             Oasis::Log {
                 Oasis::Variable { "e" },
@@ -266,8 +267,8 @@ TEST_CASE("Complex Addition Associativity With Variables", "[Add][Associativity]
     const Oasis::Add<> add {
         Oasis::Real { 1.0 },
         Oasis::Multiply {
-            Oasis::Add { 
-                Oasis::Variable {"x"}, 
+            Oasis::Add {
+                Oasis::Variable { "x" },
                 Oasis::Real { 1.0 } },
             Oasis::Log {
                 Oasis::Variable { "e" },
@@ -278,8 +279,8 @@ TEST_CASE("Complex Addition Associativity With Variables", "[Add][Associativity]
     const Oasis::Add<> expected {
         Oasis::Real { 1.0 },
         Oasis::Multiply {
-            Oasis::Add { 
-                Oasis::Variable {"x"}, 
+            Oasis::Add {
+                Oasis::Variable { "x" },
                 Oasis::Real { 1.0 } },
             Oasis::Log {
                 Oasis::Variable { "e" },

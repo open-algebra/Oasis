@@ -72,8 +72,6 @@ public:
 
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
 
-    [[nodiscard]] auto Differentiate(const Expression&) const -> std::unique_ptr<Expression> final;
-
     EXPRESSION_TYPE(EulerNumber)
     EXPRESSION_CATEGORY(UnExp)
 

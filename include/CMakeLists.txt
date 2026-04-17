@@ -4,6 +4,7 @@ set(Oasis_HEADERS
     Oasis/BinaryExpression.hpp
     Oasis/Concepts.hpp
     Oasis/Derivative.hpp
+    Oasis/DifferentiateVisitor.hpp
     Oasis/Divide.hpp
     Oasis/EulerNumber.hpp
     Oasis/Exponent.hpp

@@ -70,26 +70,4 @@ auto Variable::Substitute(const Expression& var, const Expression& val) -> std::
     return Copy();
 }
 
-auto Variable::Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression>
-{
-    SimplifyVisitor simplifyVisitor {};
-
-    if (auto variable = RecursiveCast<Variable>(differentiationVariable); variable != nullptr) {
-
-        // Power rule
-        if (name == (*variable).GetName()) {
-            return std::make_unique<Real>(Real { 1.0f })
-                ->Accept(simplifyVisitor)
-                .value();
-        }
-
-        // Different variable, treat as constant
-        return std::make_unique<Real>(Real { 0 })
-            ->Accept(simplifyVisitor)
-            .value();
-    }
-
-    return Copy();
-}
-
 } // Oasis

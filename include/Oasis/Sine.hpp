@@ -26,8 +26,6 @@ public:
     {
     }
 
-    [[nodiscard]] auto Differentiate(const Expression& var) const -> std::unique_ptr<Expression> override;
-
     [[nodiscard]] auto Integrate(const Expression& var) const -> std::unique_ptr<Expression> override;
 
     EXPRESSION_TYPE(Sine)

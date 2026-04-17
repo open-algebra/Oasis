@@ -39,18 +39,6 @@ public:
     {
     }
 
-    [[nodiscard]] auto Differentiate(const Expression& var) const -> std::unique_ptr<Expression> override
-    {
-        // TODO: Implement
-        Oasis::SimplifyVisitor simplifyVisitor {};
-
-        const std::unique_ptr<Expression> operandDerivative = this->GetOperand().Differentiate(var);
-        return Magnitude<Expression> {
-            *operandDerivative
-        }
-            .Generalize();
-    }
-
     [[nodiscard]] auto Integrate(const Expression& integrationVar) const -> std::unique_ptr<Expression> override
     {
         // TODO: Implement
