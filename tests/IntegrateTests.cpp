@@ -4,12 +4,12 @@
 #include "Oasis/Divide.hpp"
 #include "Oasis/EulerNumber.hpp"
 #include "Oasis/Exponent.hpp"
+#include "Oasis/Log.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/SimplifyVisitor.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
-#include "Oasis/Log.hpp"
 
 inline Oasis::SimplifyVisitor simplifyVisitor{};
 
