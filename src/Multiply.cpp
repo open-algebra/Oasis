@@ -50,12 +50,12 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) cons
         // Apply Integration By Parts
         else {
             // Start by assuming u is MostSigOp and dv is LeastSigOp
-            auto multiplyCopy = std::make_unique<Multiply<Expression, Expression>>(Multiply{this->GetMostSigOp(), this->GetLeastSigOp()});
+            auto multiplyCopy = std::make_unique<Multiply<Expression, Expression>>(Multiply { this->GetMostSigOp(), this->GetLeastSigOp() });
 
             // Check by LIPET if it's necessary to swap operands so u is LeastSigOp and dv is MostSigOp
             // LIPET: Logarithm case
             if (!(multiplyCopy->GetMostSigOp().Is<Log<Expression, Expression>>())
-                    && multiplyCopy->GetLeastSigOp().Is<Log<Expression, Expression>>()) {
+                && multiplyCopy->GetLeastSigOp().Is<Log<Expression, Expression>>()) {
                 multiplyCopy = std::make_unique<Multiply<Expression, Expression>>(multiplyCopy->SwapOperands());
             }
 
@@ -85,8 +85,8 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) cons
             v = vPlusC->GetMostSigOp().Copy();
 
             // Initialize the coefficients of v and du to 1
-            auto vCoefficient = std::make_unique<Real>(Real {1});
-            auto duCoefficient = std::make_unique<Real>(Real {1});
+            auto vCoefficient = std::make_unique<Real>(Real { 1 });
+            auto duCoefficient = std::make_unique<Real>(Real { 1 });
 
             // Make a copy of v so that the coefficient can be factored out when computing vdu,
             // while preserving the original v for the multiplication of u*v
@@ -105,15 +105,15 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) cons
             }
 
             // Attain a constant for the coefficient of vdu
-            auto vduCoefficient = std::make_unique<Multiply<Expression, Expression>>(Multiply{*vCoefficient, *duCoefficient})->Accept(simplifyVisitor).value();
+            auto vduCoefficient = std::make_unique<Multiply<Expression, Expression>>(Multiply { *vCoefficient, *duCoefficient })->Accept(simplifyVisitor).value();
 
             // Multiply v and du to attain partVDU, which is vdu with a coefficient of one
-            auto partVDU = std::make_unique<Multiply<Expression, Expression>>(Multiply{*v_VDU, *du})->Accept(simplifyVisitor).value();
+            auto partVDU = std::make_unique<Multiply<Expression, Expression>>(Multiply { *v_VDU, *du })->Accept(simplifyVisitor).value();
 
             // Prevent infinite recursion
             // If fullVDU is equal to the original Multiply instance,
             // then IBP cannot reduce the integrand, so return an integral of the Multiply instance
-            auto fullVDU = std::make_unique<Multiply<Expression, Expression>>(Multiply{*vduCoefficient, *partVDU});
+            auto fullVDU = std::make_unique<Multiply<Expression, Expression>>(Multiply { *vduCoefficient, *partVDU });
             if (multiplyCopy->Equals(*fullVDU)) {
                 Integral<Expression, Expression> integral { *(multiplyCopy->Copy()), *(integrationVariable.Copy()) };
                 return integral.Copy();
@@ -130,15 +130,14 @@ auto Multiply<Expression>::Integrate(const Expression& integrationVariable) cons
             }
 
             // Apply coefficient correction for integratedPartVDU, thus building integratedFullVDU
-            auto integratedFullVDU = std::make_unique<Multiply<Expression, Expression>>(Multiply{*vduCoefficient, *integratedPartVDU});
+            auto integratedFullVDU = std::make_unique<Multiply<Expression, Expression>>(Multiply { *vduCoefficient, *integratedPartVDU });
 
             // Apply the Integration By Parts formula, and add the +C at the end
             Add<Subtract<Multiply<Expression, Expression>, Expression>, Variable> adder {
-                Subtract<Multiply<Expression, Expression>, Expression>  {
+                Subtract<Multiply<Expression, Expression>, Expression> {
                     Multiply<Expression, Expression> { multiplyCopy->GetMostSigOp(), *v },
-                    *integratedFullVDU
-                },
-                Variable {"C"}
+                    *integratedFullVDU },
+                Variable { "C" }
             };
 
             return adder.Accept(simplifyVisitor).value();
@@ -183,7 +182,8 @@ auto Multiply<Expression>::Differentiate(const Expression& differentiationVariab
                     Multiply<Expression, Expression>>>(Add<Multiply<Expression, Expression>, Multiply<Expression, Expression>> { Multiply<Expression, Expression> { *add,
                                                                                                                                      *right },
                                                            Multiply<Expression, Expression> { *add2, *left } })
-                    ->Accept(simplifyVisitor).value();
+                    ->Accept(simplifyVisitor)
+                    .value();
             }
         }
     }

@@ -57,7 +57,7 @@ auto Exponent<Expression>::Integrate(const Expression& integrationVariable) cons
             const Variable& expPow = eulerBase->GetLeastSigOp();
 
             Add adder {
-                Exponent { EulerNumber{}, expPow },
+                Exponent { EulerNumber {}, expPow },
                 Variable { "C" }
             };
 
