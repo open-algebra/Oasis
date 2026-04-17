@@ -185,6 +185,24 @@ TEST_CASE("Integrate Add Rule Like Terms", "[Integrate][Add][Like]")
     REQUIRE(simplified->Equals(*(integral.Accept(simplifyVisitor).value())));
 }
 
+TEST_CASE("Integrate EulerNumber Raised to Power x", "[Integrate][Euler]")
+{
+    Oasis::Variable var { "x" };
+
+    Oasis::Exponent integrand { Oasis::EulerNumber{}, Oasis::Variable { var.GetName() } };
+
+    Oasis::Add<Oasis::Exponent<Oasis::EulerNumber, Oasis::Variable>, Oasis::Variable> integral {
+        Oasis::Add {
+            Oasis::Exponent { Oasis::EulerNumber{}, Oasis::Variable { var.GetName() } },
+            Oasis::Variable { "C" }
+        }
+    };
+
+    auto ptr = integral.Accept(simplifyVisitor).value();
+    auto integrated = integrand.Integrate(var);
+    REQUIRE((integrated->Equals(*ptr)));
+}
+
 TEST_CASE("Integration By Parts: Variable and Euler's Number", "[Integrate][Variable][Euler]")
 {
     Oasis::Variable var { "x" };
