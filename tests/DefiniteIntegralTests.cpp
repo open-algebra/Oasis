@@ -10,6 +10,8 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/Variable.hpp"
 #include "catch2/catch_test_macros.hpp"
+#include "Oasis/EulerNumber.hpp"
+#include "Oasis/Negate.hpp"
 
 TEST_CASE("Definite Integral with distinct bounds", "[Integrate][Real][Definite]")
 {
@@ -116,4 +118,28 @@ TEST_CASE("Definite Integral with swapped bounds", "[Integral][Definite][Negativ
     std::unique_ptr<Oasis::Expression> result = integral.IntegrateWithBounds(*x.Copy(), *lowerBound.Copy(), *upperBound.Copy());
 
     REQUIRE(answer->Equals(*result));
+}
+
+TEST_CASE("Attempted Definite Integral of a non-integrable function", "[Integral][Definite]")
+{
+    // The Gaussian Integral does not have an antiderivative. While it has a defined value
+    // for definite integrals, it requires tricks with integrals that can not be done with a computer.
+    // By the implementation, we expect the result of IntegrateWithBounds() to be nullptr.
+
+    Oasis::Variable x { "x" };
+
+    Oasis::Exponent<> integrand {
+        Oasis::EulerNumber(), Oasis::Exponent<> {
+            Oasis::Negate<> { x }, Oasis::Real { 2.0f }
+        }
+    };
+
+    // Bounds should not matter, as long as they are equal
+    Oasis::Real lowerBound { 3.0f }, upperBound { 8.0f };
+
+    Oasis::Integral<Oasis::Expression, Oasis::Expression> integral { *integrand.Copy(), *x.Copy() };
+
+    std::unique_ptr<Oasis::Expression> result = integral.IntegrateWithBounds(*x.Copy(), *lowerBound.Copy(), *upperBound.Copy());
+
+    REQUIRE(result == nullptr);
 }

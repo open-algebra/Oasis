@@ -127,8 +127,14 @@ public:
 
     /**
      * Attempts to integrate this expression using integration rules
+     * Then plugs in the bounds of the integral, and returns a number through a std::unique_ptr<Expression>.
      *
-     * @return A solved definite integral of the expression
+     * Not all functions can be integrated with the current state of Oasis.
+     * If a function can not be integrated, the function instead returns nullptr.
+     *
+     * The integral bounds should be real numbers obtained after a call to .Copy() and dereferencing the result.
+     *
+     * @return The result of the definite integration as a std::unique_ptr<Expression>, or nullptr if it fails.
      */
     [[nodiscard]] virtual auto IntegrateWithBounds(const Expression&, const Expression&, const Expression&) -> std::unique_ptr<Expression>;
 
