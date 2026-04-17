@@ -17,7 +17,7 @@ namespace Oasis {
 struct DifferentiationOpts {
     enum class Multivariate {
         SINGLE_VARIABLE,
-        MULTIVARIABLE,
+        MULTI_VARIABLE,
     } multivariate
         = Multivariate::SINGLE_VARIABLE;
 };

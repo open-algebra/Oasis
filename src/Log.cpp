@@ -112,42 +112,4 @@ auto Log<Expression>::Integrate(const Oasis::Expression& integrationVariable) co
     return Integral<Expression> { *this, integrationVariable }.Generalize();
 }
 
-// auto Log<Expression>::Differentiate(const Oasis::Expression& differentiationVariable) const -> std::unique_ptr<Expression>
-// {
-// SimplifyVisitor simplifyVisitor {};
-// // d(log_e(6x))/dx = 1/6x * 6
-// if (auto lnCase = RecursiveCast<EulerNumber>(*mostSigOp); lnCase != nullptr) {
-//     Divide derivative { Oasis::Real { 1.0 }, *leastSigOp };
-//     Derivative chain { *leastSigOp, differentiationVariable };
-//
-//     Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(differentiationVariable) };
-//     auto simp = result.Accept(simplifyVisitor);
-//     if (!simp) {
-//         return result.Generalize();
-//     }
-//     return std::move(simp).value();
-// } else {
-//     if (auto RealCase = RecursiveCast<Real>(*mostSigOp); RealCase != nullptr) {
-//         Divide derivative { Oasis::Real { 1.0 }, Multiply<Expression> { *leastSigOp, Log { EulerNumber {}, *mostSigOp } } };
-//         Derivative chain { *leastSigOp, differentiationVariable };
-//         Multiply result = Multiply<Expression> { derivative, *chain.Differentiate(differentiationVariable) };
-//         auto simp = result.Accept(simplifyVisitor);
-//         if (!simp) {
-//             return result.Generalize();
-//         }
-//         return std::move(simp).value();
-//     } else {
-//         // Use log identity and Quotient rule
-//         Divide result { Subtract { Multiply { Log { EulerNumber {}, *mostSigOp }, Derivative { Log { EulerNumber {}, *leastSigOp }, differentiationVariable } },
-//                             Multiply { Log { EulerNumber {}, *leastSigOp }, Derivative { Log { EulerNumber {}, *mostSigOp }, differentiationVariable } } },
-//             Exponent { Log { EulerNumber {}, *mostSigOp }, Real { 2 } } };
-//         auto simp = result.Accept(simplifyVisitor);
-//         if (!simp) {
-//             return result.Generalize();
-//         }
-//         return std::move(simp).value();
-//     }
-// }
-// }
-
 } // Oasis

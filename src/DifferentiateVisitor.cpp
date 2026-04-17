@@ -57,7 +57,7 @@ auto DifferentiateVisitor::TypedVisit(const Variable& var) -> RetT
     if (auto variable = RecursiveCast<Variable>(*(this->differentiationVariable)); variable != nullptr) {
         if (variable->GetName() == var.GetName()) {
             return gsl_lite::not_null { std::make_unique<Real>(1.0) };
-        } else if (this->opts.multivariate == DifferentiationOpts::Multivariate::MULTIVARIABLE) {
+        } else if (this->opts.multivariate == DifferentiationOpts::Multivariate::MULTI_VARIABLE) {
             return gsl_lite::not_null { std::make_unique<Derivative<Expression, Expression>>(var, *this->differentiationVariable) };
         } else {
             return gsl_lite::not_null { std::make_unique<Real>(0.0) };
