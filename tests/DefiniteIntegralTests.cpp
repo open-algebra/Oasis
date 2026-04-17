@@ -3,15 +3,15 @@
 //
 
 #include "Oasis/Divide.hpp"
+#include "Oasis/EulerNumber.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Expression.hpp"
 #include "Oasis/Integral.hpp"
 #include "Oasis/Multiply.hpp"
+#include "Oasis/Negate.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Variable.hpp"
 #include "catch2/catch_test_macros.hpp"
-#include "Oasis/EulerNumber.hpp"
-#include "Oasis/Negate.hpp"
 
 TEST_CASE("Definite Integral with distinct bounds", "[Integrate][Real][Definite]")
 {
@@ -36,17 +36,15 @@ TEST_CASE("Definite Integral with distinct bounds", "[Integrate][Real][Definite]
 
 TEST_CASE("Definite Integral with a non-trivial integrand", "[Integral][Definite][Real]")
 {
-    // Integrate (1/4) * x^3
+    // Integrate (1/4) * x^3 from x = 2 to x = 4
     // Result should be 15
     Oasis::Variable x { "x" };
 
     Oasis::Multiply<> integrand = Oasis::Multiply<> {
         Oasis::Divide<Oasis::Real, Oasis::Real> {
-            Oasis::Real { 1.0f }, Oasis::Real { 4.0f }
-        },
+            Oasis::Real { 1.0f }, Oasis::Real { 4.0f } },
         Oasis::Exponent<Oasis::Variable, Oasis::Real> {
-            x, Oasis::Real { 3.0f }
-        }
+            x, Oasis::Real { 3.0f } }
     };
 
     Oasis::Real lowerBound { 2.0f }, upperBound { 4.0f };
@@ -129,9 +127,7 @@ TEST_CASE("Attempted Definite Integral of a non-integrable function", "[Integral
     Oasis::Variable x { "x" };
 
     Oasis::Exponent<> integrand {
-        Oasis::EulerNumber(), Oasis::Exponent<> {
-            Oasis::Negate<> { x }, Oasis::Real { 2.0f }
-        }
+        Oasis::EulerNumber(), Oasis::Exponent<> { Oasis::Negate<> { x }, Oasis::Real { 2.0f } }
     };
 
     // Bounds should not matter, as long as they are equal

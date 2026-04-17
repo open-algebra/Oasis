@@ -26,7 +26,7 @@ auto Integral<Expression, Expression>::IntegrateWithBounds(const Expression& var
     // To avoid a scenario with integrating 0 and having only a C
     // (where the result is 0 regardless of the bounds),
     // make sure that the integral does not just contain 0.
-    if (this->GetMostSigOp().Equals( Real { 0.0f } )) {
+    if (this->GetMostSigOp().Equals(Real { 0.0f })) {
         // The definite integral of 0 is always 0, so return 0.
         return Real { 0.0f }.Copy();
     }
@@ -37,14 +37,16 @@ auto Integral<Expression, Expression>::IntegrateWithBounds(const Expression& var
     // If it fails (and returns nullptr or the original integrand), then just return out with a nullptr.
     std::unique_ptr<Expression> integrated = this->GetMostSigOp().Integrate(this->GetLeastSigOp());
 
-    if (integrated == nullptr || integrated->Equals(this->GetMostSigOp())) return nullptr;
+    if (integrated == nullptr || integrated->Equals(this->GetMostSigOp()))
+        return nullptr;
 
     // Cast to addition so that we can access only F(x) instead of being stuck at F(x) + C
     std::unique_ptr<Add<Expression, Expression>> integratedFunction = RecursiveCast<Add<Expression, Expression>>(*integrated);
 
     // If we failed to cast to addition, then something went wrong
     // Should always be in the form F(x) + C, unless we're integrating 0 (handled above)
-    if (integratedFunction == nullptr) return nullptr;
+    if (integratedFunction == nullptr)
+        return nullptr;
 
     // Call make_unique to ensure that the pointers won't go out of scope
     // Use make_unique<Real>, since Expression is abstract and make_unique<Expression> won't work
