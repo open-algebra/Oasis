@@ -24,9 +24,6 @@ public:
     {
     }
 
-    [[deprecated]] [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
-
-    [[nodiscard]] auto Differentiate(const Expression& var) const -> std::unique_ptr<Expression> final;
 
     [[nodiscard]] auto Integrate(const Expression& var) const -> std::unique_ptr<Expression> final;
 
