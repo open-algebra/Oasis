@@ -368,7 +368,7 @@ auto MathMLSerializer::TypedVisit(const Sine<Expression>& sine) -> RetT
     rightParen->SetText(")");
     mrow->InsertEndChild(rightParen);
 
-    return gsl::not_null(mrow);
+    return gsl_lite::not_null(mrow);
 }
 
 auto MathMLSerializer::TypedVisit(const Cosine<Expression>& cosine) -> RetT
@@ -394,7 +394,7 @@ auto MathMLSerializer::TypedVisit(const Cosine<Expression>& cosine) -> RetT
     rightParen->SetText(")");
     mrow->InsertEndChild(rightParen);
 
-    return gsl::not_null(mrow);
+    return gsl_lite::not_null(mrow);
 }
 
 auto MathMLSerializer::TypedVisit(const Tan<Expression>& tan) -> RetT
@@ -420,7 +420,7 @@ auto MathMLSerializer::TypedVisit(const Tan<Expression>& tan) -> RetT
     rightParen->SetText(")");
     mrow->InsertEndChild(rightParen);
 
-    return gsl::not_null(mrow);
+    return gsl_lite::not_null(mrow);
 }
 
 auto MathMLSerializer::TypedVisit(const Secant<Expression>& secant) -> RetT
@@ -446,7 +446,7 @@ auto MathMLSerializer::TypedVisit(const Secant<Expression>& secant) -> RetT
     rightParen->SetText(")");
     mrow->InsertEndChild(rightParen);
 
-    return gsl::not_null(mrow);
+    return gsl_lite::not_null(mrow);
 }
 
 auto MathMLSerializer::TypedVisit(const Cosecant<Expression>& cosecant) -> RetT
@@ -472,7 +472,7 @@ auto MathMLSerializer::TypedVisit(const Cosecant<Expression>& cosecant) -> RetT
     rightParen->SetText(")");
     mrow->InsertEndChild(rightParen);
 
-    return gsl::not_null(mrow);
+    return gsl_lite::not_null(mrow);
 }
 
 auto MathMLSerializer::TypedVisit(const Cotan<Expression>& cotan) -> RetT
@@ -498,7 +498,7 @@ auto MathMLSerializer::TypedVisit(const Cotan<Expression>& cotan) -> RetT
     rightParen->SetText(")");
     mrow->InsertEndChild(rightParen);
 
-    return gsl::not_null(mrow);
+    return gsl_lite::not_null(mrow);
 }
 
 auto MathMLSerializer::TypedVisit(const Arcsine<Expression>& arcsine) -> RetT
@@ -524,7 +524,7 @@ auto MathMLSerializer::TypedVisit(const Arcsine<Expression>& arcsine) -> RetT
     rightParen->SetText(")");
     mrow->InsertEndChild(rightParen);
 
-    return gsl::not_null(mrow);
+    return gsl_lite::not_null(mrow);
 }
 
 auto MathMLSerializer::TypedVisit(const Arccosine<Expression>& arccosine) -> RetT
@@ -550,7 +550,7 @@ auto MathMLSerializer::TypedVisit(const Arccosine<Expression>& arccosine) -> Ret
     rightParen->SetText(")");
     mrow->InsertEndChild(rightParen);
 
-    return gsl::not_null(mrow);
+    return gsl_lite::not_null(mrow);
 }
 
 auto MathMLSerializer::TypedVisit(const Arctan<Expression>& arctan) -> RetT
@@ -576,7 +576,7 @@ auto MathMLSerializer::TypedVisit(const Arctan<Expression>& arctan) -> RetT
     rightParen->SetText(")");
     mrow->InsertEndChild(rightParen);
 
-    return gsl::not_null(mrow);
+    return gsl_lite::not_null(mrow);
 }
 
 auto MathMLSerializer::TypedVisit(const Derivative<>& derivative) -> RetT
