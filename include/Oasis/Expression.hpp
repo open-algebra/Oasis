@@ -80,7 +80,7 @@ public:
      * Tries to differentiate this function.
      * @return the differentiated expression.
      */
-    [[nodiscard]] virtual auto Differentiate(const Expression&) const -> std::unique_ptr<Expression>;
+    [[nodiscard]] auto Differentiate(const Expression&) const -> std::unique_ptr<Expression>;
 
     /**
      * Compares this expression to another expression for equality.
@@ -170,7 +170,7 @@ public:
      * Simplifies this expression.
      * @return The simplified expression.
      */
-    [[nodiscard]] virtual auto Simplify() const -> std::unique_ptr<Expression>;
+    [[nodiscard]] [[deprecated]] auto Simplify() const -> std::unique_ptr<Expression>;
 
     /**
      * Checks whether this expression is structurally equivalent to another expression.

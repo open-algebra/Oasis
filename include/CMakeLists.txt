@@ -10,6 +10,7 @@ set(Oasis_HEADERS
     Oasis/Cosine.hpp
     Oasis/Cotan.hpp
     Oasis/Derivative.hpp
+    Oasis/DifferentiateVisitor.hpp
     Oasis/Divide.hpp
     Oasis/EulerNumber.hpp
     Oasis/Exponent.hpp

@@ -208,12 +208,23 @@ auto ImplicitMultiplication(std::stringstream&& sstr) -> std::string
 
     while (sstr >> token) {
         if (is_function(token) || is_operator(token)) {
+            if (is_function(token) && lastToken == ")") {
+                secondPassResult << "*";
+            }
             secondPassResult << token;
             lastToken = token;
             continue;
         }
 
-        if (lastToken == ")" && token == "(") {
+        // only "," out of nonfunc or operators should ignore implicit mult.
+        // (a+b)c -> (a+b)*c
+        if (lastToken == ")" && token != ",") {
+            secondPassResult << '*' << token;
+            lastToken = token;
+            continue;
+        }
+        // a(b+c) -> a*(b+c)
+        else if (lastToken != "" && !is_function(lastToken) && !is_operator(lastToken) && token == "(") {
             secondPassResult << '*' << token;
             lastToken = token;
             continue;

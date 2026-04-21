@@ -5,7 +5,7 @@
 #ifndef MATHMLSERIALIZER_HPP
 #define MATHMLSERIALIZER_HPP
 
-#include <gsl/gsl-lite.hpp>
+#include <gsl-lite/gsl-lite.hpp>
 #include <tinyxml2.h>
 
 #include "Oasis/BinaryExpression.hpp"
@@ -14,7 +14,7 @@
 
 namespace Oasis {
 
-class MathMLSerializer final : public TypedVisitor<std::expected<gsl::not_null<tinyxml2::XMLElement*>, std::string>> {
+class MathMLSerializer final : public TypedVisitor<std::expected<gsl_lite::not_null<tinyxml2::XMLElement*>, std::string>> {
 public:
     explicit MathMLSerializer(tinyxml2::XMLDocument& doc);
 
@@ -49,15 +49,15 @@ public:
     [[nodiscard]] tinyxml2::XMLDocument& GetDocument() const;
 
 private:
-    auto GetOpsAsMathMLPair(const DerivedFromBinaryExpression auto& binexp) -> std::expected<std::pair<gsl::not_null<tinyxml2::XMLElement*>, gsl::not_null<tinyxml2::XMLElement*>>, std::string>;
+    auto GetOpsAsMathMLPair(const DerivedFromBinaryExpression auto& binexp) -> std::expected<std::pair<gsl_lite::not_null<tinyxml2::XMLElement*>, gsl_lite::not_null<tinyxml2::XMLElement*>>, std::string>;
     tinyxml2::XMLDocument& doc;
 };
 
-auto MathMLSerializer::GetOpsAsMathMLPair(const DerivedFromBinaryExpression auto& binexp) -> std::expected<std::pair<gsl::not_null<tinyxml2::XMLElement*>, gsl::not_null<tinyxml2::XMLElement*>>, std::string>
+auto MathMLSerializer::GetOpsAsMathMLPair(const DerivedFromBinaryExpression auto& binexp) -> std::expected<std::pair<gsl_lite::not_null<tinyxml2::XMLElement*>, gsl_lite::not_null<tinyxml2::XMLElement*>>, std::string>
 {
     MathMLSerializer& thisSerializer = *this;
-    return binexp.GetMostSigOp().Accept(thisSerializer).and_then([&binexp, &thisSerializer](gsl::not_null<tinyxml2::XMLElement*> mostSigOp) {
-        return binexp.GetLeastSigOp().Accept(thisSerializer).transform([&mostSigOp](gsl::not_null<tinyxml2::XMLElement*> leastSigOp) {
+    return binexp.GetMostSigOp().Accept(thisSerializer).and_then([&binexp, &thisSerializer](gsl_lite::not_null<tinyxml2::XMLElement*> mostSigOp) {
+        return binexp.GetLeastSigOp().Accept(thisSerializer).transform([&mostSigOp](gsl_lite::not_null<tinyxml2::XMLElement*> leastSigOp) {
             return std::pair { mostSigOp, leastSigOp };
         });
     });

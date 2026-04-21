@@ -65,7 +65,7 @@ TEST_CASE("Linear Creation", "[Linear]")
 
 TEST_CASE("Linear Solve with subtraction", "[Linear][Subtract]")
 {
-    Oasis::Add add1{ // 4x - 7y + -5
+    Oasis::Add add1 { // 4x - 7y + -5
 
         Oasis::Subtract {
             Oasis::Multiply {
@@ -111,7 +111,7 @@ TEST_CASE("Linear Solve with subtraction", "[Linear][Subtract]")
 }
 
 // commented out test case to prevent problems with factoring and distributing
-//TEST_CASE("Linear Solve with subtraction 2", "[Linear][Subtract]")
+// TEST_CASE("Linear Solve with subtraction 2", "[Linear][Subtract]")
 //{
 //    Oasis::Add add1{ // ((4x - (7y + 5)) + z)
 //            Oasis::Subtract{

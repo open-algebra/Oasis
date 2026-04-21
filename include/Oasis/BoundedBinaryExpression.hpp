@@ -71,10 +71,7 @@ public:
 
         return std::make_unique<DerivedSpecialized>(copy);
     }
-    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> override
-    {
-        return Generalize()->Differentiate(differentiationVariable);
-    }
+
     [[nodiscard]] auto Equals(const Expression& other) const -> bool final
     {
         if (this->GetType() != other.GetType()) {
@@ -162,11 +159,6 @@ public:
         subflow.join();
 
         return std::make_unique<DerivedGeneralized>(generalized);
-    }
-
-    [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override
-    {
-        return Generalize()->Simplify();
     }
 
     auto Simplify(tf::Subflow& subflow) const -> std::unique_ptr<Expression> override
@@ -379,8 +371,9 @@ public:
         const std::unique_ptr<Expression> left = GetMostSigOp().Substitute(var, val);
         const std::unique_ptr<Expression> right = GetLeastSigOp().Substitute(var, val);
         DerivedGeneralized comb { *left, *right };
-        auto ret = comb.Simplify();
-        return ret;
+        // auto ret = comb.Simplify();
+        // return ret;
+        return comb;
     }
     /**
      * Swaps the operands of this expression.

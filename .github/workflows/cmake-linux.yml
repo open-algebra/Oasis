@@ -18,8 +18,8 @@ concurrency:
 
 jobs:
     build_and_test_linux:
-        runs-on: ubuntu-latest
-        container: ghcr.io/open-algebra/gh-actions:main
+        runs-on: blacksmith-4vcpu-ubuntu-2404
+        container: ghcr.io/open-algebra/actions:main
 
         strategy:
             # Sets fail-fast to false to ensure that feedback is delivered for all platforms.
@@ -121,7 +121,7 @@ jobs:
             # Uploads the build, test, and code coverage artifacts.
           - name: Upload artifacts
             if: ${{ matrix.build_profiling }}
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v7
             with:
               name: build-linux-${{ matrix.build_type }}-${{ matrix.c_compiler }}
               path: |
@@ -131,7 +131,7 @@ jobs:
               overwrite: true
 
           - name: Upload PR number
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v7
             with:
               name: pr-number
               path: ${{ steps.strings.outputs.pr-dir }}

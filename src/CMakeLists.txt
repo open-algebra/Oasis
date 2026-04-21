@@ -16,6 +16,7 @@ set(Oasis_SOURCES
     Cosine.cpp
     Cotan.cpp
     Derivative.cpp
+    DifferentiateVisitor.cpp
     Divide.cpp
     EulerNumber.cpp
     Exponent.cpp
@@ -70,8 +71,7 @@ target_link_libraries(Oasis PUBLIC Oasis::Headers Eigen3::Eigen
                                    gsl::gsl-lite-v1)
 
 if(NOT OASIS_BUILD_JS)
-    target_link_libraries(Oasis PUBLIC Boost::any Boost::callable_traits
-                                       Boost::mpl)
+    target_link_libraries(Oasis PUBLIC Boost::boost)
 endif()
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${Oasis_SOURCES})

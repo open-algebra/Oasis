@@ -11,6 +11,8 @@
 #include "Oasis/Multiply.hpp"
 #include "Oasis/FromString.hpp"
 #include "Oasis/Variable.hpp"
+#include "Oasis/Exponent.hpp"
+#include "Oasis/Derivative.hpp"
 
 template <typename FnT>
 auto operator|(const std::string& str, FnT fn) -> boost::callable_traits::return_type_t<FnT>
@@ -116,4 +118,55 @@ TEST_CASE("In-Fix Works With Parenthesis", "[Parsing]")
     const auto result = std::string{ "(4+3)" } | Oasis::PreProcessInFix | InFixWithDefaultArgs;
     REQUIRE(result.has_value());
     REQUIRE(result.value()->Equals(expected));
+}
+
+TEST_CASE("In-Fix Works With Trivial Implicit Multiplication", "[Parsing]") 
+{
+    const Oasis::Multiply<> mult {
+        Oasis::Variable { "y" },
+        Oasis::Add {
+            Oasis::Variable { "x" },
+            Oasis::Real { 1 } },
+        Oasis::Log {
+            Oasis::Variable { "a" },
+            Oasis::Variable { "x" } }
+    };
+
+    auto InFixWithDefaultArgs = [](const std::string& in) { return Oasis::FromInFix(in); };
+    const auto multresult = std::string { "y(x+1)log(a,x)" } | Oasis::PreProcessInFix | InFixWithDefaultArgs;
+    REQUIRE(multresult.has_value());
+    REQUIRE(multresult.value()->Equals(mult));
+
+    const Oasis::Add<> add {
+        Oasis::Multiply {
+            Oasis::Variable { "a" },
+            Oasis::Add {
+                Oasis::Variable { "b" },
+                Oasis::Variable { "c" } } },
+        Oasis::Multiply { 
+            Oasis::Variable { "a" },
+            Oasis::Add {
+                Oasis::Variable { "b" },
+                Oasis::Variable { "c" } } }
+    };
+
+    const auto addresult = std::string { "a(b+c)+a(b+c)" } | Oasis::PreProcessInFix | InFixWithDefaultArgs;
+    REQUIRE(addresult.has_value());
+    REQUIRE(addresult.value()->Equals(add));
+
+    const Oasis::Multiply ddexp { 
+        Oasis::Variable { "a" },
+        Oasis::Add {
+            Oasis::Variable { "x" },
+            Oasis::Exponent { 
+                Oasis::Add {
+                    Oasis::Variable { "x" },
+                    Oasis::Real { 1 } },
+                Oasis::Real { 2 } } } 
+    };
+    const Oasis::Derivative dd {ddexp, Oasis::Variable { "x" } };
+
+    const auto ddresult = std::string { "dd(a(x+(x+1)^2),x)" } | Oasis::PreProcessInFix | InFixWithDefaultArgs;
+    REQUIRE(ddresult.has_value());
+    REQUIRE(ddresult.value()->Equals(dd));
 }
