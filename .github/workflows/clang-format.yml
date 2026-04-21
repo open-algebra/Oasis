@@ -14,7 +14,7 @@ on:
 jobs:
     format:
         runs-on: ubuntu-latest
-        container: ghcr.io/open-algebra/gh-actions:main
+        container: ghcr.io/open-algebra/actions:main
 
         steps:
             # Checks out the repository.

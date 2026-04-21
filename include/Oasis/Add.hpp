@@ -17,10 +17,7 @@ class Add<
 public:
     using BinaryExpression::BinaryExpression;
 
-    [[deprecated]] [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
-
     [[nodiscard]] auto Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression> final;
-    [[nodiscard]] auto Differentiate(const Expression& differentiationVariable) const -> std::unique_ptr<Expression> final;
 
     EXPRESSION_TYPE(Add)
     EXPRESSION_CATEGORY(Associative | Commutative | BinExp)

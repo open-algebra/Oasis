@@ -15,7 +15,7 @@ TEST_CASE("Substitute Unary", "[Substitute]")
         Oasis::Multiply {
             Oasis::Real { 2.0 },
             Oasis::Negate { Oasis::Variable { "x" } } },
-        Oasis::Multiply{
+        Oasis::Multiply {
             Oasis::Real { 3.0 },
             Oasis::Variable { "x" } }
     }; // -2x+3x

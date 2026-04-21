@@ -2,9 +2,10 @@
 // Created by Andrew Nazareth on 9/23/25.
 //
 
-#ifndef SIMPLIFYVISITOR_HPP
-#define SIMPLIFYVISITOR_HPP
+#ifndef DIFFERENTIATEVISITOR_HPP
+#define DIFFERENTIATEVISITOR_HPP
 
+#include <format>
 #include <string>
 
 #include <gsl-lite/gsl-lite.hpp>
@@ -13,33 +14,24 @@
 
 namespace Oasis {
 
-struct SimplifyOpts {
-    enum class AngleUnits {
-        RADIANS,
-        DEGREES,
-    } angleUnits
-        = AngleUnits::RADIANS;
-
-    enum class DistributivePolicy {
-        PREFER,
-        DEFAULT,
-    } distributivePolicy
-        = DistributivePolicy::DEFAULT;
+struct DifferentiationOpts {
+    enum class Multivariate {
+        SINGLE_VARIABLE,
+        MULTI_VARIABLE,
+    } multivariate
+        = Multivariate::SINGLE_VARIABLE;
 };
 
-class SimplifyVisitor final : public TypedVisitor<std::expected<gsl_lite::not_null<std::unique_ptr<Expression>>, std::string>> {
+class DifferentiateVisitor final : public TypedVisitor<std::expected<gsl_lite::not_null<std::unique_ptr<Expression>>, std::string>> {
 public:
-    SimplifyVisitor();
-    explicit SimplifyVisitor(SimplifyOpts& opts);
+    explicit DifferentiateVisitor(const std::unique_ptr<Expression>& differentiationVariable);
+    explicit DifferentiateVisitor(const std::unique_ptr<Expression>& differentiationVariable, const DifferentiationOpts& opts);
 
     auto TypedVisit(const Real& real) -> RetT override;
     auto TypedVisit(const Imaginary& imaginary) -> RetT override;
     auto TypedVisit(const Variable& variable) -> RetT override;
     auto TypedVisit(const Undefined& undefined) -> RetT override;
     auto TypedVisit(const Add<Expression, Expression>& add) -> RetT override;
-    auto TypedVisit(const Arcsine<Expression>& arcsine) -> RetT override;
-    auto TypedVisit(const Arccosine<Expression>& arccosine) -> RetT override;
-    auto TypedVisit(const Arctan<Expression>& arctan) -> RetT override;
     auto TypedVisit(const Subtract<Expression, Expression>& subtract) -> RetT override;
     auto TypedVisit(const Multiply<Expression, Expression>& multiply) -> RetT override;
     auto TypedVisit(const Divide<Expression, Expression>& divide) -> RetT override;
@@ -47,11 +39,6 @@ public:
     auto TypedVisit(const Log<Expression, Expression>& log) -> RetT override;
     auto TypedVisit(const Negate<Expression>& negate) -> RetT override;
     auto TypedVisit(const Sine<Expression>& sine) -> RetT override;
-    auto TypedVisit(const Cosine<Expression>& cosine) -> RetT override;
-    auto TypedVisit(const Tan<Expression>& tan) -> RetT override;
-    auto TypedVisit(const Cosecant<Expression>& cosecant) -> RetT override;
-    auto TypedVisit(const Secant<Expression>& secant) -> RetT override;
-    auto TypedVisit(const Cotan<Expression>& cotan) -> RetT override;
     auto TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT override;
     auto TypedVisit(const Integral<Expression, Expression>& integral) -> RetT override;
     auto TypedVisit(const Matrix& matrix) -> RetT override;
@@ -59,12 +46,11 @@ public:
     auto TypedVisit(const Pi&) -> RetT override;
     auto TypedVisit(const Magnitude<Expression>& magnitude) -> RetT override;
 
-    [[nodiscard]] SimplifyOpts GetOptions() const;
-
 private:
-    SimplifyOpts options;
+    std::unique_ptr<Expression> differentiationVariable;
+    DifferentiationOpts opts;
 };
 
 } // Oasis
 
-#endif // SIMPLIFYVISITOR_HPP
+#endif // DIFFERENTIATEVISITOR_HPP

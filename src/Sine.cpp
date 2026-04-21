@@ -7,17 +7,6 @@
 #include "Oasis/UnaryExpression.hpp"
 
 namespace Oasis {
-// auto Sine<Expression>::Simplify() const -> std::unique_ptr<Expression>
-// {
-    // const auto simplifiedOperand = operand ? operand->Simplify() : nullptr;
-    // if (!operand){
-    //     return nullptr;
-    // }
-
-    // // Sine(real) --> some number
-    // if (const auto realCase = RecursiveCast<Sine<Real>>(simplifiedOperand); realCase != nullptr) {
-    //     return std::make_unique<Real>(Real(std::sin(realCase->GetOperand().GetValue())));
-    // }
 
     // // Sine(real*pi) --> some number
     // if (const auto piCase = RecursiveCast<Sine<Multiply<Real,Pi>>>(simplifiedOperand); piCase != nullptr) {

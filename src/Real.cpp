@@ -18,11 +18,6 @@ Real::Real(double value)
 {
 }
 
-auto Real::Differentiate(const Expression&) const -> std::unique_ptr<Expression>
-{
-    return std::make_unique<Real>(0);
-}
-
 auto Real::Equals(const Expression& other) const -> bool
 {
     return other.Is<Real>() && value == dynamic_cast<const Real&>(other).value;
@@ -35,6 +30,7 @@ auto Real::GetValue() const -> double
 
 auto Real::Integrate(const Expression& integrationVariable) const -> std::unique_ptr<Expression>
 {
+    SimplifyVisitor simplifyVisitor {};
     if (auto variable = RecursiveCast<Variable>(integrationVariable); variable != nullptr) {
         // Constant rule
         if (value != 0) {
@@ -43,11 +39,12 @@ auto Real::Integrate(const Expression& integrationVariable) const -> std::unique
                 Multiply<Real, Variable> { Real { value }, Variable { (*variable).GetName() } },
                 Variable { "C" }
             };
-            return adder.Simplify();
+
+            return std::move(adder.Accept(simplifyVisitor)).value();
         }
 
         // Zero rule
-        return std::make_unique<Variable>(Variable { "C" })->Simplify();
+        return std::make_unique<Variable>(Variable { "C" });
     }
 
     Integral<Expression, Expression> integral { *(this->Copy()), *(integrationVariable.Copy()) };
