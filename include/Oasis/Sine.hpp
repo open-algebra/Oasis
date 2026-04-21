@@ -24,18 +24,11 @@ public:
     {
     }
 
-    [[deprecated]] [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> override 
-    { 
-        return nullptr;
-    };
+    [[deprecated]] [[nodiscard]] auto Simplify() const -> std::unique_ptr<Expression> final;
 
-    [[nodiscard]] auto Differentiate(const Expression& var) const -> std::unique_ptr<Expression> override {
-        return nullptr;
-     };
+    [[nodiscard]] auto Differentiate(const Expression& var) const -> std::unique_ptr<Expression> final;
 
-    [[nodiscard]] auto Integrate(const Expression& var) const -> std::unique_ptr<Expression> override {
-        return nullptr;
-     };
+    [[nodiscard]] auto Integrate(const Expression& var) const -> std::unique_ptr<Expression> final;
 
     EXPRESSION_TYPE(Sine)
     EXPRESSION_CATEGORY(UnExp)
