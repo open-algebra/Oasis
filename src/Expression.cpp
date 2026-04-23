@@ -238,15 +238,15 @@ auto Expression::ApproximateZeros(const Expression& variable, const Expression& 
     std::unique_ptr<Expression> derivative = originalFunction->Differentiate(variable);
 
     // Function fails to differentiate
-    if (derivative == nullptr) return nullptr;
+    if (derivative == nullptr)
+        return nullptr;
 
     // New guess (starts at the original guess's value)
     std::unique_ptr<Expression> x = guess.Copy();
 
     // Iterate for the given number of times
     // The higher the number of iterations, the more accurate the result (in theory)
-    for (int i = 0; i < iterations; ++i)
-    {
+    for (int i = 0; i < iterations; ++i) {
         // Evaluated version of the functions
         // f(a) and f'(a), for the guess a (stored in x)
         std::unique_ptr<Expression> evaluatedFunction = originalFunction->Substitute(variable, *x);
@@ -257,17 +257,18 @@ auto Expression::ApproximateZeros(const Expression& variable, const Expression& 
 
         // If this is true, then we are in a divide-by-0 case
         // (when evaluated_function = 0). We can't continue, so return nullptr.
-        if (evaluatedDerivative->Equals(*zero)) return nullptr;
+        if (evaluatedDerivative->Equals(*zero))
+            return nullptr;
 
         // If evaluated_function = 0 (and evaluated_derivative != 0),
         // then we found an approximation. Return that value.
-        if (evaluatedFunction->Equals(*zero))
-        {
+        if (evaluatedFunction->Equals(*zero)) {
             // If our current approximation is just the original guess,
             // then we weren't able to make a new guess (either we went in
             // a loop, or f(guess) = 0). In that case, we didn't find
             // anything useful, so we should return nullptr instead.
-            if (x->Equals(guess)) return nullptr;
+            if (x->Equals(guess))
+                return nullptr;
 
             // Otherwise, we found an actual approximation, so return that.
             return x;
@@ -275,8 +276,7 @@ auto Expression::ApproximateZeros(const Expression& variable, const Expression& 
 
         // We might not be able to evaluate this function as a number.
         // In that case, we can't get to a number, so we need to return nullptr.
-        if (!evaluatedFunction->Is<Real>() || !evaluatedDerivative->Is<Real>())
-        {
+        if (!evaluatedFunction->Is<Real>() || !evaluatedDerivative->Is<Real>()) {
             return nullptr;
         }
 
@@ -294,10 +294,8 @@ auto Expression::ApproximateZeros(const Expression& variable, const Expression& 
 
         // Make sure that we haven't already seen this value.
         // If we have, then we've gone into a cycle and won't be able to find a solution.
-        for (int j = 0; j < i; ++j)
-        {
-            if (guessList[i]->Equals(*guessList[j]))
-            {
+        for (int j = 0; j < i; ++j) {
+            if (guessList[i]->Equals(*guessList[j])) {
                 // We found a duplicate and will be going in a loop
                 // We can't find anything from here, so we have to return nullptr.
                 return nullptr;

@@ -2,21 +2,21 @@
 // Created by Justin Romanelli on 3/20/26.
 //
 
-#include "catch2/catch_test_macros.hpp"
 #include "Oasis/Add.hpp"
-#include "Oasis/Variable.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Expression.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Subtract.hpp"
+#include "Oasis/Variable.hpp"
+#include "catch2/catch_test_macros.hpp"
 
 TEST_CASE("Approximation of a Linear function", "[Real][Approximation]")
 {
-    // Testing and setup variables
+    // Approximating f(x) = 5x - 10, looking for the root x = 2
     Oasis::Variable x { "x" };
-    Oasis::Add<Oasis::Multiply<Oasis::Real, Oasis::Variable>, Oasis::Real> linear {
-        Oasis::Multiply<Oasis::Real, Oasis::Variable> { Oasis::Real { 5.0f }, x },
+    Oasis::Add<> linear {
+        Oasis::Multiply<> { Oasis::Real { 5.0f }, x },
         Oasis::Real { -10.0f }
     };
     Oasis::Real guess { 5.0f };
@@ -33,23 +33,23 @@ TEST_CASE("Approximation of a Linear function", "[Real][Approximation]")
 
 TEST_CASE("Approximation of a Polynomial", "[Real][Approximation]")
 {
-    // Testing variables
+    // Approximate a root for f(x) = x^2 - 4
+    // Looking for both roots, x = 2 and x = -2
     Oasis::SimplifyVisitor sV {};
     Oasis::Variable x { "x" };
-    Oasis::Subtract<Oasis::Exponent<Oasis::Variable, Oasis::Real>, Oasis::Real> polynomial {
-        Oasis::Exponent<Oasis::Variable, Oasis::Real> {
-            x, Oasis::Real { 2.0f }
-        },
+    Oasis::Subtract<> polynomial {
+        Oasis::Exponent<> {
+            x, Oasis::Real { 2.0f } },
         Oasis::Real { 4.0f }
     };
 
     // Actual roots to the polynomial
     std::unique_ptr<Oasis::Expression> root1Ans = Oasis::Real { -2.0f }.Copy();
-    std::unique_ptr<Oasis::Expression> root2Ans = Oasis::Real {  2.0f }.Copy();
+    std::unique_ptr<Oasis::Expression> root2Ans = Oasis::Real { 2.0f }.Copy();
 
     // Approximations (to test)
     std::unique_ptr<Oasis::Expression> root1Approximation = polynomial.Copy()->ApproximateZeros(*x.Copy(), *Oasis::Real { -5.0f }.Copy(), 10);
-    std::unique_ptr<Oasis::Expression> root2Approximation = polynomial.Copy()->ApproximateZeros(*x.Copy(), *Oasis::Real {  5.0f }.Copy(), 10);
+    std::unique_ptr<Oasis::Expression> root2Approximation = polynomial.Copy()->ApproximateZeros(*x.Copy(), *Oasis::Real { 5.0f }.Copy(), 10);
 
     // Make sure the approximations completed correctly
     REQUIRE(root1Approximation != nullptr);
@@ -71,20 +71,15 @@ TEST_CASE("Approximation of a Higher-Degree Polynomial", "[Real][Approximation]"
 
     // Approximating 256x^10 - 16x^6 = 0
     // One root is x = 0.5 (looking for it here)
-    Oasis::Subtract<Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>>, Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>>> polynomial
-    = Oasis::Subtract<Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>>, Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>>> {
-        Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>> {
+    Oasis::Subtract<> polynomial {
+        Oasis::Multiply<> {
             Oasis::Real { 256.0f },
-            Oasis::Exponent<Oasis::Variable, Oasis::Real> {
-                x, Oasis::Real { 10.0f }
-            }
-        },
-        Oasis::Multiply<Oasis::Real, Oasis::Exponent<Oasis::Variable, Oasis::Real>> {
+            Oasis::Exponent<> {
+                x, Oasis::Real { 10.0f } } },
+        Oasis::Multiply<> {
             Oasis::Real { 16.0f },
-            Oasis::Exponent<Oasis::Variable, Oasis::Real> {
-                x, Oasis::Real { 6.0f }
-            }
-        }
+            Oasis::Exponent<> {
+                x, Oasis::Real { 6.0f } } }
     };
 
     // Initial guess and answer
@@ -101,12 +96,11 @@ TEST_CASE("Approximation of a Higher-Degree Polynomial", "[Real][Approximation]"
 TEST_CASE("Impossible Approximation of a Polynomial (Stuck)", "[Approximation]")
 {
     // Testing variables
-    // Take x^2 - 1 = 0
+    // Attempt to approximate x^2 - 1 = 0
     Oasis::Variable x { "x" };
-    Oasis::Subtract<Oasis::Exponent<Oasis::Variable, Oasis::Real>, Oasis::Real> polynomial {
-        Oasis::Exponent<Oasis::Variable, Oasis::Real> {
-            x, Oasis::Real { 2.0f }
-        },
+    Oasis::Subtract<> polynomial {
+        Oasis::Exponent<> {
+            x, Oasis::Real { 2.0f } },
         Oasis::Real { 1.0f }
     };
     Oasis::Real guess { 0.0f };
