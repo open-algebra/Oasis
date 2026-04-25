@@ -14,7 +14,7 @@ Integral<Expression>::Integral(const Expression& integrand, const Expression& di
 {
 }
 
-auto Integral<Expression, Expression>::IntegrateWithBounds(const Expression& variable, const Expression& lower, const Expression& upper) -> std::unique_ptr<Expression>
+auto Integral<Expression, Expression>::IntegrateWithBounds(const Expression& lower, const Expression& upper) const -> std::unique_ptr<Expression>
 {
     // If the bounds are equal, then the integral will always return 0.
     // We do not check if lower > upper because the base functionality can handle
@@ -55,8 +55,8 @@ auto Integral<Expression, Expression>::IntegrateWithBounds(const Expression& var
 
     // Substitute in the upper and lower bounds for the variable
     // integratedFunction's mostSigOp is F(x) here, so we only take that for the substitution
-    upperBoundResult = integratedFunction->GetMostSigOp().Copy()->Substitute(variable, upper);
-    lowerBoundResult = integratedFunction->GetMostSigOp().Copy()->Substitute(variable, lower);
+    upperBoundResult = integratedFunction->GetMostSigOp().Copy()->Substitute(this->GetLeastSigOp(), upper);
+    lowerBoundResult = integratedFunction->GetMostSigOp().Copy()->Substitute(this->GetLeastSigOp(), lower);
 
     // Simplify the bounds (nested expression -> number or simple expression)
     upperBoundResult = *upperBoundResult->Accept(simplifyVisitor);

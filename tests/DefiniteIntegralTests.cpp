@@ -24,14 +24,13 @@ TEST_CASE("Definite Integral with distinct bounds", "[Integrate][Real][Definite]
         Oasis::Real { 2.0f }, x
     };
 
-    Oasis::Real lowerBound { 1.0f }, upperBound { 3.0f };
-    std::unique_ptr<Oasis::Expression> answer = Oasis::Real { 8.0f }.Copy();
+    Oasis::Real lowerBound { 1.0f }, upperBound { 3.0f }, answer { 8.0f };
 
-    Oasis::Integral<Oasis::Expression, Oasis::Expression> integral { *integrand.Copy(), *x.Copy() };
+    Oasis::Integral<Oasis::Expression, Oasis::Expression> integral { integrand, x };
 
-    std::unique_ptr<Oasis::Expression> result = integral.IntegrateWithBounds(*x.Copy(), *lowerBound.Copy(), *upperBound.Copy());
+    std::unique_ptr<Oasis::Expression> result = integral.IntegrateWithBounds(lowerBound, upperBound);
 
-    REQUIRE(answer->Equals(*result));
+    REQUIRE(answer.Equals(*result));
 }
 
 TEST_CASE("Definite Integral with a non-trivial integrand", "[Integral][Definite][Real]")
@@ -47,14 +46,13 @@ TEST_CASE("Definite Integral with a non-trivial integrand", "[Integral][Definite
             x, Oasis::Real { 3.0f } }
     };
 
-    Oasis::Real lowerBound { 2.0f }, upperBound { 4.0f };
-    std::unique_ptr<Oasis::Expression> answer = Oasis::Real { 15.0f }.Copy();
+    Oasis::Real lowerBound { 2.0f }, upperBound { 4.0f }, answer { 15.0f };
 
-    Oasis::Integral<Oasis::Expression, Oasis::Expression> integral { *integrand.Copy(), *x.Copy() };
+    Oasis::Integral<Oasis::Expression, Oasis::Expression> integral { integrand, x };
 
-    std::unique_ptr<Oasis::Expression> result = integral.IntegrateWithBounds(*x.Copy(), *lowerBound.Copy(), *upperBound.Copy());
+    std::unique_ptr<Oasis::Expression> result = integral.IntegrateWithBounds(lowerBound, upperBound);
 
-    REQUIRE(answer->Equals(*result));
+    REQUIRE(answer.Equals(*result));
 }
 
 TEST_CASE("Definite Integral of 0", "[Integrate][Definite][Zero]")
@@ -63,15 +61,13 @@ TEST_CASE("Definite Integral of 0", "[Integrate][Definite][Zero]")
     // Check for that behavior here.
 
     Oasis::Variable x { "x" };
-    Oasis::Real zero { 0.0f }, lowerBound { 2.0f }, upperBound { 5.0f };
+    Oasis::Real zero { 0.0f }, lowerBound { 2.0f }, upperBound { 5.0f }, answer { 0.0f };
 
-    std::unique_ptr<Oasis::Expression> answer = Oasis::Real { 0.0f }.Copy();
+    Oasis::Integral<Oasis::Expression, Oasis::Expression> integral { zero, x };
 
-    Oasis::Integral<Oasis::Expression, Oasis::Expression> integral { *zero.Copy(), *x.Copy() };
+    std::unique_ptr<Oasis::Expression> result = integral.IntegrateWithBounds(lowerBound, upperBound);
 
-    std::unique_ptr<Oasis::Expression> result = integral.IntegrateWithBounds(*x.Copy(), *lowerBound.Copy(), *upperBound.Copy());
-
-    REQUIRE(answer->Equals(*result));
+    REQUIRE(answer.Equals(*result));
 }
 
 TEST_CASE("Definite Integral with equal bounds", "[Integrate][Real][Definite]")
@@ -85,15 +81,13 @@ TEST_CASE("Definite Integral with equal bounds", "[Integrate][Real][Definite]")
         x, Oasis::Real { 2.0f }
     };
 
-    Oasis::Real lowerBound { 3.0f }, upperBound { 3.0f };
+    Oasis::Real lowerBound { 3.0f }, upperBound { 3.0f }, answer { 0.0f };
 
-    std::unique_ptr<Oasis::Expression> answer = Oasis::Real { 0.0f }.Copy();
+    Oasis::Integral<Oasis::Expression, Oasis::Expression> integral { integrand, x };
 
-    Oasis::Integral<Oasis::Expression, Oasis::Expression> integral { *integrand.Copy(), *x.Copy() };
+    std::unique_ptr<Oasis::Expression> result = integral.IntegrateWithBounds(lowerBound, upperBound);
 
-    std::unique_ptr<Oasis::Expression> result = integral.IntegrateWithBounds(*x.Copy(), *lowerBound.Copy(), *upperBound.Copy());
-
-    REQUIRE(answer->Equals(*result));
+    REQUIRE(answer.Equals(*result));
 }
 
 TEST_CASE("Definite Integral with swapped bounds", "[Integral][Definite][Negative]")
@@ -107,15 +101,13 @@ TEST_CASE("Definite Integral with swapped bounds", "[Integral][Definite][Negativ
         Oasis::Real { 4.0f }, x
     };
 
-    Oasis::Real lowerBound { 6.0f }, upperBound { 2.0f };
+    Oasis::Real lowerBound { 6.0f }, upperBound { 2.0f }, answer { -64.0f };
 
-    std::unique_ptr<Oasis::Expression> answer = Oasis::Real { -64.0f }.Copy();
+    Oasis::Integral<Oasis::Expression, Oasis::Expression> integral { integrand, x };
 
-    Oasis::Integral<Oasis::Expression, Oasis::Expression> integral { *integrand.Copy(), *x.Copy() };
+    std::unique_ptr<Oasis::Expression> result = integral.IntegrateWithBounds(lowerBound, upperBound);
 
-    std::unique_ptr<Oasis::Expression> result = integral.IntegrateWithBounds(*x.Copy(), *lowerBound.Copy(), *upperBound.Copy());
-
-    REQUIRE(answer->Equals(*result));
+    REQUIRE(answer.Equals(*result));
 }
 
 TEST_CASE("Attempted Definite Integral of a non-integrable function", "[Integral][Definite]")
@@ -133,9 +125,9 @@ TEST_CASE("Attempted Definite Integral of a non-integrable function", "[Integral
     // Bounds should not matter, as long as they are equal
     Oasis::Real lowerBound { 3.0f }, upperBound { 8.0f };
 
-    Oasis::Integral<Oasis::Expression, Oasis::Expression> integral { *integrand.Copy(), *x.Copy() };
+    Oasis::Integral<Oasis::Expression, Oasis::Expression> integral { integrand, x };
 
-    std::unique_ptr<Oasis::Expression> result = integral.IntegrateWithBounds(*x.Copy(), *lowerBound.Copy(), *upperBound.Copy());
+    std::unique_ptr<Oasis::Expression> result = integral.IntegrateWithBounds(lowerBound, upperBound);
 
     REQUIRE(result == nullptr);
 }

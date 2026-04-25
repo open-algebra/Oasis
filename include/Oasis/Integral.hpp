@@ -15,13 +15,15 @@ namespace Oasis {
 template <>
 class Integral<Expression, Expression> : public BinaryExpression<Integral> {
 public:
+    using Expression::IntegrateWithBounds;
+
     Integral() = default;
     Integral(const Integral<Expression, Expression>& other) = default;
 
     Integral(const Expression& integrand, const Expression& differential);
     auto operator=(const Integral& integral) const -> Integral<Expression, Expression>;
 
-    auto IntegrateWithBounds(const Expression& variable, const Expression& lower, const Expression& upper) -> std::unique_ptr<Expression> override;
+    [[nodiscard]] auto IntegrateWithBounds(const Expression& lower, const Expression& upper) const -> std::unique_ptr<Expression>;
 
     EXPRESSION_TYPE(Integral)
     EXPRESSION_CATEGORY(Associative | Commutative)

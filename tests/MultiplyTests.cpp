@@ -8,7 +8,6 @@
 #include "Oasis/Add.hpp"
 #include "Oasis/Exponent.hpp"
 #include "Oasis/Imaginary.hpp"
-#include "Oasis/InFixSerializer.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/RecursiveCast.hpp"
