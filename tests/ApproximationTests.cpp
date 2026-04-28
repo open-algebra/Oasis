@@ -19,16 +19,17 @@ TEST_CASE("Approximation of a Linear function", "[Real][Approximation]")
         Oasis::Multiply<> { Oasis::Real { 5.0f }, x },
         Oasis::Real { -10.0f }
     };
-    Oasis::Real guess { 5.0f };
-    std::unique_ptr<Oasis::Expression> ans = Oasis::Real { 2.0f }.Copy();
+    Oasis::Real guess { 5.0f }, ans { 2.0f };
 
     // Approximate a root
-    std::unique_ptr<Oasis::Expression> result = linear.ApproximateZeros(x, *guess.Copy(), 10);
+    std::unique_ptr<Oasis::Expression> result = linear.ApproximateZeros(x, guess, 10);
+
+    // Make sure the approximation worked correctly
 
     // After a certain level of precision, the approximation becomes "exact", in that
     // it truncates the decimal to the regular value if the result is precise enough.
     // So, the approximations should be equal to the roots themselves.
-    REQUIRE(result->Equals(*ans));
+    REQUIRE(ans.Equals(*result));
 }
 
 TEST_CASE("Approximation of a Polynomial", "[Real][Approximation]")
@@ -44,24 +45,23 @@ TEST_CASE("Approximation of a Polynomial", "[Real][Approximation]")
     };
 
     // Actual roots to the polynomial
-    std::unique_ptr<Oasis::Expression> root1Ans = Oasis::Real { -2.0f }.Copy();
-    std::unique_ptr<Oasis::Expression> root2Ans = Oasis::Real { 2.0f }.Copy();
+    Oasis::Real rootNeg { -2.0f }, rootPos { 2.0f };
 
-    // Approximations (to test)
-    std::unique_ptr<Oasis::Expression> root1Approximation = polynomial.Copy()->ApproximateZeros(*x.Copy(), *Oasis::Real { -5.0f }.Copy(), 10);
-    std::unique_ptr<Oasis::Expression> root2Approximation = polynomial.Copy()->ApproximateZeros(*x.Copy(), *Oasis::Real { 5.0f }.Copy(), 10);
+    // Guesses to start the approximations
+    Oasis::Real guessNeg { -5.0f }, guessPos { 5.0f };
 
-    // Make sure the approximations completed correctly
-    REQUIRE(root1Approximation != nullptr);
-    REQUIRE(root2Approximation != nullptr);
+    // Approximations of the roots
+    // Make sure these are equal to the original roots
+    std::unique_ptr<Oasis::Expression> approximationNeg = polynomial.ApproximateZeros(x, guessNeg, 10);
+    std::unique_ptr<Oasis::Expression> approximationPos = polynomial.ApproximateZeros(x, guessPos, 10);
 
-    // Simplify the approximation
-    root1Approximation = *root1Approximation->Accept(sV);
-    root2Approximation = *root2Approximation->Accept(sV);
+    // Simplify the approximations
+    approximationNeg = *approximationNeg->Accept(sV);
+    approximationPos = *approximationPos->Accept(sV);
 
     // Check that they equal the actual roots (root1Ans and root2Ans)
-    REQUIRE(root1Approximation->Equals(*root1Ans));
-    REQUIRE(root2Approximation->Equals(*root2Ans));
+    REQUIRE(rootNeg.Equals(*approximationNeg));
+    REQUIRE(rootPos.Equals(*approximationPos));
 }
 
 TEST_CASE("Approximation of a Higher-Degree Polynomial", "[Real][Approximation]")
@@ -83,14 +83,13 @@ TEST_CASE("Approximation of a Higher-Degree Polynomial", "[Real][Approximation]"
     };
 
     // Initial guess and answer
-    Oasis::Real guess { 3.0f };
-    std::unique_ptr<Oasis::Expression> answer = Oasis::Real { 0.5f }.Copy();
+    Oasis::Real guess { 3.0f }, answer { 0.5f };
 
     // Approximate the answer here
-    std::unique_ptr<Oasis::Expression> result = polynomial.ApproximateZeros(*x.Copy(), *guess.Copy(), 25);
+    std::unique_ptr<Oasis::Expression> result = polynomial.ApproximateZeros(x, guess, 25);
 
     // Check to make sure it's equal to the actual answer (with many iterations)
-    REQUIRE(result->Equals(*answer));
+    REQUIRE(answer.Equals(*result));
 }
 
 TEST_CASE("Impossible Approximation of a Polynomial (Stuck)", "[Approximation]")
@@ -106,8 +105,8 @@ TEST_CASE("Impossible Approximation of a Polynomial (Stuck)", "[Approximation]")
     Oasis::Real guess { 0.0f };
 
     // This should get "stuck" at x = 0, such that it can't find a better value to use
-    // So, it should return nullptr. Make sure that's the case.
-    std::unique_ptr<Oasis::Expression> result = polynomial.ApproximateZeros(x, *guess.Copy(), 5);
+    // So, it should return the original function. Make sure that's the case.
+    std::unique_ptr<Oasis::Expression> result = polynomial.ApproximateZeros(x, guess, 5);
 
-    REQUIRE(result == nullptr);
+    REQUIRE(polynomial.Equals(*result));
 }

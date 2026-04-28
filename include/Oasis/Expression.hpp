@@ -99,13 +99,13 @@ public:
      * The number of iterations determines how accurate the final approximation will be, and the initial
      * guess acts as a starting point. The closer the initial guess, the more accurate the final approximation.
      *
-     * Not all zeros can be approximated via Newton's Method. In that case, nullptr is returned instead.
-     * Works best with polynomials (and functions with simple derivatives).
+     * Not all zeros can be approximated via Newton's Method. In that case, the original function is returned instead.
+     * Works best with polynomials (and other functions with simple derivatives).
      *
      * @tparam variable The variable that the expression is with respect to.
      * @tparam guess The initial guess to kick off the approximation. A closer guess leads to a closer approximation.
      * @tparam iterations The number of iterations to approximate. More iterations is more accurate, but takes longer.
-     * @return a pointer to an Expression representing an approximation of one of the function's zeros, or nullptr if no approximation is found.
+     * @return a pointer to an Expression representing an approximation of one of the function's zeros, or a copy of the original Expression if no approximation is found.
      */
     [[nodiscard]] auto ApproximateZeros(const Expression& variable, const Expression& guess, int iterations) const -> std::unique_ptr<Expression>;
 
