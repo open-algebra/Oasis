@@ -7,7 +7,6 @@
 
 #include "Oasis/Add.hpp"
 #include "Oasis/Imaginary.hpp"
-#include "Oasis/InFixSerializer.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Negate.hpp"
 #include "Oasis/Real.hpp"

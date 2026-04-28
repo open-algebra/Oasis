@@ -10,6 +10,7 @@ set(Oasis_TESTS
     AddTests.cpp
     BinaryExpressionTests.cpp
     Common.hpp
+    DefiniteIntegralTests.cpp
     DifferentiateTests.cpp
     DivideTests.cpp
     ExponentTests.cpp
