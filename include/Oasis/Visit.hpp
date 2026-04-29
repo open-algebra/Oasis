@@ -12,8 +12,6 @@ namespace Oasis {
 
 class Visitor {
 public:
-    using any = boost::anys::unique_any;
-    
     virtual any Visit(const Real& real) = 0;
     virtual any Visit(const Imaginary& imaginary) = 0;
     virtual any Visit(const Matrix& matrix) = 0;

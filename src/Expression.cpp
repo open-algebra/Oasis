@@ -227,7 +227,7 @@ auto Expression::ApproximateZeros(const Expression& variable, const Expression& 
 
     // List of guesses that we've taken.
     // If any of these are duplicates, then we've run into a cycle and can't find a root.
-    std::unique_ptr<Expression> guessList[iterations];
+    std::vector<std::unique_ptr<Expression>> guessList;
 
     // Variable representing the number 0.
     // Useful in determining a situation where the guess a results in f(a) = 0 or f'(a) = 0
@@ -287,10 +287,10 @@ auto Expression::ApproximateZeros(const Expression& variable, const Expression& 
         divided = divided->Accept(simplifyVisitor).value();
 
         // Subtract x - (f'(a) / f(a)) to get the new guess
-        x = Subtract<Expression, Expression> { *x->Copy(), *divided->Copy() }.Accept(simplifyVisitor).value();
+        x = Subtract<Expression, Expression> { *x, *divided }.Accept(simplifyVisitor).value();
 
         // Add this to our list of guesses
-        guessList[i] = std::move(x->Copy());
+        guessList.push_back(x->Copy());
 
         // Make sure that we haven't already seen this value.
         // If we have, then we've gone into a cycle and won't be able to find a solution.
