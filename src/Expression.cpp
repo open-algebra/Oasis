@@ -218,6 +218,94 @@ auto Expression::FindZeros() const -> std::vector<std::unique_ptr<Expression>>
     return results;
 }
 
+auto Expression::ApproximateZeros(const Expression& variable, const Expression& guess, int iterations) const -> std::unique_ptr<Expression>
+{
+    // Setup simplifyVisitor for later
+    SimplifyVisitor simplifyVisitor {};
+
+    // Helper variables
+
+    // List of guesses that we've taken.
+    // If any of these are duplicates, then we've run into a cycle and can't find a root.
+    std::vector<std::unique_ptr<Expression>> guessList;
+
+    // Variable representing the number 0.
+    // Useful in determining a situation where the guess a results in f(a) = 0 or f'(a) = 0
+    Real zero { 0.0f };
+
+    // Declare the function and its derivative
+    std::unique_ptr<Expression> originalFunction = this->Copy();
+    std::unique_ptr<Expression> derivative = originalFunction->Differentiate(variable);
+
+    // Function failed to differentiate, return the original function
+    if (derivative == nullptr)
+        return originalFunction;
+
+    // New guess (starts at the original guess's value)
+    std::unique_ptr<Expression> x = guess.Copy();
+
+    // Iterate for the given number of times
+    // The higher the number of iterations, the more accurate the result (in theory)
+    for (int i = 0; i < iterations; ++i) {
+        // Evaluated version of the functions
+        // f(a) and f'(a), for the guess a (stored in x)
+        std::unique_ptr<Expression> evaluatedFunction = originalFunction->Substitute(variable, *x);
+        std::unique_ptr<Expression> evaluatedDerivative = derivative->Substitute(variable, *x);
+
+        evaluatedFunction = evaluatedFunction->Accept(simplifyVisitor).value();
+        evaluatedDerivative = evaluatedDerivative->Accept(simplifyVisitor).value();
+
+        // If this is true, then we are in a divide-by-0 case
+        // (when evaluated_function = 0). We can't continue, so return the original function.
+        if (evaluatedDerivative->Equals(zero))
+            return originalFunction;
+
+        // If evaluated_function = 0 (and evaluated_derivative != 0),
+        // then we found an approximation. Return that value.
+        if (evaluatedFunction->Equals(zero)) {
+            // If our current approximation is just the original guess,
+            // then we weren't able to make a new guess (either we went in
+            // a loop, or f(guess) = 0). In that case, we didn't find
+            // anything useful, so we should return the original function instead.
+            if (x->Equals(guess))
+                return originalFunction;
+
+            // Otherwise, we found an actual approximation, so return that.
+            return x;
+        }
+
+        // We might not be able to evaluate this function as a number.
+        // In that case, we can't get to a number, so we need to return original function.
+        if (!evaluatedFunction->Is<Real>() || !evaluatedDerivative->Is<Real>()) {
+            return originalFunction;
+        }
+
+        // Divide f'(a) /  f(a)
+
+        std::unique_ptr<Expression> divided = Divide<Expression, Expression> { *evaluatedFunction, *evaluatedDerivative }.Copy();
+
+        divided = divided->Accept(simplifyVisitor).value();
+
+        // Subtract x - (f'(a) / f(a)) to get the new guess
+        x = Subtract<Expression, Expression> { *x, *divided }.Accept(simplifyVisitor).value();
+
+        // Add this to our list of guesses
+        guessList.push_back(x->Copy());
+
+        // Make sure that we haven't already seen this value.
+        // If we have, then we've gone into a cycle and won't be able to find a solution.
+        for (int j = 0; j < i; ++j) {
+            if (guessList[i]->Equals(*guessList[j])) {
+                // We found a duplicate and will be going in a loop
+                // We can't find anything from here, so we have to return the original function.
+                return originalFunction;
+            }
+        }
+    }
+
+    return x;
+}
+
 auto Expression::GetCategory() const -> uint32_t
 {
     return 0;
