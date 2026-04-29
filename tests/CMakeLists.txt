@@ -8,6 +8,7 @@
 set(Oasis_TESTS
     # cmake-format: sortable
     AddTests.cpp
+    ApproximationTests.cpp
     BinaryExpressionTests.cpp
     Common.hpp
     DefiniteIntegralTests.cpp
@@ -23,8 +24,7 @@ set(Oasis_TESTS
     NegateTests.cpp
     PolynomialTests.cpp
     SubtractTests.cpp
-    UnaryExpressionTests.cpp
-    ApproximationTests.cpp)
+    UnaryExpressionTests.cpp)
 
 # Adds an executable target called "OasisTests" to be built from sources files.
 add_executable(OasisTests ${Oasis_TESTS})
