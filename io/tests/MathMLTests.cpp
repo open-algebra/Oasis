@@ -2,6 +2,7 @@
 
 #include "Oasis/Add.hpp"
 #include "Oasis/Divide.hpp"
+#include "Oasis/Integral.hpp"
 #include "Oasis/Multiply.hpp"
 #include "Oasis/Matrix.hpp"
 #include "Oasis/Variable.hpp"
@@ -238,14 +239,33 @@ TEST_CASE("Matrix to MathML 3x2", "[Matrix][MathML]")
     // std::cout<<mathml<<std::endl;
     REQUIRE(expected == mathml);
 }
-//
-//TEST_CASE("Test Magnitude", "[Magnitude]")
-//{
-//    Oasis::Magnitude m{Oasis::Real{-5}};
-//
-//    tinyxml2::XMLDocument doc;
-//    Oasis::MathMLSerializer serializer(doc);
-//
-//    m.Serialize(serializer);
-//
-//}
+
+TEST_CASE("Integral works", "[Integral][MathML]")
+{
+    Oasis::Integral in {
+        Oasis::Real { 1 },
+        Oasis::Variable { "x" }
+    };
+
+
+    tinyxml2::XMLDocument doc;
+    Oasis::MathMLSerializer serializer(doc);
+    doc.InsertEndChild(in.Accept(serializer).value());
+
+    tinyxml2::XMLPrinter printer;
+    doc.Print(&printer);
+
+    std::string mathml { printer.CStr() };
+
+    std::string expected = reinterpret_cast<const char*>(u8R"(<mrow>
+    <mo>∫</mo>
+    <mn>1</mn>
+    <mrow>
+        <mo>d</mo>
+        <mi>x</mi>
+    </mrow>
+</mrow>
+)");
+
+    REQUIRE(expected == mathml);
+}
