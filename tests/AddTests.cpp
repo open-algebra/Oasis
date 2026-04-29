@@ -13,6 +13,7 @@
 #include "Oasis/Real.hpp"
 #include "Oasis/RecursiveCast.hpp"
 #include "Oasis/SimplifyVisitor.hpp"
+#include "Oasis/InFixSerializer.hpp"
 #include "Oasis/Variable.hpp"
 
 namespace {

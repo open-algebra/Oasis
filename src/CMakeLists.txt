@@ -8,7 +8,13 @@
 set(Oasis_SOURCES
     # cmake-format: sortable
     Add.cpp
+    Arccosine.cpp
+    Arcsine.cpp
+    Arctan.cpp
     # DefiniteIntegral.cpp
+    Cosecant.cpp
+    Cosine.cpp
+    Cotan.cpp
     Derivative.cpp
     DifferentiateVisitor.cpp
     Divide.cpp
@@ -25,10 +31,12 @@ set(Oasis_SOURCES
     Negate.cpp
     Pi.cpp
     Real.cpp
+    Secant.cpp
     SimplifyVisitor.cpp
     Sine.cpp
     Subtract.cpp
     # Summation.cpp
+    Tan.cpp
     Undefined.cpp
     Variable.cpp)
 

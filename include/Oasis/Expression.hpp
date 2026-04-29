@@ -39,7 +39,15 @@ enum class ExpressionType {
     Pi,
     EulerNumber,
     Magnitude,
-    Sine
+    Sine,
+    Cosine,
+    Tan,
+    Cosecant,
+    Secant,
+    Cotan,
+    Arcsine,
+    Arccosine,
+    Arctan
 };
 
 /**

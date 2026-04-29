@@ -19,6 +19,15 @@ class Pi;
 template <typename, typename>
 class Add;
 
+template <typename>
+class Arcsine;
+
+template <typename>
+class Arccosine;
+
+template <typename>
+class Arctan;
+
 template <typename, typename>
 class Subtract;
 
@@ -42,6 +51,21 @@ class Magnitude;
 
 template <typename>
 class Sine;
+
+template <typename>
+class Cosine;
+
+template <typename>
+class Tan;
+
+template <typename>
+class Cosecant;
+
+template <typename>
+class Secant;
+
+template <typename>
+class Cotan;
 
 template <typename, typename>
 class Derivative;

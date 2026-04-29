@@ -17,6 +17,14 @@
 #include "Oasis/Negate.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Sine.hpp"
+#include "Oasis/Cosine.hpp"
+#include "Oasis/Tan.hpp"
+#include "Oasis/Arcsine.hpp"
+#include "Oasis/Arccosine.hpp"
+#include "Oasis/Arctan.hpp"
+#include "Oasis/Cotan.hpp"
+#include "Oasis/Secant.hpp"
+#include "Oasis/Cosecant.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Variable.hpp"
 
@@ -85,6 +93,70 @@ auto InFixSerializer::TypedVisit(const Sine<Expression>& sine) -> RetT
         return std::format("sine({})", str);
     });
 }
+
+auto InFixSerializer::TypedVisit(const Cosine<Expression>& cosine) -> RetT
+{
+    return cosine.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("cosine({})", str);
+    });
+}
+
+
+auto InFixSerializer::TypedVisit(const Tan<Expression>& tan) -> RetT
+{
+    return tan.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("tan({})", str);
+    });
+}
+
+
+auto InFixSerializer::TypedVisit(const Secant<Expression>& secant) -> RetT
+{
+    return secant.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("secant({})", str);
+    });
+}
+
+
+auto InFixSerializer::TypedVisit(const Cosecant<Expression>& cosecant) -> RetT
+{
+    return cosecant.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("cosecant({})", str);
+    });
+}
+
+
+auto InFixSerializer::TypedVisit(const Cotan<Expression>& cotan) -> RetT
+{
+    return cotan.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("cotan({})", str);
+    });
+}
+
+
+auto InFixSerializer::TypedVisit(const Arcsine<Expression>& arcsine) -> RetT
+{
+    return arcsine.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("arcsine({})", str);
+    });
+}
+
+
+auto InFixSerializer::TypedVisit(const Arccosine<Expression>& arccosine) -> RetT
+{
+    return arccosine.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("arccosine({})", str);
+    });
+}
+
+
+auto InFixSerializer::TypedVisit(const Arctan<Expression>& arctan) -> RetT
+{
+    return arctan.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("arctan({})", str);
+    });
+}
+
 
 auto InFixSerializer::TypedVisit(const Derivative<>& derivative) -> RetT
 {

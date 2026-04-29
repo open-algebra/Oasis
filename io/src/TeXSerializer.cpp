@@ -20,6 +20,14 @@
 #include "Oasis/Pi.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Sine.hpp"
+#include "Oasis/Cosine.hpp"
+#include "Oasis/Tan.hpp"
+#include "Oasis/Arcsine.hpp"
+#include "Oasis/Arccosine.hpp"
+#include "Oasis/Arctan.hpp"
+#include "Oasis/Cotan.hpp"
+#include "Oasis/Secant.hpp"
+#include "Oasis/Cosecant.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/TeXSerializer.hpp"
 #include "Oasis/Variable.hpp"
@@ -191,6 +199,62 @@ auto TeXSerializer::TypedVisit(const Sine<Expression>& sine) -> RetT
 {
     return sine.GetOperand().Accept(*this).transform([](const std::string& str) {
         return std::format("sine\\left({}\\right)", str);
+    });
+}
+
+auto TeXSerializer::TypedVisit(const Cosine<Expression>& cosine) -> RetT
+{
+    return cosine.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("cosine\\left({}\\right)", str);
+    });
+}
+
+auto TeXSerializer::TypedVisit(const Tan<Expression>& tan) -> RetT
+{
+    return tan.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("tan\\left({}\\right)", str);
+    });
+}
+
+auto TeXSerializer::TypedVisit(const Arcsine<Expression>& arcsine) -> RetT
+{
+    return arcsine.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("arcsine\\left({}\\right)", str);
+    });
+}
+
+auto TeXSerializer::TypedVisit(const Arccosine<Expression>& arccosine) -> RetT
+{
+    return arccosine.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("arccosine\\left({}\\right)", str);
+    });
+}
+
+auto TeXSerializer::TypedVisit(const Arctan<Expression>& arctan) -> RetT
+{
+    return arctan.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("arctan\\left({}\\right)", str);
+    });
+}
+
+auto TeXSerializer::TypedVisit(const Secant<Expression>& secant) -> RetT
+{
+    return secant.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("secant\\left({}\\right)", str);
+    });
+}
+
+auto TeXSerializer::TypedVisit(const Cosecant<Expression>& cosecant) -> RetT
+{
+    return cosecant.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("cosecant\\left({}\\right)", str);
+    });
+}
+
+auto TeXSerializer::TypedVisit(const Cotan<Expression>& cotan) -> RetT
+{
+    return cotan.GetOperand().Accept(*this).transform([](const std::string& str) {
+        return std::format("cotan\\left({}\\right)", str);
     });
 }
 

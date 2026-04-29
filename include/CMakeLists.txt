@@ -1,8 +1,14 @@
 set(Oasis_HEADERS
     # cmake-format: sortable
     Oasis/Add.hpp
+    Oasis/Arccosine.hpp
+    Oasis/Arcsine.hpp
+    Oasis/Arctan.hpp
     Oasis/BinaryExpression.hpp
     Oasis/Concepts.hpp
+    Oasis/Cosecant.hpp
+    Oasis/Cosine.hpp
+    Oasis/Cotan.hpp
     Oasis/Derivative.hpp
     Oasis/DifferentiateVisitor.hpp
     Oasis/Divide.hpp
@@ -22,9 +28,11 @@ set(Oasis_HEADERS
     Oasis/Pi.hpp
     Oasis/Real.hpp
     Oasis/RecursiveCast.hpp
+    Oasis/Secant.hpp
     Oasis/SimplifyVisitor.hpp
     Oasis/Sine.hpp
     Oasis/Subtract.hpp
+    Oasis/Tan.hpp
     Oasis/UnaryExpression.hpp
     Oasis/Undefined.hpp
     Oasis/Variable.hpp

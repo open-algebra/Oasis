@@ -37,6 +37,9 @@ public:
     auto TypedVisit(const Variable& variable) -> RetT override;
     auto TypedVisit(const Undefined& undefined) -> RetT override;
     auto TypedVisit(const Add<Expression, Expression>& add) -> RetT override;
+    auto TypedVisit(const Arcsine<Expression>& arcsine) -> RetT override;
+    auto TypedVisit(const Arccosine<Expression>& arccosine) -> RetT override;
+    auto TypedVisit(const Arctan<Expression>& arctan) -> RetT override;
     auto TypedVisit(const Subtract<Expression, Expression>& subtract) -> RetT override;
     auto TypedVisit(const Multiply<Expression, Expression>& multiply) -> RetT override;
     auto TypedVisit(const Divide<Expression, Expression>& divide) -> RetT override;
@@ -44,6 +47,11 @@ public:
     auto TypedVisit(const Log<Expression, Expression>& log) -> RetT override;
     auto TypedVisit(const Negate<Expression>& negate) -> RetT override;
     auto TypedVisit(const Sine<Expression>& sine) -> RetT override;
+    auto TypedVisit(const Cosine<Expression>& cosine) -> RetT override;
+    auto TypedVisit(const Tan<Expression>& tan) -> RetT override;
+    auto TypedVisit(const Cosecant<Expression>& cosecant) -> RetT override;
+    auto TypedVisit(const Secant<Expression>& secant) -> RetT override;
+    auto TypedVisit(const Cotan<Expression>& cotan) -> RetT override;
     auto TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT override;
     auto TypedVisit(const Integral<Expression, Expression>& integral) -> RetT override;
     auto TypedVisit(const Matrix& matrix) -> RetT override;

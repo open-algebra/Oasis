@@ -21,6 +21,14 @@
 #include "Oasis/Pi.hpp"
 #include "Oasis/Real.hpp"
 #include "Oasis/Sine.hpp"
+#include "Oasis/Cosine.hpp"
+#include "Oasis/Tan.hpp"
+#include "Oasis/Secant.hpp"
+#include "Oasis/Cosecant.hpp"
+#include "Oasis/Cotan.hpp"
+#include "Oasis/Arcsine.hpp"
+#include "Oasis/Arccosine.hpp"
+#include "Oasis/Arctan.hpp"
 #include "Oasis/Subtract.hpp"
 #include "Oasis/Undefined.hpp"
 #include "Oasis/Variable.hpp"
@@ -379,6 +387,62 @@ auto DifferentiateVisitor::TypedVisit(const Sine<Expression>& sine) -> RetT
     // TODO: IMPLEMENT
     return std::unexpected<std::string> { "Not Implemented." };
     return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(sine.Copy()), *(this->differentiationVariable) }.Generalize());
+}
+
+auto DifferentiateVisitor::TypedVisit(const Cosine<Expression>& cosine) -> RetT
+{
+    // TODO: IMPLEMENT
+    return std::unexpected<std::string> { "Not Implemented." };
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(cosine.Copy()), *(this->differentiationVariable) }.Generalize());
+}
+
+auto DifferentiateVisitor::TypedVisit(const Tan<Expression>& tan) -> RetT
+{
+    // TODO: IMPLEMENT
+    return std::unexpected<std::string> { "Not Implemented." };
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(tan.Copy()), *(this->differentiationVariable) }.Generalize());
+}
+
+auto DifferentiateVisitor::TypedVisit(const Secant<Expression>& secant) -> RetT
+{
+    // TODO: IMPLEMENT
+    return std::unexpected<std::string> { "Not Implemented." };
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(secant.Copy()), *(this->differentiationVariable) }.Generalize());
+}
+
+auto DifferentiateVisitor::TypedVisit(const Cosecant<Expression>& cosecant) -> RetT
+{
+    // TODO: IMPLEMENT
+    return std::unexpected<std::string> { "Not Implemented." };
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(cosecant.Copy()), *(this->differentiationVariable) }.Generalize());
+}
+
+auto DifferentiateVisitor::TypedVisit(const Cotan<Expression>& cotan) -> RetT
+{
+    // TODO: IMPLEMENT
+    return std::unexpected<std::string> { "Not Implemented." };
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(cotan.Copy()), *(this->differentiationVariable) }.Generalize());
+}
+
+auto DifferentiateVisitor::TypedVisit(const Arcsine<Expression>& arcsine) -> RetT
+{
+    // TODO: IMPLEMENT
+    return std::unexpected<std::string> { "Not Implemented." };
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(arcsine.Copy()), *(this->differentiationVariable) }.Generalize());
+}
+
+auto DifferentiateVisitor::TypedVisit(const Arccosine<Expression>& arccosine) -> RetT
+{
+    // TODO: IMPLEMENT
+    return std::unexpected<std::string> { "Not Implemented." };
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(arccosine.Copy()), *(this->differentiationVariable) }.Generalize());
+}
+
+auto DifferentiateVisitor::TypedVisit(const Arctan<Expression>& arctan) -> RetT
+{
+    // TODO: IMPLEMENT
+    return std::unexpected<std::string> { "Not Implemented." };
+    return gsl_lite::not_null<std::unique_ptr<Expression>>(Oasis::Derivative<Expression> { *(arctan.Copy()), *(this->differentiationVariable) }.Generalize());
 }
 
 auto DifferentiateVisitor::TypedVisit(const Derivative<Expression, Expression>& derivative) -> RetT
